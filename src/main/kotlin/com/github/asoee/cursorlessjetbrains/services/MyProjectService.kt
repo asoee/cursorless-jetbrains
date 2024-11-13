@@ -10,8 +10,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 
 @Service(Service.Level.PROJECT)
-class MyProjectService(project: Project) {
-
+class MyProjectService(
+    private val project: Project,
+)
+  {
 
     private val quickJs: QuickJs
 
@@ -25,13 +27,25 @@ class MyProjectService(project: Project) {
         runBlocking {
             initCursorless(talonJs)
         }
+//        val talonJs = javaClass.getResource("/cursorless/talon.js").readText()
+//        thisLogger().warn("talon js script size: " + talonJs.length)
+//        quickJs =  QuickJs.create(Dispatchers.Default)
+//        runBlocking {
+//            quickJs.evaluate<Void>(code = talonJs, asModule = false)
+//            quickJs.evaluate<Void>(code = "function calc(a,b) {return a*b;}")
+//        }
     }
 
     private suspend fun initCursorless(talonJs: String) {
         thisLogger().warn("compile...")
-        val compiled = quickJs.compile(talonJs, "cursorless.js", true)
-        thisLogger().warn("addmodule...")
-        quickJs.addModule(bytecode = compiled)
+
+        val nodeShimBc = quickJs.compile(talonJs, "node-shim.js", true)
+        thisLogger().warn("addmodule (node-shim)...")
+        quickJs.addModule(bytecode = nodeShimBc)
+
+        val cursorlessBc = quickJs.compile(talonJs, "cursorless.js", true)
+        thisLogger().warn("addmodule (cursorless)...")
+        quickJs.addModule(bytecode = cursorlessBc)
 
         quickJs.define<Console>("console", Console())
 
@@ -53,7 +67,4 @@ class MyProjectService(project: Project) {
     }
 
     fun getRandomNumber() = (1..100).random()
-
-
 }
-

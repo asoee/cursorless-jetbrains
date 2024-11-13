@@ -4,7 +4,7 @@ import com.intellij.openapi.diagnostic.thisLogger
 
 class Console {
 
-    fun log(args: String) {
+    fun log(args: String?) {
 //        var logline = ""
 //        for (s in args) {
 //            logline += s
