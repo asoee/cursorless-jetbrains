@@ -24,1226 +24,6 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
-// ../../node_modules/.pnpm/nearley@2.20.1_patch_hash=mg2fc7wgvzub3myuz6m74hllma/node_modules/nearley/lib/nearley.js
-var require_nearley = __commonJS({
-  "../../node_modules/.pnpm/nearley@2.20.1_patch_hash=mg2fc7wgvzub3myuz6m74hllma/node_modules/nearley/lib/nearley.js"(exports2, module2) {
-    (function(root2, factory) {
-      if (typeof module2 === "object" && module2.exports) {
-        module2.exports = factory();
-      } else {
-        root2.nearley = factory();
-      }
-    })(exports2, function() {
-      function Rule(name, symbols2, postprocess) {
-        this.id = ++Rule.highestId;
-        this.name = name;
-        this.symbols = symbols2;
-        this.postprocess = postprocess;
-        return this;
-      }
-      Rule.highestId = 0;
-      Rule.prototype.toString = function(withCursorAt) {
-        var symbolSequence = typeof withCursorAt === "undefined" ? this.symbols.map(getSymbolShortDisplay).join(" ") : this.symbols.slice(0, withCursorAt).map(getSymbolShortDisplay).join(" ") + " \u25CF " + this.symbols.slice(withCursorAt).map(getSymbolShortDisplay).join(" ");
-        return this.name + " \u2192 " + symbolSequence;
-      };
-      function State2(rule, dot, reference, wantedBy) {
-        this.rule = rule;
-        this.dot = dot;
-        this.reference = reference;
-        this.data = [];
-        this.wantedBy = wantedBy;
-        this.isComplete = this.dot === rule.symbols.length;
-      }
-      State2.prototype.toString = function() {
-        return "{" + this.rule.toString(this.dot) + "}, from: " + (this.reference || 0);
-      };
-      State2.prototype.nextState = function(child) {
-        var state = new State2(this.rule, this.dot + 1, this.reference, this.wantedBy);
-        state.left = this;
-        state.right = child;
-        if (state.isComplete) {
-          state.data = state.build();
-          state.right = void 0;
-        }
-        return state;
-      };
-      State2.prototype.build = function() {
-        var children = [];
-        var node = this;
-        do {
-          children.push(node.right.data);
-          node = node.left;
-        } while (node.left);
-        children.reverse();
-        return children;
-      };
-      State2.prototype.finish = function() {
-        if (this.rule.postprocess) {
-          this.data = this.rule.postprocess(this.data, this.reference, Parser2.fail);
-        }
-      };
-      function Column(grammar2, index) {
-        this.grammar = grammar2;
-        this.index = index;
-        this.states = [];
-        this.wants = {};
-        this.scannable = [];
-        this.completed = {};
-      }
-      Column.prototype.process = function(nextColumn) {
-        var states = this.states;
-        var wants = this.wants;
-        var completed = this.completed;
-        for (var w = 0; w < states.length; w++) {
-          var state = states[w];
-          if (state.isComplete) {
-            state.finish();
-            if (state.data !== Parser2.fail) {
-              var wantedBy = state.wantedBy;
-              for (var i = wantedBy.length; i--; ) {
-                var left = wantedBy[i];
-                this.complete(left, state);
-              }
-              if (state.reference === this.index) {
-                var exp = state.rule.name;
-                (this.completed[exp] = this.completed[exp] || []).push(state);
-              }
-            }
-          } else {
-            var exp = state.rule.symbols[state.dot];
-            if (typeof exp !== "string") {
-              this.scannable.push(state);
-              continue;
-            }
-            if (wants[exp]) {
-              wants[exp].push(state);
-              if (completed.hasOwnProperty(exp)) {
-                var nulls = completed[exp];
-                for (var i = 0; i < nulls.length; i++) {
-                  var right = nulls[i];
-                  this.complete(state, right);
-                }
-              }
-            } else {
-              wants[exp] = [state];
-              this.predict(exp);
-            }
-          }
-        }
-      };
-      Column.prototype.predict = function(exp) {
-        var rules = this.grammar.byName[exp] || [];
-        for (var i = 0; i < rules.length; i++) {
-          var r = rules[i];
-          var wantedBy = this.wants[exp];
-          var s = new State2(r, 0, this.index, wantedBy);
-          this.states.push(s);
-        }
-      };
-      Column.prototype.complete = function(left, right) {
-        var copy = left.nextState(right);
-        this.states.push(copy);
-      };
-      function Grammar2(rules, start) {
-        this.rules = rules;
-        this.start = start || this.rules[0].name;
-        var byName = this.byName = {};
-        this.rules.forEach(function(rule) {
-          if (!byName.hasOwnProperty(rule.name)) {
-            byName[rule.name] = [];
-          }
-          byName[rule.name].push(rule);
-        });
-      }
-      Grammar2.fromCompiled = function(rules, start) {
-        var lexer2 = rules.Lexer;
-        if (rules.ParserStart) {
-          start = rules.ParserStart;
-          rules = rules.ParserRules;
-        }
-        var rules = rules.map(function(r) {
-          return new Rule(r.name, r.symbols, r.postprocess);
-        });
-        var g = new Grammar2(rules, start);
-        g.lexer = lexer2;
-        return g;
-      };
-      function StreamLexer() {
-        this.reset("");
-      }
-      StreamLexer.prototype.reset = function(data, state) {
-        this.buffer = data;
-        this.index = 0;
-        this.line = state ? state.line : 1;
-        this.lastLineBreak = state ? -state.col : 0;
-      };
-      StreamLexer.prototype.next = function() {
-        if (this.index < this.buffer.length) {
-          var ch = this.buffer[this.index++];
-          if (ch === "\n") {
-            this.line += 1;
-            this.lastLineBreak = this.index;
-          }
-          return { value: ch };
-        }
-      };
-      StreamLexer.prototype.save = function() {
-        return {
-          line: this.line,
-          col: this.index - this.lastLineBreak
-        };
-      };
-      StreamLexer.prototype.formatError = function(token, message) {
-        var buffer = this.buffer;
-        if (typeof buffer === "string") {
-          var lines = buffer.split("\n").slice(
-            Math.max(0, this.line - 5),
-            this.line
-          );
-          var nextLineBreak = buffer.indexOf("\n", this.index);
-          if (nextLineBreak === -1) nextLineBreak = buffer.length;
-          var col = this.index - this.lastLineBreak;
-          var lastLineDigits = String(this.line).length;
-          message += " at line " + this.line + " col " + col + ":\n\n";
-          message += lines.map(function(line, i) {
-            return pad(this.line - lines.length + i + 1, lastLineDigits) + " " + line;
-          }, this).join("\n");
-          message += "\n" + pad("", lastLineDigits + col) + "^\n";
-          return message;
-        } else {
-          return message + " at index " + (this.index - 1);
-        }
-        function pad(n, length) {
-          var s = String(n);
-          return Array(length - s.length + 1).join(" ") + s;
-        }
-      };
-      function Parser2(rules, start, options2) {
-        if (rules instanceof Grammar2) {
-          var grammar2 = rules;
-          var options2 = start;
-        } else {
-          var grammar2 = Grammar2.fromCompiled(rules, start);
-        }
-        this.grammar = grammar2;
-        this.options = {
-          keepHistory: false,
-          lexer: grammar2.lexer || new StreamLexer()
-        };
-        for (var key in options2 || {}) {
-          this.options[key] = options2[key];
-        }
-        this.lexer = this.options.lexer;
-        this.lexerState = void 0;
-        var column = new Column(grammar2, 0);
-        var table = this.table = [column];
-        column.wants[grammar2.start] = [];
-        column.predict(grammar2.start);
-        column.process();
-        this.current = 0;
-      }
-      Parser2.fail = {};
-      Parser2.prototype.feed = function(chunk) {
-        var lexer2 = this.lexer;
-        lexer2.reset(chunk, this.lexerState);
-        var token;
-        while (true) {
-          try {
-            token = lexer2.next();
-            if (!token) {
-              break;
-            }
-          } catch (e) {
-            var nextColumn = new Column(this.grammar, this.current + 1);
-            this.table.push(nextColumn);
-            var err = new Error(this.reportLexerError(e));
-            err.offset = this.current;
-            err.token = e.token;
-            throw err;
-          }
-          var column = this.table[this.current];
-          if (!this.options.keepHistory) {
-            delete this.table[this.current - 1];
-          }
-          var n = this.current + 1;
-          var nextColumn = new Column(this.grammar, n);
-          this.table.push(nextColumn);
-          var literal = token.text !== void 0 ? token.text : token.value;
-          var value = lexer2.constructor === StreamLexer ? token.value : lexer2.transform?.(token) ?? token;
-          var scannable = column.scannable;
-          for (var w = scannable.length; w--; ) {
-            var state = scannable[w];
-            var expect = state.rule.symbols[state.dot];
-            if (expect.test ? expect.test(value) : expect.type ? expect.type === token.type : expect.literal === literal) {
-              var next = state.nextState({ data: value, token, isToken: true, reference: n - 1 });
-              nextColumn.states.push(next);
-            }
-          }
-          nextColumn.process();
-          if (nextColumn.states.length === 0) {
-            var err = new Error(this.reportError(token));
-            err.offset = this.current;
-            err.token = token;
-            throw err;
-          }
-          if (this.options.keepHistory) {
-            column.lexerState = lexer2.save();
-          }
-          this.current++;
-        }
-        if (column) {
-          this.lexerState = lexer2.save();
-        }
-        this.results = this.finish();
-        return this;
-      };
-      Parser2.prototype.reportLexerError = function(lexerError) {
-        var tokenDisplay, lexerMessage;
-        var token = lexerError.token;
-        if (token) {
-          tokenDisplay = "input " + JSON.stringify(token.text[0]) + " (lexer error)";
-          lexerMessage = this.lexer.formatError(token, "Syntax error");
-        } else {
-          tokenDisplay = "input (lexer error)";
-          lexerMessage = lexerError.message;
-        }
-        return this.reportErrorCommon(lexerMessage, tokenDisplay);
-      };
-      Parser2.prototype.reportError = function(token) {
-        var tokenDisplay = (token.type ? token.type + " token: " : "") + JSON.stringify(token.value !== void 0 ? token.value : token);
-        var lexerMessage = this.lexer.formatError(token, "Syntax error");
-        return this.reportErrorCommon(lexerMessage, tokenDisplay);
-      };
-      Parser2.prototype.reportErrorCommon = function(lexerMessage, tokenDisplay) {
-        var lines = [];
-        lines.push(lexerMessage);
-        var lastColumnIndex = this.table.length - 2;
-        var lastColumn = this.table[lastColumnIndex];
-        var expectantStates = lastColumn.states.filter(function(state) {
-          var nextSymbol = state.rule.symbols[state.dot];
-          return nextSymbol && typeof nextSymbol !== "string";
-        });
-        if (expectantStates.length === 0) {
-          lines.push("Unexpected " + tokenDisplay + ". I did not expect any more input. Here is the state of my parse table:\n");
-          this.displayStateStack(lastColumn.states, lines);
-        } else {
-          lines.push("Unexpected " + tokenDisplay + ". Instead, I was expecting to see one of the following:\n");
-          var stateStacks = expectantStates.map(function(state) {
-            return this.buildFirstStateStack(state, []) || [state];
-          }, this);
-          stateStacks.forEach(function(stateStack) {
-            var state = stateStack[0];
-            var nextSymbol = state.rule.symbols[state.dot];
-            var symbolDisplay = this.getSymbolDisplay(nextSymbol);
-            lines.push("A " + symbolDisplay + " based on:");
-            this.displayStateStack(stateStack, lines);
-          }, this);
-        }
-        lines.push("");
-        return lines.join("\n");
-      };
-      Parser2.prototype.displayStateStack = function(stateStack, lines) {
-        var lastDisplay;
-        var sameDisplayCount = 0;
-        for (var j = 0; j < stateStack.length; j++) {
-          var state = stateStack[j];
-          var display = state.rule.toString(state.dot);
-          if (display === lastDisplay) {
-            sameDisplayCount++;
-          } else {
-            if (sameDisplayCount > 0) {
-              lines.push("    ^ " + sameDisplayCount + " more lines identical to this");
-            }
-            sameDisplayCount = 0;
-            lines.push("    " + display);
-          }
-          lastDisplay = display;
-        }
-      };
-      Parser2.prototype.getSymbolDisplay = function(symbol) {
-        return getSymbolLongDisplay(symbol);
-      };
-      Parser2.prototype.buildFirstStateStack = function(state, visited) {
-        if (visited.indexOf(state) !== -1) {
-          return null;
-        }
-        if (state.wantedBy.length === 0) {
-          return [state];
-        }
-        var prevState = state.wantedBy[0];
-        var childVisited = [state].concat(visited);
-        var childResult = this.buildFirstStateStack(prevState, childVisited);
-        if (childResult === null) {
-          return null;
-        }
-        return [state].concat(childResult);
-      };
-      Parser2.prototype.save = function() {
-        var column = this.table[this.current];
-        column.lexerState = this.lexerState;
-        return column;
-      };
-      Parser2.prototype.restore = function(column) {
-        var index = column.index;
-        this.current = index;
-        this.table[index] = column;
-        this.table.splice(index + 1);
-        this.lexerState = column.lexerState;
-        this.results = this.finish();
-      };
-      Parser2.prototype.rewind = function(index) {
-        if (!this.options.keepHistory) {
-          throw new Error("set option `keepHistory` to enable rewinding");
-        }
-        this.restore(this.table[index]);
-      };
-      Parser2.prototype.finish = function() {
-        var considerations = [];
-        var start = this.grammar.start;
-        var column = this.table[this.table.length - 1];
-        column.states.forEach(function(t) {
-          if (t.rule.name === start && t.dot === t.rule.symbols.length && t.reference === 0 && t.data !== Parser2.fail) {
-            considerations.push(t);
-          }
-        });
-        return considerations.map(function(c) {
-          return c.data;
-        });
-      };
-      function getSymbolLongDisplay(symbol) {
-        var type2 = typeof symbol;
-        if (type2 === "string") {
-          return symbol;
-        } else if (type2 === "object") {
-          if (symbol.literal) {
-            return JSON.stringify(symbol.literal);
-          } else if (symbol instanceof RegExp) {
-            return "character matching " + symbol;
-          } else if (symbol.type) {
-            return symbol.type + " token";
-          } else if (symbol.test) {
-            return "token matching " + String(symbol.test);
-          } else {
-            throw new Error("Unknown symbol type: " + symbol);
-          }
-        }
-      }
-      function getSymbolShortDisplay(symbol) {
-        var type2 = typeof symbol;
-        if (type2 === "string") {
-          return symbol;
-        } else if (type2 === "object") {
-          if (symbol.literal) {
-            return JSON.stringify(symbol.literal);
-          } else if (symbol instanceof RegExp) {
-            return symbol.toString();
-          } else if (symbol.type) {
-            return "%" + symbol.type;
-          } else if (symbol.test) {
-            return "<" + String(symbol.test) + ">";
-          } else {
-            throw new Error("Unknown symbol type: " + symbol);
-          }
-        }
-      }
-      return {
-        Parser: Parser2,
-        Grammar: Grammar2,
-        Rule
-      };
-    });
-  }
-});
-
-// ../../node_modules/.pnpm/moo@0.5.2/node_modules/moo/moo.js
-var require_moo = __commonJS({
-  "../../node_modules/.pnpm/moo@0.5.2/node_modules/moo/moo.js"(exports2, module2) {
-    (function(root2, factory) {
-      if (typeof define === "function" && define.amd) {
-        define([], factory);
-      } else if (typeof module2 === "object" && module2.exports) {
-        module2.exports = factory();
-      } else {
-        root2.moo = factory();
-      }
-    })(exports2, function() {
-      "use strict";
-      var hasOwnProperty13 = Object.prototype.hasOwnProperty;
-      var toString3 = Object.prototype.toString;
-      var hasSticky = typeof new RegExp().sticky === "boolean";
-      function isRegExp(o) {
-        return o && toString3.call(o) === "[object RegExp]";
-      }
-      function isObject4(o) {
-        return o && typeof o === "object" && !isRegExp(o) && !Array.isArray(o);
-      }
-      function reEscape(s) {
-        return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
-      }
-      function reGroups(s) {
-        var re = new RegExp("|" + s);
-        return re.exec("").length - 1;
-      }
-      function reCapture(s) {
-        return "(" + s + ")";
-      }
-      function reUnion(regexps) {
-        if (!regexps.length) return "(?!)";
-        var source = regexps.map(function(s) {
-          return "(?:" + s + ")";
-        }).join("|");
-        return "(?:" + source + ")";
-      }
-      function regexpOrLiteral(obj) {
-        if (typeof obj === "string") {
-          return "(?:" + reEscape(obj) + ")";
-        } else if (isRegExp(obj)) {
-          if (obj.ignoreCase) throw new Error("RegExp /i flag not allowed");
-          if (obj.global) throw new Error("RegExp /g flag is implied");
-          if (obj.sticky) throw new Error("RegExp /y flag is implied");
-          if (obj.multiline) throw new Error("RegExp /m flag is implied");
-          return obj.source;
-        } else {
-          throw new Error("Not a pattern: " + obj);
-        }
-      }
-      function pad(s, length) {
-        if (s.length > length) {
-          return s;
-        }
-        return Array(length - s.length + 1).join(" ") + s;
-      }
-      function lastNLines(string2, numLines) {
-        var position = string2.length;
-        var lineBreaks = 0;
-        while (true) {
-          var idx = string2.lastIndexOf("\n", position - 1);
-          if (idx === -1) {
-            break;
-          } else {
-            lineBreaks++;
-          }
-          position = idx;
-          if (lineBreaks === numLines) {
-            break;
-          }
-          if (position === 0) {
-            break;
-          }
-        }
-        var startPosition = lineBreaks < numLines ? 0 : position + 1;
-        return string2.substring(startPosition).split("\n");
-      }
-      function objectToRules(object) {
-        var keys2 = Object.getOwnPropertyNames(object);
-        var result = [];
-        for (var i = 0; i < keys2.length; i++) {
-          var key = keys2[i];
-          var thing = object[key];
-          var rules = [].concat(thing);
-          if (key === "include") {
-            for (var j = 0; j < rules.length; j++) {
-              result.push({ include: rules[j] });
-            }
-            continue;
-          }
-          var match = [];
-          rules.forEach(function(rule) {
-            if (isObject4(rule)) {
-              if (match.length) result.push(ruleOptions(key, match));
-              result.push(ruleOptions(key, rule));
-              match = [];
-            } else {
-              match.push(rule);
-            }
-          });
-          if (match.length) result.push(ruleOptions(key, match));
-        }
-        return result;
-      }
-      function arrayToRules(array) {
-        var result = [];
-        for (var i = 0; i < array.length; i++) {
-          var obj = array[i];
-          if (obj.include) {
-            var include = [].concat(obj.include);
-            for (var j = 0; j < include.length; j++) {
-              result.push({ include: include[j] });
-            }
-            continue;
-          }
-          if (!obj.type) {
-            throw new Error("Rule has no type: " + JSON.stringify(obj));
-          }
-          result.push(ruleOptions(obj.type, obj));
-        }
-        return result;
-      }
-      function ruleOptions(type2, obj) {
-        if (!isObject4(obj)) {
-          obj = { match: obj };
-        }
-        if (obj.include) {
-          throw new Error("Matching rules cannot also include states");
-        }
-        var options2 = {
-          defaultType: type2,
-          lineBreaks: !!obj.error || !!obj.fallback,
-          pop: false,
-          next: null,
-          push: null,
-          error: false,
-          fallback: false,
-          value: null,
-          type: null,
-          shouldThrow: false
-        };
-        for (var key in obj) {
-          if (hasOwnProperty13.call(obj, key)) {
-            options2[key] = obj[key];
-          }
-        }
-        if (typeof options2.type === "string" && type2 !== options2.type) {
-          throw new Error("Type transform cannot be a string (type '" + options2.type + "' for token '" + type2 + "')");
-        }
-        var match = options2.match;
-        options2.match = Array.isArray(match) ? match : match ? [match] : [];
-        options2.match.sort(function(a, b) {
-          return isRegExp(a) && isRegExp(b) ? 0 : isRegExp(b) ? -1 : isRegExp(a) ? 1 : b.length - a.length;
-        });
-        return options2;
-      }
-      function toRules(spec) {
-        return Array.isArray(spec) ? arrayToRules(spec) : objectToRules(spec);
-      }
-      var defaultErrorRule = ruleOptions("error", { lineBreaks: true, shouldThrow: true });
-      function compileRules(rules, hasStates) {
-        var errorRule = null;
-        var fast = /* @__PURE__ */ Object.create(null);
-        var fastAllowed = true;
-        var unicodeFlag = null;
-        var groups = [];
-        var parts = [];
-        for (var i = 0; i < rules.length; i++) {
-          if (rules[i].fallback) {
-            fastAllowed = false;
-          }
-        }
-        for (var i = 0; i < rules.length; i++) {
-          var options2 = rules[i];
-          if (options2.include) {
-            throw new Error("Inheritance is not allowed in stateless lexers");
-          }
-          if (options2.error || options2.fallback) {
-            if (errorRule) {
-              if (!options2.fallback === !errorRule.fallback) {
-                throw new Error("Multiple " + (options2.fallback ? "fallback" : "error") + " rules not allowed (for token '" + options2.defaultType + "')");
-              } else {
-                throw new Error("fallback and error are mutually exclusive (for token '" + options2.defaultType + "')");
-              }
-            }
-            errorRule = options2;
-          }
-          var match = options2.match.slice();
-          if (fastAllowed) {
-            while (match.length && typeof match[0] === "string" && match[0].length === 1) {
-              var word = match.shift();
-              fast[word.charCodeAt(0)] = options2;
-            }
-          }
-          if (options2.pop || options2.push || options2.next) {
-            if (!hasStates) {
-              throw new Error("State-switching options are not allowed in stateless lexers (for token '" + options2.defaultType + "')");
-            }
-            if (options2.fallback) {
-              throw new Error("State-switching options are not allowed on fallback tokens (for token '" + options2.defaultType + "')");
-            }
-          }
-          if (match.length === 0) {
-            continue;
-          }
-          fastAllowed = false;
-          groups.push(options2);
-          for (var j = 0; j < match.length; j++) {
-            var obj = match[j];
-            if (!isRegExp(obj)) {
-              continue;
-            }
-            if (unicodeFlag === null) {
-              unicodeFlag = obj.unicode;
-            } else if (unicodeFlag !== obj.unicode && options2.fallback === false) {
-              throw new Error("If one rule is /u then all must be");
-            }
-          }
-          var pat = reUnion(match.map(regexpOrLiteral));
-          var regexp = new RegExp(pat);
-          if (regexp.test("")) {
-            throw new Error("RegExp matches empty string: " + regexp);
-          }
-          var groupCount = reGroups(pat);
-          if (groupCount > 0) {
-            throw new Error("RegExp has capture groups: " + regexp + "\nUse (?: \u2026 ) instead");
-          }
-          if (!options2.lineBreaks && regexp.test("\n")) {
-            throw new Error("Rule should declare lineBreaks: " + regexp);
-          }
-          parts.push(reCapture(pat));
-        }
-        var fallbackRule = errorRule && errorRule.fallback;
-        var flags = hasSticky && !fallbackRule ? "ym" : "gm";
-        var suffix = hasSticky || fallbackRule ? "" : "|";
-        if (unicodeFlag === true) flags += "u";
-        var combined = new RegExp(reUnion(parts) + suffix, flags);
-        return { regexp: combined, groups, fast, error: errorRule || defaultErrorRule };
-      }
-      function compile(rules) {
-        var result = compileRules(toRules(rules));
-        return new Lexer({ start: result }, "start");
-      }
-      function checkStateGroup(g, name, map3) {
-        var state = g && (g.push || g.next);
-        if (state && !map3[state]) {
-          throw new Error("Missing state '" + state + "' (in token '" + g.defaultType + "' of state '" + name + "')");
-        }
-        if (g && g.pop && +g.pop !== 1) {
-          throw new Error("pop must be 1 (in token '" + g.defaultType + "' of state '" + name + "')");
-        }
-      }
-      function compileStates(states, start) {
-        var all = states.$all ? toRules(states.$all) : [];
-        delete states.$all;
-        var keys2 = Object.getOwnPropertyNames(states);
-        if (!start) start = keys2[0];
-        var ruleMap = /* @__PURE__ */ Object.create(null);
-        for (var i = 0; i < keys2.length; i++) {
-          var key = keys2[i];
-          ruleMap[key] = toRules(states[key]).concat(all);
-        }
-        for (var i = 0; i < keys2.length; i++) {
-          var key = keys2[i];
-          var rules = ruleMap[key];
-          var included = /* @__PURE__ */ Object.create(null);
-          for (var j = 0; j < rules.length; j++) {
-            var rule = rules[j];
-            if (!rule.include) continue;
-            var splice3 = [j, 1];
-            if (rule.include !== key && !included[rule.include]) {
-              included[rule.include] = true;
-              var newRules = ruleMap[rule.include];
-              if (!newRules) {
-                throw new Error("Cannot include nonexistent state '" + rule.include + "' (in state '" + key + "')");
-              }
-              for (var k = 0; k < newRules.length; k++) {
-                var newRule = newRules[k];
-                if (rules.indexOf(newRule) !== -1) continue;
-                splice3.push(newRule);
-              }
-            }
-            rules.splice.apply(rules, splice3);
-            j--;
-          }
-        }
-        var map3 = /* @__PURE__ */ Object.create(null);
-        for (var i = 0; i < keys2.length; i++) {
-          var key = keys2[i];
-          map3[key] = compileRules(ruleMap[key], true);
-        }
-        for (var i = 0; i < keys2.length; i++) {
-          var name = keys2[i];
-          var state = map3[name];
-          var groups = state.groups;
-          for (var j = 0; j < groups.length; j++) {
-            checkStateGroup(groups[j], name, map3);
-          }
-          var fastKeys = Object.getOwnPropertyNames(state.fast);
-          for (var j = 0; j < fastKeys.length; j++) {
-            checkStateGroup(state.fast[fastKeys[j]], name, map3);
-          }
-        }
-        return new Lexer(map3, start);
-      }
-      function keywordTransform(map3) {
-        var isMap2 = typeof Map !== "undefined";
-        var reverseMap = isMap2 ? /* @__PURE__ */ new Map() : /* @__PURE__ */ Object.create(null);
-        var types = Object.getOwnPropertyNames(map3);
-        for (var i = 0; i < types.length; i++) {
-          var tokenType = types[i];
-          var item = map3[tokenType];
-          var keywordList = Array.isArray(item) ? item : [item];
-          keywordList.forEach(function(keyword) {
-            if (typeof keyword !== "string") {
-              throw new Error("keyword must be string (in keyword '" + tokenType + "')");
-            }
-            if (isMap2) {
-              reverseMap.set(keyword, tokenType);
-            } else {
-              reverseMap[keyword] = tokenType;
-            }
-          });
-        }
-        return function(k) {
-          return isMap2 ? reverseMap.get(k) : reverseMap[k];
-        };
-      }
-      var Lexer = function(states, state) {
-        this.startState = state;
-        this.states = states;
-        this.buffer = "";
-        this.stack = [];
-        this.reset();
-      };
-      Lexer.prototype.reset = function(data, info) {
-        this.buffer = data || "";
-        this.index = 0;
-        this.line = info ? info.line : 1;
-        this.col = info ? info.col : 1;
-        this.queuedToken = info ? info.queuedToken : null;
-        this.queuedText = info ? info.queuedText : "";
-        this.queuedThrow = info ? info.queuedThrow : null;
-        this.setState(info ? info.state : this.startState);
-        this.stack = info && info.stack ? info.stack.slice() : [];
-        return this;
-      };
-      Lexer.prototype.save = function() {
-        return {
-          line: this.line,
-          col: this.col,
-          state: this.state,
-          stack: this.stack.slice(),
-          queuedToken: this.queuedToken,
-          queuedText: this.queuedText,
-          queuedThrow: this.queuedThrow
-        };
-      };
-      Lexer.prototype.setState = function(state) {
-        if (!state || this.state === state) return;
-        this.state = state;
-        var info = this.states[state];
-        this.groups = info.groups;
-        this.error = info.error;
-        this.re = info.regexp;
-        this.fast = info.fast;
-      };
-      Lexer.prototype.popState = function() {
-        this.setState(this.stack.pop());
-      };
-      Lexer.prototype.pushState = function(state) {
-        this.stack.push(this.state);
-        this.setState(state);
-      };
-      var eat = hasSticky ? function(re, buffer) {
-        return re.exec(buffer);
-      } : function(re, buffer) {
-        var match = re.exec(buffer);
-        if (match[0].length === 0) {
-          return null;
-        }
-        return match;
-      };
-      Lexer.prototype._getGroup = function(match) {
-        var groupCount = this.groups.length;
-        for (var i = 0; i < groupCount; i++) {
-          if (match[i + 1] !== void 0) {
-            return this.groups[i];
-          }
-        }
-        throw new Error("Cannot find token type for matched text");
-      };
-      function tokenToString() {
-        return this.value;
-      }
-      Lexer.prototype.next = function() {
-        var index = this.index;
-        if (this.queuedGroup) {
-          var token = this._token(this.queuedGroup, this.queuedText, index);
-          this.queuedGroup = null;
-          this.queuedText = "";
-          return token;
-        }
-        var buffer = this.buffer;
-        if (index === buffer.length) {
-          return;
-        }
-        var group = this.fast[buffer.charCodeAt(index)];
-        if (group) {
-          return this._token(group, buffer.charAt(index), index);
-        }
-        var re = this.re;
-        re.lastIndex = index;
-        var match = eat(re, buffer);
-        var error = this.error;
-        if (match == null) {
-          return this._token(error, buffer.slice(index, buffer.length), index);
-        }
-        var group = this._getGroup(match);
-        var text = match[0];
-        if (error.fallback && match.index !== index) {
-          this.queuedGroup = group;
-          this.queuedText = text;
-          return this._token(error, buffer.slice(index, match.index), index);
-        }
-        return this._token(group, text, index);
-      };
-      Lexer.prototype._token = function(group, text, offset) {
-        var lineBreaks = 0;
-        if (group.lineBreaks) {
-          var matchNL = /\n/g;
-          var nl = 1;
-          if (text === "\n") {
-            lineBreaks = 1;
-          } else {
-            while (matchNL.exec(text)) {
-              lineBreaks++;
-              nl = matchNL.lastIndex;
-            }
-          }
-        }
-        var token = {
-          type: typeof group.type === "function" && group.type(text) || group.defaultType,
-          value: typeof group.value === "function" ? group.value(text) : text,
-          text,
-          toString: tokenToString,
-          offset,
-          lineBreaks,
-          line: this.line,
-          col: this.col
-        };
-        var size = text.length;
-        this.index += size;
-        this.line += lineBreaks;
-        if (lineBreaks !== 0) {
-          this.col = size - nl + 1;
-        } else {
-          this.col += size;
-        }
-        if (group.shouldThrow) {
-          var err = new Error(this.formatError(token, "invalid syntax"));
-          throw err;
-        }
-        if (group.pop) this.popState();
-        else if (group.push) this.pushState(group.push);
-        else if (group.next) this.setState(group.next);
-        return token;
-      };
-      if (typeof Symbol !== "undefined" && Symbol.iterator) {
-        var LexerIterator = function(lexer2) {
-          this.lexer = lexer2;
-        };
-        LexerIterator.prototype.next = function() {
-          var token = this.lexer.next();
-          return { value: token, done: !token };
-        };
-        LexerIterator.prototype[Symbol.iterator] = function() {
-          return this;
-        };
-        Lexer.prototype[Symbol.iterator] = function() {
-          return new LexerIterator(this);
-        };
-      }
-      Lexer.prototype.formatError = function(token, message) {
-        if (token == null) {
-          var text = this.buffer.slice(this.index);
-          var token = {
-            text,
-            offset: this.index,
-            lineBreaks: text.indexOf("\n") === -1 ? 0 : 1,
-            line: this.line,
-            col: this.col
-          };
-        }
-        var numLinesAround = 2;
-        var firstDisplayedLine = Math.max(token.line - numLinesAround, 1);
-        var lastDisplayedLine = token.line + numLinesAround;
-        var lastLineDigits = String(lastDisplayedLine).length;
-        var displayedLines = lastNLines(
-          this.buffer,
-          this.line - token.line + numLinesAround + 1
-        ).slice(0, 5);
-        var errorLines = [];
-        errorLines.push(message + " at line " + token.line + " col " + token.col + ":");
-        errorLines.push("");
-        for (var i = 0; i < displayedLines.length; i++) {
-          var line = displayedLines[i];
-          var lineNo = firstDisplayedLine + i;
-          errorLines.push(pad(String(lineNo), lastLineDigits) + "  " + line);
-          if (lineNo === token.line) {
-            errorLines.push(pad("", lastLineDigits + token.col + 1) + "^");
-          }
-        }
-        return errorLines.join("\n");
-      };
-      Lexer.prototype.clone = function() {
-        return new Lexer(this.states, this.state);
-      };
-      Lexer.prototype.has = function(tokenType) {
-        return true;
-      };
-      return {
-        compile,
-        states: compileStates,
-        error: Object.freeze({ error: true }),
-        fallback: Object.freeze({ fallback: true }),
-        keywords: keywordTransform
-      };
-    });
-  }
-});
-
-// ../../node_modules/.pnpm/immutability-helper@3.1.1/node_modules/immutability-helper/index.js
-var require_immutability_helper = __commonJS({
-  "../../node_modules/.pnpm/immutability-helper@3.1.1/node_modules/immutability-helper/index.js"(exports2, module2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    function stringifiable(obj) {
-      return typeof obj === "object" && !("toString" in obj) ? Object.prototype.toString.call(obj).slice(8, -1) : obj;
-    }
-    var isProduction = typeof process === "object" && process.env.NODE_ENV === "production";
-    function invariant4(condition, message) {
-      if (!condition) {
-        if (isProduction) {
-          throw new Error("Invariant failed");
-        }
-        throw new Error(message());
-      }
-    }
-    exports2.invariant = invariant4;
-    var hasOwnProperty13 = Object.prototype.hasOwnProperty;
-    var splice3 = Array.prototype.splice;
-    var toString3 = Object.prototype.toString;
-    function type2(obj) {
-      return toString3.call(obj).slice(8, -1);
-    }
-    var assign = Object.assign || /* istanbul ignore next */
-    function(target, source) {
-      getAllKeys2(source).forEach(function(key) {
-        if (hasOwnProperty13.call(source, key)) {
-          target[key] = source[key];
-        }
-      });
-      return target;
-    };
-    var getAllKeys2 = typeof Object.getOwnPropertySymbols === "function" ? function(obj) {
-      return Object.keys(obj).concat(Object.getOwnPropertySymbols(obj));
-    } : function(obj) {
-      return Object.keys(obj);
-    };
-    function copy(object) {
-      return Array.isArray(object) ? assign(object.constructor(object.length), object) : type2(object) === "Map" ? new Map(object) : type2(object) === "Set" ? new Set(object) : object && typeof object === "object" ? assign(Object.create(Object.getPrototypeOf(object)), object) : object;
-    }
-    var Context = (
-      /** @class */
-      function() {
-        function Context2() {
-          this.commands = assign({}, defaultCommands);
-          this.update = this.update.bind(this);
-          this.update.extend = this.extend = this.extend.bind(this);
-          this.update.isEquals = function(x, y) {
-            return x === y;
-          };
-          this.update.newContext = function() {
-            return new Context2().update;
-          };
-        }
-        Object.defineProperty(Context2.prototype, "isEquals", {
-          get: function() {
-            return this.update.isEquals;
-          },
-          set: function(value) {
-            this.update.isEquals = value;
-          },
-          enumerable: true,
-          configurable: true
-        });
-        Context2.prototype.extend = function(directive, fn) {
-          this.commands[directive] = fn;
-        };
-        Context2.prototype.update = function(object, $spec) {
-          var _this = this;
-          var spec = typeof $spec === "function" ? { $apply: $spec } : $spec;
-          if (!(Array.isArray(object) && Array.isArray(spec))) {
-            invariant4(!Array.isArray(spec), function() {
-              return "update(): You provided an invalid spec to update(). The spec may not contain an array except as the value of $set, $push, $unshift, $splice or any custom command allowing an array value.";
-            });
-          }
-          invariant4(typeof spec === "object" && spec !== null, function() {
-            return "update(): You provided an invalid spec to update(). The spec and every included key path must be plain objects containing one of the " + ("following commands: " + Object.keys(_this.commands).join(", ") + ".");
-          });
-          var nextObject = object;
-          getAllKeys2(spec).forEach(function(key) {
-            if (hasOwnProperty13.call(_this.commands, key)) {
-              var objectWasNextObject = object === nextObject;
-              nextObject = _this.commands[key](spec[key], nextObject, spec, object);
-              if (objectWasNextObject && _this.isEquals(nextObject, object)) {
-                nextObject = object;
-              }
-            } else {
-              var nextValueForKey = type2(object) === "Map" ? _this.update(object.get(key), spec[key]) : _this.update(object[key], spec[key]);
-              var nextObjectValue = type2(nextObject) === "Map" ? nextObject.get(key) : nextObject[key];
-              if (!_this.isEquals(nextValueForKey, nextObjectValue) || typeof nextValueForKey === "undefined" && !hasOwnProperty13.call(object, key)) {
-                if (nextObject === object) {
-                  nextObject = copy(object);
-                }
-                if (type2(nextObject) === "Map") {
-                  nextObject.set(key, nextValueForKey);
-                } else {
-                  nextObject[key] = nextValueForKey;
-                }
-              }
-            }
-          });
-          return nextObject;
-        };
-        return Context2;
-      }()
-    );
-    exports2.Context = Context;
-    var defaultCommands = {
-      $push: function(value, nextObject, spec) {
-        invariantPushAndUnshift(nextObject, spec, "$push");
-        return value.length ? nextObject.concat(value) : nextObject;
-      },
-      $unshift: function(value, nextObject, spec) {
-        invariantPushAndUnshift(nextObject, spec, "$unshift");
-        return value.length ? value.concat(nextObject) : nextObject;
-      },
-      $splice: function(value, nextObject, spec, originalObject) {
-        invariantSplices(nextObject, spec);
-        value.forEach(function(args) {
-          invariantSplice(args);
-          if (nextObject === originalObject && args.length) {
-            nextObject = copy(originalObject);
-          }
-          splice3.apply(nextObject, args);
-        });
-        return nextObject;
-      },
-      $set: function(value, _nextObject, spec) {
-        invariantSet(spec);
-        return value;
-      },
-      $toggle: function(targets, nextObject) {
-        invariantSpecArray(targets, "$toggle");
-        var nextObjectCopy = targets.length ? copy(nextObject) : nextObject;
-        targets.forEach(function(target) {
-          nextObjectCopy[target] = !nextObject[target];
-        });
-        return nextObjectCopy;
-      },
-      $unset: function(value, nextObject, _spec, originalObject) {
-        invariantSpecArray(value, "$unset");
-        value.forEach(function(key) {
-          if (Object.hasOwnProperty.call(nextObject, key)) {
-            if (nextObject === originalObject) {
-              nextObject = copy(originalObject);
-            }
-            delete nextObject[key];
-          }
-        });
-        return nextObject;
-      },
-      $add: function(values2, nextObject, _spec, originalObject) {
-        invariantMapOrSet(nextObject, "$add");
-        invariantSpecArray(values2, "$add");
-        if (type2(nextObject) === "Map") {
-          values2.forEach(function(_a) {
-            var key = _a[0], value = _a[1];
-            if (nextObject === originalObject && nextObject.get(key) !== value) {
-              nextObject = copy(originalObject);
-            }
-            nextObject.set(key, value);
-          });
-        } else {
-          values2.forEach(function(value) {
-            if (nextObject === originalObject && !nextObject.has(value)) {
-              nextObject = copy(originalObject);
-            }
-            nextObject.add(value);
-          });
-        }
-        return nextObject;
-      },
-      $remove: function(value, nextObject, _spec, originalObject) {
-        invariantMapOrSet(nextObject, "$remove");
-        invariantSpecArray(value, "$remove");
-        value.forEach(function(key) {
-          if (nextObject === originalObject && nextObject.has(key)) {
-            nextObject = copy(originalObject);
-          }
-          nextObject.delete(key);
-        });
-        return nextObject;
-      },
-      $merge: function(value, nextObject, _spec, originalObject) {
-        invariantMerge(nextObject, value);
-        getAllKeys2(value).forEach(function(key) {
-          if (value[key] !== nextObject[key]) {
-            if (nextObject === originalObject) {
-              nextObject = copy(originalObject);
-            }
-            nextObject[key] = value[key];
-          }
-        });
-        return nextObject;
-      },
-      $apply: function(value, original) {
-        invariantApply(value);
-        return value(original);
-      }
-    };
-    var defaultContext = new Context();
-    exports2.isEquals = defaultContext.update.isEquals;
-    exports2.extend = defaultContext.extend;
-    exports2.default = defaultContext.update;
-    exports2.default.default = module2.exports = assign(exports2.default, exports2);
-    function invariantPushAndUnshift(value, spec, command) {
-      invariant4(Array.isArray(value), function() {
-        return "update(): expected target of " + stringifiable(command) + " to be an array; got " + stringifiable(value) + ".";
-      });
-      invariantSpecArray(spec[command], command);
-    }
-    function invariantSpecArray(spec, command) {
-      invariant4(Array.isArray(spec), function() {
-        return "update(): expected spec of " + stringifiable(command) + " to be an array; got " + stringifiable(spec) + ". Did you forget to wrap your parameter in an array?";
-      });
-    }
-    function invariantSplices(value, spec) {
-      invariant4(Array.isArray(value), function() {
-        return "Expected $splice target to be an array; got " + stringifiable(value);
-      });
-      invariantSplice(spec.$splice);
-    }
-    function invariantSplice(value) {
-      invariant4(Array.isArray(value), function() {
-        return "update(): expected spec of $splice to be an array of arrays; got " + stringifiable(value) + ". Did you forget to wrap your parameters in an array?";
-      });
-    }
-    function invariantApply(fn) {
-      invariant4(typeof fn === "function", function() {
-        return "update(): expected spec of $apply to be a function; got " + stringifiable(fn) + ".";
-      });
-    }
-    function invariantSet(spec) {
-      invariant4(Object.keys(spec).length === 1, function() {
-        return "Cannot have more than one key in an object with $set";
-      });
-    }
-    function invariantMerge(target, specValue) {
-      invariant4(specValue && typeof specValue === "object", function() {
-        return "update(): $merge expects a spec of type 'object'; got " + stringifiable(specValue);
-      });
-      invariant4(target && typeof target === "object", function() {
-        return "update(): $merge expects a target of type 'object'; got " + stringifiable(target);
-      });
-    }
-    function invariantMapOrSet(target, command) {
-      var typeOfTarget = type2(target);
-      invariant4(typeOfTarget === "Map" || typeOfTarget === "Set", function() {
-        return "update(): " + stringifiable(command) + " expects a target of type Set or Map; got " + stringifiable(typeOfTarget);
-      });
-    }
-  }
-});
-
 // ../../node_modules/.pnpm/lodash@4.17.21/node_modules/lodash/lodash.js
 var require_lodash = __commonJS({
   "../../node_modules/.pnpm/lodash@4.17.21/node_modules/lodash/lodash.js"(exports2, module2) {
@@ -2361,7 +1141,7 @@ var require_lodash = __commonJS({
         function baseAt(object, paths) {
           var index = -1, length = paths.length, result2 = Array2(length), skip = object == null;
           while (++index < length) {
-            result2[index] = skip ? undefined2 : get2(object, paths[index]);
+            result2[index] = skip ? undefined2 : get3(object, paths[index]);
           }
           return result2;
         }
@@ -2806,7 +1586,7 @@ var require_lodash = __commonJS({
             return matchesStrictComparable2(toKey2(path), srcValue);
           }
           return function(object) {
-            var objValue = get2(object, path);
+            var objValue = get3(object, path);
             return objValue === undefined2 && objValue === srcValue ? hasIn2(object, path) : baseIsEqual2(srcValue, objValue, COMPARE_PARTIAL_FLAG7 | COMPARE_UNORDERED_FLAG5);
           };
         }
@@ -5561,7 +4341,7 @@ var require_lodash = __commonJS({
         function functionsIn(object) {
           return object == null ? [] : baseFunctions(object, keysIn(object));
         }
-        function get2(object, path, defaultValue) {
+        function get3(object, path, defaultValue) {
           var result2 = object == null ? undefined2 : baseGet2(object, path);
           return result2 === undefined2 ? defaultValue : result2;
         }
@@ -6419,7 +5199,7 @@ var require_lodash = __commonJS({
         lodash2.forInRight = forInRight;
         lodash2.forOwn = forOwn;
         lodash2.forOwnRight = forOwnRight;
-        lodash2.get = get2;
+        lodash2.get = get3;
         lodash2.gt = gt;
         lodash2.gte = gte;
         lodash2.has = has2;
@@ -6724,674 +5504,1265 @@ var require_lodash = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/immer@10.1.1/node_modules/immer/dist/immer.mjs
-var NOTHING = Symbol.for("immer-nothing");
-var DRAFTABLE = Symbol.for("immer-draftable");
-var DRAFT_STATE = Symbol.for("immer-state");
-var errors = process.env.NODE_ENV !== "production" ? [
-  // All error codes, starting by 0:
-  function(plugin) {
-    return `The plugin for '${plugin}' has not been loaded into Immer. To enable the plugin, import and call \`enable${plugin}()\` when initializing your application.`;
-  },
-  function(thing) {
-    return `produce can only be called on things that are draftable: plain objects, arrays, Map, Set or classes that are marked with '[immerable]: true'. Got '${thing}'`;
-  },
-  "This object has been frozen and should not be mutated",
-  function(data) {
-    return "Cannot use a proxy that has been revoked. Did you pass an object from inside an immer function to an async process? " + data;
-  },
-  "An immer producer returned a new value *and* modified its draft. Either return a new value *or* modify the draft.",
-  "Immer forbids circular references",
-  "The first or second argument to `produce` must be a function",
-  "The third argument to `produce` must be a function or undefined",
-  "First argument to `createDraft` must be a plain object, an array, or an immerable object",
-  "First argument to `finishDraft` must be a draft returned by `createDraft`",
-  function(thing) {
-    return `'current' expects a draft, got: ${thing}`;
-  },
-  "Object.defineProperty() cannot be used on an Immer draft",
-  "Object.setPrototypeOf() cannot be used on an Immer draft",
-  "Immer only supports deleting array indices",
-  "Immer only supports setting array indices and the 'length' property",
-  function(thing) {
-    return `'original' expects a draft, got: ${thing}`;
-  }
-  // Note: if more errors are added, the errorOffset in Patches.ts should be increased
-  // See Patches.ts for additional errors
-] : [];
-function die(error, ...args) {
-  if (process.env.NODE_ENV !== "production") {
-    const e = errors[error];
-    const msg = typeof e === "function" ? e.apply(null, args) : e;
-    throw new Error(`[Immer] ${msg}`);
-  }
-  throw new Error(
-    `[Immer] minified error nr: ${error}. Full error at: https://bit.ly/3cXEKWf`
-  );
-}
-var getPrototypeOf = Object.getPrototypeOf;
-function isDraft(value) {
-  return !!value && !!value[DRAFT_STATE];
-}
-function isDraftable(value) {
-  if (!value)
-    return false;
-  return isPlainObject(value) || Array.isArray(value) || !!value[DRAFTABLE] || !!value.constructor?.[DRAFTABLE] || isMap(value) || isSet(value);
-}
-var objectCtorString = Object.prototype.constructor.toString();
-function isPlainObject(value) {
-  if (!value || typeof value !== "object")
-    return false;
-  const proto = getPrototypeOf(value);
-  if (proto === null) {
-    return true;
-  }
-  const Ctor = Object.hasOwnProperty.call(proto, "constructor") && proto.constructor;
-  if (Ctor === Object)
-    return true;
-  return typeof Ctor == "function" && Function.toString.call(Ctor) === objectCtorString;
-}
-function each(obj, iter2) {
-  if (getArchtype(obj) === 0) {
-    Reflect.ownKeys(obj).forEach((key) => {
-      iter2(key, obj[key], obj);
-    });
-  } else {
-    obj.forEach((entry2, index) => iter2(index, entry2, obj));
-  }
-}
-function getArchtype(thing) {
-  const state = thing[DRAFT_STATE];
-  return state ? state.type_ : Array.isArray(thing) ? 1 : isMap(thing) ? 2 : isSet(thing) ? 3 : 0;
-}
-function has(thing, prop) {
-  return getArchtype(thing) === 2 ? thing.has(prop) : Object.prototype.hasOwnProperty.call(thing, prop);
-}
-function set(thing, propOrOldValue, value) {
-  const t = getArchtype(thing);
-  if (t === 2)
-    thing.set(propOrOldValue, value);
-  else if (t === 3) {
-    thing.add(value);
-  } else
-    thing[propOrOldValue] = value;
-}
-function is(x, y) {
-  if (x === y) {
-    return x !== 0 || 1 / x === 1 / y;
-  } else {
-    return x !== x && y !== y;
-  }
-}
-function isMap(target) {
-  return target instanceof Map;
-}
-function isSet(target) {
-  return target instanceof Set;
-}
-function latest(state) {
-  return state.copy_ || state.base_;
-}
-function shallowCopy(base, strict) {
-  if (isMap(base)) {
-    return new Map(base);
-  }
-  if (isSet(base)) {
-    return new Set(base);
-  }
-  if (Array.isArray(base))
-    return Array.prototype.slice.call(base);
-  const isPlain = isPlainObject(base);
-  if (strict === true || strict === "class_only" && !isPlain) {
-    const descriptors = Object.getOwnPropertyDescriptors(base);
-    delete descriptors[DRAFT_STATE];
-    let keys2 = Reflect.ownKeys(descriptors);
-    for (let i = 0; i < keys2.length; i++) {
-      const key = keys2[i];
-      const desc = descriptors[key];
-      if (desc.writable === false) {
-        desc.writable = true;
-        desc.configurable = true;
+// ../../node_modules/.pnpm/nearley@2.20.1_patch_hash=mg2fc7wgvzub3myuz6m74hllma/node_modules/nearley/lib/nearley.js
+var require_nearley = __commonJS({
+  "../../node_modules/.pnpm/nearley@2.20.1_patch_hash=mg2fc7wgvzub3myuz6m74hllma/node_modules/nearley/lib/nearley.js"(exports2, module2) {
+    (function(root2, factory) {
+      if (typeof module2 === "object" && module2.exports) {
+        module2.exports = factory();
+      } else {
+        root2.nearley = factory();
       }
-      if (desc.get || desc.set)
-        descriptors[key] = {
-          configurable: true,
-          writable: true,
-          // could live with !!desc.set as well here...
-          enumerable: desc.enumerable,
-          value: base[key]
-        };
-    }
-    return Object.create(getPrototypeOf(base), descriptors);
-  } else {
-    const proto = getPrototypeOf(base);
-    if (proto !== null && isPlain) {
-      return { ...base };
-    }
-    const obj = Object.create(proto);
-    return Object.assign(obj, base);
-  }
-}
-function freeze(obj, deep = false) {
-  if (isFrozen(obj) || isDraft(obj) || !isDraftable(obj))
-    return obj;
-  if (getArchtype(obj) > 1) {
-    obj.set = obj.add = obj.clear = obj.delete = dontMutateFrozenCollections;
-  }
-  Object.freeze(obj);
-  if (deep)
-    Object.entries(obj).forEach(([key, value]) => freeze(value, true));
-  return obj;
-}
-function dontMutateFrozenCollections() {
-  die(2);
-}
-function isFrozen(obj) {
-  return Object.isFrozen(obj);
-}
-var plugins = {};
-function getPlugin(pluginKey) {
-  const plugin = plugins[pluginKey];
-  if (!plugin) {
-    die(0, pluginKey);
-  }
-  return plugin;
-}
-var currentScope;
-function getCurrentScope() {
-  return currentScope;
-}
-function createScope(parent_, immer_) {
-  return {
-    drafts_: [],
-    parent_,
-    immer_,
-    // Whenever the modified draft contains a draft from another scope, we
-    // need to prevent auto-freezing so the unowned draft can be finalized.
-    canAutoFreeze_: true,
-    unfinalizedDrafts_: 0
-  };
-}
-function usePatchesInScope(scope, patchListener) {
-  if (patchListener) {
-    getPlugin("Patches");
-    scope.patches_ = [];
-    scope.inversePatches_ = [];
-    scope.patchListener_ = patchListener;
-  }
-}
-function revokeScope(scope) {
-  leaveScope(scope);
-  scope.drafts_.forEach(revokeDraft);
-  scope.drafts_ = null;
-}
-function leaveScope(scope) {
-  if (scope === currentScope) {
-    currentScope = scope.parent_;
-  }
-}
-function enterScope(immer2) {
-  return currentScope = createScope(currentScope, immer2);
-}
-function revokeDraft(draft) {
-  const state = draft[DRAFT_STATE];
-  if (state.type_ === 0 || state.type_ === 1)
-    state.revoke_();
-  else
-    state.revoked_ = true;
-}
-function processResult(result, scope) {
-  scope.unfinalizedDrafts_ = scope.drafts_.length;
-  const baseDraft = scope.drafts_[0];
-  const isReplaced = result !== void 0 && result !== baseDraft;
-  if (isReplaced) {
-    if (baseDraft[DRAFT_STATE].modified_) {
-      revokeScope(scope);
-      die(4);
-    }
-    if (isDraftable(result)) {
-      result = finalize(scope, result);
-      if (!scope.parent_)
-        maybeFreeze(scope, result);
-    }
-    if (scope.patches_) {
-      getPlugin("Patches").generateReplacementPatches_(
-        baseDraft[DRAFT_STATE].base_,
-        result,
-        scope.patches_,
-        scope.inversePatches_
-      );
-    }
-  } else {
-    result = finalize(scope, baseDraft, []);
-  }
-  revokeScope(scope);
-  if (scope.patches_) {
-    scope.patchListener_(scope.patches_, scope.inversePatches_);
-  }
-  return result !== NOTHING ? result : void 0;
-}
-function finalize(rootScope, value, path) {
-  if (isFrozen(value))
-    return value;
-  const state = value[DRAFT_STATE];
-  if (!state) {
-    each(
-      value,
-      (key, childValue) => finalizeProperty(rootScope, state, value, key, childValue, path)
-    );
-    return value;
-  }
-  if (state.scope_ !== rootScope)
-    return value;
-  if (!state.modified_) {
-    maybeFreeze(rootScope, state.base_, true);
-    return state.base_;
-  }
-  if (!state.finalized_) {
-    state.finalized_ = true;
-    state.scope_.unfinalizedDrafts_--;
-    const result = state.copy_;
-    let resultEach = result;
-    let isSet2 = false;
-    if (state.type_ === 3) {
-      resultEach = new Set(result);
-      result.clear();
-      isSet2 = true;
-    }
-    each(
-      resultEach,
-      (key, childValue) => finalizeProperty(rootScope, state, result, key, childValue, path, isSet2)
-    );
-    maybeFreeze(rootScope, result, false);
-    if (path && rootScope.patches_) {
-      getPlugin("Patches").generatePatches_(
-        state,
-        path,
-        rootScope.patches_,
-        rootScope.inversePatches_
-      );
-    }
-  }
-  return state.copy_;
-}
-function finalizeProperty(rootScope, parentState, targetObject, prop, childValue, rootPath, targetIsSet) {
-  if (process.env.NODE_ENV !== "production" && childValue === targetObject)
-    die(5);
-  if (isDraft(childValue)) {
-    const path = rootPath && parentState && parentState.type_ !== 3 && // Set objects are atomic since they have no keys.
-    !has(parentState.assigned_, prop) ? rootPath.concat(prop) : void 0;
-    const res = finalize(rootScope, childValue, path);
-    set(targetObject, prop, res);
-    if (isDraft(res)) {
-      rootScope.canAutoFreeze_ = false;
-    } else
-      return;
-  } else if (targetIsSet) {
-    targetObject.add(childValue);
-  }
-  if (isDraftable(childValue) && !isFrozen(childValue)) {
-    if (!rootScope.immer_.autoFreeze_ && rootScope.unfinalizedDrafts_ < 1) {
-      return;
-    }
-    finalize(rootScope, childValue);
-    if ((!parentState || !parentState.scope_.parent_) && typeof prop !== "symbol" && Object.prototype.propertyIsEnumerable.call(targetObject, prop))
-      maybeFreeze(rootScope, childValue);
-  }
-}
-function maybeFreeze(scope, value, deep = false) {
-  if (!scope.parent_ && scope.immer_.autoFreeze_ && scope.canAutoFreeze_) {
-    freeze(value, deep);
-  }
-}
-function createProxyProxy(base, parent) {
-  const isArray2 = Array.isArray(base);
-  const state = {
-    type_: isArray2 ? 1 : 0,
-    // Track which produce call this is associated with.
-    scope_: parent ? parent.scope_ : getCurrentScope(),
-    // True for both shallow and deep changes.
-    modified_: false,
-    // Used during finalization.
-    finalized_: false,
-    // Track which properties have been assigned (true) or deleted (false).
-    assigned_: {},
-    // The parent draft state.
-    parent_: parent,
-    // The base state.
-    base_: base,
-    // The base proxy.
-    draft_: null,
-    // set below
-    // The base copy with any updated values.
-    copy_: null,
-    // Called by the `produce` function.
-    revoke_: null,
-    isManual_: false
-  };
-  let target = state;
-  let traps = objectTraps;
-  if (isArray2) {
-    target = [state];
-    traps = arrayTraps;
-  }
-  const { revoke, proxy } = Proxy.revocable(target, traps);
-  state.draft_ = proxy;
-  state.revoke_ = revoke;
-  return proxy;
-}
-var objectTraps = {
-  get(state, prop) {
-    if (prop === DRAFT_STATE)
-      return state;
-    const source = latest(state);
-    if (!has(source, prop)) {
-      return readPropFromProto(state, source, prop);
-    }
-    const value = source[prop];
-    if (state.finalized_ || !isDraftable(value)) {
-      return value;
-    }
-    if (value === peek(state.base_, prop)) {
-      prepareCopy(state);
-      return state.copy_[prop] = createProxy(value, state);
-    }
-    return value;
-  },
-  has(state, prop) {
-    return prop in latest(state);
-  },
-  ownKeys(state) {
-    return Reflect.ownKeys(latest(state));
-  },
-  set(state, prop, value) {
-    const desc = getDescriptorFromProto(latest(state), prop);
-    if (desc?.set) {
-      desc.set.call(state.draft_, value);
-      return true;
-    }
-    if (!state.modified_) {
-      const current2 = peek(latest(state), prop);
-      const currentState = current2?.[DRAFT_STATE];
-      if (currentState && currentState.base_ === value) {
-        state.copy_[prop] = value;
-        state.assigned_[prop] = false;
-        return true;
+    })(exports2, function() {
+      function Rule(name, symbols2, postprocess) {
+        this.id = ++Rule.highestId;
+        this.name = name;
+        this.symbols = symbols2;
+        this.postprocess = postprocess;
+        return this;
       }
-      if (is(value, current2) && (value !== void 0 || has(state.base_, prop)))
-        return true;
-      prepareCopy(state);
-      markChanged(state);
-    }
-    if (state.copy_[prop] === value && // special case: handle new props with value 'undefined'
-    (value !== void 0 || prop in state.copy_) || // special case: NaN
-    Number.isNaN(value) && Number.isNaN(state.copy_[prop]))
-      return true;
-    state.copy_[prop] = value;
-    state.assigned_[prop] = true;
-    return true;
-  },
-  deleteProperty(state, prop) {
-    if (peek(state.base_, prop) !== void 0 || prop in state.base_) {
-      state.assigned_[prop] = false;
-      prepareCopy(state);
-      markChanged(state);
-    } else {
-      delete state.assigned_[prop];
-    }
-    if (state.copy_) {
-      delete state.copy_[prop];
-    }
-    return true;
-  },
-  // Note: We never coerce `desc.value` into an Immer draft, because we can't make
-  // the same guarantee in ES5 mode.
-  getOwnPropertyDescriptor(state, prop) {
-    const owner = latest(state);
-    const desc = Reflect.getOwnPropertyDescriptor(owner, prop);
-    if (!desc)
-      return desc;
-    return {
-      writable: true,
-      configurable: state.type_ !== 1 || prop !== "length",
-      enumerable: desc.enumerable,
-      value: owner[prop]
-    };
-  },
-  defineProperty() {
-    die(11);
-  },
-  getPrototypeOf(state) {
-    return getPrototypeOf(state.base_);
-  },
-  setPrototypeOf() {
-    die(12);
-  }
-};
-var arrayTraps = {};
-each(objectTraps, (key, fn) => {
-  arrayTraps[key] = function() {
-    arguments[0] = arguments[0][0];
-    return fn.apply(this, arguments);
-  };
-});
-arrayTraps.deleteProperty = function(state, prop) {
-  if (process.env.NODE_ENV !== "production" && isNaN(parseInt(prop)))
-    die(13);
-  return arrayTraps.set.call(this, state, prop, void 0);
-};
-arrayTraps.set = function(state, prop, value) {
-  if (process.env.NODE_ENV !== "production" && prop !== "length" && isNaN(parseInt(prop)))
-    die(14);
-  return objectTraps.set.call(this, state[0], prop, value, state[0]);
-};
-function peek(draft, prop) {
-  const state = draft[DRAFT_STATE];
-  const source = state ? latest(state) : draft;
-  return source[prop];
-}
-function readPropFromProto(state, source, prop) {
-  const desc = getDescriptorFromProto(source, prop);
-  return desc ? `value` in desc ? desc.value : (
-    // This is a very special case, if the prop is a getter defined by the
-    // prototype, we should invoke it with the draft as context!
-    desc.get?.call(state.draft_)
-  ) : void 0;
-}
-function getDescriptorFromProto(source, prop) {
-  if (!(prop in source))
-    return void 0;
-  let proto = getPrototypeOf(source);
-  while (proto) {
-    const desc = Object.getOwnPropertyDescriptor(proto, prop);
-    if (desc)
-      return desc;
-    proto = getPrototypeOf(proto);
-  }
-  return void 0;
-}
-function markChanged(state) {
-  if (!state.modified_) {
-    state.modified_ = true;
-    if (state.parent_) {
-      markChanged(state.parent_);
-    }
-  }
-}
-function prepareCopy(state) {
-  if (!state.copy_) {
-    state.copy_ = shallowCopy(
-      state.base_,
-      state.scope_.immer_.useStrictShallowCopy_
-    );
-  }
-}
-var Immer2 = class {
-  constructor(config) {
-    this.autoFreeze_ = true;
-    this.useStrictShallowCopy_ = false;
-    this.produce = (base, recipe, patchListener) => {
-      if (typeof base === "function" && typeof recipe !== "function") {
-        const defaultBase = recipe;
-        recipe = base;
-        const self2 = this;
-        return function curriedProduce(base2 = defaultBase, ...args) {
-          return self2.produce(base2, (draft) => recipe.call(this, draft, ...args));
-        };
+      Rule.highestId = 0;
+      Rule.prototype.toString = function(withCursorAt) {
+        var symbolSequence = typeof withCursorAt === "undefined" ? this.symbols.map(getSymbolShortDisplay).join(" ") : this.symbols.slice(0, withCursorAt).map(getSymbolShortDisplay).join(" ") + " \u25CF " + this.symbols.slice(withCursorAt).map(getSymbolShortDisplay).join(" ");
+        return this.name + " \u2192 " + symbolSequence;
+      };
+      function State2(rule, dot, reference, wantedBy) {
+        this.rule = rule;
+        this.dot = dot;
+        this.reference = reference;
+        this.data = [];
+        this.wantedBy = wantedBy;
+        this.isComplete = this.dot === rule.symbols.length;
       }
-      if (typeof recipe !== "function")
-        die(6);
-      if (patchListener !== void 0 && typeof patchListener !== "function")
-        die(7);
-      let result;
-      if (isDraftable(base)) {
-        const scope = enterScope(this);
-        const proxy = createProxy(base, void 0);
-        let hasError = true;
-        try {
-          result = recipe(proxy);
-          hasError = false;
-        } finally {
-          if (hasError)
-            revokeScope(scope);
-          else
-            leaveScope(scope);
+      State2.prototype.toString = function() {
+        return "{" + this.rule.toString(this.dot) + "}, from: " + (this.reference || 0);
+      };
+      State2.prototype.nextState = function(child) {
+        var state = new State2(this.rule, this.dot + 1, this.reference, this.wantedBy);
+        state.left = this;
+        state.right = child;
+        if (state.isComplete) {
+          state.data = state.build();
+          state.right = void 0;
         }
-        usePatchesInScope(scope, patchListener);
-        return processResult(result, scope);
-      } else if (!base || typeof base !== "object") {
-        result = recipe(base);
-        if (result === void 0)
-          result = base;
-        if (result === NOTHING)
-          result = void 0;
-        if (this.autoFreeze_)
-          freeze(result, true);
-        if (patchListener) {
-          const p = [];
-          const ip = [];
-          getPlugin("Patches").generateReplacementPatches_(base, result, p, ip);
-          patchListener(p, ip);
+        return state;
+      };
+      State2.prototype.build = function() {
+        var children = [];
+        var node = this;
+        do {
+          children.push(node.right.data);
+          node = node.left;
+        } while (node.left);
+        children.reverse();
+        return children;
+      };
+      State2.prototype.finish = function() {
+        if (this.rule.postprocess) {
+          this.data = this.rule.postprocess(this.data, this.reference, Parser2.fail);
+        }
+      };
+      function Column(grammar2, index) {
+        this.grammar = grammar2;
+        this.index = index;
+        this.states = [];
+        this.wants = {};
+        this.scannable = [];
+        this.completed = {};
+      }
+      Column.prototype.process = function(nextColumn) {
+        var states = this.states;
+        var wants = this.wants;
+        var completed = this.completed;
+        for (var w = 0; w < states.length; w++) {
+          var state = states[w];
+          if (state.isComplete) {
+            state.finish();
+            if (state.data !== Parser2.fail) {
+              var wantedBy = state.wantedBy;
+              for (var i = wantedBy.length; i--; ) {
+                var left = wantedBy[i];
+                this.complete(left, state);
+              }
+              if (state.reference === this.index) {
+                var exp = state.rule.name;
+                (this.completed[exp] = this.completed[exp] || []).push(state);
+              }
+            }
+          } else {
+            var exp = state.rule.symbols[state.dot];
+            if (typeof exp !== "string") {
+              this.scannable.push(state);
+              continue;
+            }
+            if (wants[exp]) {
+              wants[exp].push(state);
+              if (completed.hasOwnProperty(exp)) {
+                var nulls = completed[exp];
+                for (var i = 0; i < nulls.length; i++) {
+                  var right = nulls[i];
+                  this.complete(state, right);
+                }
+              }
+            } else {
+              wants[exp] = [state];
+              this.predict(exp);
+            }
+          }
+        }
+      };
+      Column.prototype.predict = function(exp) {
+        var rules = this.grammar.byName[exp] || [];
+        for (var i = 0; i < rules.length; i++) {
+          var r = rules[i];
+          var wantedBy = this.wants[exp];
+          var s = new State2(r, 0, this.index, wantedBy);
+          this.states.push(s);
+        }
+      };
+      Column.prototype.complete = function(left, right) {
+        var copy = left.nextState(right);
+        this.states.push(copy);
+      };
+      function Grammar2(rules, start) {
+        this.rules = rules;
+        this.start = start || this.rules[0].name;
+        var byName = this.byName = {};
+        this.rules.forEach(function(rule) {
+          if (!byName.hasOwnProperty(rule.name)) {
+            byName[rule.name] = [];
+          }
+          byName[rule.name].push(rule);
+        });
+      }
+      Grammar2.fromCompiled = function(rules, start) {
+        var lexer2 = rules.Lexer;
+        if (rules.ParserStart) {
+          start = rules.ParserStart;
+          rules = rules.ParserRules;
+        }
+        var rules = rules.map(function(r) {
+          return new Rule(r.name, r.symbols, r.postprocess);
+        });
+        var g = new Grammar2(rules, start);
+        g.lexer = lexer2;
+        return g;
+      };
+      function StreamLexer() {
+        this.reset("");
+      }
+      StreamLexer.prototype.reset = function(data, state) {
+        this.buffer = data;
+        this.index = 0;
+        this.line = state ? state.line : 1;
+        this.lastLineBreak = state ? -state.col : 0;
+      };
+      StreamLexer.prototype.next = function() {
+        if (this.index < this.buffer.length) {
+          var ch = this.buffer[this.index++];
+          if (ch === "\n") {
+            this.line += 1;
+            this.lastLineBreak = this.index;
+          }
+          return { value: ch };
+        }
+      };
+      StreamLexer.prototype.save = function() {
+        return {
+          line: this.line,
+          col: this.index - this.lastLineBreak
+        };
+      };
+      StreamLexer.prototype.formatError = function(token, message) {
+        var buffer = this.buffer;
+        if (typeof buffer === "string") {
+          var lines = buffer.split("\n").slice(
+            Math.max(0, this.line - 5),
+            this.line
+          );
+          var nextLineBreak = buffer.indexOf("\n", this.index);
+          if (nextLineBreak === -1) nextLineBreak = buffer.length;
+          var col = this.index - this.lastLineBreak;
+          var lastLineDigits = String(this.line).length;
+          message += " at line " + this.line + " col " + col + ":\n\n";
+          message += lines.map(function(line, i) {
+            return pad(this.line - lines.length + i + 1, lastLineDigits) + " " + line;
+          }, this).join("\n");
+          message += "\n" + pad("", lastLineDigits + col) + "^\n";
+          return message;
+        } else {
+          return message + " at index " + (this.index - 1);
+        }
+        function pad(n, length) {
+          var s = String(n);
+          return Array(length - s.length + 1).join(" ") + s;
+        }
+      };
+      function Parser2(rules, start, options2) {
+        if (rules instanceof Grammar2) {
+          var grammar2 = rules;
+          var options2 = start;
+        } else {
+          var grammar2 = Grammar2.fromCompiled(rules, start);
+        }
+        this.grammar = grammar2;
+        this.options = {
+          keepHistory: false,
+          lexer: grammar2.lexer || new StreamLexer()
+        };
+        for (var key in options2 || {}) {
+          this.options[key] = options2[key];
+        }
+        this.lexer = this.options.lexer;
+        this.lexerState = void 0;
+        var column = new Column(grammar2, 0);
+        var table = this.table = [column];
+        column.wants[grammar2.start] = [];
+        column.predict(grammar2.start);
+        column.process();
+        this.current = 0;
+      }
+      Parser2.fail = {};
+      Parser2.prototype.feed = function(chunk) {
+        var lexer2 = this.lexer;
+        lexer2.reset(chunk, this.lexerState);
+        var token;
+        while (true) {
+          try {
+            token = lexer2.next();
+            if (!token) {
+              break;
+            }
+          } catch (e) {
+            var nextColumn = new Column(this.grammar, this.current + 1);
+            this.table.push(nextColumn);
+            var err = new Error(this.reportLexerError(e));
+            err.offset = this.current;
+            err.token = e.token;
+            throw err;
+          }
+          var column = this.table[this.current];
+          if (!this.options.keepHistory) {
+            delete this.table[this.current - 1];
+          }
+          var n = this.current + 1;
+          var nextColumn = new Column(this.grammar, n);
+          this.table.push(nextColumn);
+          var literal = token.text !== void 0 ? token.text : token.value;
+          var value = lexer2.constructor === StreamLexer ? token.value : lexer2.transform?.(token) ?? token;
+          var scannable = column.scannable;
+          for (var w = scannable.length; w--; ) {
+            var state = scannable[w];
+            var expect = state.rule.symbols[state.dot];
+            if (expect.test ? expect.test(value) : expect.type ? expect.type === token.type : expect.literal === literal) {
+              var next = state.nextState({ data: value, token, isToken: true, reference: n - 1 });
+              nextColumn.states.push(next);
+            }
+          }
+          nextColumn.process();
+          if (nextColumn.states.length === 0) {
+            var err = new Error(this.reportError(token));
+            err.offset = this.current;
+            err.token = token;
+            throw err;
+          }
+          if (this.options.keepHistory) {
+            column.lexerState = lexer2.save();
+          }
+          this.current++;
+        }
+        if (column) {
+          this.lexerState = lexer2.save();
+        }
+        this.results = this.finish();
+        return this;
+      };
+      Parser2.prototype.reportLexerError = function(lexerError) {
+        var tokenDisplay, lexerMessage;
+        var token = lexerError.token;
+        if (token) {
+          tokenDisplay = "input " + JSON.stringify(token.text[0]) + " (lexer error)";
+          lexerMessage = this.lexer.formatError(token, "Syntax error");
+        } else {
+          tokenDisplay = "input (lexer error)";
+          lexerMessage = lexerError.message;
+        }
+        return this.reportErrorCommon(lexerMessage, tokenDisplay);
+      };
+      Parser2.prototype.reportError = function(token) {
+        var tokenDisplay = (token.type ? token.type + " token: " : "") + JSON.stringify(token.value !== void 0 ? token.value : token);
+        var lexerMessage = this.lexer.formatError(token, "Syntax error");
+        return this.reportErrorCommon(lexerMessage, tokenDisplay);
+      };
+      Parser2.prototype.reportErrorCommon = function(lexerMessage, tokenDisplay) {
+        var lines = [];
+        lines.push(lexerMessage);
+        var lastColumnIndex = this.table.length - 2;
+        var lastColumn = this.table[lastColumnIndex];
+        var expectantStates = lastColumn.states.filter(function(state) {
+          var nextSymbol = state.rule.symbols[state.dot];
+          return nextSymbol && typeof nextSymbol !== "string";
+        });
+        if (expectantStates.length === 0) {
+          lines.push("Unexpected " + tokenDisplay + ". I did not expect any more input. Here is the state of my parse table:\n");
+          this.displayStateStack(lastColumn.states, lines);
+        } else {
+          lines.push("Unexpected " + tokenDisplay + ". Instead, I was expecting to see one of the following:\n");
+          var stateStacks = expectantStates.map(function(state) {
+            return this.buildFirstStateStack(state, []) || [state];
+          }, this);
+          stateStacks.forEach(function(stateStack) {
+            var state = stateStack[0];
+            var nextSymbol = state.rule.symbols[state.dot];
+            var symbolDisplay = this.getSymbolDisplay(nextSymbol);
+            lines.push("A " + symbolDisplay + " based on:");
+            this.displayStateStack(stateStack, lines);
+          }, this);
+        }
+        lines.push("");
+        return lines.join("\n");
+      };
+      Parser2.prototype.displayStateStack = function(stateStack, lines) {
+        var lastDisplay;
+        var sameDisplayCount = 0;
+        for (var j = 0; j < stateStack.length; j++) {
+          var state = stateStack[j];
+          var display = state.rule.toString(state.dot);
+          if (display === lastDisplay) {
+            sameDisplayCount++;
+          } else {
+            if (sameDisplayCount > 0) {
+              lines.push("    ^ " + sameDisplayCount + " more lines identical to this");
+            }
+            sameDisplayCount = 0;
+            lines.push("    " + display);
+          }
+          lastDisplay = display;
+        }
+      };
+      Parser2.prototype.getSymbolDisplay = function(symbol) {
+        return getSymbolLongDisplay(symbol);
+      };
+      Parser2.prototype.buildFirstStateStack = function(state, visited) {
+        if (visited.indexOf(state) !== -1) {
+          return null;
+        }
+        if (state.wantedBy.length === 0) {
+          return [state];
+        }
+        var prevState = state.wantedBy[0];
+        var childVisited = [state].concat(visited);
+        var childResult = this.buildFirstStateStack(prevState, childVisited);
+        if (childResult === null) {
+          return null;
+        }
+        return [state].concat(childResult);
+      };
+      Parser2.prototype.save = function() {
+        var column = this.table[this.current];
+        column.lexerState = this.lexerState;
+        return column;
+      };
+      Parser2.prototype.restore = function(column) {
+        var index = column.index;
+        this.current = index;
+        this.table[index] = column;
+        this.table.splice(index + 1);
+        this.lexerState = column.lexerState;
+        this.results = this.finish();
+      };
+      Parser2.prototype.rewind = function(index) {
+        if (!this.options.keepHistory) {
+          throw new Error("set option `keepHistory` to enable rewinding");
+        }
+        this.restore(this.table[index]);
+      };
+      Parser2.prototype.finish = function() {
+        var considerations = [];
+        var start = this.grammar.start;
+        var column = this.table[this.table.length - 1];
+        column.states.forEach(function(t) {
+          if (t.rule.name === start && t.dot === t.rule.symbols.length && t.reference === 0 && t.data !== Parser2.fail) {
+            considerations.push(t);
+          }
+        });
+        return considerations.map(function(c) {
+          return c.data;
+        });
+      };
+      function getSymbolLongDisplay(symbol) {
+        var type2 = typeof symbol;
+        if (type2 === "string") {
+          return symbol;
+        } else if (type2 === "object") {
+          if (symbol.literal) {
+            return JSON.stringify(symbol.literal);
+          } else if (symbol instanceof RegExp) {
+            return "character matching " + symbol;
+          } else if (symbol.type) {
+            return symbol.type + " token";
+          } else if (symbol.test) {
+            return "token matching " + String(symbol.test);
+          } else {
+            throw new Error("Unknown symbol type: " + symbol);
+          }
+        }
+      }
+      function getSymbolShortDisplay(symbol) {
+        var type2 = typeof symbol;
+        if (type2 === "string") {
+          return symbol;
+        } else if (type2 === "object") {
+          if (symbol.literal) {
+            return JSON.stringify(symbol.literal);
+          } else if (symbol instanceof RegExp) {
+            return symbol.toString();
+          } else if (symbol.type) {
+            return "%" + symbol.type;
+          } else if (symbol.test) {
+            return "<" + String(symbol.test) + ">";
+          } else {
+            throw new Error("Unknown symbol type: " + symbol);
+          }
+        }
+      }
+      return {
+        Parser: Parser2,
+        Grammar: Grammar2,
+        Rule
+      };
+    });
+  }
+});
+
+// ../../node_modules/.pnpm/moo@0.5.2/node_modules/moo/moo.js
+var require_moo = __commonJS({
+  "../../node_modules/.pnpm/moo@0.5.2/node_modules/moo/moo.js"(exports2, module2) {
+    (function(root2, factory) {
+      if (typeof define === "function" && define.amd) {
+        define([], factory);
+      } else if (typeof module2 === "object" && module2.exports) {
+        module2.exports = factory();
+      } else {
+        root2.moo = factory();
+      }
+    })(exports2, function() {
+      "use strict";
+      var hasOwnProperty13 = Object.prototype.hasOwnProperty;
+      var toString3 = Object.prototype.toString;
+      var hasSticky = typeof new RegExp().sticky === "boolean";
+      function isRegExp(o) {
+        return o && toString3.call(o) === "[object RegExp]";
+      }
+      function isObject4(o) {
+        return o && typeof o === "object" && !isRegExp(o) && !Array.isArray(o);
+      }
+      function reEscape(s) {
+        return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+      }
+      function reGroups(s) {
+        var re = new RegExp("|" + s);
+        return re.exec("").length - 1;
+      }
+      function reCapture(s) {
+        return "(" + s + ")";
+      }
+      function reUnion(regexps) {
+        if (!regexps.length) return "(?!)";
+        var source = regexps.map(function(s) {
+          return "(?:" + s + ")";
+        }).join("|");
+        return "(?:" + source + ")";
+      }
+      function regexpOrLiteral(obj) {
+        if (typeof obj === "string") {
+          return "(?:" + reEscape(obj) + ")";
+        } else if (isRegExp(obj)) {
+          if (obj.ignoreCase) throw new Error("RegExp /i flag not allowed");
+          if (obj.global) throw new Error("RegExp /g flag is implied");
+          if (obj.sticky) throw new Error("RegExp /y flag is implied");
+          if (obj.multiline) throw new Error("RegExp /m flag is implied");
+          return obj.source;
+        } else {
+          throw new Error("Not a pattern: " + obj);
+        }
+      }
+      function pad(s, length) {
+        if (s.length > length) {
+          return s;
+        }
+        return Array(length - s.length + 1).join(" ") + s;
+      }
+      function lastNLines(string2, numLines) {
+        var position = string2.length;
+        var lineBreaks = 0;
+        while (true) {
+          var idx = string2.lastIndexOf("\n", position - 1);
+          if (idx === -1) {
+            break;
+          } else {
+            lineBreaks++;
+          }
+          position = idx;
+          if (lineBreaks === numLines) {
+            break;
+          }
+          if (position === 0) {
+            break;
+          }
+        }
+        var startPosition = lineBreaks < numLines ? 0 : position + 1;
+        return string2.substring(startPosition).split("\n");
+      }
+      function objectToRules(object) {
+        var keys2 = Object.getOwnPropertyNames(object);
+        var result = [];
+        for (var i = 0; i < keys2.length; i++) {
+          var key = keys2[i];
+          var thing = object[key];
+          var rules = [].concat(thing);
+          if (key === "include") {
+            for (var j = 0; j < rules.length; j++) {
+              result.push({ include: rules[j] });
+            }
+            continue;
+          }
+          var match = [];
+          rules.forEach(function(rule) {
+            if (isObject4(rule)) {
+              if (match.length) result.push(ruleOptions(key, match));
+              result.push(ruleOptions(key, rule));
+              match = [];
+            } else {
+              match.push(rule);
+            }
+          });
+          if (match.length) result.push(ruleOptions(key, match));
         }
         return result;
-      } else
-        die(1, base);
-    };
-    this.produceWithPatches = (base, recipe) => {
-      if (typeof base === "function") {
-        return (state, ...args) => this.produceWithPatches(state, (draft) => base(draft, ...args));
       }
-      let patches, inversePatches;
-      const result = this.produce(base, recipe, (p, ip) => {
-        patches = p;
-        inversePatches = ip;
+      function arrayToRules(array) {
+        var result = [];
+        for (var i = 0; i < array.length; i++) {
+          var obj = array[i];
+          if (obj.include) {
+            var include = [].concat(obj.include);
+            for (var j = 0; j < include.length; j++) {
+              result.push({ include: include[j] });
+            }
+            continue;
+          }
+          if (!obj.type) {
+            throw new Error("Rule has no type: " + JSON.stringify(obj));
+          }
+          result.push(ruleOptions(obj.type, obj));
+        }
+        return result;
+      }
+      function ruleOptions(type2, obj) {
+        if (!isObject4(obj)) {
+          obj = { match: obj };
+        }
+        if (obj.include) {
+          throw new Error("Matching rules cannot also include states");
+        }
+        var options2 = {
+          defaultType: type2,
+          lineBreaks: !!obj.error || !!obj.fallback,
+          pop: false,
+          next: null,
+          push: null,
+          error: false,
+          fallback: false,
+          value: null,
+          type: null,
+          shouldThrow: false
+        };
+        for (var key in obj) {
+          if (hasOwnProperty13.call(obj, key)) {
+            options2[key] = obj[key];
+          }
+        }
+        if (typeof options2.type === "string" && type2 !== options2.type) {
+          throw new Error("Type transform cannot be a string (type '" + options2.type + "' for token '" + type2 + "')");
+        }
+        var match = options2.match;
+        options2.match = Array.isArray(match) ? match : match ? [match] : [];
+        options2.match.sort(function(a, b) {
+          return isRegExp(a) && isRegExp(b) ? 0 : isRegExp(b) ? -1 : isRegExp(a) ? 1 : b.length - a.length;
+        });
+        return options2;
+      }
+      function toRules(spec) {
+        return Array.isArray(spec) ? arrayToRules(spec) : objectToRules(spec);
+      }
+      var defaultErrorRule = ruleOptions("error", { lineBreaks: true, shouldThrow: true });
+      function compileRules(rules, hasStates) {
+        var errorRule = null;
+        var fast = /* @__PURE__ */ Object.create(null);
+        var fastAllowed = true;
+        var unicodeFlag = null;
+        var groups = [];
+        var parts = [];
+        for (var i = 0; i < rules.length; i++) {
+          if (rules[i].fallback) {
+            fastAllowed = false;
+          }
+        }
+        for (var i = 0; i < rules.length; i++) {
+          var options2 = rules[i];
+          if (options2.include) {
+            throw new Error("Inheritance is not allowed in stateless lexers");
+          }
+          if (options2.error || options2.fallback) {
+            if (errorRule) {
+              if (!options2.fallback === !errorRule.fallback) {
+                throw new Error("Multiple " + (options2.fallback ? "fallback" : "error") + " rules not allowed (for token '" + options2.defaultType + "')");
+              } else {
+                throw new Error("fallback and error are mutually exclusive (for token '" + options2.defaultType + "')");
+              }
+            }
+            errorRule = options2;
+          }
+          var match = options2.match.slice();
+          if (fastAllowed) {
+            while (match.length && typeof match[0] === "string" && match[0].length === 1) {
+              var word = match.shift();
+              fast[word.charCodeAt(0)] = options2;
+            }
+          }
+          if (options2.pop || options2.push || options2.next) {
+            if (!hasStates) {
+              throw new Error("State-switching options are not allowed in stateless lexers (for token '" + options2.defaultType + "')");
+            }
+            if (options2.fallback) {
+              throw new Error("State-switching options are not allowed on fallback tokens (for token '" + options2.defaultType + "')");
+            }
+          }
+          if (match.length === 0) {
+            continue;
+          }
+          fastAllowed = false;
+          groups.push(options2);
+          for (var j = 0; j < match.length; j++) {
+            var obj = match[j];
+            if (!isRegExp(obj)) {
+              continue;
+            }
+            if (unicodeFlag === null) {
+              unicodeFlag = obj.unicode;
+            } else if (unicodeFlag !== obj.unicode && options2.fallback === false) {
+              throw new Error("If one rule is /u then all must be");
+            }
+          }
+          var pat = reUnion(match.map(regexpOrLiteral));
+          var regexp = new RegExp(pat);
+          if (regexp.test("")) {
+            throw new Error("RegExp matches empty string: " + regexp);
+          }
+          var groupCount = reGroups(pat);
+          if (groupCount > 0) {
+            throw new Error("RegExp has capture groups: " + regexp + "\nUse (?: \u2026 ) instead");
+          }
+          if (!options2.lineBreaks && regexp.test("\n")) {
+            throw new Error("Rule should declare lineBreaks: " + regexp);
+          }
+          parts.push(reCapture(pat));
+        }
+        var fallbackRule = errorRule && errorRule.fallback;
+        var flags = hasSticky && !fallbackRule ? "ym" : "gm";
+        var suffix = hasSticky || fallbackRule ? "" : "|";
+        if (unicodeFlag === true) flags += "u";
+        var combined = new RegExp(reUnion(parts) + suffix, flags);
+        return { regexp: combined, groups, fast, error: errorRule || defaultErrorRule };
+      }
+      function compile(rules) {
+        var result = compileRules(toRules(rules));
+        return new Lexer({ start: result }, "start");
+      }
+      function checkStateGroup(g, name, map3) {
+        var state = g && (g.push || g.next);
+        if (state && !map3[state]) {
+          throw new Error("Missing state '" + state + "' (in token '" + g.defaultType + "' of state '" + name + "')");
+        }
+        if (g && g.pop && +g.pop !== 1) {
+          throw new Error("pop must be 1 (in token '" + g.defaultType + "' of state '" + name + "')");
+        }
+      }
+      function compileStates(states, start) {
+        var all = states.$all ? toRules(states.$all) : [];
+        delete states.$all;
+        var keys2 = Object.getOwnPropertyNames(states);
+        if (!start) start = keys2[0];
+        var ruleMap = /* @__PURE__ */ Object.create(null);
+        for (var i = 0; i < keys2.length; i++) {
+          var key = keys2[i];
+          ruleMap[key] = toRules(states[key]).concat(all);
+        }
+        for (var i = 0; i < keys2.length; i++) {
+          var key = keys2[i];
+          var rules = ruleMap[key];
+          var included = /* @__PURE__ */ Object.create(null);
+          for (var j = 0; j < rules.length; j++) {
+            var rule = rules[j];
+            if (!rule.include) continue;
+            var splice3 = [j, 1];
+            if (rule.include !== key && !included[rule.include]) {
+              included[rule.include] = true;
+              var newRules = ruleMap[rule.include];
+              if (!newRules) {
+                throw new Error("Cannot include nonexistent state '" + rule.include + "' (in state '" + key + "')");
+              }
+              for (var k = 0; k < newRules.length; k++) {
+                var newRule = newRules[k];
+                if (rules.indexOf(newRule) !== -1) continue;
+                splice3.push(newRule);
+              }
+            }
+            rules.splice.apply(rules, splice3);
+            j--;
+          }
+        }
+        var map3 = /* @__PURE__ */ Object.create(null);
+        for (var i = 0; i < keys2.length; i++) {
+          var key = keys2[i];
+          map3[key] = compileRules(ruleMap[key], true);
+        }
+        for (var i = 0; i < keys2.length; i++) {
+          var name = keys2[i];
+          var state = map3[name];
+          var groups = state.groups;
+          for (var j = 0; j < groups.length; j++) {
+            checkStateGroup(groups[j], name, map3);
+          }
+          var fastKeys = Object.getOwnPropertyNames(state.fast);
+          for (var j = 0; j < fastKeys.length; j++) {
+            checkStateGroup(state.fast[fastKeys[j]], name, map3);
+          }
+        }
+        return new Lexer(map3, start);
+      }
+      function keywordTransform(map3) {
+        var isMap2 = typeof Map !== "undefined";
+        var reverseMap = isMap2 ? /* @__PURE__ */ new Map() : /* @__PURE__ */ Object.create(null);
+        var types = Object.getOwnPropertyNames(map3);
+        for (var i = 0; i < types.length; i++) {
+          var tokenType = types[i];
+          var item = map3[tokenType];
+          var keywordList = Array.isArray(item) ? item : [item];
+          keywordList.forEach(function(keyword) {
+            if (typeof keyword !== "string") {
+              throw new Error("keyword must be string (in keyword '" + tokenType + "')");
+            }
+            if (isMap2) {
+              reverseMap.set(keyword, tokenType);
+            } else {
+              reverseMap[keyword] = tokenType;
+            }
+          });
+        }
+        return function(k) {
+          return isMap2 ? reverseMap.get(k) : reverseMap[k];
+        };
+      }
+      var Lexer = function(states, state) {
+        this.startState = state;
+        this.states = states;
+        this.buffer = "";
+        this.stack = [];
+        this.reset();
+      };
+      Lexer.prototype.reset = function(data, info) {
+        this.buffer = data || "";
+        this.index = 0;
+        this.line = info ? info.line : 1;
+        this.col = info ? info.col : 1;
+        this.queuedToken = info ? info.queuedToken : null;
+        this.queuedText = info ? info.queuedText : "";
+        this.queuedThrow = info ? info.queuedThrow : null;
+        this.setState(info ? info.state : this.startState);
+        this.stack = info && info.stack ? info.stack.slice() : [];
+        return this;
+      };
+      Lexer.prototype.save = function() {
+        return {
+          line: this.line,
+          col: this.col,
+          state: this.state,
+          stack: this.stack.slice(),
+          queuedToken: this.queuedToken,
+          queuedText: this.queuedText,
+          queuedThrow: this.queuedThrow
+        };
+      };
+      Lexer.prototype.setState = function(state) {
+        if (!state || this.state === state) return;
+        this.state = state;
+        var info = this.states[state];
+        this.groups = info.groups;
+        this.error = info.error;
+        this.re = info.regexp;
+        this.fast = info.fast;
+      };
+      Lexer.prototype.popState = function() {
+        this.setState(this.stack.pop());
+      };
+      Lexer.prototype.pushState = function(state) {
+        this.stack.push(this.state);
+        this.setState(state);
+      };
+      var eat = hasSticky ? function(re, buffer) {
+        return re.exec(buffer);
+      } : function(re, buffer) {
+        var match = re.exec(buffer);
+        if (match[0].length === 0) {
+          return null;
+        }
+        return match;
+      };
+      Lexer.prototype._getGroup = function(match) {
+        var groupCount = this.groups.length;
+        for (var i = 0; i < groupCount; i++) {
+          if (match[i + 1] !== void 0) {
+            return this.groups[i];
+          }
+        }
+        throw new Error("Cannot find token type for matched text");
+      };
+      function tokenToString() {
+        return this.value;
+      }
+      Lexer.prototype.next = function() {
+        var index = this.index;
+        if (this.queuedGroup) {
+          var token = this._token(this.queuedGroup, this.queuedText, index);
+          this.queuedGroup = null;
+          this.queuedText = "";
+          return token;
+        }
+        var buffer = this.buffer;
+        if (index === buffer.length) {
+          return;
+        }
+        var group = this.fast[buffer.charCodeAt(index)];
+        if (group) {
+          return this._token(group, buffer.charAt(index), index);
+        }
+        var re = this.re;
+        re.lastIndex = index;
+        var match = eat(re, buffer);
+        var error = this.error;
+        if (match == null) {
+          return this._token(error, buffer.slice(index, buffer.length), index);
+        }
+        var group = this._getGroup(match);
+        var text = match[0];
+        if (error.fallback && match.index !== index) {
+          this.queuedGroup = group;
+          this.queuedText = text;
+          return this._token(error, buffer.slice(index, match.index), index);
+        }
+        return this._token(group, text, index);
+      };
+      Lexer.prototype._token = function(group, text, offset) {
+        var lineBreaks = 0;
+        if (group.lineBreaks) {
+          var matchNL = /\n/g;
+          var nl = 1;
+          if (text === "\n") {
+            lineBreaks = 1;
+          } else {
+            while (matchNL.exec(text)) {
+              lineBreaks++;
+              nl = matchNL.lastIndex;
+            }
+          }
+        }
+        var token = {
+          type: typeof group.type === "function" && group.type(text) || group.defaultType,
+          value: typeof group.value === "function" ? group.value(text) : text,
+          text,
+          toString: tokenToString,
+          offset,
+          lineBreaks,
+          line: this.line,
+          col: this.col
+        };
+        var size = text.length;
+        this.index += size;
+        this.line += lineBreaks;
+        if (lineBreaks !== 0) {
+          this.col = size - nl + 1;
+        } else {
+          this.col += size;
+        }
+        if (group.shouldThrow) {
+          var err = new Error(this.formatError(token, "invalid syntax"));
+          throw err;
+        }
+        if (group.pop) this.popState();
+        else if (group.push) this.pushState(group.push);
+        else if (group.next) this.setState(group.next);
+        return token;
+      };
+      if (typeof Symbol !== "undefined" && Symbol.iterator) {
+        var LexerIterator = function(lexer2) {
+          this.lexer = lexer2;
+        };
+        LexerIterator.prototype.next = function() {
+          var token = this.lexer.next();
+          return { value: token, done: !token };
+        };
+        LexerIterator.prototype[Symbol.iterator] = function() {
+          return this;
+        };
+        Lexer.prototype[Symbol.iterator] = function() {
+          return new LexerIterator(this);
+        };
+      }
+      Lexer.prototype.formatError = function(token, message) {
+        if (token == null) {
+          var text = this.buffer.slice(this.index);
+          var token = {
+            text,
+            offset: this.index,
+            lineBreaks: text.indexOf("\n") === -1 ? 0 : 1,
+            line: this.line,
+            col: this.col
+          };
+        }
+        var numLinesAround = 2;
+        var firstDisplayedLine = Math.max(token.line - numLinesAround, 1);
+        var lastDisplayedLine = token.line + numLinesAround;
+        var lastLineDigits = String(lastDisplayedLine).length;
+        var displayedLines = lastNLines(
+          this.buffer,
+          this.line - token.line + numLinesAround + 1
+        ).slice(0, 5);
+        var errorLines = [];
+        errorLines.push(message + " at line " + token.line + " col " + token.col + ":");
+        errorLines.push("");
+        for (var i = 0; i < displayedLines.length; i++) {
+          var line = displayedLines[i];
+          var lineNo = firstDisplayedLine + i;
+          errorLines.push(pad(String(lineNo), lastLineDigits) + "  " + line);
+          if (lineNo === token.line) {
+            errorLines.push(pad("", lastLineDigits + token.col + 1) + "^");
+          }
+        }
+        return errorLines.join("\n");
+      };
+      Lexer.prototype.clone = function() {
+        return new Lexer(this.states, this.state);
+      };
+      Lexer.prototype.has = function(tokenType) {
+        return true;
+      };
+      return {
+        compile,
+        states: compileStates,
+        error: Object.freeze({ error: true }),
+        fallback: Object.freeze({ fallback: true }),
+        keywords: keywordTransform
+      };
+    });
+  }
+});
+
+// ../../node_modules/.pnpm/immutability-helper@3.1.1/node_modules/immutability-helper/index.js
+var require_immutability_helper = __commonJS({
+  "../../node_modules/.pnpm/immutability-helper@3.1.1/node_modules/immutability-helper/index.js"(exports2, module2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    function stringifiable(obj) {
+      return typeof obj === "object" && !("toString" in obj) ? Object.prototype.toString.call(obj).slice(8, -1) : obj;
+    }
+    var isProduction = typeof process === "object" && process.env.NODE_ENV === "production";
+    function invariant4(condition, message) {
+      if (!condition) {
+        if (isProduction) {
+          throw new Error("Invariant failed");
+        }
+        throw new Error(message());
+      }
+    }
+    exports2.invariant = invariant4;
+    var hasOwnProperty13 = Object.prototype.hasOwnProperty;
+    var splice3 = Array.prototype.splice;
+    var toString3 = Object.prototype.toString;
+    function type2(obj) {
+      return toString3.call(obj).slice(8, -1);
+    }
+    var assign = Object.assign || /* istanbul ignore next */
+    function(target, source) {
+      getAllKeys2(source).forEach(function(key) {
+        if (hasOwnProperty13.call(source, key)) {
+          target[key] = source[key];
+        }
       });
-      return [result, patches, inversePatches];
+      return target;
     };
-    if (typeof config?.autoFreeze === "boolean")
-      this.setAutoFreeze(config.autoFreeze);
-    if (typeof config?.useStrictShallowCopy === "boolean")
-      this.setUseStrictShallowCopy(config.useStrictShallowCopy);
-  }
-  createDraft(base) {
-    if (!isDraftable(base))
-      die(8);
-    if (isDraft(base))
-      base = current(base);
-    const scope = enterScope(this);
-    const proxy = createProxy(base, void 0);
-    proxy[DRAFT_STATE].isManual_ = true;
-    leaveScope(scope);
-    return proxy;
-  }
-  finishDraft(draft, patchListener) {
-    const state = draft && draft[DRAFT_STATE];
-    if (!state || !state.isManual_)
-      die(9);
-    const { scope_: scope } = state;
-    usePatchesInScope(scope, patchListener);
-    return processResult(void 0, scope);
-  }
-  /**
-   * Pass true to automatically freeze all copies created by Immer.
-   *
-   * By default, auto-freezing is enabled.
-   */
-  setAutoFreeze(value) {
-    this.autoFreeze_ = value;
-  }
-  /**
-   * Pass true to enable strict shallow copy.
-   *
-   * By default, immer does not copy the object descriptors such as getter, setter and non-enumrable properties.
-   */
-  setUseStrictShallowCopy(value) {
-    this.useStrictShallowCopy_ = value;
-  }
-  applyPatches(base, patches) {
-    let i;
-    for (i = patches.length - 1; i >= 0; i--) {
-      const patch = patches[i];
-      if (patch.path.length === 0 && patch.op === "replace") {
-        base = patch.value;
-        break;
-      }
+    var getAllKeys2 = typeof Object.getOwnPropertySymbols === "function" ? function(obj) {
+      return Object.keys(obj).concat(Object.getOwnPropertySymbols(obj));
+    } : function(obj) {
+      return Object.keys(obj);
+    };
+    function copy(object) {
+      return Array.isArray(object) ? assign(object.constructor(object.length), object) : type2(object) === "Map" ? new Map(object) : type2(object) === "Set" ? new Set(object) : object && typeof object === "object" ? assign(Object.create(Object.getPrototypeOf(object)), object) : object;
     }
-    if (i > -1) {
-      patches = patches.slice(i + 1);
-    }
-    const applyPatchesImpl = getPlugin("Patches").applyPatches_;
-    if (isDraft(base)) {
-      return applyPatchesImpl(base, patches);
-    }
-    return this.produce(
-      base,
-      (draft) => applyPatchesImpl(draft, patches)
+    var Context = (
+      /** @class */
+      function() {
+        function Context2() {
+          this.commands = assign({}, defaultCommands);
+          this.update = this.update.bind(this);
+          this.update.extend = this.extend = this.extend.bind(this);
+          this.update.isEquals = function(x, y) {
+            return x === y;
+          };
+          this.update.newContext = function() {
+            return new Context2().update;
+          };
+        }
+        Object.defineProperty(Context2.prototype, "isEquals", {
+          get: function() {
+            return this.update.isEquals;
+          },
+          set: function(value) {
+            this.update.isEquals = value;
+          },
+          enumerable: true,
+          configurable: true
+        });
+        Context2.prototype.extend = function(directive, fn) {
+          this.commands[directive] = fn;
+        };
+        Context2.prototype.update = function(object, $spec) {
+          var _this = this;
+          var spec = typeof $spec === "function" ? { $apply: $spec } : $spec;
+          if (!(Array.isArray(object) && Array.isArray(spec))) {
+            invariant4(!Array.isArray(spec), function() {
+              return "update(): You provided an invalid spec to update(). The spec may not contain an array except as the value of $set, $push, $unshift, $splice or any custom command allowing an array value.";
+            });
+          }
+          invariant4(typeof spec === "object" && spec !== null, function() {
+            return "update(): You provided an invalid spec to update(). The spec and every included key path must be plain objects containing one of the " + ("following commands: " + Object.keys(_this.commands).join(", ") + ".");
+          });
+          var nextObject = object;
+          getAllKeys2(spec).forEach(function(key) {
+            if (hasOwnProperty13.call(_this.commands, key)) {
+              var objectWasNextObject = object === nextObject;
+              nextObject = _this.commands[key](spec[key], nextObject, spec, object);
+              if (objectWasNextObject && _this.isEquals(nextObject, object)) {
+                nextObject = object;
+              }
+            } else {
+              var nextValueForKey = type2(object) === "Map" ? _this.update(object.get(key), spec[key]) : _this.update(object[key], spec[key]);
+              var nextObjectValue = type2(nextObject) === "Map" ? nextObject.get(key) : nextObject[key];
+              if (!_this.isEquals(nextValueForKey, nextObjectValue) || typeof nextValueForKey === "undefined" && !hasOwnProperty13.call(object, key)) {
+                if (nextObject === object) {
+                  nextObject = copy(object);
+                }
+                if (type2(nextObject) === "Map") {
+                  nextObject.set(key, nextValueForKey);
+                } else {
+                  nextObject[key] = nextValueForKey;
+                }
+              }
+            }
+          });
+          return nextObject;
+        };
+        return Context2;
+      }()
     );
+    exports2.Context = Context;
+    var defaultCommands = {
+      $push: function(value, nextObject, spec) {
+        invariantPushAndUnshift(nextObject, spec, "$push");
+        return value.length ? nextObject.concat(value) : nextObject;
+      },
+      $unshift: function(value, nextObject, spec) {
+        invariantPushAndUnshift(nextObject, spec, "$unshift");
+        return value.length ? value.concat(nextObject) : nextObject;
+      },
+      $splice: function(value, nextObject, spec, originalObject) {
+        invariantSplices(nextObject, spec);
+        value.forEach(function(args) {
+          invariantSplice(args);
+          if (nextObject === originalObject && args.length) {
+            nextObject = copy(originalObject);
+          }
+          splice3.apply(nextObject, args);
+        });
+        return nextObject;
+      },
+      $set: function(value, _nextObject, spec) {
+        invariantSet(spec);
+        return value;
+      },
+      $toggle: function(targets, nextObject) {
+        invariantSpecArray(targets, "$toggle");
+        var nextObjectCopy = targets.length ? copy(nextObject) : nextObject;
+        targets.forEach(function(target) {
+          nextObjectCopy[target] = !nextObject[target];
+        });
+        return nextObjectCopy;
+      },
+      $unset: function(value, nextObject, _spec, originalObject) {
+        invariantSpecArray(value, "$unset");
+        value.forEach(function(key) {
+          if (Object.hasOwnProperty.call(nextObject, key)) {
+            if (nextObject === originalObject) {
+              nextObject = copy(originalObject);
+            }
+            delete nextObject[key];
+          }
+        });
+        return nextObject;
+      },
+      $add: function(values2, nextObject, _spec, originalObject) {
+        invariantMapOrSet(nextObject, "$add");
+        invariantSpecArray(values2, "$add");
+        if (type2(nextObject) === "Map") {
+          values2.forEach(function(_a) {
+            var key = _a[0], value = _a[1];
+            if (nextObject === originalObject && nextObject.get(key) !== value) {
+              nextObject = copy(originalObject);
+            }
+            nextObject.set(key, value);
+          });
+        } else {
+          values2.forEach(function(value) {
+            if (nextObject === originalObject && !nextObject.has(value)) {
+              nextObject = copy(originalObject);
+            }
+            nextObject.add(value);
+          });
+        }
+        return nextObject;
+      },
+      $remove: function(value, nextObject, _spec, originalObject) {
+        invariantMapOrSet(nextObject, "$remove");
+        invariantSpecArray(value, "$remove");
+        value.forEach(function(key) {
+          if (nextObject === originalObject && nextObject.has(key)) {
+            nextObject = copy(originalObject);
+          }
+          nextObject.delete(key);
+        });
+        return nextObject;
+      },
+      $merge: function(value, nextObject, _spec, originalObject) {
+        invariantMerge(nextObject, value);
+        getAllKeys2(value).forEach(function(key) {
+          if (value[key] !== nextObject[key]) {
+            if (nextObject === originalObject) {
+              nextObject = copy(originalObject);
+            }
+            nextObject[key] = value[key];
+          }
+        });
+        return nextObject;
+      },
+      $apply: function(value, original) {
+        invariantApply(value);
+        return value(original);
+      }
+    };
+    var defaultContext = new Context();
+    exports2.isEquals = defaultContext.update.isEquals;
+    exports2.extend = defaultContext.extend;
+    exports2.default = defaultContext.update;
+    exports2.default.default = module2.exports = assign(exports2.default, exports2);
+    function invariantPushAndUnshift(value, spec, command) {
+      invariant4(Array.isArray(value), function() {
+        return "update(): expected target of " + stringifiable(command) + " to be an array; got " + stringifiable(value) + ".";
+      });
+      invariantSpecArray(spec[command], command);
+    }
+    function invariantSpecArray(spec, command) {
+      invariant4(Array.isArray(spec), function() {
+        return "update(): expected spec of " + stringifiable(command) + " to be an array; got " + stringifiable(spec) + ". Did you forget to wrap your parameter in an array?";
+      });
+    }
+    function invariantSplices(value, spec) {
+      invariant4(Array.isArray(value), function() {
+        return "Expected $splice target to be an array; got " + stringifiable(value);
+      });
+      invariantSplice(spec.$splice);
+    }
+    function invariantSplice(value) {
+      invariant4(Array.isArray(value), function() {
+        return "update(): expected spec of $splice to be an array of arrays; got " + stringifiable(value) + ". Did you forget to wrap your parameters in an array?";
+      });
+    }
+    function invariantApply(fn) {
+      invariant4(typeof fn === "function", function() {
+        return "update(): expected spec of $apply to be a function; got " + stringifiable(fn) + ".";
+      });
+    }
+    function invariantSet(spec) {
+      invariant4(Object.keys(spec).length === 1, function() {
+        return "Cannot have more than one key in an object with $set";
+      });
+    }
+    function invariantMerge(target, specValue) {
+      invariant4(specValue && typeof specValue === "object", function() {
+        return "update(): $merge expects a spec of type 'object'; got " + stringifiable(specValue);
+      });
+      invariant4(target && typeof target === "object", function() {
+        return "update(): $merge expects a target of type 'object'; got " + stringifiable(target);
+      });
+    }
+    function invariantMapOrSet(target, command) {
+      var typeOfTarget = type2(target);
+      invariant4(typeOfTarget === "Map" || typeOfTarget === "Set", function() {
+        return "update(): " + stringifiable(command) + " expects a target of type Set or Map; got " + stringifiable(typeOfTarget);
+      });
+    }
+  }
+});
+
+// src/ide/JetbrainsPlugin.ts
+var JetbrainsPlugin = class {
+  constructor(client, commandServer) {
+    this.client = client;
+    this.commandServer = commandServer;
   }
 };
-function createProxy(value, parent) {
-  const draft = isMap(value) ? getPlugin("MapSet").proxyMap_(value, parent) : isSet(value) ? getPlugin("MapSet").proxySet_(value, parent) : createProxyProxy(value, parent);
-  const scope = parent ? parent.scope_ : getCurrentScope();
-  scope.drafts_.push(draft);
-  return draft;
+function createPlugin(client, commandServer) {
+  return new JetbrainsPlugin(client, commandServer);
 }
-function current(value) {
-  if (!isDraft(value))
-    die(10, value);
-  return currentImpl(value);
-}
-function currentImpl(value) {
-  if (!isDraftable(value) || isFrozen(value))
-    return value;
-  const state = value[DRAFT_STATE];
-  let copy;
-  if (state) {
-    if (!state.modified_)
-      return state.base_;
-    state.finalized_ = true;
-    copy = shallowCopy(value, state.scope_.immer_.useStrictShallowCopy_);
-  } else {
-    copy = shallowCopy(value, true);
+
+// src/ide/JetbrainsIDE.ts
+var import_lodash2 = __toESM(require_lodash());
+
+// src/ide/JetbrainsCapabilities.ts
+var COMMAND_CAPABILITIES = {
+  clipboardCopy: { acceptsLocation: false },
+  clipboardPaste: true,
+  toggleLineComment: void 0,
+  indentLine: void 0,
+  outdentLine: void 0,
+  rename: void 0,
+  quickFix: void 0,
+  revealDefinition: void 0,
+  revealTypeDefinition: void 0,
+  showHover: void 0,
+  showDebugHover: void 0,
+  extractVariable: void 0,
+  fold: void 0,
+  highlight: { acceptsLocation: true },
+  unfold: void 0,
+  showReferences: void 0,
+  insertLineAfter: void 0
+};
+var JetbrainsCapabilities = class {
+  constructor() {
+    this.commands = COMMAND_CAPABILITIES;
   }
-  each(copy, (key, childValue) => {
-    set(copy, key, currentImpl(childValue));
-  });
-  if (state) {
-    state.finalized_ = false;
-  }
-  return copy;
-}
-var immer = new Immer2();
-var produce = immer.produce;
-var produceWithPatches = immer.produceWithPatches.bind(
-  immer
-);
-var setAutoFreeze = immer.setAutoFreeze.bind(immer);
-var setUseStrictShallowCopy = immer.setUseStrictShallowCopy.bind(immer);
-var applyPatches = immer.applyPatches.bind(immer);
-var createDraft = immer.createDraft.bind(immer);
-var finishDraft = immer.finishDraft.bind(immer);
+};
 
 // ../common/src/cursorlessCommandIds.ts
 var Command = class {
@@ -10186,6 +9557,12 @@ var CONFIGURATION_DEFAULTS = {
   debug: false
 };
 
+// ../common/src/ide/types/KeyValueStore.ts
+var KEY_VALUE_STORE_DEFAULTS = {
+  hideInferenceWarning: false,
+  tutorialProgress: {}
+};
+
 // ../common/src/types/Position.ts
 var Position = class _Position {
   /**
@@ -11622,7 +10999,7 @@ function resolveYamlSet(data) {
 function constructYamlSet(data) {
   return data !== null ? data : {};
 }
-var set2 = new type("tag:yaml.org,2002:set", {
+var set = new type("tag:yaml.org,2002:set", {
   kind: "mapping",
   resolve: resolveYamlSet,
   construct: constructYamlSet
@@ -11636,7 +11013,7 @@ var _default = core.extend({
     binary,
     omap,
     pairs,
-    set2
+    set
   ]
 });
 var _hasOwnProperty$1 = Object.prototype.hasOwnProperty;
@@ -13887,6 +13264,827 @@ function zipStrict(list1, list2) {
   }
   return list1.map((value, index) => [value, list2[index]]);
 }
+
+// src/ide/JetbrainsEvents.ts
+function jetbrainsOnDidChangeTextDocument(listener) {
+  return dummyEvent();
+}
+function jetbrainsOnDidOpenTextDocument(listener, _thisArgs, _disposables) {
+  return dummyEvent();
+}
+function dummyEvent() {
+  return {
+    dispose() {
+    }
+  };
+}
+
+// src/ide/JetbrainsClipboard.ts
+var JetbrainsClipboard = class {
+  constructor(client) {
+    this.client = client;
+  }
+  async readText() {
+    return "";
+  }
+  async writeText(value) {
+    return;
+  }
+};
+
+// src/ide/JetbrainsConfiguration.ts
+var import_lodash = __toESM(require_lodash());
+var JetbrainsConfiguration = class {
+  constructor() {
+    this.notifier = new Notifier();
+    this.onDidChangeConfiguration = this.notifier.registerListener;
+  }
+  getOwnConfiguration(path, scope) {
+    return (0, import_lodash.get)(CONFIGURATION_DEFAULTS, path);
+  }
+};
+
+// src/ide/JetbrainsMessages.ts
+var JetbrainsMessages = class {
+  async showMessage(_type, _id, _message, ..._options) {
+    return void 0;
+  }
+};
+
+// src/ide/JetbrainsKeyValueStore.ts
+var JetbrainsKeyValueStore = class {
+  constructor() {
+    this.data = { ...KEY_VALUE_STORE_DEFAULTS };
+  }
+  get(key) {
+    return this.data[key];
+  }
+  set(key, value) {
+    this.data[key] = value;
+    return Promise.resolve();
+  }
+};
+
+// src/ide/JetbrainsIDE.ts
+var JetbrainsIDE = class {
+  constructor(client) {
+    this.client = client;
+    this.cursorlessVersion = "0.0.0";
+    this.workspaceFolders = void 0;
+    this.disposables = [];
+    this.quickPickReturnValue = void 0;
+    this.onDidCloseTextDocument = dummyEvent2;
+    this.onDidChangeActiveTextEditor = dummyEvent2;
+    this.onDidChangeVisibleTextEditors = dummyEvent2;
+    this.onDidChangeTextEditorSelection = dummyEvent2;
+    this.onDidChangeTextEditorVisibleRanges = dummyEvent2;
+    this.configuration = new JetbrainsConfiguration();
+    this.keyValueStore = new JetbrainsKeyValueStore();
+    this.messages = new JetbrainsMessages();
+    this.clipboard = new JetbrainsClipboard(this.client);
+    this.capabilities = new JetbrainsCapabilities();
+    this.activeWindow = void 0;
+    this.activeBuffer = void 0;
+  }
+  async init() {
+  }
+  async showQuickPick(_items, _options) {
+    throw Error("showQuickPick Not implemented");
+  }
+  async setHighlightRanges(_highlightId, _editor, _ranges) {
+    throw Error("setHighlightRanges Not implemented");
+  }
+  async flashRanges(_flashDescriptors) {
+    console.debug("flashRanges Not implemented");
+  }
+  get assetsRoot() {
+    if (this.assetsRoot_ == null) {
+      throw Error("Field `assetsRoot` has not yet been mocked");
+    }
+    return this.assetsRoot_;
+  }
+  //
+  get runMode() {
+    return "production";
+  }
+  get activeTextEditor() {
+    throw Error("activeTextEditor Not implemented");
+  }
+  get activeEditableTextEditor() {
+    throw Error("activeEditableTextEditor Not implemented");
+  }
+  get visibleTextEditors() {
+    throw Error("visibleTextEditors Not implemented");
+  }
+  getEditableTextEditor(editor) {
+    throw Error("getEditableTextEditor Not implemented");
+  }
+  async findInDocument(_query, _editor) {
+    throw Error("findInDocument Not implemented");
+  }
+  async findInWorkspace(_query) {
+    throw Error("findInWorkspace Not implemented");
+  }
+  async openTextDocument(_path) {
+    throw Error("openTextDocument Not implemented");
+  }
+  async openUntitledTextDocument(_options) {
+    throw Error("openUntitledTextDocument Not implemented");
+  }
+  async showInputBox(_options) {
+    throw Error("TextDocumentChangeEvent Not implemented");
+  }
+  async executeCommand(_command, ..._args) {
+    throw new Error("executeCommand Method not implemented.");
+  }
+  onDidChangeTextDocument(listener) {
+    return jetbrainsOnDidChangeTextDocument(listener);
+  }
+  onDidOpenTextDocument(listener, thisArgs, disposables) {
+    return jetbrainsOnDidOpenTextDocument(listener, thisArgs, disposables);
+  }
+  handleCommandError(err) {
+  }
+  disposeOnExit(...disposables) {
+    this.disposables.push(...disposables);
+    return () => (0, import_lodash2.pull)(this.disposables, ...disposables);
+  }
+};
+function dummyEvent2() {
+  return {
+    dispose() {
+    }
+  };
+}
+
+// ../../node_modules/.pnpm/immer@10.1.1/node_modules/immer/dist/immer.mjs
+var NOTHING = Symbol.for("immer-nothing");
+var DRAFTABLE = Symbol.for("immer-draftable");
+var DRAFT_STATE = Symbol.for("immer-state");
+var errors = process.env.NODE_ENV !== "production" ? [
+  // All error codes, starting by 0:
+  function(plugin) {
+    return `The plugin for '${plugin}' has not been loaded into Immer. To enable the plugin, import and call \`enable${plugin}()\` when initializing your application.`;
+  },
+  function(thing) {
+    return `produce can only be called on things that are draftable: plain objects, arrays, Map, Set or classes that are marked with '[immerable]: true'. Got '${thing}'`;
+  },
+  "This object has been frozen and should not be mutated",
+  function(data) {
+    return "Cannot use a proxy that has been revoked. Did you pass an object from inside an immer function to an async process? " + data;
+  },
+  "An immer producer returned a new value *and* modified its draft. Either return a new value *or* modify the draft.",
+  "Immer forbids circular references",
+  "The first or second argument to `produce` must be a function",
+  "The third argument to `produce` must be a function or undefined",
+  "First argument to `createDraft` must be a plain object, an array, or an immerable object",
+  "First argument to `finishDraft` must be a draft returned by `createDraft`",
+  function(thing) {
+    return `'current' expects a draft, got: ${thing}`;
+  },
+  "Object.defineProperty() cannot be used on an Immer draft",
+  "Object.setPrototypeOf() cannot be used on an Immer draft",
+  "Immer only supports deleting array indices",
+  "Immer only supports setting array indices and the 'length' property",
+  function(thing) {
+    return `'original' expects a draft, got: ${thing}`;
+  }
+  // Note: if more errors are added, the errorOffset in Patches.ts should be increased
+  // See Patches.ts for additional errors
+] : [];
+function die(error, ...args) {
+  if (process.env.NODE_ENV !== "production") {
+    const e = errors[error];
+    const msg = typeof e === "function" ? e.apply(null, args) : e;
+    throw new Error(`[Immer] ${msg}`);
+  }
+  throw new Error(
+    `[Immer] minified error nr: ${error}. Full error at: https://bit.ly/3cXEKWf`
+  );
+}
+var getPrototypeOf = Object.getPrototypeOf;
+function isDraft(value) {
+  return !!value && !!value[DRAFT_STATE];
+}
+function isDraftable(value) {
+  if (!value)
+    return false;
+  return isPlainObject(value) || Array.isArray(value) || !!value[DRAFTABLE] || !!value.constructor?.[DRAFTABLE] || isMap(value) || isSet(value);
+}
+var objectCtorString = Object.prototype.constructor.toString();
+function isPlainObject(value) {
+  if (!value || typeof value !== "object")
+    return false;
+  const proto = getPrototypeOf(value);
+  if (proto === null) {
+    return true;
+  }
+  const Ctor = Object.hasOwnProperty.call(proto, "constructor") && proto.constructor;
+  if (Ctor === Object)
+    return true;
+  return typeof Ctor == "function" && Function.toString.call(Ctor) === objectCtorString;
+}
+function each(obj, iter2) {
+  if (getArchtype(obj) === 0) {
+    Reflect.ownKeys(obj).forEach((key) => {
+      iter2(key, obj[key], obj);
+    });
+  } else {
+    obj.forEach((entry2, index) => iter2(index, entry2, obj));
+  }
+}
+function getArchtype(thing) {
+  const state = thing[DRAFT_STATE];
+  return state ? state.type_ : Array.isArray(thing) ? 1 : isMap(thing) ? 2 : isSet(thing) ? 3 : 0;
+}
+function has(thing, prop) {
+  return getArchtype(thing) === 2 ? thing.has(prop) : Object.prototype.hasOwnProperty.call(thing, prop);
+}
+function set2(thing, propOrOldValue, value) {
+  const t = getArchtype(thing);
+  if (t === 2)
+    thing.set(propOrOldValue, value);
+  else if (t === 3) {
+    thing.add(value);
+  } else
+    thing[propOrOldValue] = value;
+}
+function is(x, y) {
+  if (x === y) {
+    return x !== 0 || 1 / x === 1 / y;
+  } else {
+    return x !== x && y !== y;
+  }
+}
+function isMap(target) {
+  return target instanceof Map;
+}
+function isSet(target) {
+  return target instanceof Set;
+}
+function latest(state) {
+  return state.copy_ || state.base_;
+}
+function shallowCopy(base, strict) {
+  if (isMap(base)) {
+    return new Map(base);
+  }
+  if (isSet(base)) {
+    return new Set(base);
+  }
+  if (Array.isArray(base))
+    return Array.prototype.slice.call(base);
+  const isPlain = isPlainObject(base);
+  if (strict === true || strict === "class_only" && !isPlain) {
+    const descriptors = Object.getOwnPropertyDescriptors(base);
+    delete descriptors[DRAFT_STATE];
+    let keys2 = Reflect.ownKeys(descriptors);
+    for (let i = 0; i < keys2.length; i++) {
+      const key = keys2[i];
+      const desc = descriptors[key];
+      if (desc.writable === false) {
+        desc.writable = true;
+        desc.configurable = true;
+      }
+      if (desc.get || desc.set)
+        descriptors[key] = {
+          configurable: true,
+          writable: true,
+          // could live with !!desc.set as well here...
+          enumerable: desc.enumerable,
+          value: base[key]
+        };
+    }
+    return Object.create(getPrototypeOf(base), descriptors);
+  } else {
+    const proto = getPrototypeOf(base);
+    if (proto !== null && isPlain) {
+      return { ...base };
+    }
+    const obj = Object.create(proto);
+    return Object.assign(obj, base);
+  }
+}
+function freeze(obj, deep = false) {
+  if (isFrozen(obj) || isDraft(obj) || !isDraftable(obj))
+    return obj;
+  if (getArchtype(obj) > 1) {
+    obj.set = obj.add = obj.clear = obj.delete = dontMutateFrozenCollections;
+  }
+  Object.freeze(obj);
+  if (deep)
+    Object.entries(obj).forEach(([key, value]) => freeze(value, true));
+  return obj;
+}
+function dontMutateFrozenCollections() {
+  die(2);
+}
+function isFrozen(obj) {
+  return Object.isFrozen(obj);
+}
+var plugins = {};
+function getPlugin(pluginKey) {
+  const plugin = plugins[pluginKey];
+  if (!plugin) {
+    die(0, pluginKey);
+  }
+  return plugin;
+}
+var currentScope;
+function getCurrentScope() {
+  return currentScope;
+}
+function createScope(parent_, immer_) {
+  return {
+    drafts_: [],
+    parent_,
+    immer_,
+    // Whenever the modified draft contains a draft from another scope, we
+    // need to prevent auto-freezing so the unowned draft can be finalized.
+    canAutoFreeze_: true,
+    unfinalizedDrafts_: 0
+  };
+}
+function usePatchesInScope(scope, patchListener) {
+  if (patchListener) {
+    getPlugin("Patches");
+    scope.patches_ = [];
+    scope.inversePatches_ = [];
+    scope.patchListener_ = patchListener;
+  }
+}
+function revokeScope(scope) {
+  leaveScope(scope);
+  scope.drafts_.forEach(revokeDraft);
+  scope.drafts_ = null;
+}
+function leaveScope(scope) {
+  if (scope === currentScope) {
+    currentScope = scope.parent_;
+  }
+}
+function enterScope(immer2) {
+  return currentScope = createScope(currentScope, immer2);
+}
+function revokeDraft(draft) {
+  const state = draft[DRAFT_STATE];
+  if (state.type_ === 0 || state.type_ === 1)
+    state.revoke_();
+  else
+    state.revoked_ = true;
+}
+function processResult(result, scope) {
+  scope.unfinalizedDrafts_ = scope.drafts_.length;
+  const baseDraft = scope.drafts_[0];
+  const isReplaced = result !== void 0 && result !== baseDraft;
+  if (isReplaced) {
+    if (baseDraft[DRAFT_STATE].modified_) {
+      revokeScope(scope);
+      die(4);
+    }
+    if (isDraftable(result)) {
+      result = finalize(scope, result);
+      if (!scope.parent_)
+        maybeFreeze(scope, result);
+    }
+    if (scope.patches_) {
+      getPlugin("Patches").generateReplacementPatches_(
+        baseDraft[DRAFT_STATE].base_,
+        result,
+        scope.patches_,
+        scope.inversePatches_
+      );
+    }
+  } else {
+    result = finalize(scope, baseDraft, []);
+  }
+  revokeScope(scope);
+  if (scope.patches_) {
+    scope.patchListener_(scope.patches_, scope.inversePatches_);
+  }
+  return result !== NOTHING ? result : void 0;
+}
+function finalize(rootScope, value, path) {
+  if (isFrozen(value))
+    return value;
+  const state = value[DRAFT_STATE];
+  if (!state) {
+    each(
+      value,
+      (key, childValue) => finalizeProperty(rootScope, state, value, key, childValue, path)
+    );
+    return value;
+  }
+  if (state.scope_ !== rootScope)
+    return value;
+  if (!state.modified_) {
+    maybeFreeze(rootScope, state.base_, true);
+    return state.base_;
+  }
+  if (!state.finalized_) {
+    state.finalized_ = true;
+    state.scope_.unfinalizedDrafts_--;
+    const result = state.copy_;
+    let resultEach = result;
+    let isSet2 = false;
+    if (state.type_ === 3) {
+      resultEach = new Set(result);
+      result.clear();
+      isSet2 = true;
+    }
+    each(
+      resultEach,
+      (key, childValue) => finalizeProperty(rootScope, state, result, key, childValue, path, isSet2)
+    );
+    maybeFreeze(rootScope, result, false);
+    if (path && rootScope.patches_) {
+      getPlugin("Patches").generatePatches_(
+        state,
+        path,
+        rootScope.patches_,
+        rootScope.inversePatches_
+      );
+    }
+  }
+  return state.copy_;
+}
+function finalizeProperty(rootScope, parentState, targetObject, prop, childValue, rootPath, targetIsSet) {
+  if (process.env.NODE_ENV !== "production" && childValue === targetObject)
+    die(5);
+  if (isDraft(childValue)) {
+    const path = rootPath && parentState && parentState.type_ !== 3 && // Set objects are atomic since they have no keys.
+    !has(parentState.assigned_, prop) ? rootPath.concat(prop) : void 0;
+    const res = finalize(rootScope, childValue, path);
+    set2(targetObject, prop, res);
+    if (isDraft(res)) {
+      rootScope.canAutoFreeze_ = false;
+    } else
+      return;
+  } else if (targetIsSet) {
+    targetObject.add(childValue);
+  }
+  if (isDraftable(childValue) && !isFrozen(childValue)) {
+    if (!rootScope.immer_.autoFreeze_ && rootScope.unfinalizedDrafts_ < 1) {
+      return;
+    }
+    finalize(rootScope, childValue);
+    if ((!parentState || !parentState.scope_.parent_) && typeof prop !== "symbol" && Object.prototype.propertyIsEnumerable.call(targetObject, prop))
+      maybeFreeze(rootScope, childValue);
+  }
+}
+function maybeFreeze(scope, value, deep = false) {
+  if (!scope.parent_ && scope.immer_.autoFreeze_ && scope.canAutoFreeze_) {
+    freeze(value, deep);
+  }
+}
+function createProxyProxy(base, parent) {
+  const isArray2 = Array.isArray(base);
+  const state = {
+    type_: isArray2 ? 1 : 0,
+    // Track which produce call this is associated with.
+    scope_: parent ? parent.scope_ : getCurrentScope(),
+    // True for both shallow and deep changes.
+    modified_: false,
+    // Used during finalization.
+    finalized_: false,
+    // Track which properties have been assigned (true) or deleted (false).
+    assigned_: {},
+    // The parent draft state.
+    parent_: parent,
+    // The base state.
+    base_: base,
+    // The base proxy.
+    draft_: null,
+    // set below
+    // The base copy with any updated values.
+    copy_: null,
+    // Called by the `produce` function.
+    revoke_: null,
+    isManual_: false
+  };
+  let target = state;
+  let traps = objectTraps;
+  if (isArray2) {
+    target = [state];
+    traps = arrayTraps;
+  }
+  const { revoke, proxy } = Proxy.revocable(target, traps);
+  state.draft_ = proxy;
+  state.revoke_ = revoke;
+  return proxy;
+}
+var objectTraps = {
+  get(state, prop) {
+    if (prop === DRAFT_STATE)
+      return state;
+    const source = latest(state);
+    if (!has(source, prop)) {
+      return readPropFromProto(state, source, prop);
+    }
+    const value = source[prop];
+    if (state.finalized_ || !isDraftable(value)) {
+      return value;
+    }
+    if (value === peek(state.base_, prop)) {
+      prepareCopy(state);
+      return state.copy_[prop] = createProxy(value, state);
+    }
+    return value;
+  },
+  has(state, prop) {
+    return prop in latest(state);
+  },
+  ownKeys(state) {
+    return Reflect.ownKeys(latest(state));
+  },
+  set(state, prop, value) {
+    const desc = getDescriptorFromProto(latest(state), prop);
+    if (desc?.set) {
+      desc.set.call(state.draft_, value);
+      return true;
+    }
+    if (!state.modified_) {
+      const current2 = peek(latest(state), prop);
+      const currentState = current2?.[DRAFT_STATE];
+      if (currentState && currentState.base_ === value) {
+        state.copy_[prop] = value;
+        state.assigned_[prop] = false;
+        return true;
+      }
+      if (is(value, current2) && (value !== void 0 || has(state.base_, prop)))
+        return true;
+      prepareCopy(state);
+      markChanged(state);
+    }
+    if (state.copy_[prop] === value && // special case: handle new props with value 'undefined'
+    (value !== void 0 || prop in state.copy_) || // special case: NaN
+    Number.isNaN(value) && Number.isNaN(state.copy_[prop]))
+      return true;
+    state.copy_[prop] = value;
+    state.assigned_[prop] = true;
+    return true;
+  },
+  deleteProperty(state, prop) {
+    if (peek(state.base_, prop) !== void 0 || prop in state.base_) {
+      state.assigned_[prop] = false;
+      prepareCopy(state);
+      markChanged(state);
+    } else {
+      delete state.assigned_[prop];
+    }
+    if (state.copy_) {
+      delete state.copy_[prop];
+    }
+    return true;
+  },
+  // Note: We never coerce `desc.value` into an Immer draft, because we can't make
+  // the same guarantee in ES5 mode.
+  getOwnPropertyDescriptor(state, prop) {
+    const owner = latest(state);
+    const desc = Reflect.getOwnPropertyDescriptor(owner, prop);
+    if (!desc)
+      return desc;
+    return {
+      writable: true,
+      configurable: state.type_ !== 1 || prop !== "length",
+      enumerable: desc.enumerable,
+      value: owner[prop]
+    };
+  },
+  defineProperty() {
+    die(11);
+  },
+  getPrototypeOf(state) {
+    return getPrototypeOf(state.base_);
+  },
+  setPrototypeOf() {
+    die(12);
+  }
+};
+var arrayTraps = {};
+each(objectTraps, (key, fn) => {
+  arrayTraps[key] = function() {
+    arguments[0] = arguments[0][0];
+    return fn.apply(this, arguments);
+  };
+});
+arrayTraps.deleteProperty = function(state, prop) {
+  if (process.env.NODE_ENV !== "production" && isNaN(parseInt(prop)))
+    die(13);
+  return arrayTraps.set.call(this, state, prop, void 0);
+};
+arrayTraps.set = function(state, prop, value) {
+  if (process.env.NODE_ENV !== "production" && prop !== "length" && isNaN(parseInt(prop)))
+    die(14);
+  return objectTraps.set.call(this, state[0], prop, value, state[0]);
+};
+function peek(draft, prop) {
+  const state = draft[DRAFT_STATE];
+  const source = state ? latest(state) : draft;
+  return source[prop];
+}
+function readPropFromProto(state, source, prop) {
+  const desc = getDescriptorFromProto(source, prop);
+  return desc ? `value` in desc ? desc.value : (
+    // This is a very special case, if the prop is a getter defined by the
+    // prototype, we should invoke it with the draft as context!
+    desc.get?.call(state.draft_)
+  ) : void 0;
+}
+function getDescriptorFromProto(source, prop) {
+  if (!(prop in source))
+    return void 0;
+  let proto = getPrototypeOf(source);
+  while (proto) {
+    const desc = Object.getOwnPropertyDescriptor(proto, prop);
+    if (desc)
+      return desc;
+    proto = getPrototypeOf(proto);
+  }
+  return void 0;
+}
+function markChanged(state) {
+  if (!state.modified_) {
+    state.modified_ = true;
+    if (state.parent_) {
+      markChanged(state.parent_);
+    }
+  }
+}
+function prepareCopy(state) {
+  if (!state.copy_) {
+    state.copy_ = shallowCopy(
+      state.base_,
+      state.scope_.immer_.useStrictShallowCopy_
+    );
+  }
+}
+var Immer2 = class {
+  constructor(config) {
+    this.autoFreeze_ = true;
+    this.useStrictShallowCopy_ = false;
+    this.produce = (base, recipe, patchListener) => {
+      if (typeof base === "function" && typeof recipe !== "function") {
+        const defaultBase = recipe;
+        recipe = base;
+        const self2 = this;
+        return function curriedProduce(base2 = defaultBase, ...args) {
+          return self2.produce(base2, (draft) => recipe.call(this, draft, ...args));
+        };
+      }
+      if (typeof recipe !== "function")
+        die(6);
+      if (patchListener !== void 0 && typeof patchListener !== "function")
+        die(7);
+      let result;
+      if (isDraftable(base)) {
+        const scope = enterScope(this);
+        const proxy = createProxy(base, void 0);
+        let hasError = true;
+        try {
+          result = recipe(proxy);
+          hasError = false;
+        } finally {
+          if (hasError)
+            revokeScope(scope);
+          else
+            leaveScope(scope);
+        }
+        usePatchesInScope(scope, patchListener);
+        return processResult(result, scope);
+      } else if (!base || typeof base !== "object") {
+        result = recipe(base);
+        if (result === void 0)
+          result = base;
+        if (result === NOTHING)
+          result = void 0;
+        if (this.autoFreeze_)
+          freeze(result, true);
+        if (patchListener) {
+          const p = [];
+          const ip = [];
+          getPlugin("Patches").generateReplacementPatches_(base, result, p, ip);
+          patchListener(p, ip);
+        }
+        return result;
+      } else
+        die(1, base);
+    };
+    this.produceWithPatches = (base, recipe) => {
+      if (typeof base === "function") {
+        return (state, ...args) => this.produceWithPatches(state, (draft) => base(draft, ...args));
+      }
+      let patches, inversePatches;
+      const result = this.produce(base, recipe, (p, ip) => {
+        patches = p;
+        inversePatches = ip;
+      });
+      return [result, patches, inversePatches];
+    };
+    if (typeof config?.autoFreeze === "boolean")
+      this.setAutoFreeze(config.autoFreeze);
+    if (typeof config?.useStrictShallowCopy === "boolean")
+      this.setUseStrictShallowCopy(config.useStrictShallowCopy);
+  }
+  createDraft(base) {
+    if (!isDraftable(base))
+      die(8);
+    if (isDraft(base))
+      base = current(base);
+    const scope = enterScope(this);
+    const proxy = createProxy(base, void 0);
+    proxy[DRAFT_STATE].isManual_ = true;
+    leaveScope(scope);
+    return proxy;
+  }
+  finishDraft(draft, patchListener) {
+    const state = draft && draft[DRAFT_STATE];
+    if (!state || !state.isManual_)
+      die(9);
+    const { scope_: scope } = state;
+    usePatchesInScope(scope, patchListener);
+    return processResult(void 0, scope);
+  }
+  /**
+   * Pass true to automatically freeze all copies created by Immer.
+   *
+   * By default, auto-freezing is enabled.
+   */
+  setAutoFreeze(value) {
+    this.autoFreeze_ = value;
+  }
+  /**
+   * Pass true to enable strict shallow copy.
+   *
+   * By default, immer does not copy the object descriptors such as getter, setter and non-enumrable properties.
+   */
+  setUseStrictShallowCopy(value) {
+    this.useStrictShallowCopy_ = value;
+  }
+  applyPatches(base, patches) {
+    let i;
+    for (i = patches.length - 1; i >= 0; i--) {
+      const patch = patches[i];
+      if (patch.path.length === 0 && patch.op === "replace") {
+        base = patch.value;
+        break;
+      }
+    }
+    if (i > -1) {
+      patches = patches.slice(i + 1);
+    }
+    const applyPatchesImpl = getPlugin("Patches").applyPatches_;
+    if (isDraft(base)) {
+      return applyPatchesImpl(base, patches);
+    }
+    return this.produce(
+      base,
+      (draft) => applyPatchesImpl(draft, patches)
+    );
+  }
+};
+function createProxy(value, parent) {
+  const draft = isMap(value) ? getPlugin("MapSet").proxyMap_(value, parent) : isSet(value) ? getPlugin("MapSet").proxySet_(value, parent) : createProxyProxy(value, parent);
+  const scope = parent ? parent.scope_ : getCurrentScope();
+  scope.drafts_.push(draft);
+  return draft;
+}
+function current(value) {
+  if (!isDraft(value))
+    die(10, value);
+  return currentImpl(value);
+}
+function currentImpl(value) {
+  if (!isDraftable(value) || isFrozen(value))
+    return value;
+  const state = value[DRAFT_STATE];
+  let copy;
+  if (state) {
+    if (!state.modified_)
+      return state.base_;
+    state.finalized_ = true;
+    copy = shallowCopy(value, state.scope_.immer_.useStrictShallowCopy_);
+  } else {
+    copy = shallowCopy(value, true);
+  }
+  each(copy, (key, childValue) => {
+    set2(copy, key, currentImpl(childValue));
+  });
+  if (state) {
+    state.finalized_ = false;
+  }
+  return copy;
+}
+var immer = new Immer2();
+var produce = immer.produce;
+var produceWithPatches = immer.produceWithPatches.bind(
+  immer
+);
+var setAutoFreeze = immer.setAutoFreeze.bind(immer);
+var setUseStrictShallowCopy = immer.setUseStrictShallowCopy.bind(immer);
+var applyPatches = immer.applyPatches.bind(immer);
+var createDraft = immer.createDraft.bind(immer);
+var finishDraft = immer.finishDraft.bind(immer);
 
 // ../cursorless-engine/src/core/indexArrayStrict.ts
 function indexArrayStrict(arr, idx, name) {
@@ -34452,252 +34650,7 @@ var argPositions = {
   $2: new ArgPosition(2)
 };
 
-// src/ide/JetbrainsPlugin.ts
-var JetbrainsPlugin2 = class {
-  constructor(client, commandServer) {
-    this.client = client;
-    this.commandServer = commandServer;
-  }
-};
-
-// src/ide/JetbrainsIDE.ts
-var import_lodash = __toESM(require_lodash());
-
-// src/ide/JetbrainsCapabilities.ts
-var COMMAND_CAPABILITIES = {
-  clipboardCopy: { acceptsLocation: false },
-  clipboardPaste: true,
-  toggleLineComment: void 0,
-  indentLine: void 0,
-  outdentLine: void 0,
-  rename: void 0,
-  quickFix: void 0,
-  revealDefinition: void 0,
-  revealTypeDefinition: void 0,
-  showHover: void 0,
-  showDebugHover: void 0,
-  extractVariable: void 0,
-  fold: void 0,
-  highlight: { acceptsLocation: true },
-  unfold: void 0,
-  showReferences: void 0,
-  insertLineAfter: void 0
-};
-var JetbrainsCapabilities = class {
-  constructor() {
-    this.commands = COMMAND_CAPABILITIES;
-  }
-};
-
-// src/ide/JetbrainsEvents.ts
-function jetbrainsOnDidChangeTextDocument(listener) {
-  return dummyEvent();
-}
-function jetbrainsOnDidOpenTextDocument(listener, _thisArgs, _disposables) {
-  return dummyEvent();
-}
-function dummyEvent() {
-  return {
-    dispose() {
-    }
-  };
-}
-
-// src/ide/JetbrainsIDE.ts
-var JetbrainsIDE2 = class {
-  constructor(client) {
-    this.client = client;
-    this.cursorlessVersion = "0.0.0";
-    this.workspaceFolders = void 0;
-    this.disposables = [];
-    this.quickPickReturnValue = void 0;
-    this.onDidCloseTextDocument = dummyEvent2;
-    this.onDidChangeActiveTextEditor = dummyEvent2;
-    this.onDidChangeVisibleTextEditors = dummyEvent2;
-    this.onDidChangeTextEditorSelection = dummyEvent2;
-    this.onDidChangeTextEditorVisibleRanges = dummyEvent2;
-    this.capabilities = new JetbrainsCapabilities();
-    this.activeWindow = void 0;
-    this.activeBuffer = void 0;
-  }
-  async init() {
-  }
-  async showQuickPick(_items, _options) {
-    throw Error("showQuickPick Not implemented");
-  }
-  async setHighlightRanges(_highlightId, _editor, _ranges) {
-    throw Error("setHighlightRanges Not implemented");
-  }
-  async flashRanges(_flashDescriptors) {
-    console.debug("flashRanges Not implemented");
-  }
-  get assetsRoot() {
-    if (this.assetsRoot_ == null) {
-      throw Error("Field `assetsRoot` has not yet been mocked");
-    }
-    return this.assetsRoot_;
-  }
-  //
-  get runMode() {
-    return nodeGetRunMode();
-  }
-  get activeTextEditor() {
-    return this.getActiveTextEditor();
-  }
-  get activeEditableTextEditor() {
-    return this.getActiveTextEditor();
-  }
-  getActiveTextEditor() {
-    const editor = this.activeWindow ? this.getTextEditor(this.activeWindow) : void 0;
-    if (editor === void 0) {
-      console.debug("getActiveTextEditor: editor is undefined");
-    }
-    return editor;
-  }
-  getTextEditor(w) {
-    for (const [window, textEditor] of this.editorMap) {
-      if (window.id === w.id) {
-        return textEditor;
-      }
-    }
-    return void 0;
-  }
-  getTextDocument(b) {
-    for (const [buffer, textDocument] of this.documentMap) {
-      if (buffer.id === b.id) {
-        return textDocument;
-      }
-    }
-    return void 0;
-  }
-  get visibleTextEditors() {
-    throw Error("visibleTextEditors Not implemented");
-  }
-  getEditableTextEditor(editor) {
-    throw Error("getEditableTextEditor Not implemented");
-  }
-  async findInDocument(_query, _editor) {
-    throw Error("findInDocument Not implemented");
-  }
-  async findInWorkspace(_query) {
-    throw Error("findInWorkspace Not implemented");
-  }
-  async openTextDocument(_path) {
-    throw Error("openTextDocument Not implemented");
-  }
-  async openUntitledTextDocument(_options) {
-    throw Error("openUntitledTextDocument Not implemented");
-  }
-  async showInputBox(_options) {
-    throw Error("TextDocumentChangeEvent Not implemented");
-  }
-  async executeCommand(_command, ..._args) {
-    throw new Error("executeCommand Method not implemented.");
-  }
-  onDidChangeTextDocument(listener) {
-    return jetbrainsOnDidChangeTextDocument(listener);
-  }
-  onDidOpenTextDocument(listener, thisArgs, disposables) {
-    return jetbrainsOnDidOpenTextDocument(listener, thisArgs, disposables);
-  }
-  /**
-   * Initialize the current editor (and current document).
-   * If the current editor already exists, it will only update the current document of that editor.
-   *
-   * when we receive our first cursorless command, we will initialize an editor an document for it.
-   * for the following commands, we will only update the document.
-   *
-   * Atm, we only initialize one editor(current window) with one document(current buffer)
-   */
-  async updateTextEditor(minimal = false) {
-    const window = await this.client.window;
-    const buffer = await window.buffer;
-    const lines = await buffer.lines;
-    let linesShown = lines;
-    if (lines.length >= 30) {
-      linesShown = lines.slice(0, 15).concat(["..."]).concat(lines.slice(-15));
-    }
-    console.debug(
-      `updateTextEditor(): window:${window.id}, buffer:${buffer.id}, lines=${JSON.stringify(linesShown)}`
-    );
-    let selections;
-    let visibleRanges;
-    if (!minimal) {
-      selections = await bufferGetSelections(window, this.client);
-      visibleRanges = await windowGetVisibleRanges(window, this.client, lines);
-    } else {
-      selections = [];
-      visibleRanges = [];
-    }
-    const editor = this.toJetbrainsEditor(
-      window,
-      buffer,
-      lines,
-      visibleRanges,
-      selections
-    );
-    getJetbrainsRegistry().emitEvent("onDidOpenTextDocument", editor.document);
-    return editor;
-  }
-  toJetbrainsEditor(window, buffer, lines, visibleRanges, selections) {
-    let document = this.getTextDocument(buffer);
-    let editor = this.getTextEditor(window);
-    if (!document) {
-      console.debug(
-        `toJetbrainsEditor(): creating new document: buffer=${buffer.id}`
-      );
-      document = new JetbrainsTextDocumentImpl(
-        URI.parse(`jetbrains://${buffer.id}`),
-        // URI.parse(`file://${buffer.id}`),
-        "plaintext",
-        1,
-        "\n",
-        // "\r\n",
-        lines
-      );
-      this.documentMap.set(buffer, document);
-    } else {
-      console.debug(`toJetbrainsEditor(): updating document: buffer=${buffer.id}`);
-      document.update(lines);
-    }
-    if (!editor) {
-      console.debug(
-        `toJetbrainsEditor(): creating new editor: window=${window.id}`
-      );
-      editor = new JetbrainsTextEditorImpl(
-        uuid(),
-        this.client,
-        this,
-        window,
-        document,
-        visibleRanges,
-        selections
-      );
-      this.editorMap.set(window, editor);
-    } else {
-      console.debug(`toJetbrainsEditor(): updating editor: window=${window.id}`);
-      editor.updateDocument(visibleRanges, selections, document);
-    }
-    this.activeBuffer = buffer;
-    this.activeWindow = window;
-    return this.activeTextEditor;
-  }
-  handleCommandError(err) {
-    void showErrorMessage(this.client, err.message);
-  }
-  disposeOnExit(...disposables) {
-    this.disposables.push(...disposables);
-    return () => (0, import_lodash.pull)(this.disposables, ...disposables);
-  }
-};
-function dummyEvent2() {
-  return {
-    dispose() {
-    }
-  };
-}
-
-// src/index.ts
+// src/extension.ts
 function entry(plugin) {
   const jetbrainsIDE = new JetbrainsIDE(plugin.client);
   createCursorlessEngine({
@@ -34705,12 +34658,9 @@ function entry(plugin) {
   });
   console.log("entry completed");
 }
-function createPlugin(client) {
-  return new JetbrainsPlugin(client);
-}
 export {
-  JetbrainsIDE2 as JetbrainsIDE,
-  JetbrainsPlugin2 as JetbrainsPlugin,
+  JetbrainsIDE,
+  JetbrainsPlugin,
   createPlugin,
   entry
 };
