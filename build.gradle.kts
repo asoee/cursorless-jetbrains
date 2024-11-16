@@ -33,8 +33,7 @@ repositories {
 dependencies {
     testImplementation(libs.junit)
 
-    implementation("io.github.dokar3:quickjs-kt:1.0.0-alpha13")
-
+    implementation("io.github.dokar3:quickjs-kt:1.0.0-alpha12")
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {

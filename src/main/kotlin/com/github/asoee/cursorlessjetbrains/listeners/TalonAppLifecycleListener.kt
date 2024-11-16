@@ -31,11 +31,11 @@ class TalonAppLifecycleListener : AppLifecycleListener {
     }
 
     private suspend fun initCursorless(quickJs: QuickJs) {
-        val nodeShimJs = javaClass.getResource("/cursorless/node-shim.js").readText()
-        thisLogger().warn("compile...")
+//        val nodeShimJs = javaClass.getResource("/cursorless/node-shim.js").readText()
+//        thisLogger().warn("compile...")
 
-        thisLogger().warn("evaluate (node-shim)...")
-        quickJs.evaluate<Void>(code = nodeShimJs, asModule = false, )
+//        thisLogger().warn("evaluate (node-shim)...")
+//        quickJs.evaluate<Void>(code = nodeShimJs, asModule = false, )
 
         val talonJs = javaClass.getResource("/cursorless/cursorless.js").readText()
         thisLogger().warn("talon js script size: " + talonJs.length)
@@ -43,16 +43,19 @@ class TalonAppLifecycleListener : AppLifecycleListener {
         val cursorlessBc = quickJs.compile(talonJs, "cursorless.js", true)
         thisLogger().warn("addmodule (cursorless)...")
         quickJs.addModule(bytecode = cursorlessBc)
+//        quickJs.evaluate<Void>(cursorlessBc)
 
         quickJs.define<Console>("console", Console())
         quickJs.define<IdeClient>("ideClient", IdeClient())
 
-        thisLogger().warn("import entry")
-        quickJs.evaluate<Void>(code = "const {entry, createPlugin} = await import('./cursorless.js');")
+//        thisLogger().warn("import entry")
+        quickJs.evaluate<Void>(code = "const {activate, createPlugin} = await import('./cursorless.js');")
         thisLogger().warn("create plugin")
         quickJs.evaluate<Any>(code = "const plugin = createPlugin(ideClient);")
-        thisLogger().warn("exec entry")
-        quickJs.evaluate<Any>(code = "entry(plugin);")
+        thisLogger().warn("exec activate")
+        quickJs.evaluate<Any>(code = "const { commandApi, injectIde, hatTokenMap, storedTargets } = await activate(plugin);")
+        thisLogger().warn("exec activated")
+        quickJs.evaluate<Any>(code = "console.log('' + (injectIde === null));")
         thisLogger().warn("done")
     }
 
