@@ -1,42 +1,9 @@
 var __create = Object.create;
 var __defProp = Object.defineProperty;
-var __defProps = Object.defineProperties;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getOwnPropSymbols = Object.getOwnPropertySymbols;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __propIsEnum = Object.prototype.propertyIsEnumerable;
-var __knownSymbol = (name, symbol) => (symbol = Symbol[name]) ? symbol : Symbol.for("Symbol." + name);
-var __typeError = (msg) => {
-  throw TypeError(msg);
-};
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __spreadValues = (a, b) => {
-  for (var prop in b || (b = {}))
-    if (__hasOwnProp.call(b, prop))
-      __defNormalProp(a, prop, b[prop]);
-  if (__getOwnPropSymbols)
-    for (var prop of __getOwnPropSymbols(b)) {
-      if (__propIsEnum.call(b, prop))
-        __defNormalProp(a, prop, b[prop]);
-    }
-  return a;
-};
-var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
-var __objRest = (source, exclude) => {
-  var target = {};
-  for (var prop in source)
-    if (__hasOwnProp.call(source, prop) && exclude.indexOf(prop) < 0)
-      target[prop] = source[prop];
-  if (source != null && __getOwnPropSymbols)
-    for (var prop of __getOwnPropSymbols(source)) {
-      if (exclude.indexOf(prop) < 0 && __propIsEnum.call(source, prop))
-        target[prop] = source[prop];
-    }
-  return target;
-};
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
@@ -56,58 +23,6 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
-var __async = (__this, __arguments, generator) => {
-  return new Promise((resolve, reject) => {
-    var fulfilled = (value) => {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var rejected = (value) => {
-      try {
-        step(generator.throw(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
-    step((generator = generator.apply(__this, __arguments)).next());
-  });
-};
-var __await = function(promise, isYieldStar) {
-  this[0] = promise;
-  this[1] = isYieldStar;
-};
-var __yieldStar = (value) => {
-  var obj = value[__knownSymbol("asyncIterator")], isAwait = false, method, it = {};
-  if (obj == null) {
-    obj = value[__knownSymbol("iterator")]();
-    method = (k) => it[k] = (x) => obj[k](x);
-  } else {
-    obj = obj.call(value);
-    method = (k) => it[k] = (v) => {
-      if (isAwait) {
-        isAwait = false;
-        if (k === "throw") throw v;
-        return v;
-      }
-      isAwait = true;
-      return {
-        done: false,
-        value: new __await(new Promise((resolve) => {
-          var x = obj[k](v);
-          if (!(x instanceof Object)) __typeError("Object expected");
-          resolve(x);
-        }), 1)
-      };
-    };
-  }
-  return it[__knownSymbol("iterator")] = () => it, method("next"), "throw" in obj ? method("throw") : it.throw = (x) => {
-    throw x;
-  }, "return" in obj && method("return"), it;
-};
 
 // ../../node_modules/.pnpm/lodash@4.17.21/node_modules/lodash/lodash.js
 var require_lodash = __commonJS({
@@ -5809,7 +5724,6 @@ var require_nearley = __commonJS({
       }
       Parser2.fail = {};
       Parser2.prototype.feed = function(chunk) {
-        var _a, _b;
         var lexer2 = this.lexer;
         lexer2.reset(chunk, this.lexerState);
         var token;
@@ -5835,7 +5749,7 @@ var require_nearley = __commonJS({
           var nextColumn = new Column(this.grammar, n);
           this.table.push(nextColumn);
           var literal = token.text !== void 0 ? token.text : token.value;
-          var value = lexer2.constructor === StreamLexer ? token.value : (_b = (_a = lexer2.transform) == null ? void 0 : _a.call(lexer2, token)) != null ? _b : token;
+          var value = lexer2.constructor === StreamLexer ? token.value : lexer2.transform?.(token) ?? token;
           var scannable = column.scannable;
           for (var w = scannable.length; w--; ) {
             var state = scannable[w];
@@ -9746,7 +9660,7 @@ var Position = class _Position {
    * @return A position where line and character are replaced by the given values.
    */
   with(line, character) {
-    return new _Position(line != null ? line : this.line, character != null ? character : this.character);
+    return new _Position(line ?? this.line, character ?? this.character);
   }
   /**
    * Create a new position relative to this position.
@@ -9758,8 +9672,8 @@ var Position = class _Position {
    */
   translate(lineDelta, characterDelta) {
     return new _Position(
-      this.line + (lineDelta != null ? lineDelta : 0),
-      this.character + (characterDelta != null ? characterDelta : 0)
+      this.line + (lineDelta ?? 0),
+      this.character + (characterDelta ?? 0)
     );
   }
   /**
@@ -9869,7 +9783,7 @@ var Range = class _Range {
    * @return A range derived from this range with the given start and end position.
    */
   with(start, end) {
-    return new _Range(start != null ? start : this.start, end != null ? end : this.end);
+    return new _Range(start ?? this.start, end ?? this.end);
   }
   /**
    * Construct a new selection from this range
@@ -9986,10 +9900,11 @@ var { supported: supported2, unsupported: unsupported2, notApplicable: notApplic
 
 // ../common/src/scopeSupportFacets/cpp.ts
 var { supported: supported3, unsupported: unsupported3, notApplicable: notApplicable3 } = ScopeSupportFacetLevel;
-var cppScopeSupport = __spreadProps(__spreadValues({}, cScopeSupport), {
+var cppScopeSupport = {
+  ...cScopeSupport,
   "value.argument.formal": supported3,
   "value.argument.formal.iteration": supported3
-});
+};
 
 // ../common/src/scopeSupportFacets/csharp.ts
 var { supported: supported4, unsupported: unsupported4, notApplicable: notApplicable4 } = ScopeSupportFacetLevel;
@@ -10122,7 +10037,9 @@ var javascriptJsxScopeSupport = {
   "key.attribute": supported10,
   "value.attribute": supported10
 };
-var javascriptScopeSupport = __spreadProps(__spreadValues(__spreadValues({}, javascriptCoreScopeSupport), javascriptJsxScopeSupport), {
+var javascriptScopeSupport = {
+  ...javascriptCoreScopeSupport,
+  ...javascriptJsxScopeSupport,
   "type.variable": notApplicable10,
   "type.argument.formal": notApplicable10,
   "type.argument.formal.iteration": notApplicable10,
@@ -10135,7 +10052,7 @@ var javascriptScopeSupport = __spreadProps(__spreadValues(__spreadValues({}, jav
   "type.foreach": notApplicable10,
   "type.interface": notApplicable10,
   command: notApplicable10
-});
+};
 
 // ../common/src/scopeSupportFacets/json.ts
 var { supported: supported11 } = ScopeSupportFacetLevel;
@@ -10147,11 +10064,15 @@ var jsonScopeSupport = {
 
 // ../common/src/scopeSupportFacets/jsonc.ts
 var { supported: supported12, unsupported: unsupported9, notApplicable: notApplicable11 } = ScopeSupportFacetLevel;
-var jsoncScopeSupport = __spreadValues({}, jsonScopeSupport);
+var jsoncScopeSupport = {
+  ...jsonScopeSupport
+};
 
 // ../common/src/scopeSupportFacets/jsonl.ts
 var { supported: supported13, unsupported: unsupported10, notApplicable: notApplicable12 } = ScopeSupportFacetLevel;
-var jsonlScopeSupport = __spreadValues({}, jsonScopeSupport);
+var jsonlScopeSupport = {
+  ...jsonScopeSupport
+};
 
 // ../common/src/scopeSupportFacets/latex.ts
 var { supported: supported14, unsupported: unsupported11, notApplicable: notApplicable13 } = ScopeSupportFacetLevel;
@@ -10182,21 +10103,23 @@ var { supported: supported22, unsupported: unsupported17, notApplicable: notAppl
 
 // ../common/src/scopeSupportFacets/scss.ts
 var { supported: supported23, unsupported: unsupported18, notApplicable: notApplicable22 } = ScopeSupportFacetLevel;
-var scssScopeSupport = __spreadProps(__spreadValues({}, cssScopeSupport), {
+var scssScopeSupport = {
+  ...cssScopeSupport,
   "namedFunction.iteration": supported23,
   "namedFunction.iteration.document": supported23,
   "functionName.iteration": supported23,
   "functionName.iteration.document": supported23,
   "comment.line": supported23,
   disqualifyDelimiter: supported23
-});
+};
 
 // ../common/src/scopeSupportFacets/talon.ts
 var { supported: supported24 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/typescript.ts
 var { supported: supported25 } = ScopeSupportFacetLevel;
-var typescriptScopeSupport = __spreadProps(__spreadValues({}, javascriptCoreScopeSupport), {
+var typescriptScopeSupport = {
+  ...javascriptCoreScopeSupport,
   "name.field": supported25,
   "type.argument.formal": supported25,
   "type.argument.formal.iteration": supported25,
@@ -10212,11 +10135,14 @@ var typescriptScopeSupport = __spreadProps(__spreadValues({}, javascriptCoreScop
   "type.variable": supported25,
   "value.field": supported25,
   "value.typeAlias": supported25
-});
+};
 
 // ../common/src/scopeSupportFacets/typescriptreact.ts
 var { supported: supported26, unsupported: unsupported19, notApplicable: notApplicable23 } = ScopeSupportFacetLevel;
-var typescriptreactScopeSupport = __spreadValues(__spreadValues({}, typescriptScopeSupport), javascriptJsxScopeSupport);
+var typescriptreactScopeSupport = {
+  ...typescriptScopeSupport,
+  ...javascriptJsxScopeSupport
+};
 
 // ../common/src/scopeSupportFacets/xml.ts
 var { supported: supported27, unsupported: unsupported20, notApplicable: notApplicable24 } = ScopeSupportFacetLevel;
@@ -13358,15 +13284,11 @@ var JetbrainsClipboard = class {
   constructor(client) {
     this.client = client;
   }
-  readText() {
-    return __async(this, null, function* () {
-      return "";
-    });
+  async readText() {
+    return "";
   }
-  writeText(value) {
-    return __async(this, null, function* () {
-      return;
-    });
+  async writeText(value) {
+    return;
   }
 };
 
@@ -13384,17 +13306,15 @@ var JetbrainsConfiguration = class {
 
 // src/ide/JetbrainsMessages.ts
 var JetbrainsMessages = class {
-  showMessage(_type, _id, _message, ..._options) {
-    return __async(this, null, function* () {
-      return void 0;
-    });
+  async showMessage(_type, _id, _message, ..._options) {
+    return void 0;
   }
 };
 
 // src/ide/JetbrainsKeyValueStore.ts
 var JetbrainsKeyValueStore = class {
   constructor() {
-    this.data = __spreadValues({}, KEY_VALUE_STORE_DEFAULTS);
+    this.data = { ...KEY_VALUE_STORE_DEFAULTS };
   }
   get(key) {
     return this.data[key];
@@ -13426,24 +13346,16 @@ var JetbrainsIDE = class {
     this.activeWindow = void 0;
     this.activeBuffer = void 0;
   }
-  init() {
-    return __async(this, null, function* () {
-    });
+  async init() {
   }
-  showQuickPick(_items, _options) {
-    return __async(this, null, function* () {
-      throw Error("showQuickPick Not implemented");
-    });
+  async showQuickPick(_items, _options) {
+    throw Error("showQuickPick Not implemented");
   }
-  setHighlightRanges(_highlightId, _editor, _ranges) {
-    return __async(this, null, function* () {
-      throw Error("setHighlightRanges Not implemented");
-    });
+  async setHighlightRanges(_highlightId, _editor, _ranges) {
+    throw Error("setHighlightRanges Not implemented");
   }
-  flashRanges(_flashDescriptors) {
-    return __async(this, null, function* () {
-      console.debug("flashRanges Not implemented");
-    });
+  async flashRanges(_flashDescriptors) {
+    console.debug("flashRanges Not implemented");
   }
   get assetsRoot() {
     if (this.assetsRoot_ == null) {
@@ -13467,35 +13379,23 @@ var JetbrainsIDE = class {
   getEditableTextEditor(editor) {
     throw Error("getEditableTextEditor Not implemented");
   }
-  findInDocument(_query, _editor) {
-    return __async(this, null, function* () {
-      throw Error("findInDocument Not implemented");
-    });
+  async findInDocument(_query, _editor) {
+    throw Error("findInDocument Not implemented");
   }
-  findInWorkspace(_query) {
-    return __async(this, null, function* () {
-      throw Error("findInWorkspace Not implemented");
-    });
+  async findInWorkspace(_query) {
+    throw Error("findInWorkspace Not implemented");
   }
-  openTextDocument(_path) {
-    return __async(this, null, function* () {
-      throw Error("openTextDocument Not implemented");
-    });
+  async openTextDocument(_path) {
+    throw Error("openTextDocument Not implemented");
   }
-  openUntitledTextDocument(_options) {
-    return __async(this, null, function* () {
-      throw Error("openUntitledTextDocument Not implemented");
-    });
+  async openUntitledTextDocument(_options) {
+    throw Error("openUntitledTextDocument Not implemented");
   }
-  showInputBox(_options) {
-    return __async(this, null, function* () {
-      throw Error("TextDocumentChangeEvent Not implemented");
-    });
+  async showInputBox(_options) {
+    throw Error("TextDocumentChangeEvent Not implemented");
   }
-  executeCommand(_command, ..._args) {
-    return __async(this, null, function* () {
-      throw new Error("executeCommand Method not implemented.");
-    });
+  async executeCommand(_command, ..._args) {
+    throw new Error("executeCommand Method not implemented.");
   }
   onDidChangeTextDocument(listener) {
     return jetbrainsOnDidChangeTextDocument(listener);
@@ -13578,10 +13478,9 @@ function isDraft(value) {
   return !!value && !!value[DRAFT_STATE];
 }
 function isDraftable(value) {
-  var _a;
   if (!value)
     return false;
-  return isPlainObject(value) || Array.isArray(value) || !!value[DRAFTABLE] || !!((_a = value.constructor) == null ? void 0 : _a[DRAFTABLE]) || isMap(value) || isSet(value);
+  return isPlainObject(value) || Array.isArray(value) || !!value[DRAFTABLE] || !!value.constructor?.[DRAFTABLE] || isMap(value) || isSet(value);
 }
 var objectCtorString = Object.prototype.constructor.toString();
 function isPlainObject(value) {
@@ -13671,7 +13570,7 @@ function shallowCopy(base, strict) {
   } else {
     const proto = getPrototypeOf(base);
     if (proto !== null && isPlain) {
-      return __spreadValues({}, base);
+      return { ...base };
     }
     const obj = Object.create(proto);
     return Object.assign(obj, base);
@@ -13911,13 +13810,13 @@ var objectTraps = {
   },
   set(state, prop, value) {
     const desc = getDescriptorFromProto(latest(state), prop);
-    if (desc == null ? void 0 : desc.set) {
+    if (desc?.set) {
       desc.set.call(state.draft_, value);
       return true;
     }
     if (!state.modified_) {
       const current2 = peek(latest(state), prop);
-      const currentState = current2 == null ? void 0 : current2[DRAFT_STATE];
+      const currentState = current2?.[DRAFT_STATE];
       if (currentState && currentState.base_ === value) {
         state.copy_[prop] = value;
         state.assigned_[prop] = false;
@@ -13996,12 +13895,11 @@ function peek(draft, prop) {
   return source[prop];
 }
 function readPropFromProto(state, source, prop) {
-  var _a;
   const desc = getDescriptorFromProto(source, prop);
   return desc ? `value` in desc ? desc.value : (
     // This is a very special case, if the prop is a getter defined by the
     // prototype, we should invoke it with the draft as context!
-    (_a = desc.get) == null ? void 0 : _a.call(state.draft_)
+    desc.get?.call(state.draft_)
   ) : void 0;
 }
 function getDescriptorFromProto(source, prop) {
@@ -14094,9 +13992,9 @@ var Immer2 = class {
       });
       return [result, patches, inversePatches];
     };
-    if (typeof (config == null ? void 0 : config.autoFreeze) === "boolean")
+    if (typeof config?.autoFreeze === "boolean")
       this.setAutoFreeze(config.autoFreeze);
-    if (typeof (config == null ? void 0 : config.useStrictShallowCopy) === "boolean")
+    if (typeof config?.useStrictShallowCopy === "boolean")
       this.setUseStrictShallowCopy(config.useStrictShallowCopy);
   }
   createDraft(base) {
@@ -14354,7 +14252,11 @@ var symbols = {
   ">": "right angle",
   "\uFFFD": "special"
 };
-var graphemeDefaultSpokenForms = __spreadValues(__spreadValues(__spreadValues({}, alphabet), digits), symbols);
+var graphemeDefaultSpokenForms = {
+  ...alphabet,
+  ...digits,
+  ...symbols
+};
 
 // ../cursorless-engine/src/spokenForms/spokenFormMapUtil.ts
 function isDisabledByDefault(...spokenForms) {
@@ -14613,7 +14515,7 @@ var CommandLexer = class {
     this.mooLexer = import_moo.default.compile(rules);
   }
   reset(chunk, state) {
-    const { mooState } = state != null ? state : {};
+    const { mooState } = state ?? {};
     this.mooLexer.reset(chunk, mooState);
     return this;
   }
@@ -14639,7 +14541,7 @@ var CommandLexer = class {
     return value;
   }
   skipToken(token) {
-    return (token == null ? void 0 : token.type) === "ws";
+    return token?.type === "ws";
   }
 };
 
@@ -14927,18 +14829,15 @@ var COLOR_CANONICALIZATION_MAPPING = {
   purple: "pink"
 };
 function canonicalizeScopeTypesInPlace(target) {
-  var _a;
-  (_a = target.modifiers) == null ? void 0 : _a.forEach((mod) => {
-    var _a2;
+  target.modifiers?.forEach((mod) => {
     if (mod.type === "containingScope" || mod.type === "everyScope") {
-      mod.scopeType.type = (_a2 = SCOPE_TYPE_CANONICALIZATION_MAPPING[mod.scopeType.type]) != null ? _a2 : mod.scopeType.type;
+      mod.scopeType.type = SCOPE_TYPE_CANONICALIZATION_MAPPING[mod.scopeType.type] ?? mod.scopeType.type;
     }
   });
 }
 function canonicalizeColorsInPlace(target) {
-  var _a, _b;
-  if (((_a = target.mark) == null ? void 0 : _a.type) === "decoratedSymbol") {
-    target.mark.symbolColor = (_b = COLOR_CANONICALIZATION_MAPPING[target.mark.symbolColor]) != null ? _b : target.mark.symbolColor;
+  if (target.mark?.type === "decoratedSymbol") {
+    target.mark.symbolColor = COLOR_CANONICALIZATION_MAPPING[target.mark.symbolColor] ?? target.mark.symbolColor;
   }
 }
 function canonicalizeTargetsInPlace(partialTargets) {
@@ -14950,7 +14849,7 @@ function canonicalizeTargetsInPlace(partialTargets) {
 
 // ../cursorless-engine/src/core/commandVersionUpgrades/upgradeV0ToV1/upgradeV0ToV1.ts
 function upgradeV0ToV1(command) {
-  return __spreadProps(__spreadValues({}, command), { version: 1 });
+  return { ...command, version: 1 };
 }
 
 // ../cursorless-engine/src/core/commandVersionUpgrades/upgradeV1ToV2/upgradeStrictHere.ts
@@ -14970,7 +14869,6 @@ var upgradeStrictHere = (target) => isEqual_default(target, STRICT_HERE) ? IMPLI
 
 // ../cursorless-engine/src/core/commandVersionUpgrades/upgradeV1ToV2/upgradeV1ToV2.ts
 function upgradeV1ToV2(command) {
-  var _a;
   const actionName = command.action;
   return {
     spokenForm: command.spokenForm,
@@ -14979,7 +14877,7 @@ function upgradeV1ToV2(command) {
       args: command.extraArgs
     },
     targets: upgradeTargets(command.targets, actionName),
-    usePrePhraseSnapshot: (_a = command.usePrePhraseSnapshot) != null ? _a : false,
+    usePrePhraseSnapshot: command.usePrePhraseSnapshot ?? false,
     version: 2
   };
 }
@@ -14988,18 +14886,19 @@ function upgradeModifier(modifier) {
     case "identity":
       return [];
     case "containingScope": {
-      const _a = modifier, { includeSiblings, scopeType, type: type2 } = _a, rest = __objRest(_a, ["includeSiblings", "scopeType", "type"]);
+      const { includeSiblings, scopeType, type: type2, ...rest } = modifier;
       return [
-        __spreadValues({
+        {
           type: includeSiblings ? "everyScope" : "containingScope",
           scopeType: {
             type: scopeType
-          }
-        }, rest)
+          },
+          ...rest
+        }
       ];
     }
     case "surroundingPair": {
-      const _b = modifier, { delimiterInclusion } = _b, rest = __objRest(_b, ["delimiterInclusion"]);
+      const { delimiterInclusion, ...rest } = modifier;
       const surroundingPairModifier = {
         type: "containingScope",
         scopeType: rest
@@ -15013,12 +14912,13 @@ function upgradeModifier(modifier) {
       return [surroundingPairModifier];
     }
     case "subpiece": {
-      const _c = modifier, { type: type2, pieceType } = _c, rest = __objRest(_c, ["type", "pieceType"]);
+      const { type: type2, pieceType, ...rest } = modifier;
       return [
-        __spreadValues({
+        {
           type: "ordinalRange",
-          scopeType: { type: pieceType }
-        }, rest)
+          scopeType: { type: pieceType },
+          ...rest
+        }
       ];
     }
     case "head":
@@ -15062,12 +14962,12 @@ function upgradePrimitiveTarget(target, action) {
   if (selectionType) {
     switch (selectionType) {
       case "token":
-        if ((modifier == null ? void 0 : modifier.type) === "subpiece") {
+        if (modifier?.type === "subpiece") {
           break;
         }
       // fallthrough
       case "line":
-        if ((mark == null ? void 0 : mark.type) === "lineNumber") {
+        if (mark?.type === "lineNumber") {
           break;
         }
       // fallthrough
@@ -15087,17 +14987,18 @@ function upgradePrimitiveTarget(target, action) {
     // Empty array of modifiers is not allowed
     modifiers: modifiers.length > 0 ? modifiers : void 0,
     // Cursor token is just cursor position but treated as a token. This is done in the pipeline for normal cursor now
-    mark: (mark == null ? void 0 : mark.type) === "cursorToken" ? void 0 : mark
+    mark: mark?.type === "cursorToken" ? void 0 : mark
   };
 }
 function upgradeTarget(target, action) {
   switch (target.type) {
     case "list":
-      return __spreadProps(__spreadValues({}, target), {
+      return {
+        ...target,
         elements: target.elements.map(
           (target2) => upgradeTarget(target2, action)
         )
-      });
+      };
     case "range": {
       const { type: type2, rangeType, start, end, excludeStart, excludeEnd } = target;
       return {
@@ -15105,8 +15006,8 @@ function upgradeTarget(target, action) {
         rangeType,
         anchor: upgradePrimitiveTarget(start, action),
         active: upgradePrimitiveTarget(end, action),
-        excludeAnchor: excludeStart != null ? excludeStart : false,
-        excludeActive: excludeEnd != null ? excludeEnd : false
+        excludeAnchor: excludeStart ?? false,
+        excludeActive: excludeEnd ?? false
       };
     }
     case "primitive":
@@ -15121,38 +15022,40 @@ function upgradeTargets(partialTargets, action) {
 
 // ../cursorless-engine/src/core/commandVersionUpgrades/upgradeV2ToV3/upgradeV2ToV3.ts
 function upgradeV2ToV3(command) {
-  return __spreadProps(__spreadValues({}, command), {
+  return {
+    ...command,
     version: 3,
     targets: command.targets.map(upgradeTarget2)
-  });
+  };
 }
 function upgradeTarget2(target) {
   switch (target.type) {
     case "list":
-      return __spreadProps(__spreadValues({}, target), {
+      return {
+        ...target,
         elements: target.elements.map(
           (target2) => upgradeTarget2(target2)
         )
-      });
+      };
     case "range": {
-      const _a = target, { anchor, active } = _a, rest = __objRest(_a, ["anchor", "active"]);
-      return __spreadValues({
+      const { anchor, active, ...rest } = target;
+      return {
         anchor: upgradePrimitiveTarget2(
           anchor
         ),
         active: upgradePrimitiveTarget2(
           active
-        )
-      }, rest);
+        ),
+        ...rest
+      };
     }
     case "primitive":
       return upgradePrimitiveTarget2(target);
   }
 }
 function upgradePrimitiveTarget2(target) {
-  var _a;
   const modifiers = target.modifiers != null ? target.modifiers.map(updateModifier) : void 0;
-  if (((_a = target.mark) == null ? void 0 : _a.type) === "lineNumber") {
+  if (target.mark?.type === "lineNumber") {
     const { anchor, active } = target.mark;
     if (anchor.type !== active.type || anchor.lineNumber < 0 !== active.lineNumber < 0) {
       return {
@@ -15171,10 +15074,11 @@ function upgradePrimitiveTarget2(target) {
       };
     }
   }
-  return __spreadProps(__spreadValues({}, target), {
+  return {
+    ...target,
     mark: target.mark != null ? updateMark(target.mark) : void 0,
     modifiers
-  });
+  };
 }
 function updateMark(mark) {
   switch (mark.type) {
@@ -15246,26 +15150,29 @@ function createAbsoluteOrdinalModifier(scopeType, start, length = 1) {
 
 // ../cursorless-engine/src/core/commandVersionUpgrades/upgradeV3ToV4/upgradeV3ToV4.ts
 function upgradeV3ToV4(command) {
-  return __spreadProps(__spreadValues({}, command), {
+  return {
+    ...command,
     version: 4,
     targets: command.targets.map(upgradeTarget3)
-  });
+  };
 }
 function upgradeTarget3(target) {
   switch (target.type) {
     case "primitive":
       return upgradePrimitiveTarget3(target);
     case "range": {
-      const _a = target, { anchor } = _a, rest = __objRest(_a, ["anchor"]);
-      return __spreadProps(__spreadValues({}, rest), {
+      const { anchor, ...rest } = target;
+      return {
+        ...rest,
         anchor: upgradePrimitiveTarget3(anchor)
-      });
+      };
     }
     case "list": {
-      const _b = target, { elements } = _b, rest = __objRest(_b, ["elements"]);
-      return __spreadProps(__spreadValues({}, rest), {
+      const { elements, ...rest } = target;
+      return {
+        ...rest,
         elements: elements.map(upgradeTarget3)
-      });
+      };
     }
   }
 }
@@ -15278,11 +15185,12 @@ function upgradePrimitiveTarget3(target) {
 
 // ../cursorless-engine/src/core/commandVersionUpgrades/upgradeV4ToV5/upgradeV4ToV5.ts
 function upgradeV4ToV5(command) {
-  return __spreadProps(__spreadValues({}, command), {
+  return {
+    ...command,
     version: 5,
     action: upgradeAction(command.action),
     targets: command.targets.map(upgradeTarget4)
-  });
+  };
 }
 function upgradeAction(action) {
   switch (action.name) {
@@ -15331,48 +15239,51 @@ function upgradeTarget4(target) {
     case "implicit":
       return target;
     case "list":
-      return __spreadProps(__spreadValues({}, target), {
+      return {
+        ...target,
         elements: target.elements.map(
           upgradeTarget4
         )
-      });
+      };
     case "range":
-      return __spreadProps(__spreadValues({}, target), {
+      return {
+        ...target,
         anchor: upgradeTarget4(
           target.anchor
         ),
         active: upgradeTarget4(
           target.active
         )
-      });
+      };
     case "primitive":
-      return __spreadProps(__spreadValues({}, target), {
+      return {
+        ...target,
         mark: target.mark != null ? upgradeMark(target.mark) : void 0,
         modifiers: target.modifiers != null && target.modifiers.length > 0 ? target.modifiers.map(upgradeModifier2) : void 0
-      });
+      };
   }
 }
 function upgradeMark(mark) {
-  var _a, _b;
   if (mark.type === "range") {
-    return __spreadProps(__spreadValues({}, mark), {
+    return {
+      ...mark,
       anchor: upgradeMark(mark.anchor),
       active: upgradeMark(mark.active),
-      excludeAnchor: (_a = mark.excludeAnchor) != null ? _a : false,
-      excludeActive: (_b = mark.excludeActive) != null ? _b : false
-    });
+      excludeAnchor: mark.excludeAnchor ?? false,
+      excludeActive: mark.excludeActive ?? false
+    };
   }
   return mark;
 }
 function upgradeModifier2(modifier) {
-  var _a, _b;
   if (modifier.type === "range") {
-    return __spreadProps(__spreadValues({}, modifier), {
+    return {
+      ...modifier,
       anchor: upgradeModifier2(modifier.anchor),
       active: upgradeModifier2(modifier.active),
-      excludeAnchor: (_a = modifier.excludeAnchor) != null ? _a : false,
-      excludeActive: (_b = modifier.excludeActive) != null ? _b : false
-    });
+      excludeAnchor: modifier.excludeAnchor ?? false,
+      excludeActive: modifier.excludeActive ?? false
+    };
   }
   return modifier;
 }
@@ -15407,8 +15318,7 @@ var actionAliasToCanonicalName = {
   wrap: "wrapWithPairedDelimiter"
 };
 function canonicalizeActionName(actionName) {
-  var _a;
-  const canonicalName = (_a = actionAliasToCanonicalName[actionName]) != null ? _a : actionName;
+  const canonicalName = actionAliasToCanonicalName[actionName] ?? actionName;
   if (!actionNames.includes(canonicalName)) {
     throw new Error(`Unknown action name: ${canonicalName}`);
   }
@@ -15425,7 +15335,6 @@ function upgradeV5ToV6(command) {
   };
 }
 function upgradeAction2(action, targets) {
-  var _a, _b, _c, _d, _e;
   const name = canonicalizeActionName(action.name);
   switch (name) {
     case "replaceWithTarget":
@@ -15463,7 +15372,7 @@ function upgradeAction2(action, targets) {
     case "generateSnippet":
       return {
         name,
-        snippetName: (_a = action.args) == null ? void 0 : _a[0],
+        snippetName: action.args?.[0],
         target: upgradeTarget5(targets[0])
       };
     case "insertSnippet":
@@ -15482,7 +15391,7 @@ function upgradeAction2(action, targets) {
       return {
         name,
         commandId: action.args[0],
-        options: (_b = action.args) == null ? void 0 : _b[1],
+        options: action.args?.[1],
         target: upgradeTarget5(targets[0])
       };
     case "replace":
@@ -15496,8 +15405,8 @@ function upgradeAction2(action, targets) {
         name,
         target: upgradeTarget5(targets[0])
       };
-      if (((_c = action.args) == null ? void 0 : _c[0]) != null) {
-        result.highlightId = (_d = action.args) == null ? void 0 : _d[0];
+      if (action.args?.[0] != null) {
+        result.highlightId = action.args?.[0];
       }
       return result;
     }
@@ -15509,7 +15418,7 @@ function upgradeAction2(action, targets) {
     case "getText":
       return {
         name,
-        options: (_e = action.args) == null ? void 0 : _e[0],
+        options: action.args?.[0],
         target: upgradeTarget5(targets[0])
       };
     case "parsed":
@@ -15541,9 +15450,10 @@ function upgradeNonImplicitTarget(target) {
   }
 }
 function upgradeListTarget(target) {
-  return __spreadProps(__spreadValues({}, target), {
+  return {
+    ...target,
     elements: target.elements.map(upgradeRangeOrPrimitiveTarget)
-  });
+  };
 }
 function upgradeRangeOrPrimitiveTarget(target) {
   switch (target.type) {
@@ -15600,7 +15510,7 @@ function listTargetToDestination(target) {
     if (currentElements.length > 0) {
       destinations.push({
         type: "primitive",
-        insertionMode: currentInsertionMode != null ? currentInsertionMode : "to",
+        insertionMode: currentInsertionMode ?? "to",
         target: currentElements.length === 1 ? currentElements[0] : {
           type: "list",
           elements: currentElements
@@ -15628,18 +15538,16 @@ function listTargetToDestination(target) {
   return destinations[0];
 }
 function rangeTargetToDestination(target) {
-  var _a;
   return {
     type: "primitive",
-    insertionMode: (_a = getInsertionMode(target.anchor)) != null ? _a : "to",
+    insertionMode: getInsertionMode(target.anchor) ?? "to",
     target: upgradeRangeTarget(target)
   };
 }
 function primitiveTargetToDestination(target) {
-  var _a;
   return {
     type: "primitive",
-    insertionMode: (_a = getInsertionMode(target)) != null ? _a : "to",
+    insertionMode: getInsertionMode(target) ?? "to",
     target: upgradePrimitiveTarget4(target)
   };
 }
@@ -15657,15 +15565,14 @@ function getInsertionMode(target) {
   }
 }
 function getInsertionModeFromPrimitive(target) {
-  var _a;
-  const positionModifier = (_a = target.modifiers) == null ? void 0 : _a.find(
+  const positionModifier = target.modifiers?.find(
     (m) => m.type === "position"
   );
   if (positionModifier != null) {
     if (target.modifiers.indexOf(positionModifier) !== 0) {
       throw Error("Position modifier has to be at first index");
     }
-    if ((positionModifier == null ? void 0 : positionModifier.position) === "before" || (positionModifier == null ? void 0 : positionModifier.position) === "after") {
+    if (positionModifier?.position === "before" || positionModifier?.position === "after") {
       return positionModifier.position;
     }
   }
@@ -15691,7 +15598,7 @@ function upgradeModifiers(modifiers) {
 
 // ../cursorless-engine/src/core/commandVersionUpgrades/upgradeV6ToV7.ts
 function upgradeV6ToV7(command) {
-  return __spreadProps(__spreadValues({}, command), { version: 7 });
+  return { ...command, version: 7 };
 }
 
 // ../cursorless-engine/src/core/commandVersionUpgrades/canonicalizeAndValidateCommand.ts
@@ -15884,7 +15791,7 @@ var DestinationImpl = class _DestinationImpl {
     this.contentRange = getContentRange(target.contentRange, insertionMode2);
     this.isBefore = insertionMode2 === "before";
     this.isLineDelimiter = target.insertionDelimiter.includes("\n");
-    this.indentationString = (indentationString != null ? indentationString : this.isLineDelimiter) ? getIndentationString(target.editor, target.contentRange) : "";
+    this.indentationString = indentationString ?? this.isLineDelimiter ? getIndentationString(target.editor, target.contentRange) : "";
     this.insertionPrefix = target.prefixRange != null ? target.editor.document.getText(target.prefixRange) : void 0;
   }
   get contentSelection() {
@@ -15944,11 +15851,10 @@ var DestinationImpl = class _DestinationImpl {
   }
   getEditRange() {
     const position = (() => {
-      var _a, _b, _c, _d;
       const insertionPosition = this.isBefore ? union(this.target.contentRange, this.target.prefixRange).start : this.target.contentRange.end;
       if (this.isLineDelimiter) {
         const line = this.editor.document.lineAt(insertionPosition);
-        const trimmedPosition = this.isBefore ? (_b = (_a = line.rangeTrimmed) == null ? void 0 : _a.start) != null ? _b : line.range.start : (_d = (_c = line.rangeTrimmed) == null ? void 0 : _c.end) != null ? _d : line.range.end;
+        const trimmedPosition = this.isBefore ? line.rangeTrimmed?.start ?? line.range.start : line.rangeTrimmed?.end ?? line.range.end;
         if (insertionPosition.isEqual(trimmedPosition)) {
           return this.isBefore ? line.range.start : line.range.end;
         }
@@ -15958,14 +15864,12 @@ var DestinationImpl = class _DestinationImpl {
     return new Range(position, position);
   }
   getEditText(text, skipIndentation) {
-    var _a;
     const indentationString = skipIndentation ? "" : this.indentationString;
-    const insertionText = indentationString + ((_a = this.insertionPrefix) != null ? _a : "") + text;
+    const insertionText = indentationString + (this.insertionPrefix ?? "") + text;
     return this.isBefore ? insertionText + this.insertionDelimiter : this.insertionDelimiter + insertionText;
   }
   updateRange(range3, text, skipIndentation) {
-    var _a, _b;
-    const baseStartOffset = this.editor.document.offsetAt(range3.start) + (skipIndentation ? 0 : this.indentationString.length) + ((_b = (_a = this.insertionPrefix) == null ? void 0 : _a.length) != null ? _b : 0);
+    const baseStartOffset = this.editor.document.offsetAt(range3.start) + (skipIndentation ? 0 : this.indentationString.length) + (this.insertionPrefix?.length ?? 0);
     const startIndex = this.isBefore ? baseStartOffset : baseStartOffset + this.getLengthOfInsertionDelimiter();
     const endIndex = startIndex + text.length;
     return new Range(
@@ -15984,7 +15888,6 @@ var DestinationImpl = class _DestinationImpl {
   }
 };
 function getIndentationString(editor, range3) {
-  var _a, _b;
   let length = Number.MAX_SAFE_INTEGER;
   let indentationString = "";
   for (let i = range3.start.line; i <= range3.end.line; ++i) {
@@ -15992,7 +15895,7 @@ function getIndentationString(editor, range3) {
     if (line.range.isEmpty || line.isEmptyOrWhitespace && !range3.isSingleLine) {
       continue;
     }
-    const trimmedPosition = (_b = (_a = line.rangeTrimmed) == null ? void 0 : _a.start) != null ? _b : line.range.end;
+    const trimmedPosition = line.rangeTrimmed?.start ?? line.range.end;
     if (trimmedPosition.character < length) {
       length = trimmedPosition.character;
       indentationString = line.text.slice(0, length);
@@ -16093,14 +15996,18 @@ var BaseTarget = class _BaseTarget {
   }
   cloneWith(parameters) {
     const constructor = Object.getPrototypeOf(this).constructor;
-    return new constructor(__spreadValues(__spreadValues({}, this.getCloneParameters()), parameters));
+    return new constructor({
+      ...this.getCloneParameters(),
+      ...parameters
+    });
   }
   maybeCreateRichRangeTarget(isReversed, endTarget) {
     const { constructor } = Object.getPrototypeOf(this);
-    return new constructor(__spreadProps(__spreadValues({}, this.getCloneParameters()), {
+    return new constructor({
+      ...this.getCloneParameters(),
       isReversed,
       contentRange: createContinuousRange(this, endTarget, true, true)
-    }));
+    });
   }
   isEqual(otherTarget) {
     return otherTarget instanceof _BaseTarget && isEqual_default(this.getEqualityParameters(), otherTarget.getEqualityParameters());
@@ -16116,8 +16023,10 @@ var BaseTarget = class _BaseTarget {
    * @returns The object to be used for determining equality
    */
   getEqualityParameters() {
-    const _a = this.getCloneParameters(), { thatTarget } = _a, otherCloneParameters = __objRest(_a, ["thatTarget"]);
-    return __spreadValues({}, otherCloneParameters);
+    const { thatTarget, ...otherCloneParameters } = this.getCloneParameters();
+    return {
+      ...otherCloneParameters
+    };
   }
   toDestination(insertionMode2) {
     return new DestinationImpl(this, insertionMode2);
@@ -16179,20 +16088,20 @@ function tryConstructTarget(constructor, editor, range3, isReversed) {
 // ../cursorless-engine/src/processTargets/targets/PlainTarget.ts
 var PlainTarget = class extends BaseTarget {
   constructor(parameters) {
-    var _a, _b;
     super(parameters);
     this.type = "PlainTarget";
     this.getLeadingDelimiterTarget = () => void 0;
     this.getTrailingDelimiterTarget = () => void 0;
     this.getRemovalRange = () => this.contentRange;
-    this.isToken = (_a = parameters.isToken) != null ? _a : true;
-    this.insertionDelimiter = (_b = parameters.insertionDelimiter) != null ? _b : "";
+    this.isToken = parameters.isToken ?? true;
+    this.insertionDelimiter = parameters.insertionDelimiter ?? "";
   }
   getCloneParameters() {
-    return __spreadProps(__spreadValues({}, this.state), {
+    return {
+      ...this.state,
       isToken: this.isToken,
       insertionDelimiter: this.insertionDelimiter
-    });
+    };
   }
 };
 function tryConstructPlainTarget(editor, range3, isReversed) {
@@ -16258,9 +16167,8 @@ var LineTarget = class _LineTarget extends BaseTarget {
     );
   }
   getRemovalRange() {
-    var _a;
     const contentRemovalRange = this.fullLineContentRange;
-    const delimiterTarget = (_a = this.getTrailingDelimiterTarget()) != null ? _a : this.getLeadingDelimiterTarget();
+    const delimiterTarget = this.getTrailingDelimiterTarget() ?? this.getLeadingDelimiterTarget();
     return delimiterTarget == null ? contentRemovalRange : contentRemovalRange.union(delimiterTarget.contentRange);
   }
   maybeCreateRichRangeTarget(isReversed, endTarget) {
@@ -16360,8 +16268,7 @@ var ParagraphTarget = class _ParagraphTarget extends BaseTarget {
     );
   }
   getRemovalRange() {
-    var _a;
-    const delimiterTarget = (_a = this.getTrailingDelimiterTarget()) != null ? _a : this.getLeadingDelimiterTarget();
+    const delimiterTarget = this.getTrailingDelimiterTarget() ?? this.getLeadingDelimiterTarget();
     const removalContentRange = delimiterTarget != null ? this.contentRange.union(delimiterTarget.contentRange) : this.contentRange;
     return new LineTarget({
       contentRange: removalContentRange,
@@ -16373,15 +16280,15 @@ var ParagraphTarget = class _ParagraphTarget extends BaseTarget {
     return expandToFullLine(this.editor, this.contentRange);
   }
   getRemovalHighlightRange() {
-    var _a;
-    const delimiterTarget = (_a = this.getTrailingDelimiterTarget()) != null ? _a : this.getLeadingDelimiterTarget();
+    const delimiterTarget = this.getTrailingDelimiterTarget() ?? this.getLeadingDelimiterTarget();
     return delimiterTarget != null ? this.fullLineContentRange.union(delimiterTarget.contentRange) : this.fullLineContentRange;
   }
   maybeCreateRichRangeTarget(isReversed, endTarget) {
-    return new _ParagraphTarget(__spreadProps(__spreadValues({}, this.getCloneParameters()), {
+    return new _ParagraphTarget({
+      ...this.getCloneParameters(),
       isReversed,
       contentRange: createContinuousLineRange(this, endTarget, true, true)
-    }));
+    });
   }
   getCloneParameters() {
     return this.state;
@@ -16468,12 +16375,13 @@ var RawSelectionTarget = class extends BaseTarget {
 // ../cursorless-engine/src/processTargets/targets/InteriorTarget.ts
 var InteriorTarget = class _InteriorTarget extends BaseTarget {
   constructor(parameters) {
-    super(__spreadProps(__spreadValues({}, parameters), {
+    super({
+      ...parameters,
       contentRange: shrinkRangeToFitContent(
         parameters.editor,
         parameters.fullInteriorRange
       )
-    }));
+    });
     this.type = "InteriorTarget";
     this.insertionDelimiter = " ";
     this.getLeadingDelimiterTarget = () => void 0;
@@ -16482,12 +16390,14 @@ var InteriorTarget = class _InteriorTarget extends BaseTarget {
     this.fullInteriorRange = parameters.fullInteriorRange;
   }
   getCloneParameters() {
-    return __spreadProps(__spreadValues({}, this.state), {
+    return {
+      ...this.state,
       fullInteriorRange: this.fullInteriorRange
-    });
+    };
   }
   maybeCreateRichRangeTarget(isReversed, endTarget) {
-    return new _InteriorTarget(__spreadProps(__spreadValues({}, this.getCloneParameters()), {
+    return new _InteriorTarget({
+      ...this.getCloneParameters(),
       isReversed,
       fullInteriorRange: createContinuousRangeFromRanges(
         this.fullInteriorRange,
@@ -16495,15 +16405,14 @@ var InteriorTarget = class _InteriorTarget extends BaseTarget {
         true,
         true
       )
-    }));
+    });
   }
 };
 
 // ../cursorless-engine/src/processTargets/targets/util/insertionRemovalBehaviors/DelimitedSequenceInsertionRemovalBehavior.ts
 function getDelimitedSequenceRemovalRange(target) {
-  var _a;
   const contentRange = union(target.contentRange, target.prefixRange);
-  const delimiterTarget = (_a = target.getTrailingDelimiterTarget()) != null ? _a : target.getLeadingDelimiterTarget();
+  const delimiterTarget = target.getTrailingDelimiterTarget() ?? target.getLeadingDelimiterTarget();
   return delimiterTarget != null ? contentRange.union(delimiterTarget.contentRange) : contentRange;
 }
 
@@ -16545,12 +16454,11 @@ function getTokenTrailingDelimiterTarget(target) {
   });
 }
 function getTokenRemovalRange(target) {
-  var _a, _b, _c, _d;
   const { editor } = target;
   const contentRange = union(target.contentRange, target.prefixRange);
   const { start, end } = contentRange;
-  const leadingWhitespaceRange = (_b = (_a = target.getLeadingDelimiterTarget()) == null ? void 0 : _a.contentRange) != null ? _b : start.toEmptyRange();
-  const trailingWhitespaceRange = (_d = (_c = target.getTrailingDelimiterTarget()) == null ? void 0 : _c.contentRange) != null ? _d : end.toEmptyRange();
+  const leadingWhitespaceRange = target.getLeadingDelimiterTarget()?.contentRange ?? start.toEmptyRange();
+  const trailingWhitespaceRange = target.getTrailingDelimiterTarget()?.contentRange ?? end.toEmptyRange();
   const fullLineRange = expandToFullLine(editor, contentRange);
   if (leadingWhitespaceRange.union(trailingWhitespaceRange).isRangeEqual(fullLineRange)) {
     return fullLineRange;
@@ -16581,7 +16489,6 @@ function getTrailingCharacter(editor, contentRange) {
 // ../cursorless-engine/src/processTargets/targets/ScopeTypeTarget.ts
 var ScopeTypeTarget = class _ScopeTypeTarget extends BaseTarget {
   constructor(parameters) {
-    var _a;
     super(parameters);
     this.type = "ScopeTypeTarget";
     this.scopeTypeType_ = parameters.scopeTypeType;
@@ -16590,7 +16497,7 @@ var ScopeTypeTarget = class _ScopeTypeTarget extends BaseTarget {
     this.leadingDelimiterRange_ = parameters.leadingDelimiterRange;
     this.trailingDelimiterRange_ = parameters.trailingDelimiterRange;
     this.prefixRange = parameters.prefixRange;
-    this.insertionDelimiter = (_a = parameters.insertionDelimiter) != null ? _a : getInsertionDelimiter(parameters.scopeTypeType);
+    this.insertionDelimiter = parameters.insertionDelimiter ?? getInsertionDelimiter(parameters.scopeTypeType);
     this.hasDelimiterRange_ = !!this.leadingDelimiterRange_ || !!this.trailingDelimiterRange_;
   }
   getLeadingDelimiterTarget() {
@@ -16635,26 +16542,27 @@ var ScopeTypeTarget = class _ScopeTypeTarget extends BaseTarget {
     return this.removalRange_ != null ? this.removalRange_ : this.hasDelimiterRange_ ? getDelimitedSequenceRemovalRange(this) : getTokenRemovalRange(this);
   }
   maybeCreateRichRangeTarget(isReversed, endTarget) {
-    var _a, _b;
     if (this.scopeTypeType_ !== endTarget.scopeTypeType_) {
       return null;
     }
     const contentRemovalRange = this.removalRange_ != null || endTarget.removalRange_ != null ? createContinuousRangeFromRanges(
-      (_a = this.removalRange_) != null ? _a : this.contentRange,
-      (_b = endTarget.removalRange_) != null ? _b : endTarget.contentRange,
+      this.removalRange_ ?? this.contentRange,
+      endTarget.removalRange_ ?? endTarget.contentRange,
       true,
       true
     ) : void 0;
-    return new _ScopeTypeTarget(__spreadProps(__spreadValues({}, this.getCloneParameters()), {
+    return new _ScopeTypeTarget({
+      ...this.getCloneParameters(),
       isReversed,
       leadingDelimiterRange: this.leadingDelimiterRange_,
       trailingDelimiterRange: endTarget.trailingDelimiterRange_,
       removalRange: contentRemovalRange,
       contentRange: createContinuousRange(this, endTarget, true, true)
-    }));
+    });
   }
   getCloneParameters() {
-    return __spreadProps(__spreadValues({}, this.state), {
+    return {
+      ...this.state,
       insertionDelimiter: this.insertionDelimiter,
       prefixRange: this.prefixRange,
       removalRange: void 0,
@@ -16662,7 +16570,7 @@ var ScopeTypeTarget = class _ScopeTypeTarget extends BaseTarget {
       scopeTypeType: this.scopeTypeType_,
       leadingDelimiterRange: this.leadingDelimiterRange_,
       trailingDelimiterRange: this.trailingDelimiterRange_
-    });
+    };
   }
 };
 function getInsertionDelimiter(scopeType) {
@@ -16726,18 +16634,20 @@ var SubTokenWordTarget = class _SubTokenWordTarget extends BaseTarget {
     return getDelimitedSequenceRemovalRange(this);
   }
   maybeCreateRichRangeTarget(isReversed, endTarget) {
-    return new _SubTokenWordTarget(__spreadProps(__spreadValues({}, this.getCloneParameters()), {
+    return new _SubTokenWordTarget({
+      ...this.getCloneParameters(),
       isReversed,
       contentRange: createContinuousRange(this, endTarget, true, true),
       trailingDelimiterRange: endTarget.trailingDelimiterRange_
-    }));
+    });
   }
   getCloneParameters() {
-    return __spreadProps(__spreadValues({}, this.state), {
+    return {
+      ...this.state,
       leadingDelimiterRange: this.leadingDelimiterRange_,
       trailingDelimiterRange: this.trailingDelimiterRange_,
       insertionDelimiter: this.insertionDelimiter
-    });
+    };
   }
 };
 
@@ -16800,23 +16710,23 @@ var SurroundingPairTarget = class extends BaseTarget {
     );
   }
   getCloneParameters() {
-    return __spreadProps(__spreadValues({}, this.state), {
+    return {
+      ...this.state,
       interiorRange: this.interiorRange_,
       boundary: this.boundary_
-    });
+    };
   }
 };
 
 // ../cursorless-engine/src/processTargets/targets/UntypedTarget.ts
 var UntypedTarget = class extends BaseTarget {
   constructor(parameters) {
-    var _a;
     super(parameters);
     this.type = "UntypedTarget";
     this.insertionDelimiter = " ";
     this.hasExplicitScopeType = false;
     this.hasExplicitRange = parameters.hasExplicitRange;
-    this.isToken = (_a = parameters.isToken) != null ? _a : true;
+    this.isToken = parameters.isToken ?? true;
   }
   getLeadingDelimiterTarget() {
     return getTokenLeadingDelimiterTarget(this);
@@ -16831,10 +16741,11 @@ var UntypedTarget = class extends BaseTarget {
     return null;
   }
   getCloneParameters() {
-    return __spreadProps(__spreadValues({}, this.state), {
+    return {
+      ...this.state,
       isToken: this.isToken,
       hasExplicitRange: this.hasExplicitRange
-    });
+    };
   }
 };
 
@@ -16859,13 +16770,14 @@ var ImplicitTarget = class extends BaseTarget {
 var HeadTailTarget = class extends BaseTarget {
   constructor(parameters) {
     const { inputTarget, modifiedTarget, isHead } = parameters;
-    super(__spreadProps(__spreadValues({}, parameters), {
+    super({
+      ...parameters,
       contentRange: constructRange(
         inputTarget.contentRange,
         modifiedTarget.contentRange,
         isHead
       )
-    }));
+    });
     this.type = "HeadTailTarget";
     this.insertionDelimiter = " ";
     this.inputTarget = inputTarget;
@@ -16899,11 +16811,12 @@ var HeadTailTarget = class extends BaseTarget {
     });
   }
   getCloneParameters() {
-    return __spreadProps(__spreadValues({}, this.state), {
+    return {
+      ...this.state,
       inputTarget: this.inputTarget,
       modifiedTarget: this.modifiedTarget,
       isHead: this.isHead
-    });
+    };
   }
 };
 function constructRange(originalRange, modifiedRange, isHead) {
@@ -16913,12 +16826,13 @@ function constructRange(originalRange, modifiedRange, isHead) {
 // ../cursorless-engine/src/processTargets/targets/BoundedParagraphTarget.ts
 var BoundedParagraphTarget = class _BoundedParagraphTarget extends BaseTarget {
   constructor(parameters) {
-    super(__spreadProps(__spreadValues({}, parameters), {
+    super({
+      ...parameters,
       contentRange: getIntersectionStrict(
         parameters.paragraphTarget.contentRange,
         parameters.containingInterior.contentRange
       )
-    }));
+    });
     this.type = "BoundedParagraphTarget";
     this.insertionDelimiter = "\n\n";
     this.isLine = true;
@@ -16934,8 +16848,7 @@ var BoundedParagraphTarget = class _BoundedParagraphTarget extends BaseTarget {
     return this.endLineGap > 1 ? this.paragraphTarget.getTrailingDelimiterTarget() : void 0;
   }
   getRemovalRange() {
-    var _a;
-    const delimiterTarget = (_a = this.getTrailingDelimiterTarget()) != null ? _a : this.getLeadingDelimiterTarget();
+    const delimiterTarget = this.getTrailingDelimiterTarget() ?? this.getLeadingDelimiterTarget();
     const removalContentRange = delimiterTarget != null ? this.contentRange.union(delimiterTarget.contentRange) : this.contentRange;
     if (this.startLineGap <= 0 || this.endLineGap <= 0) {
       return removalContentRange;
@@ -16950,15 +16863,15 @@ var BoundedParagraphTarget = class _BoundedParagraphTarget extends BaseTarget {
     return expandToFullLine(this.editor, this.contentRange);
   }
   getRemovalHighlightRange() {
-    var _a;
     if (this.startLineGap < 1 || this.endLineGap < 1) {
       return this.getRemovalRange();
     }
-    const delimiterTarget = (_a = this.getTrailingDelimiterTarget()) != null ? _a : this.getLeadingDelimiterTarget();
+    const delimiterTarget = this.getTrailingDelimiterTarget() ?? this.getLeadingDelimiterTarget();
     return delimiterTarget != null ? this.fullLineContentRange.union(delimiterTarget.contentRange) : this.fullLineContentRange;
   }
   maybeCreateRichRangeTarget(isReversed, endTarget) {
-    return new _BoundedParagraphTarget(__spreadProps(__spreadValues({}, this.getCloneParameters()), {
+    return new _BoundedParagraphTarget({
+      ...this.getCloneParameters(),
       isReversed,
       containingInterior: this.containingInterior.maybeCreateRichRangeTarget(
         isReversed,
@@ -16968,13 +16881,14 @@ var BoundedParagraphTarget = class _BoundedParagraphTarget extends BaseTarget {
         isReversed,
         endTarget.paragraphTarget
       )
-    }));
+    });
   }
   getCloneParameters() {
-    return __spreadProps(__spreadValues({}, this.state), {
+    return {
+      ...this.state,
       paragraphTarget: this.paragraphTarget,
       containingInterior: this.containingInterior
-    });
+    };
   }
 };
 function getIntersectionStrict(range1, range22) {
@@ -16987,11 +16901,10 @@ function getIntersectionStrict(range1, range22) {
 
 // ../cursorless-engine/src/processTargets/marks/getActiveSelections.ts
 function getActiveSelections(ide2) {
-  var _a, _b;
-  return (_b = (_a = ide2.activeTextEditor) == null ? void 0 : _a.selections.map((selection) => ({
+  return ide2.activeTextEditor?.selections.map((selection) => ({
     selection,
     editor: ide2.activeTextEditor
-  }))) != null ? _b : [];
+  })) ?? [];
 }
 
 // ../cursorless-engine/src/processTargets/marks/CursorStage.ts
@@ -17065,9 +16978,8 @@ var KeyboardTargetUpdater = class {
     this.storedTargets.set("keyboard", new CursorStage().run());
   }
   dispose() {
-    var _a;
     this.disposables.forEach((disposable) => disposable.dispose());
-    (_a = this.selectionWatcherDisposable) == null ? void 0 : _a.dispose();
+    this.selectionWatcherDisposable?.dispose();
   }
 };
 
@@ -17165,7 +17077,7 @@ var KNOWN_GRAPHEME_MATCHER = new RegExp(
   "u"
 );
 var UNKNOWN = "[unk]";
-var GRAPHEME_SPLIT_REGEX = new RegExp("\\p{L}\\p{M}*|[\\p{N}\\p{P}\\p{S}]", "gu");
+var GRAPHEME_SPLIT_REGEX = /\p{L}\p{M}*|[\p{N}\p{P}\p{S}]/gu;
 var TokenGraphemeSplitter = class {
   constructor() {
     this.disposables = [];
@@ -17201,15 +17113,16 @@ var TokenGraphemeSplitter = class {
     );
   }
   updateTokenHatSplittingMode() {
-    const _a = ide().configuration.getOwnConfiguration("tokenHatSplittingMode"), { lettersToPreserve, symbolsToPreserve } = _a, rest = __objRest(_a, ["lettersToPreserve", "symbolsToPreserve"]);
-    this.tokenHatSplittingMode = __spreadValues({
+    const { lettersToPreserve, symbolsToPreserve, ...rest } = ide().configuration.getOwnConfiguration("tokenHatSplittingMode");
+    this.tokenHatSplittingMode = {
       lettersToPreserve: lettersToPreserve.map(
         (grapheme) => grapheme.toLowerCase().normalize("NFC")
       ),
       symbolsToPreserve: symbolsToPreserve.map(
         (grapheme) => grapheme.normalize("NFC")
-      )
-    }, rest);
+      ),
+      ...rest
+    };
     this.algorithmChangeNotifier.notifyListeners();
   }
   /**
@@ -17278,13 +17191,12 @@ function hatOldTokenRank(hatOldTokenRanks) {
 }
 function minimumTokenRankContainingGrapheme(tokenRank, graphemeTokenRanks) {
   const coreMetric = memoize_default((graphemeText) => {
-    var _a;
-    return (_a = min_default(graphemeTokenRanks[graphemeText].filter((r) => r > tokenRank))) != null ? _a : Infinity;
+    return min_default(graphemeTokenRanks[graphemeText].filter((r) => r > tokenRank)) ?? Infinity;
   });
   return ({ grapheme: { text } }) => coreMetric(text);
 }
 function isOldTokenHat(oldTokenHat) {
-  return (hat) => hat.grapheme.text === (oldTokenHat == null ? void 0 : oldTokenHat.grapheme) && hat.style === (oldTokenHat == null ? void 0 : oldTokenHat.hatStyle) ? 1 : 0;
+  return (hat) => hat.grapheme.text === oldTokenHat?.grapheme && hat.style === oldTokenHat?.hatStyle ? 1 : 0;
 }
 function penaltyEquivalenceClass(hatStability) {
   switch (hatStability) {
@@ -17539,7 +17451,8 @@ function getRankedTokens(activeTextEditor, visibleTextEditors, forcedHatMap) {
     const displayLineMap = getDisplayLineMap(editor, [referencePosition.line]);
     const tokens3 = flatten_default(
       editor.visibleRanges.map(
-        (range3) => getTokensInRange(editor, range3).map((partialToken) => __spreadProps(__spreadValues({}, partialToken), {
+        (range3) => getTokensInRange(editor, range3).map((partialToken) => ({
+          ...partialToken,
           displayLine: displayLineMap.get(partialToken.range.start.line)
         }))
       )
@@ -17623,7 +17536,7 @@ function allocateHats({
       context,
       hatStability,
       tokenRank,
-      forcedHatMap == null ? void 0 : forcedHatMap.get(token),
+      forcedHatMap?.get(token),
       tokenOldHatMap.get(token),
       tokenRemainingHatCandidates
     );
@@ -17715,32 +17628,31 @@ var HatAllocator = class {
    * @param forceTokenHats If supplied, force the allocator to use these hats
    * for the given tokens. This is used for the tutorial, and for testing.
    */
-  allocateHats(forceTokenHats) {
-    return __async(this, null, function* () {
-      const activeMap = yield this.context.getActiveMap();
-      forceTokenHats = forceTokenHats == null ? void 0 : forceTokenHats.map((tokenHat) => __spreadProps(__spreadValues({}, tokenHat), {
-        grapheme: tokenGraphemeSplitter().normalizeGrapheme(tokenHat.grapheme)
-      }));
-      const tokenHats = this.hats.isEnabled ? allocateHats({
-        tokenGraphemeSplitter: tokenGraphemeSplitter(),
-        enabledHatStyles: this.hats.enabledHatStyles,
-        forceTokenHats,
-        oldTokenHats: activeMap.tokenHats,
-        hatStability: ide().configuration.getOwnConfiguration(
-          "experimental.hatStability"
-        ),
-        activeTextEditor: ide().activeTextEditor,
-        visibleTextEditors: ide().visibleTextEditors
-      }) : [];
-      activeMap.setTokenHats(tokenHats);
-      yield this.hats.setHatRanges(
-        tokenHats.map(({ hatStyle, hatRange, token: { editor } }) => ({
-          editor,
-          range: hatRange,
-          styleName: hatStyle
-        }))
-      );
-    });
+  async allocateHats(forceTokenHats) {
+    const activeMap = await this.context.getActiveMap();
+    forceTokenHats = forceTokenHats?.map((tokenHat) => ({
+      ...tokenHat,
+      grapheme: tokenGraphemeSplitter().normalizeGrapheme(tokenHat.grapheme)
+    }));
+    const tokenHats = this.hats.isEnabled ? allocateHats({
+      tokenGraphemeSplitter: tokenGraphemeSplitter(),
+      enabledHatStyles: this.hats.enabledHatStyles,
+      forceTokenHats,
+      oldTokenHats: activeMap.tokenHats,
+      hatStability: ide().configuration.getOwnConfiguration(
+        "experimental.hatStability"
+      ),
+      activeTextEditor: ide().activeTextEditor,
+      visibleTextEditors: ide().visibleTextEditors
+    }) : [];
+    activeMap.setTokenHats(tokenHats);
+    await this.hats.setHatRanges(
+      tokenHats.map(({ hatStyle, hatRange, token: { editor } }) => ({
+        editor,
+        range: hatRange,
+        styleName: hatStyle
+      }))
+    );
   }
   dispose() {
     this.disposables.forEach(({ dispose }) => dispose());
@@ -17790,13 +17702,14 @@ var IndividualHatMap = class _IndividualHatMap {
       const { hatStyle, grapheme, token } = tokenHat;
       const liveToken = this.makeTokenLive(token);
       this.map[getKey(hatStyle, grapheme)] = liveToken;
-      return __spreadProps(__spreadValues({}, tokenHat), { token: liveToken });
+      return { ...tokenHat, token: liveToken };
     });
     this._tokenHats = liveTokenHats;
   }
   makeTokenLive(token) {
     const { tokenMatcher } = getMatcher(token.editor.document.languageId);
-    const liveToken = __spreadProps(__spreadValues({}, token), {
+    const liveToken = {
+      ...token,
       expansionBehavior: {
         start: {
           type: "regex",
@@ -17807,7 +17720,7 @@ var IndividualHatMap = class _IndividualHatMap {
           regex: tokenMatcher
         }
       }
-    });
+    };
     this.getDocumentTokenList(token.editor.document).push(liveToken);
     return liveToken;
   }
@@ -17855,11 +17768,9 @@ var HatTokenMapImpl = class {
   allocateHats(forceTokenHats) {
     return this.hatAllocator.allocateHats(forceTokenHats);
   }
-  getActiveMap() {
-    return __async(this, null, function* () {
-      yield this.maybeTakePrePhraseSnapshot();
-      return this.activeMap;
-    });
+  async getActiveMap() {
+    await this.maybeTakePrePhraseSnapshot();
+    return this.activeMap;
   }
   /**
    * Returns a transient, read-only hat map for use during the course of a
@@ -17870,32 +17781,30 @@ var HatTokenMapImpl = class {
    * @param usePrePhraseSnapshot Whether to use pre-phrase snapshot
    * @returns A readable snapshot of the map
    */
-  getReadableMap(usePrePhraseSnapshot) {
-    return __async(this, null, function* () {
-      yield this.maybeTakePrePhraseSnapshot();
-      if (usePrePhraseSnapshot) {
-        if (this.lastSignalVersion == null) {
-          console.error(
-            "Pre phrase snapshot requested but no signal was present; please upgrade command client"
-          );
-          return this.activeMap;
-        }
-        if (this.prePhraseMapSnapshot == null) {
-          console.error(
-            "Navigation map pre-phrase snapshot requested, but no snapshot has been taken"
-          );
-          return this.activeMap;
-        }
-        if (performance.now() - this.prePhraseMapsSnapshotTimestamp > PRE_PHRASE_SNAPSHOT_MAX_AGE_MS) {
-          console.error(
-            "Navigation map pre-phrase snapshot requested, but snapshot is more than a minute old"
-          );
-          return this.activeMap;
-        }
-        return this.prePhraseMapSnapshot;
+  async getReadableMap(usePrePhraseSnapshot) {
+    await this.maybeTakePrePhraseSnapshot();
+    if (usePrePhraseSnapshot) {
+      if (this.lastSignalVersion == null) {
+        console.error(
+          "Pre phrase snapshot requested but no signal was present; please upgrade command client"
+        );
+        return this.activeMap;
       }
-      return this.activeMap;
-    });
+      if (this.prePhraseMapSnapshot == null) {
+        console.error(
+          "Navigation map pre-phrase snapshot requested, but no snapshot has been taken"
+        );
+        return this.activeMap;
+      }
+      if (performance.now() - this.prePhraseMapsSnapshotTimestamp > PRE_PHRASE_SNAPSHOT_MAX_AGE_MS) {
+        console.error(
+          "Navigation map pre-phrase snapshot requested, but snapshot is more than a minute old"
+        );
+        return this.activeMap;
+      }
+      return this.prePhraseMapSnapshot;
+    }
+    return this.activeMap;
   }
   dispose() {
     this.activeMap.dispose();
@@ -17903,17 +17812,15 @@ var HatTokenMapImpl = class {
       this.prePhraseMapSnapshot.dispose();
     }
   }
-  maybeTakePrePhraseSnapshot() {
-    return __async(this, null, function* () {
-      const newSignalVersion = yield this.commandServerApi.signals.prePhrase.getVersion();
-      if (newSignalVersion !== this.lastSignalVersion) {
-        this.debug.log("taking snapshot");
-        this.lastSignalVersion = newSignalVersion;
-        if (newSignalVersion != null) {
-          this.takePrePhraseSnapshot();
-        }
+  async maybeTakePrePhraseSnapshot() {
+    const newSignalVersion = await this.commandServerApi.signals.prePhrase.getVersion();
+    if (newSignalVersion !== this.lastSignalVersion) {
+      this.debug.log("taking snapshot");
+      this.lastSignalVersion = newSignalVersion;
+      if (newSignalVersion != null) {
+        this.takePrePhraseSnapshot();
       }
-    });
+    }
   }
   takePrePhraseSnapshot() {
     if (this.prePhraseMapSnapshot != null) {
@@ -18270,13 +18177,15 @@ var RangeUpdater = class {
         const documentReplaceEditLists = this.getDocumentReplaceEditLists(
           event.document
         );
-        const extendedEvent = __spreadProps(__spreadValues({}, event), {
+        const extendedEvent = {
+          ...event,
           contentChanges: event.contentChanges.map(
-            (change) => isReplace(documentReplaceEditLists, change) ? __spreadProps(__spreadValues({}, change), {
+            (change) => isReplace(documentReplaceEditLists, change) ? {
+              ...change,
               isReplace: true
-            }) : change
+            } : change
           )
-        });
+        };
         updateRangeInfos(
           extendedEvent,
           this.documentRangeInfoGenerator(event.document)
@@ -18317,21 +18226,17 @@ var DisabledCommandServerApi = class {
 
 // ../cursorless-engine/src/disabledComponents/DisabledHatTokenMap.ts
 var DisabledHatTokenMap = class {
-  allocateHats() {
-    return __async(this, null, function* () {
-    });
+  async allocateHats() {
   }
-  getReadableMap() {
-    return __async(this, null, function* () {
-      return {
-        getEntries() {
-          return [];
-        },
-        getToken() {
-          throw new Error("Hat map is disabled");
-        }
-      };
-    });
+  async getReadableMap() {
+    return {
+      getEntries() {
+        return [];
+      },
+      getToken() {
+        throw new Error("Hat map is disabled");
+      }
+    };
   }
   dispose() {
   }
@@ -18812,7 +18717,6 @@ var PrimitiveTargetSpokenFormGenerator = class {
     );
   }
   handleScopeType(scopeType) {
-    var _a;
     switch (scopeType.type) {
       case "oneOf":
       case "surroundingPairInterior":
@@ -18837,7 +18741,7 @@ var PrimitiveTargetSpokenFormGenerator = class {
         return pair;
       }
       case "customRegex":
-        return (_a = this.spokenFormMap.customRegex[scopeType.regex]) != null ? _a : {
+        return this.spokenFormMap.customRegex[scopeType.regex] ?? {
           type: "customizable",
           spokenForms: {
             spokenForms: [],
@@ -18932,11 +18836,13 @@ function pluralize(name) {
     const last2 = name[name.length - 1];
     return [...name.slice(0, -1), pluralize(last2)];
   }
-  return __spreadProps(__spreadValues({}, name), {
-    spokenForms: __spreadProps(__spreadValues({}, name.spokenForms), {
+  return {
+    ...name,
+    spokenForms: {
+      ...name.spokenForms,
       spokenForms: name.spokenForms.spokenForms.map(pluralizeString)
-    })
-  });
+    }
+  };
 }
 function pluralizeString(name) {
   return `${name}s`;
@@ -19215,7 +19121,7 @@ var CustomSpokenForms = class {
   constructor(talonSpokenForms) {
     this.talonSpokenForms = talonSpokenForms;
     this.notifier = new Notifier();
-    this.spokenFormMap_ = __spreadValues({}, defaultSpokenFormMap);
+    this.spokenFormMap_ = { ...defaultSpokenFormMap };
     /**
      * Registers a callback to be run when the custom spoken forms change.
      * @param callback The callback to run when the scope ranges change
@@ -19224,10 +19130,11 @@ var CustomSpokenForms = class {
     this.onDidChangeCustomSpokenForms = this.notifier.registerListener;
     this.disposable = talonSpokenForms.onDidChange(
       () => this.updateSpokenFormMaps().catch(() => {
-        console.log("exception in onDidChange");
       })
     );
-    this.customSpokenFormsInitialized = this.safeUpdateSpokenFormMaps();
+    this.customSpokenFormsInitialized = this.updateSpokenFormMaps();
+    this.customSpokenFormsInitialized.catch(() => {
+    });
   }
   get spokenFormMap() {
     return this.spokenFormMap_;
@@ -19239,65 +19146,41 @@ var CustomSpokenForms = class {
   get needsInitialTalonUpdate() {
     return this.needsInitialTalonUpdate_;
   }
-  safeUpdateSpokenFormMaps() {
-    return __async(this, null, function* () {
-      const ready = yield this.safeUpdateSpokenFormMaps2().then(() => {
-        console.log("safeUpdateSpokenFormMaps2 completed");
-      }).catch(() => {
-        console.log("exception in safeUpdateSpokenFormMaps");
-      });
-      console.log("safeUpdateSpokenFormMaps completed, ready: " + ready);
-      return Promise.resolve();
-    });
-  }
-  safeUpdateSpokenFormMaps2() {
-    return __async(this, null, function* () {
-      return yield this.updateSpokenFormMaps().then(() => {
-        return true;
-      }).catch(() => {
-        console.log("exception in safeUpdateSpokenFormMaps");
-        return true;
-      });
-    });
-  }
-  updateSpokenFormMaps() {
-    return __async(this, null, function* () {
-      let allCustomEntries;
-      try {
-        allCustomEntries = yield this.talonSpokenForms.getSpokenFormEntries();
-        if (allCustomEntries.length === 0) {
-          throw new Error("Custom spoken forms list empty");
-        }
-      } catch (err) {
-        if (err instanceof NeedsInitialTalonUpdateError) {
-          this.needsInitialTalonUpdate_ = true;
-        } else if (err instanceof DisabledCustomSpokenFormsError) {
-          console.log("custom spoken forms disabled. all ok.");
-        } else {
-          console.error("Error loading custom spoken forms", err);
-          const msg = err.message.replace(/\.$/, "");
-          void showError(
-            ide().messages,
-            "CustomSpokenForms.updateSpokenFormMaps",
-            `Error loading custom spoken forms: ${msg}. Falling back to default spoken forms.`
-          );
-        }
-        this.spokenFormMap_ = __spreadValues({}, defaultSpokenFormMap);
-        this.notifier.notifyListeners();
-        throw new Error("spoken forms disabled");
+  async updateSpokenFormMaps() {
+    let allCustomEntries;
+    try {
+      allCustomEntries = await this.talonSpokenForms.getSpokenFormEntries();
+      if (allCustomEntries.length === 0) {
+        throw new Error("Custom spoken forms list empty");
       }
-      for (const entryType of SUPPORTED_ENTRY_TYPES) {
-        updateEntriesForType(
-          this.spokenFormMap_,
-          entryType,
-          defaultSpokenFormInfoMap[entryType],
-          Object.fromEntries(
-            allCustomEntries.filter((entry) => entry.type === entryType).map(({ id: id2, spokenForms }) => [id2, spokenForms])
-          )
+    } catch (err) {
+      if (err instanceof NeedsInitialTalonUpdateError) {
+        this.needsInitialTalonUpdate_ = true;
+      } else if (err instanceof DisabledCustomSpokenFormsError) {
+      } else {
+        console.error("Error loading custom spoken forms", err);
+        const msg = err.message.replace(/\.$/, "");
+        void showError(
+          ide().messages,
+          "CustomSpokenForms.updateSpokenFormMaps",
+          `Error loading custom spoken forms: ${msg}. Falling back to default spoken forms.`
         );
       }
+      this.spokenFormMap_ = { ...defaultSpokenFormMap };
       this.notifier.notifyListeners();
-    });
+      throw err;
+    }
+    for (const entryType of SUPPORTED_ENTRY_TYPES) {
+      updateEntriesForType(
+        this.spokenFormMap_,
+        entryType,
+        defaultSpokenFormInfoMap[entryType],
+        Object.fromEntries(
+          allCustomEntries.filter((entry) => entry.type === entryType).map(({ id: id2, spokenForms }) => [id2, spokenForms])
+        )
+      );
+    }
+    this.notifier.notifyListeners();
   }
   getCustomRegexScopeTypes() {
     return Object.keys(this.spokenFormMap_.customRegex).map((regex) => ({
@@ -19310,13 +19193,12 @@ var CustomSpokenForms = class {
   }
 };
 function updateEntriesForType(spokenFormMapToUpdate, key, defaultEntries, customEntries) {
-  var _a;
   const ids = Array.from(
     /* @__PURE__ */ new Set([...Object.keys(defaultEntries), ...Object.keys(customEntries)])
   );
   const obj = {};
   for (const id2 of ids) {
-    const { defaultSpokenForms = [], isPrivate: isPrivate2 = false } = (_a = defaultEntries[id2]) != null ? _a : {};
+    const { defaultSpokenForms = [], isPrivate: isPrivate2 = false } = defaultEntries[id2] ?? {};
     const customSpokenForms = customEntries[id2];
     obj[id2] = customSpokenForms == null ? (
       // No entry for the given id. This either means that the user needs to
@@ -19615,10 +19497,11 @@ var BaseScopeHandler = class {
     this.includeAdjacentInEvery = false;
   }
   *generateScopes(editor, position, direction, requirements = {}) {
-    var _a;
-    const hints = __spreadProps(__spreadValues(__spreadValues({}, DEFAULT_REQUIREMENTS), requirements), {
-      distalPosition: (_a = requirements.distalPosition) != null ? _a : direction === "forward" ? editor.document.range.end : editor.document.range.start
-    });
+    const hints = {
+      ...DEFAULT_REQUIREMENTS,
+      ...requirements,
+      distalPosition: requirements.distalPosition ?? (direction === "forward" ? editor.document.range.end : editor.document.range.start)
+    };
     let previousScope = void 0;
     let currentPosition = position;
     for (const scope of this.generateScopeCandidates(
@@ -19692,7 +19575,7 @@ var NestedScopeHandler = class extends BaseScopeHandler {
     return this._searchScopeHandler;
   }
   generateScopeCandidates(editor, position, direction, hints) {
-    const _a = hints, { containment } = _a, rest = __objRest(_a, ["containment"]);
+    const { containment, ...rest } = hints;
     const generator = this.searchScopeHandler.generateScopes(
       editor,
       position,
@@ -19700,9 +19583,10 @@ var NestedScopeHandler = class extends BaseScopeHandler {
       // If containment is disallowed, we need to unset that for the search
       // scope, because the search scope could contain position but nested
       // scopes do not.
-      __spreadValues({
-        containment: containment === "required" ? "required" : void 0
-      }, rest)
+      {
+        containment: containment === "required" ? "required" : void 0,
+        ...rest
+      }
     );
     return flatmap(
       generator,
@@ -19750,12 +19634,11 @@ function createLineTarget(editor, isReversed, range3) {
   });
 }
 function fitRangeToLineContent(editor, range3) {
-  var _a, _b, _c, _d;
   const startLine = editor.document.lineAt(range3.start);
   const endLine = editor.document.lineAt(range3.end);
   return new Range(
-    (_b = (_a = startLine.rangeTrimmed) == null ? void 0 : _a.start) != null ? _b : startLine.range.start,
-    (_d = (_c = endLine.rangeTrimmed) == null ? void 0 : _c.end) != null ? _d : endLine.range.end
+    startLine.rangeTrimmed?.start ?? startLine.range.start,
+    endLine.rangeTrimmed?.end ?? endLine.range.end
   );
 }
 
@@ -19815,9 +19698,9 @@ function isPreferredOverHelper(scopeA, scopeB, matchers2) {
 }
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/CharacterScopeHandler.ts
-var SPLIT_REGEX = new RegExp("\\p{L}\\p{M}*|[\\p{N}\\p{P}\\p{S}\\p{Z}\\p{C}]", "gu");
+var SPLIT_REGEX = /\p{L}\p{M}*|[\p{N}\p{P}\p{S}\p{Z}\p{C}]/gu;
 var PREFERRED_SYMBOLS_REGEX = /[$]/g;
-var NONWHITESPACE_REGEX = new RegExp("\\p{L}\\p{M}*|[\\p{N}\\p{P}\\p{S}]", "gu");
+var NONWHITESPACE_REGEX = /\p{L}\p{M}*|[\p{N}\p{P}\p{S}]/gu;
 var CharacterScopeHandler = class extends NestedScopeHandler {
   constructor() {
     super(...arguments);
@@ -19855,7 +19738,7 @@ var CharacterScopeHandler = class extends NestedScopeHandler {
 };
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/WordScopeHandler/WordTokenizer.ts
-var CAMEL_REGEX = new RegExp("\\p{Lu}?\\p{Ll}+|\\p{Lu}+(?!\\p{Ll})|\\p{N}+", "gu");
+var CAMEL_REGEX = /\p{Lu}?\p{Ll}+|\p{Lu}+(?!\p{Ll})|\p{N}+/gu;
 var WordTokenizer = class {
   constructor(languageId) {
     this.wordRegex = getMatcher(languageId).wordMatcher;
@@ -19922,7 +19805,7 @@ function constructTarget(isReversed, editor, previousContentRange, contentRange,
   const leadingDelimiterRange = previousContentRange != null && contentRange.start.isAfter(previousContentRange.end) ? new Range(previousContentRange.end, contentRange.start) : void 0;
   const trailingDelimiterRange = nextContentRange != null && nextContentRange.start.isAfter(contentRange.end) ? new Range(contentRange.end, nextContentRange.start) : void 0;
   const isInDelimitedList = leadingDelimiterRange != null || trailingDelimiterRange != null;
-  const insertionDelimiter = isInDelimitedList ? editor.document.getText(leadingDelimiterRange != null ? leadingDelimiterRange : trailingDelimiterRange) : "";
+  const insertionDelimiter = isInDelimitedList ? editor.document.getText(leadingDelimiterRange ?? trailingDelimiterRange) : "";
   return new SubTokenWordTarget({
     editor,
     isReversed,
@@ -20018,14 +19901,15 @@ var BaseTreeSitterScopeHandler = class extends BaseScopeHandler {
   *generateScopeCandidates(editor, position, direction, _hints) {
     const { document } = editor;
     const scopes = this.query.matches(document).map((match) => this.matchToScope(editor, match)).filter((scope) => scope != null).sort((a, b) => compareTargetScopes(direction, position, a, b));
-    yield* __yieldStar(mergeAdjacentBy(
+    yield* mergeAdjacentBy(
       scopes,
       (a, b) => a.domain.isRangeEqual(b.domain),
       (equivalentScopes) => {
         if (equivalentScopes.length === 1) {
           return equivalentScopes[0];
         }
-        return __spreadProps(__spreadValues({}, equivalentScopes[0]), {
+        return {
+          ...equivalentScopes[0],
           getTargets(isReversed) {
             const targets = uniqWith_default(
               equivalentScopes.flatMap((scope) => scope.getTargets(isReversed)),
@@ -20044,15 +19928,14 @@ var BaseTreeSitterScopeHandler = class extends BaseScopeHandler {
             }
             return targets;
           }
-        });
+        };
       }
-    ));
+    );
   }
 };
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/TreeSitterScopeHandler/captureUtils.ts
 function getRelatedCapture(match, scopeTypeType, relationship, matchHasScopeType) {
-  var _a;
   if (matchHasScopeType) {
     return findCaptureByName(
       match,
@@ -20060,16 +19943,15 @@ function getRelatedCapture(match, scopeTypeType, relationship, matchHasScopeType
       `_.${relationship}`
     );
   }
-  return (_a = findCaptureByName(match, `${scopeTypeType}.${relationship}`)) != null ? _a : findCaptureByName(match, scopeTypeType) != null ? findCaptureByName(match, `_.${relationship}`) : void 0;
+  return findCaptureByName(match, `${scopeTypeType}.${relationship}`) ?? (findCaptureByName(match, scopeTypeType) != null ? findCaptureByName(match, `_.${relationship}`) : void 0);
 }
 function getRelatedRange(match, scopeTypeType, relationship, matchHasScopeType) {
-  var _a;
-  return (_a = getRelatedCapture(
+  return getRelatedCapture(
     match,
     scopeTypeType,
     relationship,
     matchHasScopeType
-  )) == null ? void 0 : _a.range;
+  )?.range;
 }
 function findCaptureByName(match, ...names) {
   return match.captures.find(
@@ -20092,14 +19974,13 @@ var TreeSitterIterationScopeHandler = class extends BaseTreeSitterScopeHandler {
     throw Error("Not implemented");
   }
   matchToScope(editor, match) {
-    var _a;
     const scopeTypeType = this.iterateeScopeType.type;
     const capture = getRelatedCapture(match, scopeTypeType, "iteration", false);
     if (capture == null) {
       return void 0;
     }
     const { range: contentRange, allowMultiple } = capture;
-    const domain = (_a = getRelatedRange(match, scopeTypeType, "iteration.domain", false)) != null ? _a : contentRange;
+    const domain = getRelatedRange(match, scopeTypeType, "iteration.domain", false) ?? contentRange;
     return {
       editor,
       domain,
@@ -20134,14 +20015,13 @@ var TreeSitterScopeHandler = class extends BaseTreeSitterScopeHandler {
     };
   }
   matchToScope(editor, match) {
-    var _a, _b, _c, _d, _e;
     const scopeTypeType = this.scopeType.type;
     const capture = findCaptureByName(match, scopeTypeType);
     if (capture == null) {
       return void 0;
     }
     const { range: contentRange, allowMultiple, insertionDelimiter } = capture;
-    const domain = (_a = getRelatedRange(match, scopeTypeType, "domain", true)) != null ? _a : contentRange;
+    const domain = getRelatedRange(match, scopeTypeType, "domain", true) ?? contentRange;
     const removalRange = getRelatedRange(match, scopeTypeType, "removal", true);
     const interiorRange = getRelatedRange(
       match,
@@ -20149,24 +20029,24 @@ var TreeSitterScopeHandler = class extends BaseTreeSitterScopeHandler {
       "interior",
       true
     );
-    const prefixRange = (_b = getRelatedRange(
+    const prefixRange = getRelatedRange(
       match,
       scopeTypeType,
       "prefix",
       true
-    )) == null ? void 0 : _b.with(void 0, contentRange.start);
-    const leadingDelimiterRange = (_d = getRelatedRange(
+    )?.with(void 0, contentRange.start);
+    const leadingDelimiterRange = getRelatedRange(
       match,
       scopeTypeType,
       "leading",
       true
-    )) == null ? void 0 : _d.with(void 0, (_c = prefixRange == null ? void 0 : prefixRange.start) != null ? _c : contentRange.start);
-    const trailingDelimiterRange = (_e = getRelatedRange(
+    )?.with(void 0, prefixRange?.start ?? contentRange.start);
+    const trailingDelimiterRange = getRelatedRange(
       match,
       scopeTypeType,
       "trailing",
       true
-    )) == null ? void 0 : _e.with(contentRange.end);
+    )?.with(contentRange.end);
     return {
       editor,
       domain,
@@ -20545,14 +20425,16 @@ var defaultOptions = {
   abbreviations: void 0
 };
 function getSentences(text, userOptions) {
-  var _a;
   if (!text) {
     return [];
   }
   if (!whiteSpaceCheck.test(text)) {
     return [];
   }
-  const options2 = __spreadValues(__spreadValues({}, defaultOptions), userOptions);
+  const options2 = {
+    ...defaultOptions,
+    ...userOptions
+  };
   setAbbreviations(options2.abbreviations);
   if (options2.newlineBoundaries) {
     text = text.replace(addNewLineBoundaries, newline_placeholder);
@@ -20565,7 +20447,7 @@ function getSentences(text, userOptions) {
       return ii % 2;
     });
   } else {
-    words = (_a = text.trim().match(splitIntoWords)) != null ? _a : [];
+    words = text.trim().match(splitIntoWords) ?? [];
   }
   let wordCount = 0;
   let index = 0;
@@ -20684,8 +20566,8 @@ function getSentences(text, userOptions) {
 }
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/SentenceScopeHandler/SentenceSegmenter.ts
-var leadingOffsetRegex = new RegExp("\\S*\\p{L}", "u");
-var skipPartRegex = new RegExp("(\\r?\\n[^\\p{L}]*\\r?\\n)|(?<=[.!?])(\\s*\\r?\\n)", "gu");
+var leadingOffsetRegex = /\S*\p{L}/u;
+var skipPartRegex = /(\r?\n[^\p{L}]*\r?\n)|(?<=[.!?])(\s*\r?\n)/gu;
 var options = {
   newlineBoundaries: false,
   preserveWhitespace: true
@@ -20805,8 +20687,7 @@ var CustomRegexScopeHandler = class extends RegexStageBase {
     this.scopeType = scopeType;
   }
   get regex() {
-    var _a;
-    return new RegExp(this.scopeType.regex, (_a = this.scopeType.flags) != null ? _a : "gu");
+    return new RegExp(this.scopeType.regex, this.scopeType.flags ?? "gu");
   }
 };
 var GlyphScopeHandler = class extends RegexStageBase {
@@ -20861,20 +20742,22 @@ var BoundedBaseScopeHandler = class extends BaseScopeHandler {
       editor,
       position,
       direction,
-      __spreadProps(__spreadValues({}, hints), {
+      {
+        ...hints,
         // Don't skip containing paint since it might have non contained nested scopes.
         containment: hints.containment !== "disallowed" ? hints.containment : void 0
-      })
+      }
     );
     const interiorScopes = Array.from(
       this.surroundingPairInteriorScopeHandler.generateScopes(
         editor,
         position,
         direction,
-        __spreadProps(__spreadValues({}, hints), {
+        {
+          ...hints,
           // For every (skipAncestorScopes=true) we don't want to go outside of the surrounding pair
           containment: hints.containment == null && hints.skipAncestorScopes ? "required" : hints.containment
-        })
+        }
       )
     );
     for (const targetScope of targetScopes) {
@@ -20898,7 +20781,7 @@ var BoundedBaseScopeHandler = class extends BaseScopeHandler {
       }
       allScopes.push(targetScope);
       allScopes.sort((a, b) => compareTargetScopes(direction, position, a, b));
-      yield* __yieldStar(allScopes);
+      yield* allScopes;
     }
   }
 };
@@ -21020,13 +20903,12 @@ function getDelimiterRegex(individualDelimiters) {
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/SurroundingPairScopeHandler/getDelimiterOccurrences.ts
 function getDelimiterOccurrences(languageDefinition, document, individualDelimiters) {
-  var _a, _b;
   if (individualDelimiters.length === 0) {
     return [];
   }
   const delimiterRegex = getDelimiterRegex(individualDelimiters);
-  const disqualifyDelimiters = (_a = languageDefinition == null ? void 0 : languageDefinition.getCaptures(document, "disqualifyDelimiter")) != null ? _a : [];
-  const textFragments = (_b = languageDefinition == null ? void 0 : languageDefinition.getCaptures(document, "textFragment")) != null ? _b : [];
+  const disqualifyDelimiters = languageDefinition?.getCaptures(document, "disqualifyDelimiter") ?? [];
+  const textFragments = languageDefinition?.getCaptures(document, "textFragment") ?? [];
   const delimiterTextToDelimiterInfoMap = Object.fromEntries(
     individualDelimiters.map((individualDelimiter) => [
       individualDelimiter.text,
@@ -21035,7 +20917,6 @@ function getDelimiterOccurrences(languageDefinition, document, individualDelimit
   );
   const text = document.getText();
   return matchAll(text, delimiterRegex, (match) => {
-    var _a2;
     const text2 = match[0];
     const range3 = new Range(
       document.positionAt(match.index),
@@ -21044,9 +20925,9 @@ function getDelimiterOccurrences(languageDefinition, document, individualDelimit
     const isDisqualified = disqualifyDelimiters.some(
       (c) => c.range.contains(range3) && !c.hasError()
     );
-    const textFragmentRange = (_a2 = textFragments.find(
+    const textFragmentRange = textFragments.find(
       (c) => c.range.contains(range3)
-    )) == null ? void 0 : _a2.range;
+    )?.range;
     return {
       delimiterInfo: delimiterTextToDelimiterInfoMap[text2],
       isDisqualified,
@@ -21165,22 +21046,24 @@ var complexDelimiterMap = {
 };
 function getSimpleDelimiterMap(languageId) {
   if (languageId != null && languageId in delimiterToTextOverrides) {
-    return __spreadValues(__spreadValues({}, delimiterToText), delimiterToTextOverrides[languageId]);
+    return {
+      ...delimiterToText,
+      ...delimiterToTextOverrides[languageId]
+    };
   }
   return delimiterToText;
 }
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/SurroundingPairScopeHandler/getIndividualDelimiters.ts
 function getIndividualDelimiters(delimiter, languageId) {
-  var _a;
-  const delimiters = (_a = complexDelimiterMap[delimiter]) != null ? _a : [delimiter];
+  const delimiters = complexDelimiterMap[delimiter] ?? [delimiter];
   return getSimpleIndividualDelimiters(languageId, delimiters);
 }
 function getSimpleIndividualDelimiters(languageId, delimiters) {
   const delimiterToText2 = getSimpleDelimiterMap(languageId);
   return delimiters.flatMap((delimiterName) => {
     const [leftDelimiter, rightDelimiter, options2] = delimiterToText2[delimiterName];
-    const { isSingleLine = false, isUnknownSide = false } = options2 != null ? options2 : {};
+    const { isSingleLine = false, isUnknownSide = false } = options2 ?? {};
     const leftDelimiters = isString(leftDelimiter) ? [leftDelimiter] : leftDelimiter;
     const rightDelimiters = isString(rightDelimiter) ? [rightDelimiter] : rightDelimiter;
     const allDelimiterTexts = uniq_default(concat_default(leftDelimiters, rightDelimiters));
@@ -21285,25 +21168,19 @@ var SurroundingPairScopeHandler = class extends BaseScopeHandler {
       position,
       surroundingPairs
     );
-    yield* __yieldStar(surroundingPairs.map(
-      (pair) => {
-        var _a;
-        return createTargetScope(
-          editor,
-          pair,
-          (_a = this.scopeType.requireStrongContainment) != null ? _a : false
-        );
-      }
-    ).sort((a, b) => compareTargetScopes(direction, position, a, b)));
+    yield* surroundingPairs.map(
+      (pair) => createTargetScope(
+        editor,
+        pair,
+        this.scopeType.requireStrongContainment ?? false
+      )
+    ).sort((a, b) => compareTargetScopes(direction, position, a, b));
   }
 };
 function maybeApplyEmptyTargetHack(direction, hints, position, surroundingPairs) {
   if (direction === "forward" && hints.containment === "required" && hints.allowAdjacentScopes && hints.skipAncestorScopes) {
     return surroundingPairs.filter(
-      (pair, i) => {
-        var _a;
-        return !(pair.closingDelimiterRange.end.isEqual(position) && ((_a = surroundingPairs[i + 1]) == null ? void 0 : _a.closingDelimiterRange.start.isEqual(position)));
-      }
+      (pair, i) => !(pair.closingDelimiterRange.end.isEqual(position) && surroundingPairs[i + 1]?.closingDelimiterRange.start.isEqual(position))
     );
   }
   return surroundingPairs;
@@ -21316,7 +21193,6 @@ var ScopeHandlerFactoryImpl = class {
     this.create = this.create.bind(this);
   }
   create(scopeType, languageId) {
-    var _a;
     switch (scopeType.type) {
       case "character":
         return new CharacterScopeHandler(this, scopeType, languageId);
@@ -21373,7 +21249,7 @@ var ScopeHandlerFactoryImpl = class {
       case "instance":
         throw Error("Unexpected scope type 'instance'");
       default:
-        return (_a = this.languageDefinitions.get(languageId)) == null ? void 0 : _a.getScopeHandler(scopeType);
+        return this.languageDefinitions.get(languageId)?.getScopeHandler(scopeType);
     }
   }
 };
@@ -21453,7 +21329,7 @@ function unwrapSelectionExtractor(editor, node) {
 function selectWithLeadingDelimiter(...delimiters) {
   return function(editor, node) {
     const firstSibling = node.previousSibling;
-    const secondSibling = firstSibling == null ? void 0 : firstSibling.previousSibling;
+    const secondSibling = firstSibling?.previousSibling;
     let leadingDelimiterRange;
     if (firstSibling) {
       if (delimiters.includes(firstSibling.type)) {
@@ -21475,11 +21351,12 @@ function selectWithLeadingDelimiter(...delimiters) {
         );
       }
     }
-    return __spreadProps(__spreadValues({}, simpleSelectionExtractor(editor, node)), {
+    return {
+      ...simpleSelectionExtractor(editor, node),
       context: {
         leadingDelimiterRange
       }
-    });
+    };
   };
 }
 function childRangeSelector(typesToExclude = [], typesToInclude = [], { includeUnnamedChildren = false } = {}) {
@@ -21505,7 +21382,7 @@ function childRangeSelector(typesToExclude = [], typesToInclude = [], { includeU
 function selectWithTrailingDelimiter(...delimiters) {
   return function(editor, node) {
     const firstSibling = node.nextSibling;
-    const secondSibling = firstSibling == null ? void 0 : firstSibling.nextSibling;
+    const secondSibling = firstSibling?.nextSibling;
     let trailingDelimiterRange;
     if (firstSibling) {
       if (delimiters.includes(firstSibling.type)) {
@@ -21527,11 +21404,12 @@ function selectWithTrailingDelimiter(...delimiters) {
         );
       }
     }
-    return __spreadProps(__spreadValues({}, simpleSelectionExtractor(editor, node)), {
+    return {
+      ...simpleSelectionExtractor(editor, node),
       context: {
         trailingDelimiterRange
       }
-    });
+    };
   };
 }
 function getNextNonDelimiterNode(startNode, isDelimiterNode) {
@@ -21731,7 +21609,11 @@ var util;
 var objectUtil;
 (function(objectUtil2) {
   objectUtil2.mergeShapes = (first, second) => {
-    return __spreadValues(__spreadValues({}, first), second);
+    return {
+      ...first,
+      ...second
+      // second overwrites first
+    };
   };
 })(objectUtil || (objectUtil = {}));
 var ZodParsedType = util.arrayToEnum([
@@ -22020,24 +21902,27 @@ function getErrorMap() {
 var makeIssue = (params) => {
   const { data, path, errorMaps, issueData } = params;
   const fullPath = [...path, ...issueData.path || []];
-  const fullIssue = __spreadProps(__spreadValues({}, issueData), {
+  const fullIssue = {
+    ...issueData,
     path: fullPath
-  });
+  };
   if (issueData.message !== void 0) {
-    return __spreadProps(__spreadValues({}, issueData), {
+    return {
+      ...issueData,
       path: fullPath,
       message: issueData.message
-    });
+    };
   }
   let errorMessage = "";
   const maps = errorMaps.filter((m) => !!m).slice().reverse();
   for (const map3 of maps) {
     errorMessage = map3(fullIssue, { data, defaultError: errorMessage }).message;
   }
-  return __spreadProps(__spreadValues({}, issueData), {
+  return {
+    ...issueData,
     path: fullPath,
     message: errorMessage
-  });
+  };
 };
 var EMPTY_PATH = [];
 function addIssueToContext(ctx, issueData) {
@@ -22079,19 +21964,17 @@ var ParseStatus = class _ParseStatus {
     }
     return { status: status.value, value: arrayValue };
   }
-  static mergeObjectAsync(status, pairs2) {
-    return __async(this, null, function* () {
-      const syncPairs = [];
-      for (const pair of pairs2) {
-        const key = yield pair.key;
-        const value = yield pair.value;
-        syncPairs.push({
-          key,
-          value
-        });
-      }
-      return _ParseStatus.mergeObjectSync(status, syncPairs);
-    });
+  static async mergeObjectAsync(status, pairs2) {
+    const syncPairs = [];
+    for (const pair of pairs2) {
+      const key = await pair.key;
+      const value = await pair.value;
+      syncPairs.push({
+        key,
+        value
+      });
+    }
+    return _ParseStatus.mergeObjectSync(status, syncPairs);
   }
   static mergeObjectSync(status, pairs2) {
     const finalObject = {};
@@ -22293,32 +22176,28 @@ var ZodType = class {
     const result = this._parseSync({ data, path: ctx.path, parent: ctx });
     return handleResult(ctx, result);
   }
-  parseAsync(data, params) {
-    return __async(this, null, function* () {
-      const result = yield this.safeParseAsync(data, params);
-      if (result.success)
-        return result.data;
-      throw result.error;
-    });
+  async parseAsync(data, params) {
+    const result = await this.safeParseAsync(data, params);
+    if (result.success)
+      return result.data;
+    throw result.error;
   }
-  safeParseAsync(data, params) {
-    return __async(this, null, function* () {
-      const ctx = {
-        common: {
-          issues: [],
-          contextualErrorMap: params === null || params === void 0 ? void 0 : params.errorMap,
-          async: true
-        },
-        path: (params === null || params === void 0 ? void 0 : params.path) || [],
-        schemaErrorMap: this._def.errorMap,
-        parent: null,
-        data,
-        parsedType: getParsedType(data)
-      };
-      const maybeAsyncResult = this._parse({ data, path: ctx.path, parent: ctx });
-      const result = yield isAsync(maybeAsyncResult) ? maybeAsyncResult : Promise.resolve(maybeAsyncResult);
-      return handleResult(ctx, result);
-    });
+  async safeParseAsync(data, params) {
+    const ctx = {
+      common: {
+        issues: [],
+        contextualErrorMap: params === null || params === void 0 ? void 0 : params.errorMap,
+        async: true
+      },
+      path: (params === null || params === void 0 ? void 0 : params.path) || [],
+      schemaErrorMap: this._def.errorMap,
+      parent: null,
+      data,
+      parsedType: getParsedType(data)
+    };
+    const maybeAsyncResult = this._parse({ data, path: ctx.path, parent: ctx });
+    const result = await (isAsync(maybeAsyncResult) ? maybeAsyncResult : Promise.resolve(maybeAsyncResult));
+    return handleResult(ctx, result);
   }
   refine(check, message) {
     const getIssueProperties = (val) => {
@@ -22332,9 +22211,10 @@ var ZodType = class {
     };
     return this._refinement((val, ctx) => {
       const result = check(val);
-      const setError = () => ctx.addIssue(__spreadValues({
-        code: ZodIssueCode.custom
-      }, getIssueProperties(val)));
+      const setError = () => ctx.addIssue({
+        code: ZodIssueCode.custom,
+        ...getIssueProperties(val)
+      });
       if (typeof Promise !== "undefined" && result instanceof Promise) {
         return result.then((data) => {
           if (!data) {
@@ -22395,39 +22275,44 @@ var ZodType = class {
     return ZodIntersection.create(this, incoming, this._def);
   }
   transform(transform) {
-    return new ZodEffects(__spreadProps(__spreadValues({}, processCreateParams(this._def)), {
+    return new ZodEffects({
+      ...processCreateParams(this._def),
       schema: this,
       typeName: ZodFirstPartyTypeKind.ZodEffects,
       effect: { type: "transform", transform }
-    }));
+    });
   }
   default(def) {
     const defaultValueFunc = typeof def === "function" ? def : () => def;
-    return new ZodDefault(__spreadProps(__spreadValues({}, processCreateParams(this._def)), {
+    return new ZodDefault({
+      ...processCreateParams(this._def),
       innerType: this,
       defaultValue: defaultValueFunc,
       typeName: ZodFirstPartyTypeKind.ZodDefault
-    }));
+    });
   }
   brand() {
-    return new ZodBranded(__spreadValues({
+    return new ZodBranded({
       typeName: ZodFirstPartyTypeKind.ZodBranded,
-      type: this
-    }, processCreateParams(this._def)));
+      type: this,
+      ...processCreateParams(this._def)
+    });
   }
   catch(def) {
     const catchValueFunc = typeof def === "function" ? def : () => def;
-    return new ZodCatch(__spreadProps(__spreadValues({}, processCreateParams(this._def)), {
+    return new ZodCatch({
+      ...processCreateParams(this._def),
       innerType: this,
       catchValue: catchValueFunc,
       typeName: ZodFirstPartyTypeKind.ZodCatch
-    }));
+    });
   }
   describe(description) {
     const This = this.constructor;
-    return new This(__spreadProps(__spreadValues({}, this._def), {
+    return new This({
+      ...this._def,
       description
-    }));
+    });
   }
   pipe(target) {
     return ZodPipeline.create(this, target);
@@ -22759,45 +22644,47 @@ var ZodString = class _ZodString extends ZodType {
     return { status: status.value, value: input.data };
   }
   _regex(regex, validation, message) {
-    return this.refinement((data) => regex.test(data), __spreadValues({
+    return this.refinement((data) => regex.test(data), {
       validation,
-      code: ZodIssueCode.invalid_string
-    }, errorUtil.errToObj(message)));
+      code: ZodIssueCode.invalid_string,
+      ...errorUtil.errToObj(message)
+    });
   }
   _addCheck(check) {
-    return new _ZodString(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodString({
+      ...this._def,
       checks: [...this._def.checks, check]
-    }));
+    });
   }
   email(message) {
-    return this._addCheck(__spreadValues({ kind: "email" }, errorUtil.errToObj(message)));
+    return this._addCheck({ kind: "email", ...errorUtil.errToObj(message) });
   }
   url(message) {
-    return this._addCheck(__spreadValues({ kind: "url" }, errorUtil.errToObj(message)));
+    return this._addCheck({ kind: "url", ...errorUtil.errToObj(message) });
   }
   emoji(message) {
-    return this._addCheck(__spreadValues({ kind: "emoji" }, errorUtil.errToObj(message)));
+    return this._addCheck({ kind: "emoji", ...errorUtil.errToObj(message) });
   }
   uuid(message) {
-    return this._addCheck(__spreadValues({ kind: "uuid" }, errorUtil.errToObj(message)));
+    return this._addCheck({ kind: "uuid", ...errorUtil.errToObj(message) });
   }
   nanoid(message) {
-    return this._addCheck(__spreadValues({ kind: "nanoid" }, errorUtil.errToObj(message)));
+    return this._addCheck({ kind: "nanoid", ...errorUtil.errToObj(message) });
   }
   cuid(message) {
-    return this._addCheck(__spreadValues({ kind: "cuid" }, errorUtil.errToObj(message)));
+    return this._addCheck({ kind: "cuid", ...errorUtil.errToObj(message) });
   }
   cuid2(message) {
-    return this._addCheck(__spreadValues({ kind: "cuid2" }, errorUtil.errToObj(message)));
+    return this._addCheck({ kind: "cuid2", ...errorUtil.errToObj(message) });
   }
   ulid(message) {
-    return this._addCheck(__spreadValues({ kind: "ulid" }, errorUtil.errToObj(message)));
+    return this._addCheck({ kind: "ulid", ...errorUtil.errToObj(message) });
   }
   base64(message) {
-    return this._addCheck(__spreadValues({ kind: "base64" }, errorUtil.errToObj(message)));
+    return this._addCheck({ kind: "base64", ...errorUtil.errToObj(message) });
   }
   ip(options2) {
-    return this._addCheck(__spreadValues({ kind: "ip" }, errorUtil.errToObj(options2)));
+    return this._addCheck({ kind: "ip", ...errorUtil.errToObj(options2) });
   }
   datetime(options2) {
     var _a, _b;
@@ -22810,12 +22697,13 @@ var ZodString = class _ZodString extends ZodType {
         message: options2
       });
     }
-    return this._addCheck(__spreadValues({
+    return this._addCheck({
       kind: "datetime",
       precision: typeof (options2 === null || options2 === void 0 ? void 0 : options2.precision) === "undefined" ? null : options2 === null || options2 === void 0 ? void 0 : options2.precision,
       offset: (_a = options2 === null || options2 === void 0 ? void 0 : options2.offset) !== null && _a !== void 0 ? _a : false,
-      local: (_b = options2 === null || options2 === void 0 ? void 0 : options2.local) !== null && _b !== void 0 ? _b : false
-    }, errorUtil.errToObj(options2 === null || options2 === void 0 ? void 0 : options2.message)));
+      local: (_b = options2 === null || options2 === void 0 ? void 0 : options2.local) !== null && _b !== void 0 ? _b : false,
+      ...errorUtil.errToObj(options2 === null || options2 === void 0 ? void 0 : options2.message)
+    });
   }
   date(message) {
     return this._addCheck({ kind: "date", message });
@@ -22828,56 +22716,64 @@ var ZodString = class _ZodString extends ZodType {
         message: options2
       });
     }
-    return this._addCheck(__spreadValues({
+    return this._addCheck({
       kind: "time",
-      precision: typeof (options2 === null || options2 === void 0 ? void 0 : options2.precision) === "undefined" ? null : options2 === null || options2 === void 0 ? void 0 : options2.precision
-    }, errorUtil.errToObj(options2 === null || options2 === void 0 ? void 0 : options2.message)));
+      precision: typeof (options2 === null || options2 === void 0 ? void 0 : options2.precision) === "undefined" ? null : options2 === null || options2 === void 0 ? void 0 : options2.precision,
+      ...errorUtil.errToObj(options2 === null || options2 === void 0 ? void 0 : options2.message)
+    });
   }
   duration(message) {
-    return this._addCheck(__spreadValues({ kind: "duration" }, errorUtil.errToObj(message)));
+    return this._addCheck({ kind: "duration", ...errorUtil.errToObj(message) });
   }
   regex(regex, message) {
-    return this._addCheck(__spreadValues({
+    return this._addCheck({
       kind: "regex",
-      regex
-    }, errorUtil.errToObj(message)));
+      regex,
+      ...errorUtil.errToObj(message)
+    });
   }
   includes(value, options2) {
-    return this._addCheck(__spreadValues({
+    return this._addCheck({
       kind: "includes",
       value,
-      position: options2 === null || options2 === void 0 ? void 0 : options2.position
-    }, errorUtil.errToObj(options2 === null || options2 === void 0 ? void 0 : options2.message)));
+      position: options2 === null || options2 === void 0 ? void 0 : options2.position,
+      ...errorUtil.errToObj(options2 === null || options2 === void 0 ? void 0 : options2.message)
+    });
   }
   startsWith(value, message) {
-    return this._addCheck(__spreadValues({
+    return this._addCheck({
       kind: "startsWith",
-      value
-    }, errorUtil.errToObj(message)));
+      value,
+      ...errorUtil.errToObj(message)
+    });
   }
   endsWith(value, message) {
-    return this._addCheck(__spreadValues({
+    return this._addCheck({
       kind: "endsWith",
-      value
-    }, errorUtil.errToObj(message)));
+      value,
+      ...errorUtil.errToObj(message)
+    });
   }
   min(minLength, message) {
-    return this._addCheck(__spreadValues({
+    return this._addCheck({
       kind: "min",
-      value: minLength
-    }, errorUtil.errToObj(message)));
+      value: minLength,
+      ...errorUtil.errToObj(message)
+    });
   }
   max(maxLength, message) {
-    return this._addCheck(__spreadValues({
+    return this._addCheck({
       kind: "max",
-      value: maxLength
-    }, errorUtil.errToObj(message)));
+      value: maxLength,
+      ...errorUtil.errToObj(message)
+    });
   }
   length(len, message) {
-    return this._addCheck(__spreadValues({
+    return this._addCheck({
       kind: "length",
-      value: len
-    }, errorUtil.errToObj(message)));
+      value: len,
+      ...errorUtil.errToObj(message)
+    });
   }
   /**
    * @deprecated Use z.string().min(1) instead.
@@ -22887,19 +22783,22 @@ var ZodString = class _ZodString extends ZodType {
     return this.min(1, errorUtil.errToObj(message));
   }
   trim() {
-    return new _ZodString(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodString({
+      ...this._def,
       checks: [...this._def.checks, { kind: "trim" }]
-    }));
+    });
   }
   toLowerCase() {
-    return new _ZodString(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodString({
+      ...this._def,
       checks: [...this._def.checks, { kind: "toLowerCase" }]
-    }));
+    });
   }
   toUpperCase() {
-    return new _ZodString(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodString({
+      ...this._def,
       checks: [...this._def.checks, { kind: "toUpperCase" }]
-    }));
+    });
   }
   get isDatetime() {
     return !!this._def.checks.find((ch) => ch.kind === "datetime");
@@ -22966,11 +22865,12 @@ var ZodString = class _ZodString extends ZodType {
 };
 ZodString.create = (params) => {
   var _a;
-  return new ZodString(__spreadValues({
+  return new ZodString({
     checks: [],
     typeName: ZodFirstPartyTypeKind.ZodString,
-    coerce: (_a = params === null || params === void 0 ? void 0 : params.coerce) !== null && _a !== void 0 ? _a : false
-  }, processCreateParams(params)));
+    coerce: (_a = params === null || params === void 0 ? void 0 : params.coerce) !== null && _a !== void 0 ? _a : false,
+    ...processCreateParams(params)
+  });
 };
 function floatSafeRemainder(val, step) {
   const valDecCount = (val.toString().split(".")[1] || "").length;
@@ -23081,7 +22981,8 @@ var ZodNumber = class _ZodNumber extends ZodType {
     return this.setLimit("max", value, false, errorUtil.toString(message));
   }
   setLimit(kind, value, inclusive, message) {
-    return new _ZodNumber(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodNumber({
+      ...this._def,
       checks: [
         ...this._def.checks,
         {
@@ -23091,12 +22992,13 @@ var ZodNumber = class _ZodNumber extends ZodType {
           message: errorUtil.toString(message)
         }
       ]
-    }));
+    });
   }
   _addCheck(check) {
-    return new _ZodNumber(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodNumber({
+      ...this._def,
       checks: [...this._def.checks, check]
-    }));
+    });
   }
   int(message) {
     return this._addCheck({
@@ -23202,11 +23104,12 @@ var ZodNumber = class _ZodNumber extends ZodType {
   }
 };
 ZodNumber.create = (params) => {
-  return new ZodNumber(__spreadValues({
+  return new ZodNumber({
     checks: [],
     typeName: ZodFirstPartyTypeKind.ZodNumber,
-    coerce: (params === null || params === void 0 ? void 0 : params.coerce) || false
-  }, processCreateParams(params)));
+    coerce: (params === null || params === void 0 ? void 0 : params.coerce) || false,
+    ...processCreateParams(params)
+  });
 };
 var ZodBigInt = class _ZodBigInt extends ZodType {
   constructor() {
@@ -23286,7 +23189,8 @@ var ZodBigInt = class _ZodBigInt extends ZodType {
     return this.setLimit("max", value, false, errorUtil.toString(message));
   }
   setLimit(kind, value, inclusive, message) {
-    return new _ZodBigInt(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodBigInt({
+      ...this._def,
       checks: [
         ...this._def.checks,
         {
@@ -23296,12 +23200,13 @@ var ZodBigInt = class _ZodBigInt extends ZodType {
           message: errorUtil.toString(message)
         }
       ]
-    }));
+    });
   }
   _addCheck(check) {
-    return new _ZodBigInt(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodBigInt({
+      ...this._def,
       checks: [...this._def.checks, check]
-    }));
+    });
   }
   positive(message) {
     return this._addCheck({
@@ -23365,11 +23270,12 @@ var ZodBigInt = class _ZodBigInt extends ZodType {
 };
 ZodBigInt.create = (params) => {
   var _a;
-  return new ZodBigInt(__spreadValues({
+  return new ZodBigInt({
     checks: [],
     typeName: ZodFirstPartyTypeKind.ZodBigInt,
-    coerce: (_a = params === null || params === void 0 ? void 0 : params.coerce) !== null && _a !== void 0 ? _a : false
-  }, processCreateParams(params)));
+    coerce: (_a = params === null || params === void 0 ? void 0 : params.coerce) !== null && _a !== void 0 ? _a : false,
+    ...processCreateParams(params)
+  });
 };
 var ZodBoolean = class extends ZodType {
   _parse(input) {
@@ -23390,10 +23296,11 @@ var ZodBoolean = class extends ZodType {
   }
 };
 ZodBoolean.create = (params) => {
-  return new ZodBoolean(__spreadValues({
+  return new ZodBoolean({
     typeName: ZodFirstPartyTypeKind.ZodBoolean,
-    coerce: (params === null || params === void 0 ? void 0 : params.coerce) || false
-  }, processCreateParams(params)));
+    coerce: (params === null || params === void 0 ? void 0 : params.coerce) || false,
+    ...processCreateParams(params)
+  });
 };
 var ZodDate = class _ZodDate extends ZodType {
   _parse(input) {
@@ -23456,9 +23363,10 @@ var ZodDate = class _ZodDate extends ZodType {
     };
   }
   _addCheck(check) {
-    return new _ZodDate(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodDate({
+      ...this._def,
       checks: [...this._def.checks, check]
-    }));
+    });
   }
   min(minDate, message) {
     return this._addCheck({
@@ -23496,11 +23404,12 @@ var ZodDate = class _ZodDate extends ZodType {
   }
 };
 ZodDate.create = (params) => {
-  return new ZodDate(__spreadValues({
+  return new ZodDate({
     checks: [],
     coerce: (params === null || params === void 0 ? void 0 : params.coerce) || false,
-    typeName: ZodFirstPartyTypeKind.ZodDate
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodDate,
+    ...processCreateParams(params)
+  });
 };
 var ZodSymbol = class extends ZodType {
   _parse(input) {
@@ -23518,9 +23427,10 @@ var ZodSymbol = class extends ZodType {
   }
 };
 ZodSymbol.create = (params) => {
-  return new ZodSymbol(__spreadValues({
-    typeName: ZodFirstPartyTypeKind.ZodSymbol
-  }, processCreateParams(params)));
+  return new ZodSymbol({
+    typeName: ZodFirstPartyTypeKind.ZodSymbol,
+    ...processCreateParams(params)
+  });
 };
 var ZodUndefined = class extends ZodType {
   _parse(input) {
@@ -23538,9 +23448,10 @@ var ZodUndefined = class extends ZodType {
   }
 };
 ZodUndefined.create = (params) => {
-  return new ZodUndefined(__spreadValues({
-    typeName: ZodFirstPartyTypeKind.ZodUndefined
-  }, processCreateParams(params)));
+  return new ZodUndefined({
+    typeName: ZodFirstPartyTypeKind.ZodUndefined,
+    ...processCreateParams(params)
+  });
 };
 var ZodNull = class extends ZodType {
   _parse(input) {
@@ -23558,9 +23469,10 @@ var ZodNull = class extends ZodType {
   }
 };
 ZodNull.create = (params) => {
-  return new ZodNull(__spreadValues({
-    typeName: ZodFirstPartyTypeKind.ZodNull
-  }, processCreateParams(params)));
+  return new ZodNull({
+    typeName: ZodFirstPartyTypeKind.ZodNull,
+    ...processCreateParams(params)
+  });
 };
 var ZodAny = class extends ZodType {
   constructor() {
@@ -23572,9 +23484,10 @@ var ZodAny = class extends ZodType {
   }
 };
 ZodAny.create = (params) => {
-  return new ZodAny(__spreadValues({
-    typeName: ZodFirstPartyTypeKind.ZodAny
-  }, processCreateParams(params)));
+  return new ZodAny({
+    typeName: ZodFirstPartyTypeKind.ZodAny,
+    ...processCreateParams(params)
+  });
 };
 var ZodUnknown = class extends ZodType {
   constructor() {
@@ -23586,9 +23499,10 @@ var ZodUnknown = class extends ZodType {
   }
 };
 ZodUnknown.create = (params) => {
-  return new ZodUnknown(__spreadValues({
-    typeName: ZodFirstPartyTypeKind.ZodUnknown
-  }, processCreateParams(params)));
+  return new ZodUnknown({
+    typeName: ZodFirstPartyTypeKind.ZodUnknown,
+    ...processCreateParams(params)
+  });
 };
 var ZodNever = class extends ZodType {
   _parse(input) {
@@ -23602,9 +23516,10 @@ var ZodNever = class extends ZodType {
   }
 };
 ZodNever.create = (params) => {
-  return new ZodNever(__spreadValues({
-    typeName: ZodFirstPartyTypeKind.ZodNever
-  }, processCreateParams(params)));
+  return new ZodNever({
+    typeName: ZodFirstPartyTypeKind.ZodNever,
+    ...processCreateParams(params)
+  });
 };
 var ZodVoid = class extends ZodType {
   _parse(input) {
@@ -23622,9 +23537,10 @@ var ZodVoid = class extends ZodType {
   }
 };
 ZodVoid.create = (params) => {
-  return new ZodVoid(__spreadValues({
-    typeName: ZodFirstPartyTypeKind.ZodVoid
-  }, processCreateParams(params)));
+  return new ZodVoid({
+    typeName: ZodFirstPartyTypeKind.ZodVoid,
+    ...processCreateParams(params)
+  });
 };
 var ZodArray = class _ZodArray extends ZodType {
   _parse(input) {
@@ -23696,32 +23612,36 @@ var ZodArray = class _ZodArray extends ZodType {
     return this._def.type;
   }
   min(minLength, message) {
-    return new _ZodArray(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodArray({
+      ...this._def,
       minLength: { value: minLength, message: errorUtil.toString(message) }
-    }));
+    });
   }
   max(maxLength, message) {
-    return new _ZodArray(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodArray({
+      ...this._def,
       maxLength: { value: maxLength, message: errorUtil.toString(message) }
-    }));
+    });
   }
   length(len, message) {
-    return new _ZodArray(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodArray({
+      ...this._def,
       exactLength: { value: len, message: errorUtil.toString(message) }
-    }));
+    });
   }
   nonempty(message) {
     return this.min(1, message);
   }
 };
 ZodArray.create = (schema3, params) => {
-  return new ZodArray(__spreadValues({
+  return new ZodArray({
     type: schema3,
     minLength: null,
     maxLength: null,
     exactLength: null,
-    typeName: ZodFirstPartyTypeKind.ZodArray
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodArray,
+    ...processCreateParams(params)
+  });
 };
 function deepPartialify(schema3) {
   if (schema3 instanceof ZodObject) {
@@ -23730,13 +23650,15 @@ function deepPartialify(schema3) {
       const fieldSchema = schema3.shape[key];
       newShape[key] = ZodOptional.create(deepPartialify(fieldSchema));
     }
-    return new ZodObject(__spreadProps(__spreadValues({}, schema3._def), {
+    return new ZodObject({
+      ...schema3._def,
       shape: () => newShape
-    }));
+    });
   } else if (schema3 instanceof ZodArray) {
-    return new ZodArray(__spreadProps(__spreadValues({}, schema3._def), {
+    return new ZodArray({
+      ...schema3._def,
       type: deepPartialify(schema3.element)
-    }));
+    });
   } else if (schema3 instanceof ZodOptional) {
     return ZodOptional.create(deepPartialify(schema3.unwrap()));
   } else if (schema3 instanceof ZodNullable) {
@@ -23828,11 +23750,11 @@ var ZodObject = class _ZodObject extends ZodType {
       }
     }
     if (ctx.common.async) {
-      return Promise.resolve().then(() => __async(this, null, function* () {
+      return Promise.resolve().then(async () => {
         const syncPairs = [];
         for (const pair of pairs2) {
-          const key = yield pair.key;
-          const value = yield pair.value;
+          const key = await pair.key;
+          const value = await pair.value;
           syncPairs.push({
             key,
             value,
@@ -23840,7 +23762,7 @@ var ZodObject = class _ZodObject extends ZodType {
           });
         }
         return syncPairs;
-      })).then((syncPairs) => {
+      }).then((syncPairs) => {
         return ParseStatus.mergeObjectSync(status, syncPairs);
       });
     } else {
@@ -23852,31 +23774,35 @@ var ZodObject = class _ZodObject extends ZodType {
   }
   strict(message) {
     errorUtil.errToObj;
-    return new _ZodObject(__spreadValues(__spreadProps(__spreadValues({}, this._def), {
-      unknownKeys: "strict"
-    }), message !== void 0 ? {
-      errorMap: (issue, ctx) => {
-        var _a, _b, _c, _d;
-        const defaultError = (_c = (_b = (_a = this._def).errorMap) === null || _b === void 0 ? void 0 : _b.call(_a, issue, ctx).message) !== null && _c !== void 0 ? _c : ctx.defaultError;
-        if (issue.code === "unrecognized_keys")
+    return new _ZodObject({
+      ...this._def,
+      unknownKeys: "strict",
+      ...message !== void 0 ? {
+        errorMap: (issue, ctx) => {
+          var _a, _b, _c, _d;
+          const defaultError = (_c = (_b = (_a = this._def).errorMap) === null || _b === void 0 ? void 0 : _b.call(_a, issue, ctx).message) !== null && _c !== void 0 ? _c : ctx.defaultError;
+          if (issue.code === "unrecognized_keys")
+            return {
+              message: (_d = errorUtil.errToObj(message).message) !== null && _d !== void 0 ? _d : defaultError
+            };
           return {
-            message: (_d = errorUtil.errToObj(message).message) !== null && _d !== void 0 ? _d : defaultError
+            message: defaultError
           };
-        return {
-          message: defaultError
-        };
-      }
-    } : {}));
+        }
+      } : {}
+    });
   }
   strip() {
-    return new _ZodObject(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodObject({
+      ...this._def,
       unknownKeys: "strip"
-    }));
+    });
   }
   passthrough() {
-    return new _ZodObject(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodObject({
+      ...this._def,
       unknownKeys: "passthrough"
-    }));
+    });
   }
   // const AugmentFactory =
   //   <Def extends ZodObjectDef>(def: Def) =>
@@ -23896,9 +23822,13 @@ var ZodObject = class _ZodObject extends ZodType {
   //     }) as any;
   //   };
   extend(augmentation) {
-    return new _ZodObject(__spreadProps(__spreadValues({}, this._def), {
-      shape: () => __spreadValues(__spreadValues({}, this._def.shape()), augmentation)
-    }));
+    return new _ZodObject({
+      ...this._def,
+      shape: () => ({
+        ...this._def.shape(),
+        ...augmentation
+      })
+    });
   }
   /**
    * Prior to zod@1.0.12 there was a bug in the
@@ -23909,7 +23839,10 @@ var ZodObject = class _ZodObject extends ZodType {
     const merged = new _ZodObject({
       unknownKeys: merging._def.unknownKeys,
       catchall: merging._def.catchall,
-      shape: () => __spreadValues(__spreadValues({}, this._def.shape()), merging._def.shape()),
+      shape: () => ({
+        ...this._def.shape(),
+        ...merging._def.shape()
+      }),
       typeName: ZodFirstPartyTypeKind.ZodObject
     });
     return merged;
@@ -23974,9 +23907,10 @@ var ZodObject = class _ZodObject extends ZodType {
   //   return merged;
   // }
   catchall(index) {
-    return new _ZodObject(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodObject({
+      ...this._def,
       catchall: index
-    }));
+    });
   }
   pick(mask) {
     const shape = {};
@@ -23985,9 +23919,10 @@ var ZodObject = class _ZodObject extends ZodType {
         shape[key] = this.shape[key];
       }
     });
-    return new _ZodObject(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodObject({
+      ...this._def,
       shape: () => shape
-    }));
+    });
   }
   omit(mask) {
     const shape = {};
@@ -23996,9 +23931,10 @@ var ZodObject = class _ZodObject extends ZodType {
         shape[key] = this.shape[key];
       }
     });
-    return new _ZodObject(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodObject({
+      ...this._def,
       shape: () => shape
-    }));
+    });
   }
   /**
    * @deprecated
@@ -24016,9 +23952,10 @@ var ZodObject = class _ZodObject extends ZodType {
         newShape[key] = fieldSchema.optional();
       }
     });
-    return new _ZodObject(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodObject({
+      ...this._def,
       shape: () => newShape
-    }));
+    });
   }
   required(mask) {
     const newShape = {};
@@ -24034,37 +23971,41 @@ var ZodObject = class _ZodObject extends ZodType {
         newShape[key] = newField;
       }
     });
-    return new _ZodObject(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodObject({
+      ...this._def,
       shape: () => newShape
-    }));
+    });
   }
   keyof() {
     return createZodEnum(util.objectKeys(this.shape));
   }
 };
 ZodObject.create = (shape, params) => {
-  return new ZodObject(__spreadValues({
+  return new ZodObject({
     shape: () => shape,
     unknownKeys: "strip",
     catchall: ZodNever.create(),
-    typeName: ZodFirstPartyTypeKind.ZodObject
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodObject,
+    ...processCreateParams(params)
+  });
 };
 ZodObject.strictCreate = (shape, params) => {
-  return new ZodObject(__spreadValues({
+  return new ZodObject({
     shape: () => shape,
     unknownKeys: "strict",
     catchall: ZodNever.create(),
-    typeName: ZodFirstPartyTypeKind.ZodObject
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodObject,
+    ...processCreateParams(params)
+  });
 };
 ZodObject.lazycreate = (shape, params) => {
-  return new ZodObject(__spreadValues({
+  return new ZodObject({
     shape,
     unknownKeys: "strip",
     catchall: ZodNever.create(),
-    typeName: ZodFirstPartyTypeKind.ZodObject
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodObject,
+    ...processCreateParams(params)
+  });
 };
 var ZodUnion = class extends ZodType {
   _parse(input) {
@@ -24090,32 +24031,36 @@ var ZodUnion = class extends ZodType {
       return INVALID;
     }
     if (ctx.common.async) {
-      return Promise.all(options2.map((option) => __async(this, null, function* () {
-        const childCtx = __spreadProps(__spreadValues({}, ctx), {
-          common: __spreadProps(__spreadValues({}, ctx.common), {
+      return Promise.all(options2.map(async (option) => {
+        const childCtx = {
+          ...ctx,
+          common: {
+            ...ctx.common,
             issues: []
-          }),
+          },
           parent: null
-        });
+        };
         return {
-          result: yield option._parseAsync({
+          result: await option._parseAsync({
             data: ctx.data,
             path: ctx.path,
             parent: childCtx
           }),
           ctx: childCtx
         };
-      }))).then(handleResults);
+      })).then(handleResults);
     } else {
       let dirty = void 0;
       const issues = [];
       for (const option of options2) {
-        const childCtx = __spreadProps(__spreadValues({}, ctx), {
-          common: __spreadProps(__spreadValues({}, ctx.common), {
+        const childCtx = {
+          ...ctx,
+          common: {
+            ...ctx.common,
             issues: []
-          }),
+          },
           parent: null
-        });
+        };
         const result = option._parseSync({
           data: ctx.data,
           path: ctx.path,
@@ -24147,10 +24092,11 @@ var ZodUnion = class extends ZodType {
   }
 };
 ZodUnion.create = (types, params) => {
-  return new ZodUnion(__spreadValues({
+  return new ZodUnion({
     options: types,
-    typeName: ZodFirstPartyTypeKind.ZodUnion
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodUnion,
+    ...processCreateParams(params)
+  });
 };
 var getDiscriminator = (type2) => {
   if (type2 instanceof ZodLazy) {
@@ -24250,12 +24196,13 @@ var ZodDiscriminatedUnion = class _ZodDiscriminatedUnion extends ZodType {
         optionsMap.set(value, type2);
       }
     }
-    return new _ZodDiscriminatedUnion(__spreadValues({
+    return new _ZodDiscriminatedUnion({
       typeName: ZodFirstPartyTypeKind.ZodDiscriminatedUnion,
       discriminator,
       options: options2,
-      optionsMap
-    }, processCreateParams(params)));
+      optionsMap,
+      ...processCreateParams(params)
+    });
   }
 };
 function mergeValues(a, b) {
@@ -24266,7 +24213,7 @@ function mergeValues(a, b) {
   } else if (aType === ZodParsedType.object && bType === ZodParsedType.object) {
     const bKeys = util.objectKeys(b);
     const sharedKeys = util.objectKeys(a).filter((key) => bKeys.indexOf(key) !== -1);
-    const newObj = __spreadValues(__spreadValues({}, a), b);
+    const newObj = { ...a, ...b };
     for (const key of sharedKeys) {
       const sharedValue = mergeValues(a[key], b[key]);
       if (!sharedValue.valid) {
@@ -24342,11 +24289,12 @@ var ZodIntersection = class extends ZodType {
   }
 };
 ZodIntersection.create = (left, right, params) => {
-  return new ZodIntersection(__spreadValues({
+  return new ZodIntersection({
     left,
     right,
-    typeName: ZodFirstPartyTypeKind.ZodIntersection
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodIntersection,
+    ...processCreateParams(params)
+  });
 };
 var ZodTuple = class _ZodTuple extends ZodType {
   _parse(input) {
@@ -24398,20 +24346,22 @@ var ZodTuple = class _ZodTuple extends ZodType {
     return this._def.items;
   }
   rest(rest) {
-    return new _ZodTuple(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodTuple({
+      ...this._def,
       rest
-    }));
+    });
   }
 };
 ZodTuple.create = (schemas, params) => {
   if (!Array.isArray(schemas)) {
     throw new Error("You must pass an array of schemas to z.tuple([ ... ])");
   }
-  return new ZodTuple(__spreadValues({
+  return new ZodTuple({
     items: schemas,
     typeName: ZodFirstPartyTypeKind.ZodTuple,
-    rest: null
-  }, processCreateParams(params)));
+    rest: null,
+    ...processCreateParams(params)
+  });
 };
 var ZodRecord = class _ZodRecord extends ZodType {
   get keySchema() {
@@ -24451,17 +24401,19 @@ var ZodRecord = class _ZodRecord extends ZodType {
   }
   static create(first, second, third) {
     if (second instanceof ZodType) {
-      return new _ZodRecord(__spreadValues({
+      return new _ZodRecord({
         keyType: first,
         valueType: second,
-        typeName: ZodFirstPartyTypeKind.ZodRecord
-      }, processCreateParams(third)));
+        typeName: ZodFirstPartyTypeKind.ZodRecord,
+        ...processCreateParams(third)
+      });
     }
-    return new _ZodRecord(__spreadValues({
+    return new _ZodRecord({
       keyType: ZodString.create(),
       valueType: first,
-      typeName: ZodFirstPartyTypeKind.ZodRecord
-    }, processCreateParams(second)));
+      typeName: ZodFirstPartyTypeKind.ZodRecord,
+      ...processCreateParams(second)
+    });
   }
 };
 var ZodMap = class extends ZodType {
@@ -24491,10 +24443,10 @@ var ZodMap = class extends ZodType {
     });
     if (ctx.common.async) {
       const finalMap = /* @__PURE__ */ new Map();
-      return Promise.resolve().then(() => __async(this, null, function* () {
+      return Promise.resolve().then(async () => {
         for (const pair of pairs2) {
-          const key = yield pair.key;
-          const value = yield pair.value;
+          const key = await pair.key;
+          const value = await pair.value;
           if (key.status === "aborted" || value.status === "aborted") {
             return INVALID;
           }
@@ -24504,7 +24456,7 @@ var ZodMap = class extends ZodType {
           finalMap.set(key.value, value.value);
         }
         return { status: status.value, value: finalMap };
-      }));
+      });
     } else {
       const finalMap = /* @__PURE__ */ new Map();
       for (const pair of pairs2) {
@@ -24523,11 +24475,12 @@ var ZodMap = class extends ZodType {
   }
 };
 ZodMap.create = (keyType, valueType, params) => {
-  return new ZodMap(__spreadValues({
+  return new ZodMap({
     valueType,
     keyType,
-    typeName: ZodFirstPartyTypeKind.ZodMap
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodMap,
+    ...processCreateParams(params)
+  });
 };
 var ZodSet = class _ZodSet extends ZodType {
   _parse(input) {
@@ -24587,14 +24540,16 @@ var ZodSet = class _ZodSet extends ZodType {
     }
   }
   min(minSize, message) {
-    return new _ZodSet(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodSet({
+      ...this._def,
       minSize: { value: minSize, message: errorUtil.toString(message) }
-    }));
+    });
   }
   max(maxSize, message) {
-    return new _ZodSet(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodSet({
+      ...this._def,
       maxSize: { value: maxSize, message: errorUtil.toString(message) }
-    }));
+    });
   }
   size(size, message) {
     return this.min(size, message).max(size, message);
@@ -24604,12 +24559,13 @@ var ZodSet = class _ZodSet extends ZodType {
   }
 };
 ZodSet.create = (valueType, params) => {
-  return new ZodSet(__spreadValues({
+  return new ZodSet({
     valueType,
     minSize: null,
     maxSize: null,
-    typeName: ZodFirstPartyTypeKind.ZodSet
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodSet,
+    ...processCreateParams(params)
+  });
 };
 var ZodFunction = class _ZodFunction extends ZodType {
   constructor() {
@@ -24662,20 +24618,18 @@ var ZodFunction = class _ZodFunction extends ZodType {
     const fn = ctx.data;
     if (this._def.returns instanceof ZodPromise) {
       const me = this;
-      return OK(function(...args) {
-        return __async(this, null, function* () {
-          const error = new ZodError([]);
-          const parsedArgs = yield me._def.args.parseAsync(args, params).catch((e) => {
-            error.addIssue(makeArgsIssue(args, e));
-            throw error;
-          });
-          const result = yield Reflect.apply(fn, this, parsedArgs);
-          const parsedReturns = yield me._def.returns._def.type.parseAsync(result, params).catch((e) => {
-            error.addIssue(makeReturnsIssue(result, e));
-            throw error;
-          });
-          return parsedReturns;
+      return OK(async function(...args) {
+        const error = new ZodError([]);
+        const parsedArgs = await me._def.args.parseAsync(args, params).catch((e) => {
+          error.addIssue(makeArgsIssue(args, e));
+          throw error;
         });
+        const result = await Reflect.apply(fn, this, parsedArgs);
+        const parsedReturns = await me._def.returns._def.type.parseAsync(result, params).catch((e) => {
+          error.addIssue(makeReturnsIssue(result, e));
+          throw error;
+        });
+        return parsedReturns;
       });
     } else {
       const me = this;
@@ -24700,14 +24654,16 @@ var ZodFunction = class _ZodFunction extends ZodType {
     return this._def.returns;
   }
   args(...items) {
-    return new _ZodFunction(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodFunction({
+      ...this._def,
       args: ZodTuple.create(items).rest(ZodUnknown.create())
-    }));
+    });
   }
   returns(returnType) {
-    return new _ZodFunction(__spreadProps(__spreadValues({}, this._def), {
+    return new _ZodFunction({
+      ...this._def,
       returns: returnType
-    }));
+    });
   }
   implement(func) {
     const validatedFunc = this.parse(func);
@@ -24718,11 +24674,12 @@ var ZodFunction = class _ZodFunction extends ZodType {
     return validatedFunc;
   }
   static create(args, returns, params) {
-    return new _ZodFunction(__spreadValues({
+    return new _ZodFunction({
       args: args ? args : ZodTuple.create([]).rest(ZodUnknown.create()),
       returns: returns || ZodUnknown.create(),
-      typeName: ZodFirstPartyTypeKind.ZodFunction
-    }, processCreateParams(params)));
+      typeName: ZodFirstPartyTypeKind.ZodFunction,
+      ...processCreateParams(params)
+    });
   }
 };
 var ZodLazy = class extends ZodType {
@@ -24736,10 +24693,11 @@ var ZodLazy = class extends ZodType {
   }
 };
 ZodLazy.create = (getter, params) => {
-  return new ZodLazy(__spreadValues({
+  return new ZodLazy({
     getter,
-    typeName: ZodFirstPartyTypeKind.ZodLazy
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodLazy,
+    ...processCreateParams(params)
+  });
 };
 var ZodLiteral = class extends ZodType {
   _parse(input) {
@@ -24759,16 +24717,18 @@ var ZodLiteral = class extends ZodType {
   }
 };
 ZodLiteral.create = (value, params) => {
-  return new ZodLiteral(__spreadValues({
+  return new ZodLiteral({
     value,
-    typeName: ZodFirstPartyTypeKind.ZodLiteral
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodLiteral,
+    ...processCreateParams(params)
+  });
 };
 function createZodEnum(values2, params) {
-  return new ZodEnum(__spreadValues({
+  return new ZodEnum({
     values: values2,
-    typeName: ZodFirstPartyTypeKind.ZodEnum
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodEnum,
+    ...processCreateParams(params)
+  });
 }
 var ZodEnum = class _ZodEnum extends ZodType {
   constructor() {
@@ -24826,10 +24786,16 @@ var ZodEnum = class _ZodEnum extends ZodType {
     return enumValues;
   }
   extract(values2, newDef = this._def) {
-    return _ZodEnum.create(values2, __spreadValues(__spreadValues({}, this._def), newDef));
+    return _ZodEnum.create(values2, {
+      ...this._def,
+      ...newDef
+    });
   }
   exclude(values2, newDef = this._def) {
-    return _ZodEnum.create(this.options.filter((opt) => !values2.includes(opt)), __spreadValues(__spreadValues({}, this._def), newDef));
+    return _ZodEnum.create(this.options.filter((opt) => !values2.includes(opt)), {
+      ...this._def,
+      ...newDef
+    });
   }
 };
 _ZodEnum_cache = /* @__PURE__ */ new WeakMap();
@@ -24871,10 +24837,11 @@ var ZodNativeEnum = class extends ZodType {
 };
 _ZodNativeEnum_cache = /* @__PURE__ */ new WeakMap();
 ZodNativeEnum.create = (values2, params) => {
-  return new ZodNativeEnum(__spreadValues({
+  return new ZodNativeEnum({
     values: values2,
-    typeName: ZodFirstPartyTypeKind.ZodNativeEnum
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodNativeEnum,
+    ...processCreateParams(params)
+  });
 };
 var ZodPromise = class extends ZodType {
   unwrap() {
@@ -24900,10 +24867,11 @@ var ZodPromise = class extends ZodType {
   }
 };
 ZodPromise.create = (schema3, params) => {
-  return new ZodPromise(__spreadValues({
+  return new ZodPromise({
     type: schema3,
-    typeName: ZodFirstPartyTypeKind.ZodPromise
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodPromise,
+    ...processCreateParams(params)
+  });
 };
 var ZodEffects = class extends ZodType {
   innerType() {
@@ -24932,10 +24900,10 @@ var ZodEffects = class extends ZodType {
     if (effect.type === "preprocess") {
       const processed = effect.transform(ctx.data, checkCtx);
       if (ctx.common.async) {
-        return Promise.resolve(processed).then((processed2) => __async(this, null, function* () {
+        return Promise.resolve(processed).then(async (processed2) => {
           if (status.value === "aborted")
             return INVALID;
-          const result = yield this._def.schema._parseAsync({
+          const result = await this._def.schema._parseAsync({
             data: processed2,
             path: ctx.path,
             parent: ctx
@@ -24947,7 +24915,7 @@ var ZodEffects = class extends ZodType {
           if (status.value === "dirty")
             return DIRTY(result.value);
           return result;
-        }));
+        });
       } else {
         if (status.value === "aborted")
           return INVALID;
@@ -25026,18 +24994,20 @@ var ZodEffects = class extends ZodType {
   }
 };
 ZodEffects.create = (schema3, effect, params) => {
-  return new ZodEffects(__spreadValues({
+  return new ZodEffects({
     schema: schema3,
     typeName: ZodFirstPartyTypeKind.ZodEffects,
-    effect
-  }, processCreateParams(params)));
+    effect,
+    ...processCreateParams(params)
+  });
 };
 ZodEffects.createWithPreprocess = (preprocess, schema3, params) => {
-  return new ZodEffects(__spreadValues({
+  return new ZodEffects({
     schema: schema3,
     effect: { type: "preprocess", transform: preprocess },
-    typeName: ZodFirstPartyTypeKind.ZodEffects
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodEffects,
+    ...processCreateParams(params)
+  });
 };
 var ZodOptional = class extends ZodType {
   _parse(input) {
@@ -25052,10 +25022,11 @@ var ZodOptional = class extends ZodType {
   }
 };
 ZodOptional.create = (type2, params) => {
-  return new ZodOptional(__spreadValues({
+  return new ZodOptional({
     innerType: type2,
-    typeName: ZodFirstPartyTypeKind.ZodOptional
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodOptional,
+    ...processCreateParams(params)
+  });
 };
 var ZodNullable = class extends ZodType {
   _parse(input) {
@@ -25070,10 +25041,11 @@ var ZodNullable = class extends ZodType {
   }
 };
 ZodNullable.create = (type2, params) => {
-  return new ZodNullable(__spreadValues({
+  return new ZodNullable({
     innerType: type2,
-    typeName: ZodFirstPartyTypeKind.ZodNullable
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodNullable,
+    ...processCreateParams(params)
+  });
 };
 var ZodDefault = class extends ZodType {
   _parse(input) {
@@ -25093,24 +25065,29 @@ var ZodDefault = class extends ZodType {
   }
 };
 ZodDefault.create = (type2, params) => {
-  return new ZodDefault(__spreadValues({
+  return new ZodDefault({
     innerType: type2,
     typeName: ZodFirstPartyTypeKind.ZodDefault,
-    defaultValue: typeof params.default === "function" ? params.default : () => params.default
-  }, processCreateParams(params)));
+    defaultValue: typeof params.default === "function" ? params.default : () => params.default,
+    ...processCreateParams(params)
+  });
 };
 var ZodCatch = class extends ZodType {
   _parse(input) {
     const { ctx } = this._processInputParams(input);
-    const newCtx = __spreadProps(__spreadValues({}, ctx), {
-      common: __spreadProps(__spreadValues({}, ctx.common), {
+    const newCtx = {
+      ...ctx,
+      common: {
+        ...ctx.common,
         issues: []
-      })
-    });
+      }
+    };
     const result = this._def.innerType._parse({
       data: newCtx.data,
       path: newCtx.path,
-      parent: __spreadValues({}, newCtx)
+      parent: {
+        ...newCtx
+      }
     });
     if (isAsync(result)) {
       return result.then((result2) => {
@@ -25141,11 +25118,12 @@ var ZodCatch = class extends ZodType {
   }
 };
 ZodCatch.create = (type2, params) => {
-  return new ZodCatch(__spreadValues({
+  return new ZodCatch({
     innerType: type2,
     typeName: ZodFirstPartyTypeKind.ZodCatch,
-    catchValue: typeof params.catch === "function" ? params.catch : () => params.catch
-  }, processCreateParams(params)));
+    catchValue: typeof params.catch === "function" ? params.catch : () => params.catch,
+    ...processCreateParams(params)
+  });
 };
 var ZodNaN = class extends ZodType {
   _parse(input) {
@@ -25163,9 +25141,10 @@ var ZodNaN = class extends ZodType {
   }
 };
 ZodNaN.create = (params) => {
-  return new ZodNaN(__spreadValues({
-    typeName: ZodFirstPartyTypeKind.ZodNaN
-  }, processCreateParams(params)));
+  return new ZodNaN({
+    typeName: ZodFirstPartyTypeKind.ZodNaN,
+    ...processCreateParams(params)
+  });
 };
 var BRAND = Symbol("zod_brand");
 var ZodBranded = class extends ZodType {
@@ -25186,8 +25165,8 @@ var ZodPipeline = class _ZodPipeline extends ZodType {
   _parse(input) {
     const { status, ctx } = this._processInputParams(input);
     if (ctx.common.async) {
-      const handleAsync = () => __async(this, null, function* () {
-        const inResult = yield this._def.in._parseAsync({
+      const handleAsync = async () => {
+        const inResult = await this._def.in._parseAsync({
           data: ctx.data,
           path: ctx.path,
           parent: ctx
@@ -25204,7 +25183,7 @@ var ZodPipeline = class _ZodPipeline extends ZodType {
             parent: ctx
           });
         }
-      });
+      };
       return handleAsync();
     } else {
       const inResult = this._def.in._parseSync({
@@ -25253,10 +25232,11 @@ var ZodReadonly = class extends ZodType {
   }
 };
 ZodReadonly.create = (type2, params) => {
-  return new ZodReadonly(__spreadValues({
+  return new ZodReadonly({
     innerType: type2,
-    typeName: ZodFirstPartyTypeKind.ZodReadonly
-  }, processCreateParams(params)));
+    typeName: ZodFirstPartyTypeKind.ZodReadonly,
+    ...processCreateParams(params)
+  });
 };
 function custom(check, params = {}, fatal) {
   if (check)
@@ -25266,7 +25246,7 @@ function custom(check, params = {}, fatal) {
         const p = typeof params === "function" ? params(data) : typeof params === "string" ? { message: params } : params;
         const _fatal = (_b = (_a = p.fatal) !== null && _a !== void 0 ? _a : fatal) !== null && _b !== void 0 ? _b : true;
         const p2 = typeof p === "string" ? { message: p } : p;
-        ctx.addIssue(__spreadProps(__spreadValues({ code: "custom" }, p2), { fatal: _fatal }));
+        ctx.addIssue({ code: "custom", ...p2, fatal: _fatal });
       }
     });
   return ZodAny.create();
@@ -25354,13 +25334,14 @@ var ostring = () => stringType().optional();
 var onumber = () => numberType().optional();
 var oboolean = () => booleanType().optional();
 var coerce = {
-  string: (arg) => ZodString.create(__spreadProps(__spreadValues({}, arg), { coerce: true })),
-  number: (arg) => ZodNumber.create(__spreadProps(__spreadValues({}, arg), { coerce: true })),
-  boolean: (arg) => ZodBoolean.create(__spreadProps(__spreadValues({}, arg), {
+  string: (arg) => ZodString.create({ ...arg, coerce: true }),
+  number: (arg) => ZodNumber.create({ ...arg, coerce: true }),
+  boolean: (arg) => ZodBoolean.create({
+    ...arg,
     coerce: true
-  })),
-  bigint: (arg) => ZodBigInt.create(__spreadProps(__spreadValues({}, arg), { coerce: true })),
-  date: (arg) => ZodDate.create(__spreadProps(__spreadValues({}, arg), { coerce: true }))
+  }),
+  bigint: (arg) => ZodBigInt.create({ ...arg, coerce: true }),
+  date: (arg) => ZodDate.create({ ...arg, coerce: true })
 };
 var NEVER = INVALID;
 var z = /* @__PURE__ */ Object.freeze({
@@ -25656,8 +25637,7 @@ var IsNthChild = class extends QueryPredicateOperator {
     this.schema = z.tuple([q.node, q.integer]);
   }
   run({ node }, n) {
-    var _a;
-    return ((_a = node.parent) == null ? void 0 : _a.children.findIndex((n2) => n2.id === node.id)) === n;
+    return node.parent?.children.findIndex((n2) => n2.id === node.id) === n;
   }
 };
 var HasMultipleChildrenOfType = class extends QueryPredicateOperator {
@@ -25710,7 +25690,7 @@ var CharacterRange = class extends QueryPredicateOperator {
   run(nodeInfo, startOffset, endOffset) {
     nodeInfo.range = new Range(
       nodeInfo.range.start.translate(void 0, startOffset),
-      nodeInfo.range.end.translate(void 0, endOffset != null ? endOffset : 0)
+      nodeInfo.range.end.translate(void 0, endOffset ?? 0)
     );
     return true;
   }
@@ -25722,14 +25702,13 @@ var ShrinkToMatch = class extends QueryPredicateOperator {
     this.schema = z.tuple([q.node, q.string]);
   }
   run(nodeInfo, pattern) {
-    var _a, _b, _c;
     const { document, range: range3 } = nodeInfo;
     const text = document.getText(range3);
     const match = text.match(new RegExp(pattern, "ds"));
-    if ((match == null ? void 0 : match.index) == null) {
+    if (match?.index == null) {
       throw Error(`No match for pattern '${pattern}'`);
     }
-    const [startOffset, endOffset] = (_c = (_b = (_a = match.indices) == null ? void 0 : _a.groups) == null ? void 0 : _b.keep) != null ? _c : match.indices[0];
+    const [startOffset, endOffset] = match.indices?.groups?.keep ?? match.indices[0];
     const baseOffset = document.offsetAt(range3.start);
     nodeInfo.range = new Range(
       document.positionAt(baseOffset + startOffset),
@@ -25859,16 +25838,18 @@ function parsePredicates(predicateDescriptors) {
 function rewriteStartOfEndOf(captures) {
   return captures.map((capture) => {
     if (capture.name.endsWith(".startOf")) {
-      return __spreadProps(__spreadValues({}, capture), {
+      return {
+        ...capture,
         name: capture.name.replace(/\.startOf$/, ""),
         range: capture.range.start.toEmptyRange()
-      });
+      };
     }
     if (capture.name.endsWith(".endOf")) {
-      return __spreadProps(__spreadValues({}, capture), {
+      return {
+        ...capture,
         name: capture.name.replace(/\.endOf$/, ""),
         range: capture.range.end.toEmptyRange()
-      });
+      };
     }
     return capture;
   });
@@ -25929,7 +25910,6 @@ var TreeSitterQuery = class _TreeSitterQuery {
       const captures = Object.entries(
         groupBy_default(match.captures, ({ name }) => normalizeCaptureName(name))
       ).map(([name, captures2]) => {
-        var _a;
         captures2 = rewriteStartOfEndOf(captures2);
         const capturesAreValid = checkCaptureStartEnd(
           captures2,
@@ -25942,13 +25922,13 @@ var TreeSitterQuery = class _TreeSitterQuery {
           name,
           range: captures2.map(({ range: range3 }) => range3).reduce((accumulator, range3) => range3.union(accumulator)),
           allowMultiple: captures2.some((capture) => capture.allowMultiple),
-          insertionDelimiter: (_a = captures2.find(
+          insertionDelimiter: captures2.find(
             (capture) => capture.insertionDelimiter != null
-          )) == null ? void 0 : _a.insertionDelimiter,
+          )?.insertionDelimiter,
           hasError: () => captures2.some((capture) => capture.hasError())
         };
       });
-      return __spreadProps(__spreadValues({}, match), { captures });
+      return { ...match, captures };
     });
   }
   get captureNames() {
@@ -26045,23 +26025,21 @@ var LanguageDefinition = class _LanguageDefinition {
    * @returns A language definition for the given language id, or undefined if the given language
    * id doesn't have a new-style query definition
    */
-  static create(ide2, treeSitterQueryProvider, treeSitter, languageId) {
-    return __async(this, null, function* () {
-      const rawLanguageQueryString = yield readQueryFileAndImports(
-        ide2,
-        treeSitterQueryProvider,
-        `${languageId}.scm`
-      );
-      if (rawLanguageQueryString == null) {
-        return void 0;
-      }
-      if (!(yield treeSitter.loadLanguage(languageId))) {
-        return void 0;
-      }
-      const rawQuery = treeSitter.getLanguage(languageId).query(rawLanguageQueryString);
-      const query = TreeSitterQuery.create(languageId, treeSitter, rawQuery);
-      return new _LanguageDefinition(query);
-    });
+  static async create(ide2, treeSitterQueryProvider, treeSitter, languageId) {
+    const rawLanguageQueryString = await readQueryFileAndImports(
+      ide2,
+      treeSitterQueryProvider,
+      `${languageId}.scm`
+    );
+    if (rawLanguageQueryString == null) {
+      return void 0;
+    }
+    if (!await treeSitter.loadLanguage(languageId)) {
+      return void 0;
+    }
+    const rawQuery = treeSitter.getLanguage(languageId).query(rawLanguageQueryString);
+    const query = TreeSitterQuery.create(languageId, treeSitter, rawQuery);
+    return new _LanguageDefinition(query);
   }
   /**
    * @param scopeType The scope type for which to get a scope handler
@@ -26087,59 +26065,56 @@ var LanguageDefinition = class _LanguageDefinition {
     return this.query.matches(document).map((match) => match.captures.find(({ name }) => name === captureName)).filter((capture) => capture != null);
   }
 };
-function readQueryFileAndImports(ide2, provider, languageQueryName) {
-  return __async(this, null, function* () {
-    const rawQueryStrings = {
-      [languageQueryName]: null
-    };
-    const doValidation = ide2.runMode !== "production";
-    while (Object.values(rawQueryStrings).some((v) => v == null)) {
-      for (const [queryName, rawQueryString] of Object.entries(rawQueryStrings)) {
-        if (rawQueryString != null) {
-          continue;
-        }
-        let rawQuery = yield provider.readQuery(queryName);
-        if (rawQuery == null) {
-          if (queryName === languageQueryName) {
-            return void 0;
-          }
-          void showError(
-            ide2.messages,
-            "LanguageDefinition.readQueryFileAndImports.queryNotFound",
-            `Could not find imported query file ${queryName}`
-          );
-          if (ide2.runMode === "test") {
-            throw new Error("Invalid import statement");
-          }
-          rawQuery = "";
-        }
-        if (doValidation) {
-          validateQueryCaptures(queryName, rawQuery);
-        }
-        rawQueryStrings[queryName] = rawQuery;
-        matchAll(
-          rawQuery,
-          // Matches lines like:
-          //
-          // ;; import path/to/query.scm
-          //
-          // but is very lenient about whitespace and quotes, and also allows
-          // include instead of import, so that we can throw a nice error message
-          // if the developer uses the wrong syntax
-          /^[^\S\r\n]*;;?[^\S\r\n]*(?:import|include)[^\S\r\n]+['"]?([\w|/\\.]+)['"]?[^\S\r\n]*$/gm,
-          (match) => {
-            var _a;
-            const importName = match[1];
-            if (doValidation) {
-              validateImportSyntax(ide2, queryName, importName, match[0]);
-            }
-            rawQueryStrings[importName] = (_a = rawQueryStrings[importName]) != null ? _a : null;
-          }
-        );
+async function readQueryFileAndImports(ide2, provider, languageQueryName) {
+  const rawQueryStrings = {
+    [languageQueryName]: null
+  };
+  const doValidation = ide2.runMode !== "production";
+  while (Object.values(rawQueryStrings).some((v) => v == null)) {
+    for (const [queryName, rawQueryString] of Object.entries(rawQueryStrings)) {
+      if (rawQueryString != null) {
+        continue;
       }
+      let rawQuery = await provider.readQuery(queryName);
+      if (rawQuery == null) {
+        if (queryName === languageQueryName) {
+          return void 0;
+        }
+        void showError(
+          ide2.messages,
+          "LanguageDefinition.readQueryFileAndImports.queryNotFound",
+          `Could not find imported query file ${queryName}`
+        );
+        if (ide2.runMode === "test") {
+          throw new Error("Invalid import statement");
+        }
+        rawQuery = "";
+      }
+      if (doValidation) {
+        validateQueryCaptures(queryName, rawQuery);
+      }
+      rawQueryStrings[queryName] = rawQuery;
+      matchAll(
+        rawQuery,
+        // Matches lines like:
+        //
+        // ;; import path/to/query.scm
+        //
+        // but is very lenient about whitespace and quotes, and also allows
+        // include instead of import, so that we can throw a nice error message
+        // if the developer uses the wrong syntax
+        /^[^\S\r\n]*;;?[^\S\r\n]*(?:import|include)[^\S\r\n]+['"]?([\w|/\\.]+)['"]?[^\S\r\n]*$/gm,
+        (match) => {
+          const importName = match[1];
+          if (doValidation) {
+            validateImportSyntax(ide2, queryName, importName, match[0]);
+          }
+          rawQueryStrings[importName] = rawQueryStrings[importName] ?? null;
+        }
+      );
     }
-    return Object.values(rawQueryStrings).join("\n");
-  });
+  }
+  return Object.values(rawQueryStrings).join("\n");
 }
 function validateImportSyntax(ide2, file, importName, actual) {
   let isError = false;
@@ -26196,59 +26171,50 @@ var LanguageDefinitionsImpl = class _LanguageDefinitionsImpl {
       treeSitterQueryProvider.onChanges(() => this.reloadLanguageDefinitions())
     );
   }
-  static create(ide2, treeSitter, treeSitterQueryProvider) {
-    return __async(this, null, function* () {
-      const instance = new _LanguageDefinitionsImpl(
-        ide2,
-        treeSitter,
-        treeSitterQueryProvider
+  static async create(ide2, treeSitter, treeSitterQueryProvider) {
+    const instance = new _LanguageDefinitionsImpl(
+      ide2,
+      treeSitter,
+      treeSitterQueryProvider
+    );
+    await instance.loadAllLanguages();
+    return instance;
+  }
+  async loadAllLanguages() {
+    const languageIds = this.ide.visibleTextEditors.map(
+      ({ document }) => document.languageId
+    );
+    try {
+      await Promise.all(
+        languageIds.map((languageId) => this.loadLanguage(languageId))
       );
-      yield instance.loadAllLanguages();
-      return instance;
-    });
-  }
-  loadAllLanguages() {
-    return __async(this, null, function* () {
-      const languageIds = this.ide.visibleTextEditors.map(
-        ({ document }) => document.languageId
+    } catch (err) {
+      void showError(
+        this.ide.messages,
+        "Failed to load language definitions",
+        toString_default(err)
       );
-      try {
-        yield Promise.all(
-          languageIds.map((languageId) => this.loadLanguage(languageId))
-        );
-      } catch (err) {
-        void showError(
-          this.ide.messages,
-          "Failed to load language definitions",
-          toString_default(err)
-        );
-        if (this.ide.runMode === "test") {
-          throw err;
-        }
+      if (this.ide.runMode === "test") {
+        throw err;
       }
-    });
+    }
   }
-  loadLanguage(languageId) {
-    return __async(this, null, function* () {
-      var _a;
-      if (this.languageDefinitions.has(languageId)) {
-        return;
-      }
-      const definition = (_a = yield LanguageDefinition.create(
-        this.ide,
-        this.treeSitterQueryProvider,
-        this.treeSitter,
-        languageId
-      )) != null ? _a : LANGUAGE_UNDEFINED;
-      this.languageDefinitions.set(languageId, definition);
-    });
+  async loadLanguage(languageId) {
+    if (this.languageDefinitions.has(languageId)) {
+      return;
+    }
+    const definition = await LanguageDefinition.create(
+      this.ide,
+      this.treeSitterQueryProvider,
+      this.treeSitter,
+      languageId
+    ) ?? LANGUAGE_UNDEFINED;
+    this.languageDefinitions.set(languageId, definition);
   }
-  reloadLanguageDefinitions() {
-    return __async(this, null, function* () {
-      this.languageDefinitions.clear();
-      yield this.loadAllLanguages();
-      this.notifier.notifyListeners();
-    });
+  async reloadLanguageDefinitions() {
+    this.languageDefinitions.clear();
+    await this.loadAllLanguages();
+    this.notifier.notifyListeners();
   }
   get(languageId) {
     const definition = this.languageDefinitions.get(languageId);
@@ -26419,7 +26385,6 @@ function constructScopeRangeTarget(isReversed, scope1, scope2) {
 
 // ../cursorless-engine/src/processTargets/modifiers/getPreferredScopeTouchingPosition.ts
 function getPreferredScopeTouchingPosition(scopeHandler, editor, position, forceDirection) {
-  var _a, _b;
   const candidates = Array.from(
     scopeHandler.generateScopes(editor, position, "forward", {
       containment: "required",
@@ -26440,7 +26405,7 @@ function getPreferredScopeTouchingPosition(scopeHandler, editor, position, force
       if (forceDirection === "backward") {
         return backwardScope;
       }
-      if ((_b = (_a = scopeHandler.isPreferredOver) == null ? void 0 : _a.call(scopeHandler, backwardScope, forwardScope)) != null ? _b : false) {
+      if (scopeHandler.isPreferredOver?.(backwardScope, forwardScope) ?? false) {
         return backwardScope;
       }
       return forwardScope;
@@ -26921,8 +26886,7 @@ var HeadTailStage = class {
     this.modifier = modifier;
   }
   run(target) {
-    var _a;
-    const modifiers = (_a = this.modifier.modifiers) != null ? _a : [
+    const modifiers = this.modifier.modifiers ?? [
       {
         type: "containingScope",
         scopeType: {
@@ -27020,8 +26984,7 @@ var InstanceStage = class {
     );
   }
   handleRelativeScope(target, { direction, offset, length }) {
-    var _a;
-    const referenceTargets = (_a = this.storedTargets.get("instanceReference")) != null ? _a : [
+    const referenceTargets = this.storedTargets.get("instanceReference") ?? [
       target
     ];
     return referenceTargets.flatMap((referenceTarget) => {
@@ -27043,8 +27006,7 @@ var InstanceStage = class {
   getEveryRanges({
     editor: targetEditor
   }) {
-    var _a, _b;
-    return (_b = (_a = this.storedTargets.get("instanceReference")) == null ? void 0 : _a.map(({ editor, contentRange }) => [editor, contentRange])) != null ? _b : [[targetEditor, targetEditor.document.range]];
+    return this.storedTargets.get("instanceReference")?.map(({ editor, contentRange }) => [editor, contentRange]) ?? [[targetEditor, targetEditor.document.range]];
   }
   getTargetIterable(target, editor, searchRange, direction) {
     const iterable = imap(
@@ -27163,7 +27125,6 @@ function chainedNodeFinder(...nodeFinders) {
 }
 function ancestorChainNodeFinder(nodeToReturn, ...nodeFinders) {
   return (node) => {
-    var _a;
     let currentNode = node;
     const nodeList = [];
     const nodeFindersReversed = [...nodeFinders].reverse();
@@ -27176,7 +27137,7 @@ function ancestorChainNodeFinder(nodeToReturn, ...nodeFinders) {
         return null;
       }
       nodeList.push(currentNode);
-      currentNode = (_a = currentNode.parent) != null ? _a : null;
+      currentNode = currentNode.parent ?? null;
     }
     return nodeList.reverse()[nodeToReturn];
   };
@@ -27189,7 +27150,6 @@ var argumentNodeFinder = (...parentTypes) => {
   const isType = (node, typeNames) => node != null && typeNames.includes(node.type);
   const isOk = (node) => node != null && !isType(node, delimiters);
   return (node, selection) => {
-    var _a, _b;
     let resultNode;
     const { start, end } = selection;
     if (isType(node.parent, parentTypes)) {
@@ -27205,16 +27165,16 @@ var argumentNodeFinder = (...parentTypes) => {
       return isOk(resultNode) ? resultNode : null;
     } else if (isType(node, parentTypes)) {
       const children = [...node.children];
-      const childRight = (_a = children.find(
+      const childRight = children.find(
         ({ startPosition }) => toPosition(startPosition).isAfterOrEqual(end)
-      )) != null ? _a : null;
+      ) ?? null;
       if (isOk(childRight)) {
         return childRight;
       }
       children.reverse();
-      const childLeft = (_b = children.find(
+      const childLeft = children.find(
         ({ endPosition }) => toPosition(endPosition).isBeforeOrEqual(start)
-      )) != null ? _b : null;
+      ) ?? null;
       if (isOk(childLeft)) {
         return childLeft;
       }
@@ -27251,8 +27211,7 @@ function tryPatternMatch(node, patterns) {
   }
   if (resultNode != null && resultPattern != null && resultPattern.fields != null) {
     resultPattern.fields.forEach((field) => {
-      var _a;
-      resultNode = (_a = field.isIndex ? resultNode == null ? void 0 : resultNode.namedChild(field.value) : resultNode == null ? void 0 : resultNode.childForFieldName(field.value)) != null ? _a : null;
+      resultNode = (field.isIndex ? resultNode?.namedChild(field.value) : resultNode?.childForFieldName(field.value)) ?? null;
     });
   }
   return resultNode;
@@ -27311,7 +27270,7 @@ var Pattern = class {
     }
     this.isImportant = pattern.indexOf("!") > -1;
     this.isOptional = pattern.indexOf("?") > -1;
-    this.fields = [...pattern.matchAll(new RegExp("(?<=\\[).+?(?=\\])", "g"))].map((m) => m[0]).map((field) => {
+    this.fields = [...pattern.matchAll(/(?<=\[).+?(?=\])/g)].map((m) => m[0]).map((field) => {
       if (/\d+/.test(field)) {
         return {
           isIndex: true,
@@ -27484,7 +27443,7 @@ function functionNameBasedFinder(...names) {
       return null;
     }
     const functionNode = getValueNodes(functionCallNode)[0];
-    return names.includes(functionNode == null ? void 0 : functionNode.text) ? functionCallNode : null;
+    return names.includes(functionNode?.text) ? functionCallNode : null;
   };
 }
 function functionNameBasedMatcher(...names) {
@@ -27805,7 +27764,7 @@ function blockFinder(node) {
   const receiver = node.childForFieldName("receiver");
   const method = node.childForFieldName("method");
   const block = node.childForFieldName("block");
-  if ((receiver == null ? void 0 : receiver.text) === "Proc" && (method == null ? void 0 : method.text) === "new" || receiver == null && (method == null ? void 0 : method.text) === "lambda") {
+  if (receiver?.text === "Proc" && method?.text === "new" || receiver == null && method?.text === "lambda") {
     return node;
   }
   return block;
@@ -27854,7 +27813,7 @@ function elseIfExtractor() {
   return function(editor, node) {
     const contentRange = contentRangeExtractor(editor, node);
     const parent = node.parent;
-    if ((parent == null ? void 0 : parent.type) !== "else_clause") {
+    if (parent?.type !== "else_clause") {
       const alternative = node.childForFieldName("alternative");
       if (alternative == null) {
         return contentRange;
@@ -27914,8 +27873,7 @@ var STATEMENT_TYPES2 = [
 ];
 var STATEMENT_PARENT_TYPES = ["source_file", "block", "declaration_list"];
 function implItemTypeFinder(node) {
-  var _a, _b, _c;
-  if (((_a = node.parent) == null ? void 0 : _a.type) === "impl_item" && ((_c = (_b = node.parent) == null ? void 0 : _b.childForFieldName("type")) == null ? void 0 : _c.equals(node))) {
+  if (node.parent?.type === "impl_item" && node.parent?.childForFieldName("type")?.equals(node)) {
     return node;
   }
   return null;
@@ -28464,7 +28422,7 @@ function getSurroundingPair(modifierStageFactory, target, scopeType) {
 function tokenizeRange(editor, interior, boundary) {
   const { document } = editor;
   const text = document.getText(interior);
-  const lexemes = text.split(new RegExp("([,(){}<>[\\]\"'`])|(?<!\\\\)(\\\\\"|\\\\'|\\\\`)", "g")).filter((lexeme) => lexeme != null && lexeme.length > 0);
+  const lexemes = text.split(/([,(){}<>[\]"'`])|(?<!\\)(\\"|\\'|\\`)/g).filter((lexeme) => lexeme != null && lexeme.length > 0);
   const joinedLexemes = joinLexemesBySkippingMatchingPairs(lexemes);
   const tokens2 = [];
   let offset = document.offsetAt(interior.start);
@@ -28634,32 +28592,29 @@ function getItemsInRange(editor, interior, boundary) {
   const tokens2 = tokenizeRange(editor, interior, boundary);
   const itemInfos = [];
   tokens2.forEach((token, i) => {
-    var _a, _b, _c, _d;
     if (token.type === "separator" || token.type === "boundary") {
       return;
     }
     const leadingDelimiterRange = (() => {
-      var _a2, _b2;
-      if (((_a2 = tokens2[i - 2]) == null ? void 0 : _a2.type) === "item") {
+      if (tokens2[i - 2]?.type === "item") {
         return new Range(tokens2[i - 2].range.end, token.range.start);
       }
-      if (((_b2 = tokens2[i - 1]) == null ? void 0 : _b2.type) === "separator") {
+      if (tokens2[i - 1]?.type === "separator") {
         return new Range(tokens2[i - 1].range.start, token.range.start);
       }
       return void 0;
     })();
     const trailingDelimiterRange = (() => {
-      var _a2, _b2;
-      if (((_a2 = tokens2[i + 2]) == null ? void 0 : _a2.type) === "item") {
+      if (tokens2[i + 2]?.type === "item") {
         return new Range(token.range.end, tokens2[i + 2].range.start);
       }
-      if (((_b2 = tokens2[i + 1]) == null ? void 0 : _b2.type) === "separator") {
+      if (tokens2[i + 1]?.type === "separator") {
         return new Range(token.range.end, tokens2[i + 1].range.end);
       }
       return void 0;
     })();
-    const domainStart = ((_a = tokens2[i - 1]) == null ? void 0 : _a.type) === "boundary" || ((_b = tokens2[i - 1]) == null ? void 0 : _b.type) === "separator" ? tokens2[i - 1].range.end : token.range.start;
-    const domainEnd = ((_c = tokens2[i + 1]) == null ? void 0 : _c.type) === "boundary" || ((_d = tokens2[i + 1]) == null ? void 0 : _d.type) === "separator" ? tokens2[i + 1].range.start : token.range.end;
+    const domainStart = tokens2[i - 1]?.type === "boundary" || tokens2[i - 1]?.type === "separator" ? tokens2[i - 1].range.end : token.range.start;
+    const domainEnd = tokens2[i + 1]?.type === "boundary" || tokens2[i + 1]?.type === "separator" ? tokens2[i + 1].range.start : token.range.end;
     itemInfos.push({
       contentRange: token.range,
       leadingDelimiterRange,
@@ -28783,7 +28738,7 @@ var PositionStage = class {
       contentRange: this.getContentRange(target.contentRange)
     };
     return [
-      target.isRaw ? new RawSelectionTarget(parameters) : new PlainTarget(__spreadProps(__spreadValues({}, parameters), { isToken: false }))
+      target.isRaw ? new RawSelectionTarget(parameters) : new PlainTarget({ ...parameters, isToken: false })
     ];
   }
 };
@@ -29056,15 +29011,14 @@ var RelativeScopeStage = class {
   }
 };
 function generateScopesInclusive(scopeHandler, target, modifier) {
-  var _a;
   const { editor, contentRange } = target;
   const { length: desiredScopeCount, direction } = modifier;
-  const initialRange = (_a = getPreferredScopeTouchingPosition(
+  const initialRange = getPreferredScopeTouchingPosition(
     scopeHandler,
     editor,
     direction === "forward" ? contentRange.start : contentRange.end,
     direction
-  )) == null ? void 0 : _a.domain;
+  )?.domain;
   if (initialRange == null) {
     throw new NoContainingScopeError(modifier.scopeType.type);
   }
@@ -29231,75 +29185,66 @@ var ModifierStageFactoryImpl = class {
 };
 
 // ../cursorless-engine/src/util/performDocumentEdits.ts
-function performDocumentEdits(rangeUpdater, editor, edits) {
-  return __async(this, null, function* () {
-    const deregister = rangeUpdater.registerReplaceEditList(
-      editor.document,
-      edits.filter((edit) => edit.isReplace)
-    );
-    const wereEditsApplied = yield editor.edit(edits);
-    deregister();
-    return wereEditsApplied;
-  });
+async function performDocumentEdits(rangeUpdater, editor, edits) {
+  const deregister = rangeUpdater.registerReplaceEditList(
+    editor.document,
+    edits.filter((edit) => edit.isReplace)
+  );
+  const wereEditsApplied = await editor.edit(edits);
+  deregister();
+  return wereEditsApplied;
 }
 
 // ../cursorless-engine/src/core/updateSelections/updateSelections.ts
-function performEditsAndUpdateSelections(_a) {
-  return __async(this, null, function* () {
-    var _b = _a, {
-      rangeUpdater,
-      editor,
-      selections,
-      preserveCursorSelections: preserveEditorSelections
-    } = _b, rest = __objRest(_b, [
-      "rangeUpdater",
-      "editor",
-      "selections",
-      "preserveCursorSelections"
-    ]);
-    const keys2 = unsafeKeys(selections);
-    const selectionInfos = keys2.map((key) => {
-      const selectionValue = selections[key];
-      const selectionsWithBehavior = getSelectionsWithBehavior(selectionValue);
-      return getFullSelectionInfos(
+async function performEditsAndUpdateSelections({
+  rangeUpdater,
+  editor,
+  selections,
+  preserveCursorSelections: preserveEditorSelections,
+  ...rest
+}) {
+  const keys2 = unsafeKeys(selections);
+  const selectionInfos = keys2.map((key) => {
+    const selectionValue = selections[key];
+    const selectionsWithBehavior = getSelectionsWithBehavior(selectionValue);
+    return getFullSelectionInfos(
+      editor.document,
+      selectionsWithBehavior.selections,
+      selectionsWithBehavior.behavior
+    );
+  });
+  if (!preserveEditorSelections) {
+    selectionInfos.push(
+      getFullSelectionInfos(
         editor.document,
-        selectionsWithBehavior.selections,
-        selectionsWithBehavior.behavior
-      );
-    });
-    if (!preserveEditorSelections) {
-      selectionInfos.push(
-        getFullSelectionInfos(
-          editor.document,
-          editor.selections,
-          1 /* closedClosed */
-        )
-      );
-    }
-    const updatedSelectionsMatrix = yield (() => {
-      if ("edits" in rest) {
-        return performEditsAndUpdateFullSelectionInfos(
-          rangeUpdater,
-          editor,
-          rest.edits,
-          selectionInfos
-        );
-      }
-      return callFunctionAndUpdateFullSelectionInfos(
+        editor.selections,
+        1 /* closedClosed */
+      )
+    );
+  }
+  const updatedSelectionsMatrix = await (() => {
+    if ("edits" in rest) {
+      return performEditsAndUpdateFullSelectionInfos(
         rangeUpdater,
-        rest.callback,
-        editor.document,
+        editor,
+        rest.edits,
         selectionInfos
       );
-    })();
-    if (!preserveEditorSelections) {
-      yield editor.setSelections(updatedSelectionsMatrix.pop());
     }
-    const result = Object.fromEntries(
-      keys2.map((key, index) => [key, updatedSelectionsMatrix[index]])
+    return callFunctionAndUpdateFullSelectionInfos(
+      rangeUpdater,
+      rest.callback,
+      editor.document,
+      selectionInfos
     );
-    return result;
-  });
+  })();
+  if (!preserveEditorSelections) {
+    await editor.setSelections(updatedSelectionsMatrix.pop());
+  }
+  const result = Object.fromEntries(
+    keys2.map((key, index) => [key, updatedSelectionsMatrix[index]])
+  );
+  return result;
 }
 function getFullSelectionInfos(document, selections, rangeBehavior) {
   return selections.map(
@@ -29346,36 +29291,32 @@ function selectionInfosToSelections(selectionInfoMatrix) {
     )
   );
 }
-function callFunctionAndUpdateFullSelectionInfos(rangeUpdater, func, document, originalSelectionInfos) {
-  return __async(this, null, function* () {
-    const unsubscribe = rangeUpdater.registerRangeInfoList(
-      document,
-      flatten_default(originalSelectionInfos)
-    );
-    yield func();
-    unsubscribe();
-    return selectionInfosToSelections(originalSelectionInfos);
-  });
+async function callFunctionAndUpdateFullSelectionInfos(rangeUpdater, func, document, originalSelectionInfos) {
+  const unsubscribe = rangeUpdater.registerRangeInfoList(
+    document,
+    flatten_default(originalSelectionInfos)
+  );
+  await func();
+  unsubscribe();
+  return selectionInfosToSelections(originalSelectionInfos);
 }
-function performEditsAndUpdateFullSelectionInfos(rangeUpdater, editor, edits, originalSelectionInfos) {
-  return __async(this, null, function* () {
-    const func = () => __async(this, null, function* () {
-      const wereEditsApplied = yield performDocumentEdits(
-        rangeUpdater,
-        editor,
-        edits
-      );
-      if (!wereEditsApplied) {
-        throw new Error("Could not apply edits");
-      }
-    });
-    return yield callFunctionAndUpdateFullSelectionInfos(
+async function performEditsAndUpdateFullSelectionInfos(rangeUpdater, editor, edits, originalSelectionInfos) {
+  const func = async () => {
+    const wereEditsApplied = await performDocumentEdits(
       rangeUpdater,
-      func,
-      editor.document,
-      originalSelectionInfos
+      editor,
+      edits
     );
-  });
+    if (!wereEditsApplied) {
+      throw new Error("Could not apply edits");
+    }
+  };
+  return await callFunctionAndUpdateFullSelectionInfos(
+    rangeUpdater,
+    func,
+    editor.document,
+    originalSelectionInfos
+  );
 }
 
 // ../cursorless-engine/src/util/targetUtils.ts
@@ -29395,29 +29336,23 @@ function ensureSingleTarget2(targets) {
   }
   return targets[0];
 }
-function runForEachEditor(targets, getEditor, func) {
-  return __async(this, null, function* () {
-    return Promise.all(
-      groupForEachEditor(targets, getEditor).map(
-        ([editor, editorTargets]) => func(editor, editorTargets)
-      )
-    );
-  });
+async function runForEachEditor(targets, getEditor, func) {
+  return Promise.all(
+    groupForEachEditor(targets, getEditor).map(
+      ([editor, editorTargets]) => func(editor, editorTargets)
+    )
+  );
 }
-function runOnTargetsForEachEditor(targets, func) {
-  return __async(this, null, function* () {
-    return runForEachEditor(targets, (target) => target.editor, func);
-  });
+async function runOnTargetsForEachEditor(targets, func) {
+  return runForEachEditor(targets, (target) => target.editor, func);
 }
-function runOnTargetsForEachEditorSequentially(targets, func) {
-  return __async(this, null, function* () {
-    const editorGroups = groupForEachEditor(targets, (target) => target.editor);
-    const result = [];
-    for (const [editor, targets2] of editorGroups) {
-      result.push(yield func(editor, targets2));
-    }
-    return result;
-  });
+async function runOnTargetsForEachEditorSequentially(targets, func) {
+  const editorGroups = groupForEachEditor(targets, (target) => target.editor);
+  const result = [];
+  for (const [editor, targets2] of editorGroups) {
+    result.push(await func(editor, targets2));
+  }
+  return result;
 }
 function groupTargetsForEachEditor(targets) {
   return groupForEachEditor(targets, (target) => target.editor);
@@ -29436,7 +29371,7 @@ function getContentRange2(target) {
 function createThatMark(targets, ranges) {
   const thatMark = ranges != null ? zip_default(targets, ranges).map(([target, range3]) => ({
     editor: target.editor,
-    selection: (target == null ? void 0 : target.isReversed) ? new Selection(range3.end, range3.start) : new Selection(range3.start, range3.end)
+    selection: target?.isReversed ? new Selection(range3.end, range3.start) : new Selection(range3.start, range3.end)
   })) : targets.map((target) => ({
     editor: target.editor,
     selection: target.contentSelection
@@ -29469,34 +29404,31 @@ var BreakLine = class {
     this.rangeUpdater = rangeUpdater;
     this.run = this.run.bind(this);
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      yield flashTargets(ide(), targets, "pendingModification0" /* pendingModification0 */);
-      const thatSelections = flatten_default(
-        yield runOnTargetsForEachEditor(targets, (editor, targets2) => __async(this, null, function* () {
-          const contentRanges = targets2.map(({ contentRange }) => contentRange);
-          const edits = getEdits(editor, contentRanges);
-          const editableEditor = ide().getEditableTextEditor(editor);
-          const { contentRanges: updatedRanges } = yield performEditsAndUpdateSelections({
-            rangeUpdater: this.rangeUpdater,
-            editor: editableEditor,
-            edits,
-            selections: {
-              contentRanges
-            }
-          });
-          return zip_default(targets2, updatedRanges).map(([target, range3]) => ({
-            editor: target.editor,
-            selection: range3.toSelection(target.isReversed)
-          }));
-        }))
-      );
-      return { thatSelections };
-    });
+  async run(targets) {
+    await flashTargets(ide(), targets, "pendingModification0" /* pendingModification0 */);
+    const thatSelections = flatten_default(
+      await runOnTargetsForEachEditor(targets, async (editor, targets2) => {
+        const contentRanges = targets2.map(({ contentRange }) => contentRange);
+        const edits = getEdits(editor, contentRanges);
+        const editableEditor = ide().getEditableTextEditor(editor);
+        const { contentRanges: updatedRanges } = await performEditsAndUpdateSelections({
+          rangeUpdater: this.rangeUpdater,
+          editor: editableEditor,
+          edits,
+          selections: {
+            contentRanges
+          }
+        });
+        return zip_default(targets2, updatedRanges).map(([target, range3]) => ({
+          editor: target.editor,
+          selection: range3.toSelection(target.isReversed)
+        }));
+      })
+    );
+    return { thatSelections };
   }
 };
 function getEdits(editor, contentRanges) {
-  var _a, _b, _c;
   const { document } = editor;
   const edits = [];
   for (const range3 of contentRanges) {
@@ -29504,7 +29436,7 @@ function getEdits(editor, contentRanges) {
     const line = document.lineAt(position);
     const indentation = line.text.slice(
       0,
-      (_c = (_b = (_a = line.rangeTrimmed) == null ? void 0 : _a.start) == null ? void 0 : _b.character) != null ? _c : line.range.start.character
+      line.rangeTrimmed?.start?.character ?? line.range.start.character
     );
     const characterTrailingWhitespace = line.text.slice(0, position.character).search(/\s+$/);
     const replacementRange = characterTrailingWhitespace > -1 ? new Range(
@@ -29575,18 +29507,16 @@ var BringMoveSwap = class {
     this.rangeUpdater = rangeUpdater;
     this.type = type2;
   }
-  decorateTargets(sources, destinations) {
-    return __async(this, null, function* () {
-      yield Promise.all([
-        flashTargets(
-          ide(),
-          sources,
-          this.decoration.sourceStyle,
-          this.decoration.getSourceRangeCallback
-        ),
-        flashTargets(ide(), destinations, this.decoration.destinationStyle)
-      ]);
-    });
+  async decorateTargets(sources, destinations) {
+    await Promise.all([
+      flashTargets(
+        ide(),
+        sources,
+        this.decoration.sourceStyle,
+        this.decoration.getSourceRangeCallback
+      ),
+      flashTargets(ide(), destinations, this.decoration.destinationStyle)
+    ]);
   }
   getEditsBringMove(sources, destinations) {
     const usedSources = [];
@@ -29601,9 +29531,8 @@ var BringMoveSwap = class {
         let text;
         if (shouldJoinSources) {
           text = sources.map((source2, i2) => {
-            var _a;
             const text2 = source2.contentText;
-            const delimiter = (_a = destination.isRaw ? null : destination.insertionDelimiter) != null ? _a : source2.isRaw ? null : source2.insertionDelimiter;
+            const delimiter = (destination.isRaw ? null : destination.insertionDelimiter) ?? (source2.isRaw ? null : source2.insertionDelimiter);
             return i2 > 0 && delimiter != null ? delimiter + text2 : text2;
           }).join("");
         } else {
@@ -29642,52 +29571,50 @@ var BringMoveSwap = class {
     }
     return results;
   }
-  performEditsAndComputeThatMark(edits) {
-    return __async(this, null, function* () {
-      return flatten_default(
-        yield runForEachEditor(
-          edits,
-          (edit) => edit.editor,
-          (editor, edits2) => __async(this, null, function* () {
-            const filteredEdits = this.type !== "bring" ? edits2 : edits2.filter(({ isSource }) => !isSource);
-            const sourceEdits = this.type === "swap" ? [] : edits2.filter(({ isSource }) => isSource);
-            const destinationEdits = this.type === "swap" ? edits2 : edits2.filter(({ isSource }) => !isSource);
-            const sourceEditRanges = sourceEdits.map(({ edit }) => edit.range);
-            const destinationEditRanges = destinationEdits.map(
-              ({ edit }) => edit.range
-            );
-            const editableEditor = ide().getEditableTextEditor(editor);
-            const {
-              sourceEditRanges: updatedSourceEditRanges,
-              destinationEditRanges: updatedDestinationEditRanges
-            } = yield performEditsAndUpdateSelections({
-              rangeUpdater: this.rangeUpdater,
-              editor: editableEditor,
-              edits: filteredEdits.map(({ edit }) => edit),
-              selections: {
-                // Sources should be closedClosed, because they should be logically
-                // the same as the original source.
-                sourceEditRanges,
-                // Destinations should be openOpen, because they should grow to contain
-                // the new text.
-                destinationEditRanges: {
-                  selections: destinationEditRanges,
-                  behavior: 0 /* openOpen */
-                }
+  async performEditsAndComputeThatMark(edits) {
+    return flatten_default(
+      await runForEachEditor(
+        edits,
+        (edit) => edit.editor,
+        async (editor, edits2) => {
+          const filteredEdits = this.type !== "bring" ? edits2 : edits2.filter(({ isSource }) => !isSource);
+          const sourceEdits = this.type === "swap" ? [] : edits2.filter(({ isSource }) => isSource);
+          const destinationEdits = this.type === "swap" ? edits2 : edits2.filter(({ isSource }) => !isSource);
+          const sourceEditRanges = sourceEdits.map(({ edit }) => edit.range);
+          const destinationEditRanges = destinationEdits.map(
+            ({ edit }) => edit.range
+          );
+          const editableEditor = ide().getEditableTextEditor(editor);
+          const {
+            sourceEditRanges: updatedSourceEditRanges,
+            destinationEditRanges: updatedDestinationEditRanges
+          } = await performEditsAndUpdateSelections({
+            rangeUpdater: this.rangeUpdater,
+            editor: editableEditor,
+            edits: filteredEdits.map(({ edit }) => edit),
+            selections: {
+              // Sources should be closedClosed, because they should be logically
+              // the same as the original source.
+              sourceEditRanges,
+              // Destinations should be openOpen, because they should grow to contain
+              // the new text.
+              destinationEditRanges: {
+                selections: destinationEditRanges,
+                behavior: 0 /* openOpen */
               }
-            });
-            const marks2 = [
-              ...this.getMarks(sourceEdits, updatedSourceEditRanges),
-              ...this.getMarks(destinationEdits, updatedDestinationEditRanges)
-            ];
-            marks2.sort(
-              (a, b) => edits2.findIndex((e) => e.originalTarget === a.target) - edits2.findIndex((e) => e.originalTarget === b.target)
-            );
-            return marks2;
-          })
-        )
-      );
-    });
+            }
+          });
+          const marks2 = [
+            ...this.getMarks(sourceEdits, updatedSourceEditRanges),
+            ...this.getMarks(destinationEdits, updatedDestinationEditRanges)
+          ];
+          marks2.sort(
+            (a, b) => edits2.findIndex((e) => e.originalTarget === a.target) - edits2.findIndex((e) => e.originalTarget === b.target)
+          );
+          return marks2;
+        }
+      )
+    );
   }
   getMarks(edits, ranges) {
     return edits.map((edit, index) => {
@@ -29702,24 +29629,22 @@ var BringMoveSwap = class {
       };
     });
   }
-  decorateThatMark(thatMark) {
-    return __async(this, null, function* () {
-      const getRange = (target) => thatMark.find((t) => t.target === target).selection;
-      return Promise.all([
-        flashTargets(
-          ide(),
-          thatMark.filter(({ isSource }) => isSource).map(({ target }) => target),
-          this.decoration.sourceStyle,
-          getRange
-        ),
-        flashTargets(
-          ide(),
-          thatMark.filter(({ isSource }) => !isSource).map(({ target }) => target),
-          this.decoration.destinationStyle,
-          getRange
-        )
-      ]);
-    });
+  async decorateThatMark(thatMark) {
+    const getRange = (target) => thatMark.find((t) => t.target === target).selection;
+    return Promise.all([
+      flashTargets(
+        ide(),
+        thatMark.filter(({ isSource }) => isSource).map(({ target }) => target),
+        this.decoration.sourceStyle,
+        getRange
+      ),
+      flashTargets(
+        ide(),
+        thatMark.filter(({ isSource }) => !isSource).map(({ target }) => target),
+        this.decoration.destinationStyle,
+        getRange
+      )
+    ]);
   }
   calculateMarksBringMove(markEntries) {
     return {
@@ -29744,19 +29669,17 @@ var Bring = class extends BringMoveSwap {
     };
     this.run = this.run.bind(this);
   }
-  run(sources, destinations) {
-    return __async(this, null, function* () {
-      sources = broadcastSource(sources, destinations);
-      yield this.decorateTargets(
-        sources,
-        destinations.map((d) => d.target)
-      );
-      const edits = this.getEditsBringMove(sources, destinations);
-      const markEntries = yield this.performEditsAndComputeThatMark(edits);
-      const { thatMark, sourceMark } = this.calculateMarksBringMove(markEntries);
-      yield this.decorateThatMark(thatMark);
-      return { thatSelections: thatMark, sourceSelections: sourceMark };
-    });
+  async run(sources, destinations) {
+    sources = broadcastSource(sources, destinations);
+    await this.decorateTargets(
+      sources,
+      destinations.map((d) => d.target)
+    );
+    const edits = this.getEditsBringMove(sources, destinations);
+    const markEntries = await this.performEditsAndComputeThatMark(edits);
+    const { thatMark, sourceMark } = this.calculateMarksBringMove(markEntries);
+    await this.decorateThatMark(thatMark);
+    return { thatSelections: thatMark, sourceSelections: sourceMark };
   }
 };
 var Move = class extends BringMoveSwap {
@@ -29769,19 +29692,17 @@ var Move = class extends BringMoveSwap {
     };
     this.run = this.run.bind(this);
   }
-  run(sources, destinations) {
-    return __async(this, null, function* () {
-      sources = broadcastSource(sources, destinations);
-      yield this.decorateTargets(
-        sources,
-        destinations.map((d) => d.target)
-      );
-      const edits = this.getEditsBringMove(sources, destinations);
-      const markEntries = yield this.performEditsAndComputeThatMark(edits);
-      const { thatMark, sourceMark } = this.calculateMarksBringMove(markEntries);
-      yield this.decorateThatMark(thatMark);
-      return { thatSelections: thatMark, sourceSelections: sourceMark };
-    });
+  async run(sources, destinations) {
+    sources = broadcastSource(sources, destinations);
+    await this.decorateTargets(
+      sources,
+      destinations.map((d) => d.target)
+    );
+    const edits = this.getEditsBringMove(sources, destinations);
+    const markEntries = await this.performEditsAndComputeThatMark(edits);
+    const { thatMark, sourceMark } = this.calculateMarksBringMove(markEntries);
+    await this.decorateThatMark(thatMark);
+    return { thatSelections: thatMark, sourceSelections: sourceMark };
   }
 };
 var Swap = class extends BringMoveSwap {
@@ -29794,14 +29715,12 @@ var Swap = class extends BringMoveSwap {
     };
     this.run = this.run.bind(this);
   }
-  run(targets1, targets2) {
-    return __async(this, null, function* () {
-      yield this.decorateTargets(targets1, targets2);
-      const edits = this.getEditsSwap(targets1, targets2);
-      const markEntries = yield this.performEditsAndComputeThatMark(edits);
-      yield this.decorateThatMark(markEntries);
-      return { thatSelections: markEntries, sourceSelections: [] };
-    });
+  async run(targets1, targets2) {
+    await this.decorateTargets(targets1, targets2);
+    const edits = this.getEditsSwap(targets1, targets2);
+    const markEntries = await this.performEditsAndComputeThatMark(edits);
+    await this.decorateThatMark(markEntries);
+    return { thatSelections: markEntries, sourceSelections: [] };
   }
   getEditsSwap(targets1, targets2) {
     const results = [];
@@ -29836,15 +29755,13 @@ var Call = class {
     this.actions = actions;
     this.run = this.run.bind(this);
   }
-  run(callees, args) {
-    return __async(this, null, function* () {
-      ensureSingleTarget2(callees);
-      const { returnValue: texts } = yield this.actions.getText.run(callees, {
-        showDecorations: false
-      });
-      const { thatSelections: thatMark } = yield this.actions.wrapWithPairedDelimiter.run(args, texts[0] + "(", ")");
-      return { thatSelections: thatMark };
+  async run(callees, args) {
+    ensureSingleTarget2(callees);
+    const { returnValue: texts } = await this.actions.getText.run(callees, {
+      showDecorations: false
     });
+    const { thatSelections: thatMark } = await this.actions.wrapWithPairedDelimiter.run(args, texts[0] + "(", ")");
+    return { thatSelections: thatMark };
   }
 };
 
@@ -29854,25 +29771,23 @@ var Clear = class {
     this.actions = actions;
     this.run = this.run.bind(this);
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      const editor = ensureSingleEditor2(targets);
-      const plainTargets = targets.map(
-        (target) => new PlainTarget({
-          editor: target.editor,
-          isReversed: target.isReversed,
-          contentRange: target.contentRange
-        })
+  async run(targets) {
+    const editor = ensureSingleEditor2(targets);
+    const plainTargets = targets.map(
+      (target) => new PlainTarget({
+        editor: target.editor,
+        isReversed: target.isReversed,
+        contentRange: target.contentRange
+      })
+    );
+    const { thatTargets } = await this.actions.remove.run(plainTargets);
+    if (thatTargets != null) {
+      await ide().getEditableTextEditor(editor).setSelections(
+        thatTargets.map(({ contentSelection }) => contentSelection),
+        { focusEditor: true }
       );
-      const { thatTargets } = yield this.actions.remove.run(plainTargets);
-      if (thatTargets != null) {
-        yield ide().getEditableTextEditor(editor).setSelections(
-          thatTargets.map(({ contentSelection }) => contentSelection),
-          { focusEditor: true }
-        );
-      }
-      return { thatTargets };
-    });
+    }
+    return { thatTargets };
   }
 };
 
@@ -29890,66 +29805,62 @@ var CallbackAction = class {
     this.rangeUpdater = rangeUpdater;
     this.run = this.run.bind(this);
   }
-  run(targets, options2) {
-    return __async(this, null, function* () {
-      if (options2.showDecorations) {
-        yield flashTargets(ide(), targets, "referenced" /* referenced */);
-      }
-      if (options2.ensureSingleEditor) {
-        ensureSingleEditor2(targets);
-      }
-      if (options2.ensureSingleTarget) {
-        ensureSingleTarget2(targets);
-      }
-      const originalEditor = ide().activeEditableTextEditor;
-      const runOnTargets = options2.setSelection ? runOnTargetsForEachEditorSequentially : runOnTargetsForEachEditor;
-      const thatTargets = flatten_default(
-        yield runOnTargets(
-          targets,
-          (editor, targets2) => this.runForEditor(options2, editor, targets2)
-        )
-      );
-      if (options2.setSelection && options2.restoreSelection && originalEditor != null && !originalEditor.isActive) {
-        yield originalEditor.focus();
-      }
-      return { thatTargets };
-    });
+  async run(targets, options2) {
+    if (options2.showDecorations) {
+      await flashTargets(ide(), targets, "referenced" /* referenced */);
+    }
+    if (options2.ensureSingleEditor) {
+      ensureSingleEditor2(targets);
+    }
+    if (options2.ensureSingleTarget) {
+      ensureSingleTarget2(targets);
+    }
+    const originalEditor = ide().activeEditableTextEditor;
+    const runOnTargets = options2.setSelection ? runOnTargetsForEachEditorSequentially : runOnTargetsForEachEditor;
+    const thatTargets = flatten_default(
+      await runOnTargets(
+        targets,
+        (editor, targets2) => this.runForEditor(options2, editor, targets2)
+      )
+    );
+    if (options2.setSelection && options2.restoreSelection && originalEditor != null && !originalEditor.isActive) {
+      await originalEditor.focus();
+    }
+    return { thatTargets };
   }
-  runForEditor(options2, editor, targets) {
-    return __async(this, null, function* () {
-      const editableEditor = ide().getEditableTextEditor(editor);
-      const originalSelections = editor.selections;
-      const originalEditorVersion = editor.document.version;
-      const targetSelections = targets.map((target) => target.contentSelection);
-      if (options2.setSelection) {
-        yield editableEditor.setSelections(targetSelections, {
-          focusEditor: true,
-          revealRange: false
-        });
-      }
-      const {
-        originalSelections: updatedOriginalSelections,
-        targetSelections: updatedTargetSelections
-      } = yield performEditsAndUpdateSelections({
-        rangeUpdater: this.rangeUpdater,
-        editor: editableEditor,
-        callback: () => options2.callback(editableEditor, targets),
-        preserveCursorSelections: true,
-        selections: {
-          originalSelections,
-          targetSelections
-        }
+  async runForEditor(options2, editor, targets) {
+    const editableEditor = ide().getEditableTextEditor(editor);
+    const originalSelections = editor.selections;
+    const originalEditorVersion = editor.document.version;
+    const targetSelections = targets.map((target) => target.contentSelection);
+    if (options2.setSelection) {
+      await editableEditor.setSelections(targetSelections, {
+        focusEditor: true,
+        revealRange: false
       });
-      if (options2.setSelection && options2.restoreSelection) {
-        yield editableEditor.setSelections(updatedOriginalSelections);
+    }
+    const {
+      originalSelections: updatedOriginalSelections,
+      targetSelections: updatedTargetSelections
+    } = await performEditsAndUpdateSelections({
+      rangeUpdater: this.rangeUpdater,
+      editor: editableEditor,
+      callback: () => options2.callback(editableEditor, targets),
+      preserveCursorSelections: true,
+      selections: {
+        originalSelections,
+        targetSelections
       }
-      return editor.document.version === originalEditorVersion ? targets : updatedTargetSelections.map(
-        (selection) => selectionToStoredTarget({
-          editor,
-          selection
-        })
-      );
     });
+    if (options2.setSelection && options2.restoreSelection) {
+      await editableEditor.setSelections(updatedOriginalSelections);
+    }
+    return editor.document.version === originalEditorVersion ? targets : updatedTargetSelections.map(
+      (selection) => selectionToStoredTarget({
+        editor,
+        selection
+      })
+    );
   }
 };
 
@@ -29963,25 +29874,23 @@ var SimpleIdeCommandAction = class {
     this.callbackAction = new CallbackAction(rangeUpdater);
     this.run = this.run.bind(this);
   }
-  run(_0) {
-    return __async(this, arguments, function* (targets, { showDecorations } = {}) {
-      const capabilities = ide().capabilities.commands[this.command];
-      if (capabilities == null) {
-        throw Error(`Action ${this.command} is not supported by your ide`);
-      }
-      const { acceptsLocation } = capabilities;
-      return this.callbackAction.run(targets, {
-        callback: (editor, targets2) => callback(
-          editor,
-          acceptsLocation ? targets2.map((t) => t.contentRange) : void 0,
-          this.command
-        ),
-        setSelection: !acceptsLocation,
-        ensureSingleEditor: this.ensureSingleEditor,
-        ensureSingleTarget: this.ensureSingleTarget,
-        restoreSelection: this.restoreSelection,
-        showDecorations: showDecorations != null ? showDecorations : this.showDecorations
-      });
+  async run(targets, { showDecorations } = {}) {
+    const capabilities = ide().capabilities.commands[this.command];
+    if (capabilities == null) {
+      throw Error(`Action ${this.command} is not supported by your ide`);
+    }
+    const { acceptsLocation } = capabilities;
+    return this.callbackAction.run(targets, {
+      callback: (editor, targets2) => callback(
+        editor,
+        acceptsLocation ? targets2.map((t) => t.contentRange) : void 0,
+        this.command
+      ),
+      setSelection: !acceptsLocation,
+      ensureSingleEditor: this.ensureSingleEditor,
+      ensureSingleTarget: this.ensureSingleTarget,
+      restoreSelection: this.restoreSelection,
+      showDecorations: showDecorations ?? this.showDecorations
     });
   }
 };
@@ -30102,21 +30011,21 @@ function callback(editor, ranges, command) {
       return editor.insertLineAfter(ranges);
     // Single target actions
     case "rename":
-      return editor.rename(ranges == null ? void 0 : ranges[0]);
+      return editor.rename(ranges?.[0]);
     case "showReferences":
-      return editor.showReferences(ranges == null ? void 0 : ranges[0]);
+      return editor.showReferences(ranges?.[0]);
     case "quickFix":
-      return editor.quickFix(ranges == null ? void 0 : ranges[0]);
+      return editor.quickFix(ranges?.[0]);
     case "revealDefinition":
-      return editor.revealDefinition(ranges == null ? void 0 : ranges[0]);
+      return editor.revealDefinition(ranges?.[0]);
     case "revealTypeDefinition":
-      return editor.revealTypeDefinition(ranges == null ? void 0 : ranges[0]);
+      return editor.revealTypeDefinition(ranges?.[0]);
     case "showHover":
-      return editor.showHover(ranges == null ? void 0 : ranges[0]);
+      return editor.showHover(ranges?.[0]);
     case "showDebugHover":
-      return editor.showDebugHover(ranges == null ? void 0 : ranges[0]);
+      return editor.showDebugHover(ranges?.[0]);
     case "extractVariable":
-      return editor.extractVariable(ranges == null ? void 0 : ranges[0]);
+      return editor.extractVariable(ranges?.[0]);
     // Unsupported as simple action
     case "highlight":
       throw Error("Highlight command not supported as simple action");
@@ -30130,24 +30039,22 @@ var CopyToClipboard = class {
     this.rangeUpdater = rangeUpdater;
     this.run = this.run.bind(this);
   }
-  run(_0) {
-    return __async(this, arguments, function* (targets, options2 = { showDecorations: true }) {
-      if (ide().capabilities.commands.clipboardCopy != null) {
-        const simpleAction = new CopyToClipboardSimple(this.rangeUpdater);
-        return simpleAction.run(targets, options2);
-      }
-      if (options2.showDecorations) {
-        yield flashTargets(
-          ide(),
-          targets,
-          "referenced" /* referenced */,
-          (target) => target.contentRange
-        );
-      }
-      const text = targets.map((t) => t.contentText).join("\n");
-      yield ide().clipboard.writeText(text);
-      return { thatTargets: targets };
-    });
+  async run(targets, options2 = { showDecorations: true }) {
+    if (ide().capabilities.commands.clipboardCopy != null) {
+      const simpleAction = new CopyToClipboardSimple(this.rangeUpdater);
+      return simpleAction.run(targets, options2);
+    }
+    if (options2.showDecorations) {
+      await flashTargets(
+        ide(),
+        targets,
+        "referenced" /* referenced */,
+        (target) => target.contentRange
+      );
+    }
+    const text = targets.map((t) => t.contentText).join("\n");
+    await ide().clipboard.writeText(text);
+    return { thatTargets: targets };
   }
 };
 
@@ -30157,47 +30064,45 @@ var CutToClipboard = class {
     this.actions = actions;
     this.run = this.run.bind(this);
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      yield ide().flashRanges(
-        targets.flatMap((target) => {
-          const { editor, contentRange } = target;
-          const removalHighlightRange = target.getRemovalHighlightRange();
-          if (target.isLine) {
-            return [
-              {
-                editor,
-                range: toCharacterRange(contentRange),
-                style: "referenced" /* referenced */
-              },
-              {
-                editor,
-                range: toLineRange(removalHighlightRange),
-                style: "pendingDelete" /* pendingDelete */
-              }
-            ];
-          }
+  async run(targets) {
+    await ide().flashRanges(
+      targets.flatMap((target) => {
+        const { editor, contentRange } = target;
+        const removalHighlightRange = target.getRemovalHighlightRange();
+        if (target.isLine) {
           return [
             {
               editor,
               range: toCharacterRange(contentRange),
               style: "referenced" /* referenced */
             },
-            ...getOutsideOverflow(contentRange, removalHighlightRange).map(
-              (overflow) => ({
-                editor,
-                range: toCharacterRange(overflow),
-                style: "pendingDelete" /* pendingDelete */
-              })
-            )
+            {
+              editor,
+              range: toLineRange(removalHighlightRange),
+              style: "pendingDelete" /* pendingDelete */
+            }
           ];
-        })
-      );
-      const options2 = { showDecorations: false };
-      yield this.actions.copyToClipboard.run(targets, options2);
-      const { thatTargets } = yield this.actions.remove.run(targets, options2);
-      return { thatTargets };
-    });
+        }
+        return [
+          {
+            editor,
+            range: toCharacterRange(contentRange),
+            style: "referenced" /* referenced */
+          },
+          ...getOutsideOverflow(contentRange, removalHighlightRange).map(
+            (overflow) => ({
+              editor,
+              range: toCharacterRange(overflow),
+              style: "pendingDelete" /* pendingDelete */
+            })
+          )
+        ];
+      })
+    );
+    const options2 = { showDecorations: false };
+    await this.actions.copyToClipboard.run(targets, options2);
+    const { thatTargets } = await this.actions.remove.run(targets, options2);
+    return { thatTargets };
   }
 };
 function getOutsideOverflow(insideRange, outsideRange) {
@@ -30218,24 +30123,22 @@ var Deselect = class {
   constructor() {
     this.run = this.run.bind(this);
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      yield runOnTargetsForEachEditor(targets, (editor, targets2) => __async(this, null, function* () {
-        const newSelections = editor.selections.filter(
-          (selection) => !targets2.some((target) => {
-            const intersection = target.contentRange.intersection(selection);
-            return intersection && (!intersection.isEmpty || selection.isEmpty);
-          })
-        );
-        if (newSelections.length === 0) {
-          throw new SelectionRequiredError();
-        }
-        yield ide().getEditableTextEditor(editor).setSelections(newSelections);
-      }));
-      return {
-        thatTargets: targets
-      };
+  async run(targets) {
+    await runOnTargetsForEachEditor(targets, async (editor, targets2) => {
+      const newSelections = editor.selections.filter(
+        (selection) => !targets2.some((target) => {
+          const intersection = target.contentRange.intersection(selection);
+          return intersection && (!intersection.isEmpty || selection.isEmpty);
+        })
+      );
+      if (newSelections.length === 0) {
+        throw new SelectionRequiredError();
+      }
+      await ide().getEditableTextEditor(editor).setSelections(newSelections);
     });
+    return {
+      thatTargets: targets
+    };
   }
 };
 var SelectionRequiredError = class extends Error {
@@ -30246,141 +30149,135 @@ var SelectionRequiredError = class extends Error {
 };
 
 // ../cursorless-engine/src/actions/EditNew/runEditTargets.ts
-function runEditTargets(rangeUpdater, editor, state, useAllDestinations) {
-  return __async(this, null, function* () {
-    const destinations = state.destinations.map((destination, index) => {
-      if (useAllDestinations || destination.getEditNewActionType() === "edit") {
-        return {
-          destination,
-          index
-        };
-      }
-    }).filter((destination) => !!destination);
-    if (destinations.length === 0) {
-      return state;
+async function runEditTargets(rangeUpdater, editor, state, useAllDestinations) {
+  const destinations = state.destinations.map((destination, index) => {
+    if (useAllDestinations || destination.getEditNewActionType() === "edit") {
+      return {
+        destination,
+        index
+      };
     }
-    const edits = destinations.map(
-      (destination) => destination.destination.constructChangeEdit("")
-    );
-    const cursorInfos = state.cursorRanges.map((range3, index) => ({ range: range3, index })).filter(({ range: range3 }) => range3 != null);
-    const cursorIndices = cursorInfos.map(({ index }) => index);
-    const cursorRanges = cursorInfos.map(({ range: range3 }) => range3);
-    const editRanges = edits.map((edit) => edit.range);
-    const {
-      thatRanges: updatedThatRanges,
-      cursorRanges: updatedCursorRanges,
-      editRanges: updatedEditRanges
-    } = yield performEditsAndUpdateSelections({
-      rangeUpdater,
-      editor,
-      edits,
-      preserveCursorSelections: true,
-      selections: {
-        thatRanges: state.thatRanges,
-        cursorRanges,
-        editRanges: {
-          selections: editRanges,
-          behavior: 0 /* openOpen */
-        }
+  }).filter((destination) => !!destination);
+  if (destinations.length === 0) {
+    return state;
+  }
+  const edits = destinations.map(
+    (destination) => destination.destination.constructChangeEdit("")
+  );
+  const cursorInfos = state.cursorRanges.map((range3, index) => ({ range: range3, index })).filter(({ range: range3 }) => range3 != null);
+  const cursorIndices = cursorInfos.map(({ index }) => index);
+  const cursorRanges = cursorInfos.map(({ range: range3 }) => range3);
+  const editRanges = edits.map((edit) => edit.range);
+  const {
+    thatRanges: updatedThatRanges,
+    cursorRanges: updatedCursorRanges,
+    editRanges: updatedEditRanges
+  } = await performEditsAndUpdateSelections({
+    rangeUpdater,
+    editor,
+    edits,
+    preserveCursorSelections: true,
+    selections: {
+      thatRanges: state.thatRanges,
+      cursorRanges,
+      editRanges: {
+        selections: editRanges,
+        behavior: 0 /* openOpen */
       }
-    });
-    const finalCursorRanges = [...state.cursorRanges];
-    zip_default(cursorIndices, updatedCursorRanges).forEach(([index, range3]) => {
-      finalCursorRanges[index] = range3;
-    });
-    destinations.forEach((delimiterTarget, index) => {
-      const edit = edits[index];
-      const range3 = edit.updateRange(updatedEditRanges[index]);
-      finalCursorRanges[delimiterTarget.index] = range3;
-    });
-    return {
-      destinations: state.destinations,
-      thatRanges: updatedThatRanges,
-      cursorRanges: finalCursorRanges
-    };
+    }
   });
+  const finalCursorRanges = [...state.cursorRanges];
+  zip_default(cursorIndices, updatedCursorRanges).forEach(([index, range3]) => {
+    finalCursorRanges[index] = range3;
+  });
+  destinations.forEach((delimiterTarget, index) => {
+    const edit = edits[index];
+    const range3 = edit.updateRange(updatedEditRanges[index]);
+    finalCursorRanges[delimiterTarget.index] = range3;
+  });
+  return {
+    destinations: state.destinations,
+    thatRanges: updatedThatRanges,
+    cursorRanges: finalCursorRanges
+  };
 }
 
 // ../cursorless-engine/src/actions/EditNew/runInsertLineAfterTargets.ts
-function runInsertLineAfterTargets(_0, _1, _2, _3) {
-  return __async(this, arguments, function* ({ acceptsLocation }, rangeUpdater, editor, state) {
-    const destinations = state.destinations.map((destination, index) => {
-      const actionType = destination.getEditNewActionType();
-      if (actionType === "insertLineAfter") {
-        return {
-          destination,
-          index
-        };
-      }
-    }).filter((destination) => !!destination);
-    if (destinations.length === 0) {
-      return state;
+async function runInsertLineAfterTargets({ acceptsLocation }, rangeUpdater, editor, state) {
+  const destinations = state.destinations.map((destination, index) => {
+    const actionType = destination.getEditNewActionType();
+    if (actionType === "insertLineAfter") {
+      return {
+        destination,
+        index
+      };
     }
-    const contentRanges = destinations.map(
-      ({ destination }) => destination.contentRange
-    );
-    const targetRanges = state.destinations.map(
-      ({ contentRange }) => contentRange
-    );
-    const callback2 = () => __async(this, null, function* () {
-      if (acceptsLocation) {
-        yield editor.insertLineAfter(contentRanges);
-      } else {
-        yield editor.setSelections(
-          contentRanges.map((range3) => range3.toSelection(false))
-        );
-        yield editor.focus();
-        yield editor.insertLineAfter();
-      }
-    });
-    const { targetRanges: updatedTargetRanges, thatRanges: updatedThatRanges } = yield performEditsAndUpdateSelections({
-      rangeUpdater,
-      editor,
-      callback: callback2,
-      preserveCursorSelections: true,
-      selections: {
-        targetRanges,
-        thatRanges: state.thatRanges
-      }
-    });
-    const cursorRanges = [...state.cursorRanges];
-    destinations.forEach((commandTarget, index) => {
-      cursorRanges[commandTarget.index] = editor.selections[index];
-    });
-    return {
-      destinations: state.destinations.map(
-        (destination, index) => destination.withTarget(
-          destination.target.withContentRange(updatedTargetRanges[index])
-        )
-      ),
-      thatRanges: updatedThatRanges,
-      cursorRanges
-    };
+  }).filter((destination) => !!destination);
+  if (destinations.length === 0) {
+    return state;
+  }
+  const contentRanges = destinations.map(
+    ({ destination }) => destination.contentRange
+  );
+  const targetRanges = state.destinations.map(
+    ({ contentRange }) => contentRange
+  );
+  const callback2 = async () => {
+    if (acceptsLocation) {
+      await editor.insertLineAfter(contentRanges);
+    } else {
+      await editor.setSelections(
+        contentRanges.map((range3) => range3.toSelection(false))
+      );
+      await editor.focus();
+      await editor.insertLineAfter();
+    }
+  };
+  const { targetRanges: updatedTargetRanges, thatRanges: updatedThatRanges } = await performEditsAndUpdateSelections({
+    rangeUpdater,
+    editor,
+    callback: callback2,
+    preserveCursorSelections: true,
+    selections: {
+      targetRanges,
+      thatRanges: state.thatRanges
+    }
   });
+  const cursorRanges = [...state.cursorRanges];
+  destinations.forEach((commandTarget, index) => {
+    cursorRanges[commandTarget.index] = editor.selections[index];
+  });
+  return {
+    destinations: state.destinations.map(
+      (destination, index) => destination.withTarget(
+        destination.target.withContentRange(updatedTargetRanges[index])
+      )
+    ),
+    thatRanges: updatedThatRanges,
+    cursorRanges
+  };
 }
 
 // ../cursorless-engine/src/actions/EditNew/runNotebookCellTargets.ts
-function runEditNewNotebookCellTargets(actions, destinations) {
-  return __async(this, null, function* () {
-    const destination = ensureSingleTarget2(destinations);
-    const editor = ide().getEditableTextEditor(destination.editor);
-    const isAbove = destination.insertionMode === "before";
-    if (destination.insertionMode === "to") {
-      throw Error(
-        `Unsupported insertion mode '${destination.insertionMode}' for notebookcapell`
-      );
-    }
-    yield actions.setSelection.run([destination.target]);
-    let modifyThatMark = (selection) => selection;
-    if (isAbove) {
-      modifyThatMark = yield editor.editNewNotebookCellAbove();
-    } else {
-      yield editor.editNewNotebookCellBelow();
-    }
-    const thatMark = createThatMark([destination.target.thatTarget]);
-    thatMark[0].selection = modifyThatMark(thatMark[0].selection);
-    return { thatSelections: thatMark };
-  });
+async function runEditNewNotebookCellTargets(actions, destinations) {
+  const destination = ensureSingleTarget2(destinations);
+  const editor = ide().getEditableTextEditor(destination.editor);
+  const isAbove = destination.insertionMode === "before";
+  if (destination.insertionMode === "to") {
+    throw Error(
+      `Unsupported insertion mode '${destination.insertionMode}' for notebookcapell`
+    );
+  }
+  await actions.setSelection.run([destination.target]);
+  let modifyThatMark = (selection) => selection;
+  if (isAbove) {
+    modifyThatMark = await editor.editNewNotebookCellAbove();
+  } else {
+    await editor.editNewNotebookCellBelow();
+  }
+  const thatMark = createThatMark([destination.target.thatTarget]);
+  thatMark[0].selection = modifyThatMark(thatMark[0].selection);
+  return { thatSelections: thatMark };
 }
 
 // ../cursorless-engine/src/actions/EditNew/EditNew.ts
@@ -30390,50 +30287,48 @@ var EditNew = class {
     this.actions = actions;
     this.run = this.run.bind(this);
   }
-  run(destinations) {
-    return __async(this, null, function* () {
-      if (destinations.some(({ target }) => target.isNotebookCell)) {
-        return runEditNewNotebookCellTargets(this.actions, destinations);
-      }
-      const editableEditor = ide().getEditableTextEditor(
-        ensureSingleEditor2(destinations)
-      );
-      let state = {
-        destinations,
-        thatRanges: destinations.map(
-          ({ target }) => target.thatTarget.contentRange
-        ),
-        cursorRanges: new Array(destinations.length).fill(
-          void 0
-        )
-      };
-      const insertLineAfterCapability = ide().capabilities.commands.insertLineAfter;
-      const useInsertLineAfter = insertLineAfterCapability != null;
-      if (useInsertLineAfter) {
-        state = yield runInsertLineAfterTargets(
-          insertLineAfterCapability,
-          this.rangeUpdater,
-          editableEditor,
-          state
-        );
-      }
-      state = yield runEditTargets(
+  async run(destinations) {
+    if (destinations.some(({ target }) => target.isNotebookCell)) {
+      return runEditNewNotebookCellTargets(this.actions, destinations);
+    }
+    const editableEditor = ide().getEditableTextEditor(
+      ensureSingleEditor2(destinations)
+    );
+    let state = {
+      destinations,
+      thatRanges: destinations.map(
+        ({ target }) => target.thatTarget.contentRange
+      ),
+      cursorRanges: new Array(destinations.length).fill(
+        void 0
+      )
+    };
+    const insertLineAfterCapability = ide().capabilities.commands.insertLineAfter;
+    const useInsertLineAfter = insertLineAfterCapability != null;
+    if (useInsertLineAfter) {
+      state = await runInsertLineAfterTargets(
+        insertLineAfterCapability,
         this.rangeUpdater,
         editableEditor,
-        state,
-        !useInsertLineAfter
+        state
       );
-      const newSelections = state.destinations.map(
-        (destination, index) => state.cursorRanges[index].toSelection(destination.target.isReversed)
-      );
-      yield editableEditor.setSelections(newSelections, { focusEditor: true });
-      return {
-        thatSelections: createThatMark(
-          state.destinations.map((d) => d.target),
-          state.thatRanges
-        )
-      };
-    });
+    }
+    state = await runEditTargets(
+      this.rangeUpdater,
+      editableEditor,
+      state,
+      !useInsertLineAfter
+    );
+    const newSelections = state.destinations.map(
+      (destination, index) => state.cursorRanges[index].toSelection(destination.target.isReversed)
+    );
+    await editableEditor.setSelections(newSelections, { focusEditor: true });
+    return {
+      thatSelections: createThatMark(
+        state.destinations.map((d) => d.target),
+        state.thatRanges
+      )
+    };
   }
 };
 
@@ -30472,23 +30367,21 @@ var ExecuteCommand = class {
     this.callbackAction = new CallbackAction(rangeUpdater);
     this.run = this.run.bind(this);
   }
-  run(_0, _1) {
-    return __async(this, arguments, function* (targets, commandId, {
-      commandArgs,
-      ensureSingleEditor: ensureSingleEditor3,
-      ensureSingleTarget: ensureSingleTarget3,
-      restoreSelection,
-      showDecorations
-    } = {}) {
-      const args = commandArgs != null ? commandArgs : [];
-      return this.callbackAction.run(targets, {
-        callback: () => ide().executeCommand(commandId, ...args),
-        setSelection: true,
-        ensureSingleEditor: ensureSingleEditor3 != null ? ensureSingleEditor3 : false,
-        ensureSingleTarget: ensureSingleTarget3 != null ? ensureSingleTarget3 : false,
-        restoreSelection: restoreSelection != null ? restoreSelection : true,
-        showDecorations: showDecorations != null ? showDecorations : true
-      });
+  async run(targets, commandId, {
+    commandArgs,
+    ensureSingleEditor: ensureSingleEditor3,
+    ensureSingleTarget: ensureSingleTarget3,
+    restoreSelection,
+    showDecorations
+  } = {}) {
+    const args = commandArgs ?? [];
+    return this.callbackAction.run(targets, {
+      callback: () => ide().executeCommand(commandId, ...args),
+      setSelection: true,
+      ensureSingleEditor: ensureSingleEditor3 ?? false,
+      ensureSingleTarget: ensureSingleTarget3 ?? false,
+      restoreSelection: restoreSelection ?? true,
+      showDecorations: showDecorations ?? true
     });
   }
 };
@@ -30499,25 +30392,23 @@ var Find = class {
     this.actions = actions;
     this.run = this.run.bind(this);
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      ensureSingleTarget2(targets);
-      const { returnValue, thatTargets } = yield this.actions.getText.run(targets);
-      const [text] = returnValue;
-      let query;
-      if (text.length > 200) {
-        query = text.substring(0, 200);
-        void showWarning(
-          ide().messages,
-          "truncatedSearchText",
-          "Search text is longer than 200 characters; truncating"
-        );
-      } else {
-        query = text;
-      }
-      yield this.find(query);
-      return { thatTargets };
-    });
+  async run(targets) {
+    ensureSingleTarget2(targets);
+    const { returnValue, thatTargets } = await this.actions.getText.run(targets);
+    const [text] = returnValue;
+    let query;
+    if (text.length > 200) {
+      query = text.substring(0, 200);
+      void showWarning(
+        ide().messages,
+        "truncatedSearchText",
+        "Search text is longer than 200 characters; truncating"
+      );
+    } else {
+      query = text;
+    }
+    await this.find(query);
+    return { thatTargets };
   }
 };
 var FindInDocument = class extends Find {
@@ -30537,15 +30428,13 @@ var FollowLink = class {
     this.options = options2;
     this.run = this.run.bind(this);
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      const target = ensureSingleTarget2(targets);
-      yield flashTargets(ide(), targets, "referenced" /* referenced */);
-      yield ide().getEditableTextEditor(target.editor).openLink(target.contentRange, this.options);
-      return {
-        thatSelections: createThatMark(targets)
-      };
-    });
+  async run(targets) {
+    const target = ensureSingleTarget2(targets);
+    await flashTargets(ide(), targets, "referenced" /* referenced */);
+    await ide().getEditableTextEditor(target.editor).openLink(target.contentRange, this.options);
+    return {
+      thatSelections: createThatMark(targets)
+    };
   }
 };
 
@@ -30563,8 +30452,7 @@ function constructSnippetBody(text, linePrefix) {
     ...remainingLines.map((line) => ({ text: line, startIndex: 0 }))
   ];
   lines.forEach(({ text: text2, startIndex }) => {
-    var _a, _b;
-    const newIndentationString = (_b = (_a = text2.match(/^\s*/)) == null ? void 0 : _a[0]) != null ? _b : "";
+    const newIndentationString = text2.match(/^\s*/)?.[0] ?? "";
     const firstNonWhitespaceCharacterIndex = newIndentationString.length;
     if (currentIndentationString != null) {
       if (newIndentationString.length > currentIndentationString.length) {
@@ -30654,115 +30542,113 @@ var GenerateSnippet = class {
     this.snippets = snippets;
     this.run = this.run.bind(this);
   }
-  run(targets, snippetName) {
-    return __async(this, null, function* () {
-      const target = ensureSingleTarget2(targets);
-      const editor = target.editor;
-      void flashTargets(ide(), targets, "referenced" /* referenced */);
-      if (snippetName == null) {
-        snippetName = yield ide().showInputBox({
-          prompt: "Name of snippet",
-          placeHolder: "helloWorld"
-        });
-      }
-      if (snippetName == null) {
-        return {};
-      }
-      let currentPlaceholderIndex = 1;
-      const baseOffset = editor.document.offsetAt(target.contentRange.start);
-      const variables = editor.selections.filter((selection) => target.contentRange.contains(selection)).map((selection, index) => ({
+  async run(targets, snippetName) {
+    const target = ensureSingleTarget2(targets);
+    const editor = target.editor;
+    void flashTargets(ide(), targets, "referenced" /* referenced */);
+    if (snippetName == null) {
+      snippetName = await ide().showInputBox({
+        prompt: "Name of snippet",
+        placeHolder: "helloWorld"
+      });
+    }
+    if (snippetName == null) {
+      return {};
+    }
+    let currentPlaceholderIndex = 1;
+    const baseOffset = editor.document.offsetAt(target.contentRange.start);
+    const variables = editor.selections.filter((selection) => target.contentRange.contains(selection)).map((selection, index) => ({
+      offsets: {
+        start: editor.document.offsetAt(selection.start) - baseOffset,
+        end: editor.document.offsetAt(selection.end) - baseOffset
+      },
+      defaultName: `variable${index + 1}`,
+      placeholderIndex: currentPlaceholderIndex++
+    }));
+    const substituter = new Substituter();
+    const linePrefix = editor.document.getText(
+      new Range(
+        target.contentRange.start.with(void 0, 0),
+        target.contentRange.start
+      )
+    );
+    const originalText = editor.document.getText(target.contentRange);
+    const snippetBodyText = editText(originalText, [
+      ...matchAll(originalText, /\$|\\/g, (match) => ({
         offsets: {
-          start: editor.document.offsetAt(selection.start) - baseOffset,
-          end: editor.document.offsetAt(selection.end) - baseOffset
+          start: match.index,
+          end: match.index + match[0].length
         },
-        defaultName: `variable${index + 1}`,
-        placeholderIndex: currentPlaceholderIndex++
-      }));
-      const substituter = new Substituter();
-      const linePrefix = editor.document.getText(
-        new Range(
-          target.contentRange.start.with(void 0, 0),
-          target.contentRange.start
+        text: match[0] === "\\" ? `\\${match[0]}` : `\\\\${match[0]}`
+      })),
+      ...variables.map(({ offsets, defaultName, placeholderIndex }) => ({
+        offsets,
+        // Note that the reason we use the substituter here is primarily so
+        // that the `\` below doesn't get escaped upon conversion to json.
+        text: substituter.addSubstitution(
+          [
+            // This `\$` will end up being a `$` in the final document.  It
+            // indicates the start of a variable in the user snippet.  We need
+            // the `\` so that the meta-snippet doesn't see it as one of its
+            // placeholders.
+            "\\$",
+            // The remaining text here is a placeholder in the meta-snippet
+            // that the user can use to name their snippet variable that will
+            // be in the user snippet.
+            "${",
+            placeholderIndex,
+            ":",
+            defaultName,
+            "}"
+          ].join("")
         )
+      }))
+    ]);
+    const snippetLines = constructSnippetBody(snippetBodyText, linePrefix);
+    const constructVariableDescriptionEntry = ({
+      placeholderIndex
+    }) => {
+      const key = "$" + placeholderIndex;
+      const value = substituter.addSubstitution(
+        "{$" + currentPlaceholderIndex++ + "}",
+        true
       );
-      const originalText = editor.document.getText(target.contentRange);
-      const snippetBodyText = editText(originalText, [
-        ...matchAll(originalText, /\$|\\/g, (match) => ({
-          offsets: {
-            start: match.index,
-            end: match.index + match[0].length
-          },
-          text: match[0] === "\\" ? `\\${match[0]}` : `\\\\${match[0]}`
-        })),
-        ...variables.map(({ offsets, defaultName, placeholderIndex }) => ({
-          offsets,
-          // Note that the reason we use the substituter here is primarily so
-          // that the `\` below doesn't get escaped upon conversion to json.
-          text: substituter.addSubstitution(
-            [
-              // This `\$` will end up being a `$` in the final document.  It
-              // indicates the start of a variable in the user snippet.  We need
-              // the `\` so that the meta-snippet doesn't see it as one of its
-              // placeholders.
-              "\\$",
-              // The remaining text here is a placeholder in the meta-snippet
-              // that the user can use to name their snippet variable that will
-              // be in the user snippet.
-              "${",
-              placeholderIndex,
-              ":",
-              defaultName,
-              "}"
-            ].join("")
-          )
-        }))
-      ]);
-      const snippetLines = constructSnippetBody(snippetBodyText, linePrefix);
-      const constructVariableDescriptionEntry = ({
-        placeholderIndex
-      }) => {
-        const key = "$" + placeholderIndex;
-        const value = substituter.addSubstitution(
-          "{$" + currentPlaceholderIndex++ + "}",
-          true
-        );
-        return [key, value];
-      };
-      const snippet2 = {
-        [snippetName]: {
-          definitions: [
-            {
-              scope: {
-                langIds: [editor.document.languageId]
-              },
-              body: snippetLines
-            }
-          ],
-          description: "$" + currentPlaceholderIndex++,
-          variables: variables.length === 0 ? void 0 : Object.fromEntries(
-            variables.map(constructVariableDescriptionEntry)
-          )
-        }
-      };
-      const snippetText = substituter.makeSubstitutions(
-        JSON.stringify(snippet2, null, 2)
-      );
-      const editableEditor = ide().getEditableTextEditor(editor);
-      if (ide().runMode === "test") {
-        yield editableEditor.setSelections([
-          editor.document.range.toSelection(false)
-        ]);
-      } else {
-        yield this.snippets.openNewSnippetFile(snippetName);
+      return [key, value];
+    };
+    const snippet2 = {
+      [snippetName]: {
+        definitions: [
+          {
+            scope: {
+              langIds: [editor.document.languageId]
+            },
+            body: snippetLines
+          }
+        ],
+        description: "$" + currentPlaceholderIndex++,
+        variables: variables.length === 0 ? void 0 : Object.fromEntries(
+          variables.map(constructVariableDescriptionEntry)
+        )
       }
-      yield editableEditor.insertSnippet(snippetText);
-      return {
-        thatSelections: targets.map(({ editor: editor2, contentSelection }) => ({
-          editor: editor2,
-          selection: contentSelection
-        }))
-      };
-    });
+    };
+    const snippetText = substituter.makeSubstitutions(
+      JSON.stringify(snippet2, null, 2)
+    );
+    const editableEditor = ide().getEditableTextEditor(editor);
+    if (ide().runMode === "test") {
+      await editableEditor.setSelections([
+        editor.document.range.toSelection(false)
+      ]);
+    } else {
+      await this.snippets.openNewSnippetFile(snippetName);
+    }
+    await editableEditor.insertSnippet(snippetText);
+    return {
+      thatSelections: targets.map(({ editor: editor2, contentSelection }) => ({
+        editor: editor2,
+        selection: contentSelection
+      }))
+    };
   }
 };
 
@@ -30771,15 +30657,13 @@ var GetTargets = class {
   constructor() {
     this.run = this.run.bind(this);
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      return {
-        returnValue: targets.map(({ contentRange }) => ({
-          contentRange
-        })),
-        thatTargets: targets
-      };
-    });
+  async run(targets) {
+    return {
+      returnValue: targets.map(({ contentRange }) => ({
+        contentRange
+      })),
+      thatTargets: targets
+    };
   }
 };
 
@@ -30788,22 +30672,20 @@ var GetText = class {
   constructor() {
     this.run = this.run.bind(this);
   }
-  run(_0) {
-    return __async(this, arguments, function* (targets, {
-      showDecorations = true,
-      ensureSingleTarget: doEnsureSingleTarget = false
-    } = {}) {
-      if (showDecorations) {
-        yield flashTargets(ide(), targets, "referenced" /* referenced */);
-      }
-      if (doEnsureSingleTarget) {
-        ensureSingleTarget2(targets);
-      }
-      return {
-        returnValue: targets.map((target) => target.contentText),
-        thatTargets: targets
-      };
-    });
+  async run(targets, {
+    showDecorations = true,
+    ensureSingleTarget: doEnsureSingleTarget = false
+  } = {}) {
+    if (showDecorations) {
+      await flashTargets(ide(), targets, "referenced" /* referenced */);
+    }
+    if (doEnsureSingleTarget) {
+      ensureSingleTarget2(targets);
+    }
+    return {
+      returnValue: targets.map((target) => target.contentText),
+      thatTargets: targets
+    };
   }
 };
 
@@ -30812,31 +30694,29 @@ var Highlight = class {
   constructor() {
     this.run = this.run.bind(this);
   }
-  run(targets, highlightId) {
-    return __async(this, null, function* () {
-      if (ide().capabilities.commands["highlight"] == null) {
-        throw Error(`The highlight action is not supported by your ide`);
-      }
-      if (targets.length === 0) {
-        yield Promise.all(
-          ide().visibleTextEditors.map(
-            (editor) => ide().setHighlightRanges(highlightId, editor, [])
-          )
-        );
-      } else {
-        yield runOnTargetsForEachEditor(
-          targets,
-          (editor, targets2) => ide().setHighlightRanges(
-            highlightId,
-            editor,
-            targets2.map(toGeneralizedRange)
-          )
-        );
-      }
-      return {
-        thatTargets: targets
-      };
-    });
+  async run(targets, highlightId) {
+    if (ide().capabilities.commands["highlight"] == null) {
+      throw Error(`The highlight action is not supported by your ide`);
+    }
+    if (targets.length === 0) {
+      await Promise.all(
+        ide().visibleTextEditors.map(
+          (editor) => ide().setHighlightRanges(highlightId, editor, [])
+        )
+      );
+    } else {
+      await runOnTargetsForEachEditor(
+        targets,
+        (editor, targets2) => ide().setHighlightRanges(
+          highlightId,
+          editor,
+          targets2.map(toGeneralizedRange)
+        )
+      );
+    }
+    return {
+      thatTargets: targets
+    };
   }
 };
 
@@ -30852,66 +30732,62 @@ var InsertCopy = class {
     this.run = this.run.bind(this);
     this.runForEditor = this.runForEditor.bind(this);
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      const results = flatten_default(
-        yield runOnTargetsForEachEditor(targets, this.runForEditor)
-      );
-      yield ide().flashRanges(
-        results.flatMap(
-          (result) => result.thatMark.map((that) => ({
-            editor: that.editor,
-            range: toCharacterRange(that.selection),
-            style: "justAdded" /* justAdded */
-          }))
-        )
-      );
-      return {
-        sourceSelections: results.flatMap(({ sourceMark }) => sourceMark),
-        thatSelections: results.flatMap(({ thatMark }) => thatMark)
-      };
-    });
+  async run(targets) {
+    const results = flatten_default(
+      await runOnTargetsForEachEditor(targets, this.runForEditor)
+    );
+    await ide().flashRanges(
+      results.flatMap(
+        (result) => result.thatMark.map((that) => ({
+          editor: that.editor,
+          range: toCharacterRange(that.selection),
+          style: "justAdded" /* justAdded */
+        }))
+      )
+    );
+    return {
+      sourceSelections: results.flatMap(({ sourceMark }) => sourceMark),
+      thatSelections: results.flatMap(({ thatMark }) => thatMark)
+    };
   }
-  runForEditor(editor, targets) {
-    return __async(this, null, function* () {
-      const position = this.isBefore ? "after" : "before";
-      const edits = targets.flatMap(
-        (target) => target.toDestination(position).constructChangeEdit(target.contentText)
-      );
-      const contentSelections = targets.map(
-        ({ contentSelection }) => contentSelection
-      );
-      const editRanges = edits.map(({ range: range3 }) => range3);
-      const editableEditor = ide().getEditableTextEditor(editor);
-      const {
-        contentSelections: updatedContentSelections,
-        editRanges: updatedEditRanges
-      } = yield performEditsAndUpdateSelections({
-        rangeUpdater: this.rangeUpdater,
-        editor: editableEditor,
-        edits,
-        selections: {
-          contentSelections,
-          editRanges: {
-            selections: editRanges,
-            behavior: 0 /* openOpen */
-          }
+  async runForEditor(editor, targets) {
+    const position = this.isBefore ? "after" : "before";
+    const edits = targets.flatMap(
+      (target) => target.toDestination(position).constructChangeEdit(target.contentText)
+    );
+    const contentSelections = targets.map(
+      ({ contentSelection }) => contentSelection
+    );
+    const editRanges = edits.map(({ range: range3 }) => range3);
+    const editableEditor = ide().getEditableTextEditor(editor);
+    const {
+      contentSelections: updatedContentSelections,
+      editRanges: updatedEditRanges
+    } = await performEditsAndUpdateSelections({
+      rangeUpdater: this.rangeUpdater,
+      editor: editableEditor,
+      edits,
+      selections: {
+        contentSelections,
+        editRanges: {
+          selections: editRanges,
+          behavior: 0 /* openOpen */
         }
-      });
-      const insertionRanges = zip_default(edits, updatedEditRanges).map(
-        ([edit, range3]) => edit.updateRange(range3)
-      );
-      const primarySelection = editor.selections[0];
-      if (updatedContentSelections.some(
-        (selection) => selection.intersection(primarySelection) != null
-      )) {
-        yield editableEditor.revealRange(primarySelection);
       }
-      return {
-        sourceMark: createThatMark(targets, insertionRanges),
-        thatMark: createThatMark(targets, updatedContentSelections)
-      };
     });
+    const insertionRanges = zip_default(edits, updatedEditRanges).map(
+      ([edit, range3]) => edit.updateRange(range3)
+    );
+    const primarySelection = editor.selections[0];
+    if (updatedContentSelections.some(
+      (selection) => selection.intersection(primarySelection) != null
+    )) {
+      await editableEditor.revealRange(primarySelection);
+    }
+    return {
+      sourceMark: createThatMark(targets, insertionRanges),
+      thatMark: createThatMark(targets, updatedContentSelections)
+    };
   }
 };
 var CopyContentBefore = class extends InsertCopy {
@@ -30935,58 +30811,56 @@ var InsertEmptyLines = class {
   getFinalStages() {
     return [this.modifierStageFactory.create(containingLineIfUntypedModifier)];
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      const results = yield runOnTargetsForEachEditor(
-        targets,
-        (editor, targets2) => __async(this, null, function* () {
-          const edits = this.getEdits(targets2);
-          const contentSelections = targets2.map(
-            (target) => target.thatTarget.contentSelection
-          );
-          const {
-            contentSelections: updatedThatSelections,
-            editRanges: updatedEditRanges
-          } = yield performEditsAndUpdateSelections({
-            rangeUpdater: this.rangeUpdater,
-            editor: ide().getEditableTextEditor(editor),
-            edits,
-            selections: {
-              contentSelections,
-              editRanges: {
-                selections: edits.map((edit) => edit.range),
-                behavior: 0 /* openOpen */
-              }
+  async run(targets) {
+    const results = await runOnTargetsForEachEditor(
+      targets,
+      async (editor, targets2) => {
+        const edits = this.getEdits(targets2);
+        const contentSelections = targets2.map(
+          (target) => target.thatTarget.contentSelection
+        );
+        const {
+          contentSelections: updatedThatSelections,
+          editRanges: updatedEditRanges
+        } = await performEditsAndUpdateSelections({
+          rangeUpdater: this.rangeUpdater,
+          editor: ide().getEditableTextEditor(editor),
+          edits,
+          selections: {
+            contentSelections,
+            editRanges: {
+              selections: edits.map((edit) => edit.range),
+              behavior: 0 /* openOpen */
             }
-          });
-          return {
-            thatMark: updatedThatSelections.map((selection) => ({
-              editor,
-              selection
-            })),
-            flashRanges: zipStrict(edits, updatedEditRanges).map(
-              ([edit, editRange]) => ({
-                editor,
-                // Exclude the new line delimiter from the range for line edits
-                range: edit.isLine ? edit.updateRange(editRange) : editRange,
-                isLine: edit.isLine
-              })
-            )
-          };
-        })
-      );
-      yield ide().flashRanges(
-        results.flatMap(
-          (result) => result.flashRanges.map(({ editor, range: range3, isLine }) => ({
+          }
+        });
+        return {
+          thatMark: updatedThatSelections.map((selection) => ({
             editor,
-            range: isLine ? toLineRange(range3) : toCharacterRange(range3),
-            style: "justAdded" /* justAdded */
-          }))
-        )
-      );
-      const thatMark = results.flatMap((result) => result.thatMark);
-      return { thatSelections: thatMark };
-    });
+            selection
+          })),
+          flashRanges: zipStrict(edits, updatedEditRanges).map(
+            ([edit, editRange]) => ({
+              editor,
+              // Exclude the new line delimiter from the range for line edits
+              range: edit.isLine ? edit.updateRange(editRange) : editRange,
+              isLine: edit.isLine
+            })
+          )
+        };
+      }
+    );
+    await ide().flashRanges(
+      results.flatMap(
+        (result) => result.flashRanges.map(({ editor, range: range3, isLine }) => ({
+          editor,
+          range: isLine ? toLineRange(range3) : toCharacterRange(range3),
+          style: "justAdded" /* justAdded */
+        }))
+      )
+    );
+    const thatMark = results.flatMap((result) => result.thatMark);
+    return { thatSelections: thatMark };
   }
 };
 var InsertEmptyLinesAround = class extends InsertEmptyLines {
@@ -31017,9 +30891,10 @@ var InsertEmptyLineBelow = class extends InsertEmptyLines {
   }
 };
 function constructChangeEdit(target, insertionMode2) {
-  return __spreadProps(__spreadValues({}, target.toDestination(insertionMode2).constructChangeEdit("", true)), {
+  return {
+    ...target.toDestination(insertionMode2).constructChangeEdit("", true),
     isLine: target.isLine
-  });
+  };
 }
 
 // ../cursorless-engine/src/snippets/vendor/vscodeSnippet/snippetParser.ts
@@ -31947,7 +31822,7 @@ function findMatchingSnippetDefinitionForSingleTarget(modifierStageFactory, targ
     }
     if (scopeTypes != null) {
       const allScopeTypes = scopeTypes.concat(
-        excludeDescendantScopeTypes != null ? excludeDescendantScopeTypes : []
+        excludeDescendantScopeTypes ?? []
       );
       let matchingTarget = void 0;
       let matchingScopeType = void 0;
@@ -31975,7 +31850,7 @@ function findMatchingSnippetDefinitionForSingleTarget(modifierStageFactory, targ
       if (matchingScopeType == null) {
         return false;
       }
-      return matchingTarget != null && !(excludeDescendantScopeTypes != null ? excludeDescendantScopeTypes : []).includes(matchingScopeType);
+      return matchingTarget != null && !(excludeDescendantScopeTypes ?? []).includes(matchingScopeType);
     }
     return true;
   });
@@ -32004,7 +31879,6 @@ var InsertSnippet = class {
     ];
   }
   getScopeTypes(snippetDescription) {
-    var _a;
     if (snippetDescription.type === "named") {
       const { name } = snippetDescription;
       const snippet2 = this.snippets.getSnippetStrict(name);
@@ -32013,7 +31887,7 @@ var InsertSnippet = class {
         type: scopeTypeType
       }));
     } else {
-      return (_a = snippetDescription.scopeTypes) != null ? _a : [];
+      return snippetDescription.scopeTypes ?? [];
     }
   }
   getSnippetInfo(snippetDescription, targets) {
@@ -32040,58 +31914,55 @@ var InsertSnippet = class {
       };
     }
   }
-  run(destinations, snippetDescription) {
-    return __async(this, null, function* () {
-      const editor = ide().getEditableTextEditor(
-        ensureSingleEditor2(destinations)
-      );
-      yield this.actions.editNew.run(destinations);
-      const { body, formatSubstitutions: formatSubstitutions2 } = this.getSnippetInfo(
-        snippetDescription,
-        // Use new selection locations instead of original targets because
-        // that's where we'll be doing the snippet insertion
-        editor.selections.map(
-          (selection) => new UntypedTarget({
-            editor,
-            contentRange: selection,
-            isReversed: false,
-            hasExplicitRange: true
-          })
-        )
-      );
-      const parsedSnippet = this.snippetParser.parse(body);
-      transformSnippetVariables(
-        parsedSnippet,
-        null,
-        formatSubstitutions2(snippetDescription.substitutions)
-      );
-      const snippetString = parsedSnippet.toTextmateString();
-      const { editorSelections: updatedThatSelections } = yield performEditsAndUpdateSelections({
-        rangeUpdater: this.rangeUpdater,
-        editor,
-        callback: () => editor.insertSnippet(snippetString),
-        preserveCursorSelections: true,
-        selections: {
-          editorSelections: {
-            selections: editor.selections,
-            behavior: 0 /* openOpen */
-          }
-        }
-      });
-      return {
-        thatSelections: updatedThatSelections.map((selection) => ({
+  async run(destinations, snippetDescription) {
+    const editor = ide().getEditableTextEditor(
+      ensureSingleEditor2(destinations)
+    );
+    await this.actions.editNew.run(destinations);
+    const { body, formatSubstitutions: formatSubstitutions2 } = this.getSnippetInfo(
+      snippetDescription,
+      // Use new selection locations instead of original targets because
+      // that's where we'll be doing the snippet insertion
+      editor.selections.map(
+        (selection) => new UntypedTarget({
           editor,
-          selection
-        }))
-      };
+          contentRange: selection,
+          isReversed: false,
+          hasExplicitRange: true
+        })
+      )
+    );
+    const parsedSnippet = this.snippetParser.parse(body);
+    transformSnippetVariables(
+      parsedSnippet,
+      null,
+      formatSubstitutions2(snippetDescription.substitutions)
+    );
+    const snippetString = parsedSnippet.toTextmateString();
+    const { editorSelections: updatedThatSelections } = await performEditsAndUpdateSelections({
+      rangeUpdater: this.rangeUpdater,
+      editor,
+      callback: () => editor.insertSnippet(snippetString),
+      preserveCursorSelections: true,
+      selections: {
+        editorSelections: {
+          selections: editor.selections,
+          behavior: 0 /* openOpen */
+        }
+      }
     });
+    return {
+      thatSelections: updatedThatSelections.map((selection) => ({
+        editor,
+        selection
+      }))
+    };
   }
 };
 function formatSubstitutions(snippet2, definition, substitutions) {
   return Object.fromEntries(
     Object.entries(substitutions).map(([variableName, value]) => {
-      var _a, _b, _c, _d, _e;
-      const formatterName = (_e = (_b = ((_a = definition.variables) != null ? _a : {})[variableName]) == null ? void 0 : _b.formatter) != null ? _e : (_d = ((_c = snippet2.variables) != null ? _c : {})[variableName]) == null ? void 0 : _d.formatter;
+      const formatterName = (definition.variables ?? {})[variableName]?.formatter ?? (snippet2.variables ?? {})[variableName]?.formatter;
       if (formatterName == null) {
         return [variableName, value];
       }
@@ -32116,31 +31987,29 @@ var JoinLines = class {
   getFinalStages() {
     return [this.modifierStageFactory.create(containingLineIfUntypedModifier)];
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      yield flashTargets(
-        ide(),
-        targets.map(({ thatTarget }) => thatTarget),
-        "pendingModification0" /* pendingModification0 */
-      );
-      const thatSelections = flatten_default(
-        yield runOnTargetsForEachEditor(targets, (editor, targets2) => __async(this, null, function* () {
-          const { thatRanges: updatedThatRanges } = yield performEditsAndUpdateSelections({
-            rangeUpdater: this.rangeUpdater,
-            editor: ide().getEditableTextEditor(editor),
-            edits: getEdits2(editor, targets2),
-            selections: {
-              thatRanges: targets2.map(({ contentRange }) => contentRange)
-            }
-          });
-          return zipStrict(targets2, updatedThatRanges).map(([target, range3]) => ({
-            editor,
-            selection: range3.toSelection(target.isReversed)
-          }));
-        }))
-      );
-      return { thatSelections };
-    });
+  async run(targets) {
+    await flashTargets(
+      ide(),
+      targets.map(({ thatTarget }) => thatTarget),
+      "pendingModification0" /* pendingModification0 */
+    );
+    const thatSelections = flatten_default(
+      await runOnTargetsForEachEditor(targets, async (editor, targets2) => {
+        const { thatRanges: updatedThatRanges } = await performEditsAndUpdateSelections({
+          rangeUpdater: this.rangeUpdater,
+          editor: ide().getEditableTextEditor(editor),
+          edits: getEdits2(editor, targets2),
+          selections: {
+            thatRanges: targets2.map(({ contentRange }) => contentRange)
+          }
+        });
+        return zipStrict(targets2, updatedThatRanges).map(([target, range3]) => ({
+          editor,
+          selection: range3.toSelection(target.isReversed)
+        }));
+      })
+    );
+    return { thatSelections };
   }
 };
 function getEdits2(editor, targets) {
@@ -32178,17 +32047,14 @@ function getLineTargetEdits(target) {
     (i) => document.lineAt(i)
   );
   return Array.from(pairwise(lines)).map(
-    ([line1, line2]) => {
-      var _a, _b, _c, _d;
-      return {
-        range: new Range(
-          (_b = (_a = line1.rangeTrimmed) == null ? void 0 : _a.end) != null ? _b : line1.range.end,
-          (_d = (_c = line2.rangeTrimmed) == null ? void 0 : _c.start) != null ? _d : line2.range.start
-        ),
-        text: line2.isEmptyOrWhitespace ? "" : " ",
-        isReplace: true
-      };
-    }
+    ([line1, line2]) => ({
+      range: new Range(
+        line1.rangeTrimmed?.end ?? line1.range.end,
+        line2.rangeTrimmed?.start ?? line2.range.start
+      ),
+      text: line2.isEmptyOrWhitespace ? "" : " ",
+      isReplace: true
+    })
   );
 }
 
@@ -32199,57 +32065,55 @@ var PasteFromClipboardUsingCommand = class {
     this.actions = actions;
     this.run = this.run.bind(this);
   }
-  run(destinations) {
-    return __async(this, null, function* () {
-      const editor = ide().getEditableTextEditor(
-        ensureSingleEditor2(destinations)
-      );
-      const originalEditor = ide().activeEditableTextEditor;
-      const callbackEdit = () => __async(this, null, function* () {
-        yield this.actions.editNew.run(destinations);
-      });
-      const { cursorSelections: originalCursorSelections } = yield performEditsAndUpdateSelections({
-        rangeUpdater: this.rangeUpdater,
-        editor,
-        preserveCursorSelections: true,
-        callback: callbackEdit,
-        selections: {
-          cursorSelections: editor.selections
-        }
-      });
-      const {
-        originalCursorSelections: updatedCursorSelections,
-        editorSelections: updatedTargetSelections
-      } = yield performEditsAndUpdateSelections({
-        rangeUpdater: this.rangeUpdater,
-        editor,
-        callback: () => editor.clipboardPaste(),
-        selections: {
-          originalCursorSelections,
-          editorSelections: {
-            selections: editor.selections,
-            behavior: 0 /* openOpen */
-          }
-        }
-      });
-      yield editor.setSelections(updatedCursorSelections);
-      if (originalEditor != null && !originalEditor.isActive) {
-        yield originalEditor.focus();
+  async run(destinations) {
+    const editor = ide().getEditableTextEditor(
+      ensureSingleEditor2(destinations)
+    );
+    const originalEditor = ide().activeEditableTextEditor;
+    const callbackEdit = async () => {
+      await this.actions.editNew.run(destinations);
+    };
+    const { cursorSelections: originalCursorSelections } = await performEditsAndUpdateSelections({
+      rangeUpdater: this.rangeUpdater,
+      editor,
+      preserveCursorSelections: true,
+      callback: callbackEdit,
+      selections: {
+        cursorSelections: editor.selections
       }
-      yield ide().flashRanges(
-        updatedTargetSelections.map((selection) => ({
-          editor,
-          range: toCharacterRange(selection),
-          style: "justAdded" /* justAdded */
-        }))
-      );
-      return {
-        thatSelections: updatedTargetSelections.map((selection) => ({
-          editor,
-          selection
-        }))
-      };
     });
+    const {
+      originalCursorSelections: updatedCursorSelections,
+      editorSelections: updatedTargetSelections
+    } = await performEditsAndUpdateSelections({
+      rangeUpdater: this.rangeUpdater,
+      editor,
+      callback: () => editor.clipboardPaste(),
+      selections: {
+        originalCursorSelections,
+        editorSelections: {
+          selections: editor.selections,
+          behavior: 0 /* openOpen */
+        }
+      }
+    });
+    await editor.setSelections(updatedCursorSelections);
+    if (originalEditor != null && !originalEditor.isActive) {
+      await originalEditor.focus();
+    }
+    await ide().flashRanges(
+      updatedTargetSelections.map((selection) => ({
+        editor,
+        range: toCharacterRange(selection),
+        style: "justAdded" /* justAdded */
+      }))
+    );
+    return {
+      thatSelections: updatedTargetSelections.map((selection) => ({
+        editor,
+        selection
+      }))
+    };
   }
 };
 
@@ -32259,55 +32123,51 @@ var PasteFromClipboardDirectly = class {
     this.rangeUpdater = rangeUpdater;
     this.runForEditor = this.runForEditor.bind(this);
   }
-  run(destinations) {
-    return __async(this, null, function* () {
-      const text = yield ide().clipboard.readText();
-      const textLines = text.split(/\r?\n/g);
-      const destinationsWithText = destinations.length === textLines.length ? zipStrict(destinations, textLines).map(([destination, text2]) => ({
-        destination,
-        text: text2
-      })) : destinations.map((destination) => ({ destination, text }));
-      const thatSelections = flatten_default(
-        yield runForEachEditor(
-          destinationsWithText,
-          ({ destination }) => destination.editor,
-          this.runForEditor
-        )
-      );
-      return { thatSelections };
-    });
+  async run(destinations) {
+    const text = await ide().clipboard.readText();
+    const textLines = text.split(/\r?\n/g);
+    const destinationsWithText = destinations.length === textLines.length ? zipStrict(destinations, textLines).map(([destination, text2]) => ({
+      destination,
+      text: text2
+    })) : destinations.map((destination) => ({ destination, text }));
+    const thatSelections = flatten_default(
+      await runForEachEditor(
+        destinationsWithText,
+        ({ destination }) => destination.editor,
+        this.runForEditor
+      )
+    );
+    return { thatSelections };
   }
-  runForEditor(editor, destinationsWithText) {
-    return __async(this, null, function* () {
-      const edits = destinationsWithText.map(
-        ({ destination, text }) => destination.constructChangeEdit(text)
-      );
-      const { editSelections: updatedEditSelections } = yield performEditsAndUpdateSelections({
-        rangeUpdater: this.rangeUpdater,
-        editor: ide().getEditableTextEditor(editor),
-        edits,
-        selections: {
-          editSelections: {
-            selections: edits.map(({ range: range3 }) => range3),
-            behavior: 0 /* openOpen */
-          }
+  async runForEditor(editor, destinationsWithText) {
+    const edits = destinationsWithText.map(
+      ({ destination, text }) => destination.constructChangeEdit(text)
+    );
+    const { editSelections: updatedEditSelections } = await performEditsAndUpdateSelections({
+      rangeUpdater: this.rangeUpdater,
+      editor: ide().getEditableTextEditor(editor),
+      edits,
+      selections: {
+        editSelections: {
+          selections: edits.map(({ range: range3 }) => range3),
+          behavior: 0 /* openOpen */
         }
-      });
-      const thatTargetSelections = zipStrict(edits, updatedEditSelections).map(
-        ([edit, selection]) => edit.updateRange(selection).toSelection(selection.isReversed)
-      );
-      yield ide().flashRanges(
-        thatTargetSelections.map((selection) => ({
-          editor,
-          range: toCharacterRange(selection),
-          style: "justAdded" /* justAdded */
-        }))
-      );
-      return thatTargetSelections.map((selection) => ({
-        editor,
-        selection
-      }));
+      }
     });
+    const thatTargetSelections = zipStrict(edits, updatedEditSelections).map(
+      ([edit, selection]) => edit.updateRange(selection).toSelection(selection.isReversed)
+    );
+    await ide().flashRanges(
+      thatTargetSelections.map((selection) => ({
+        editor,
+        range: toCharacterRange(selection),
+        style: "justAdded" /* justAdded */
+      }))
+    );
+    return thatTargetSelections.map((selection) => ({
+      editor,
+      selection
+    }));
   }
 };
 
@@ -32329,43 +32189,39 @@ var Delete = class {
     this.run = this.run.bind(this);
     this.runForEditor = this.runForEditor.bind(this);
   }
-  run(_0) {
-    return __async(this, arguments, function* (targets, { showDecorations = true } = {}) {
-      targets = unifyRemovalTargets(targets);
-      if (showDecorations) {
-        yield flashTargets(
-          ide(),
-          targets,
-          "pendingDelete" /* pendingDelete */,
-          (target) => target.getRemovalHighlightRange()
-        );
-      }
-      const thatTargets = flatten_default(
-        yield runOnTargetsForEachEditor(targets, this.runForEditor)
+  async run(targets, { showDecorations = true } = {}) {
+    targets = unifyRemovalTargets(targets);
+    if (showDecorations) {
+      await flashTargets(
+        ide(),
+        targets,
+        "pendingDelete" /* pendingDelete */,
+        (target) => target.getRemovalHighlightRange()
       );
-      return { thatTargets };
-    });
+    }
+    const thatTargets = flatten_default(
+      await runOnTargetsForEachEditor(targets, this.runForEditor)
+    );
+    return { thatTargets };
   }
-  runForEditor(editor, targets) {
-    return __async(this, null, function* () {
-      const edits = targets.map((target) => target.constructRemovalEdit());
-      const editableEditor = ide().getEditableTextEditor(editor);
-      const { editRanges: updatedEditRanges } = yield performEditsAndUpdateSelections({
-        rangeUpdater: this.rangeUpdater,
-        editor: editableEditor,
-        edits,
-        selections: {
-          editRanges: edits.map(({ range: range3 }) => range3)
-        }
-      });
-      return zip_default(targets, updatedEditRanges).map(
-        ([target, range3]) => new RawSelectionTarget({
-          editor: target.editor,
-          isReversed: target.isReversed,
-          contentRange: range3
-        })
-      );
+  async runForEditor(editor, targets) {
+    const edits = targets.map((target) => target.constructRemovalEdit());
+    const editableEditor = ide().getEditableTextEditor(editor);
+    const { editRanges: updatedEditRanges } = await performEditsAndUpdateSelections({
+      rangeUpdater: this.rangeUpdater,
+      editor: editableEditor,
+      edits,
+      selections: {
+        editRanges: edits.map(({ range: range3 }) => range3)
+      }
     });
+    return zip_default(targets, updatedEditRanges).map(
+      ([target, range3]) => new RawSelectionTarget({
+        editor: target.editor,
+        isReversed: target.isReversed,
+        contentRange: range3
+      })
+    );
   }
 };
 
@@ -32388,62 +32244,60 @@ var Replace = class {
     }
     return numbers2;
   }
-  run(destinations, replaceWith) {
-    return __async(this, null, function* () {
-      yield flashTargets(
-        ide(),
-        destinations.map((d) => d.target),
-        "pendingModification0" /* pendingModification0 */
-      );
-      const texts = this.getTexts(destinations, replaceWith);
-      if (destinations.length !== texts.length) {
-        throw new Error("Targets and texts must have same length");
-      }
-      const edits = zip_default(destinations, texts).map(([destination, text]) => ({
-        editor: destination.editor,
-        target: destination.target,
-        edit: destination.constructChangeEdit(text)
-      }));
-      const sourceTargets = [];
-      const thatSelections = [];
-      yield runForEachEditor(
-        edits,
-        (edit) => edit.editor,
-        (editor, editWrappers) => __async(this, null, function* () {
-          const edits2 = editWrappers.map(({ edit }) => edit);
-          const {
-            contentSelections: updatedContentSelections,
-            editRanges: updatedEditRanges
-          } = yield performEditsAndUpdateSelections({
-            rangeUpdater: this.rangeUpdater,
-            editor: ide().getEditableTextEditor(editor),
-            edits: edits2,
-            selections: {
-              contentSelections: editWrappers.map(
-                ({ target }) => target.contentSelection
-              ),
-              editRanges: {
-                selections: edits2.map(({ range: range3 }) => range3),
-                behavior: 0 /* openOpen */
-              }
+  async run(destinations, replaceWith) {
+    await flashTargets(
+      ide(),
+      destinations.map((d) => d.target),
+      "pendingModification0" /* pendingModification0 */
+    );
+    const texts = this.getTexts(destinations, replaceWith);
+    if (destinations.length !== texts.length) {
+      throw new Error("Targets and texts must have same length");
+    }
+    const edits = zip_default(destinations, texts).map(([destination, text]) => ({
+      editor: destination.editor,
+      target: destination.target,
+      edit: destination.constructChangeEdit(text)
+    }));
+    const sourceTargets = [];
+    const thatSelections = [];
+    await runForEachEditor(
+      edits,
+      (edit) => edit.editor,
+      async (editor, editWrappers) => {
+        const edits2 = editWrappers.map(({ edit }) => edit);
+        const {
+          contentSelections: updatedContentSelections,
+          editRanges: updatedEditRanges
+        } = await performEditsAndUpdateSelections({
+          rangeUpdater: this.rangeUpdater,
+          editor: ide().getEditableTextEditor(editor),
+          edits: edits2,
+          selections: {
+            contentSelections: editWrappers.map(
+              ({ target }) => target.contentSelection
+            ),
+            editRanges: {
+              selections: edits2.map(({ range: range3 }) => range3),
+              behavior: 0 /* openOpen */
             }
+          }
+        });
+        for (const [wrapper, selection] of zip_default(
+          editWrappers,
+          updatedContentSelections
+        )) {
+          sourceTargets.push(wrapper.target.withContentRange(selection));
+        }
+        for (const [wrapper, range3] of zip_default(editWrappers, updatedEditRanges)) {
+          thatSelections.push({
+            editor,
+            selection: wrapper.edit.updateRange(range3).toSelection(false)
           });
-          for (const [wrapper, selection] of zip_default(
-            editWrappers,
-            updatedContentSelections
-          )) {
-            sourceTargets.push(wrapper.target.withContentRange(selection));
-          }
-          for (const [wrapper, range3] of zip_default(editWrappers, updatedEditRanges)) {
-            thatSelections.push({
-              editor,
-              selection: wrapper.edit.updateRange(range3).toSelection(false)
-            });
-          }
-        })
-      );
-      return { sourceTargets, thatSelections };
-    });
+        }
+      }
+    );
+    return { sourceTargets, thatSelections };
   }
 };
 
@@ -32457,49 +32311,47 @@ var Rewrap = class {
     ];
     this.run = this.run.bind(this);
   }
-  run(targets, left, right) {
-    return __async(this, null, function* () {
-      const boundaryTargets = targets.flatMap((target) => {
-        const boundary = target.getBoundary();
-        if (boundary.length !== 2) {
-          throw Error("Target must have an opening and closing delimiter");
-        }
-        return boundary;
-      });
-      yield flashTargets(ide(), boundaryTargets, "pendingModification0" /* pendingModification0 */);
-      const results = yield runOnTargetsForEachEditor(
-        boundaryTargets,
-        (editor, boundaryTargets2) => __async(this, null, function* () {
-          const edits = boundaryTargets2.map((target, i) => ({
-            editor,
-            range: target.contentRange,
-            text: i % 2 === 0 ? left : right
-          }));
-          const {
-            sourceRanges: updatedSourceRanges,
-            thatRanges: updatedThatRanges
-          } = yield performEditsAndUpdateSelections({
-            rangeUpdater: this.rangeUpdater,
-            editor: ide().getEditableTextEditor(editor),
-            edits,
-            selections: {
-              sourceRanges: targets.map(
-                (target) => target.thatTarget.contentRange
-              ),
-              thatRanges: targets.map((target) => target.contentRange)
-            }
-          });
-          return {
-            sourceMark: createThatMark(targets, updatedSourceRanges),
-            thatMark: createThatMark(targets, updatedThatRanges)
-          };
-        })
-      );
-      return {
-        sourceSelections: results.flatMap(({ sourceMark }) => sourceMark),
-        thatSelections: results.flatMap(({ thatMark }) => thatMark)
-      };
+  async run(targets, left, right) {
+    const boundaryTargets = targets.flatMap((target) => {
+      const boundary = target.getBoundary();
+      if (boundary.length !== 2) {
+        throw Error("Target must have an opening and closing delimiter");
+      }
+      return boundary;
     });
+    await flashTargets(ide(), boundaryTargets, "pendingModification0" /* pendingModification0 */);
+    const results = await runOnTargetsForEachEditor(
+      boundaryTargets,
+      async (editor, boundaryTargets2) => {
+        const edits = boundaryTargets2.map((target, i) => ({
+          editor,
+          range: target.contentRange,
+          text: i % 2 === 0 ? left : right
+        }));
+        const {
+          sourceRanges: updatedSourceRanges,
+          thatRanges: updatedThatRanges
+        } = await performEditsAndUpdateSelections({
+          rangeUpdater: this.rangeUpdater,
+          editor: ide().getEditableTextEditor(editor),
+          edits,
+          selections: {
+            sourceRanges: targets.map(
+              (target) => target.thatTarget.contentRange
+            ),
+            thatRanges: targets.map((target) => target.contentRange)
+          }
+        });
+        return {
+          sourceMark: createThatMark(targets, updatedSourceRanges),
+          thatMark: createThatMark(targets, updatedThatRanges)
+        };
+      }
+    );
+    return {
+      sourceSelections: results.flatMap(({ sourceMark }) => sourceMark),
+      thatSelections: results.flatMap(({ thatMark }) => thatMark)
+    };
   }
 };
 
@@ -32509,36 +32361,34 @@ var Scroll = class {
     this.at = at;
     this.run = this.run.bind(this);
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      const selectionGroups = groupBy2(targets, (t) => t.editor);
-      const lines = Array.from(selectionGroups, ([editor, targets2]) => {
-        return { lineNumber: getLineNumber(targets2, this.at), editor };
-      });
-      const originalEditor = ide().activeEditableTextEditor;
-      for (const lineWithEditor of lines) {
-        yield ide().getEditableTextEditor(lineWithEditor.editor).revealLine(lineWithEditor.lineNumber, this.at);
-      }
-      if (originalEditor != null && !originalEditor.isActive) {
-        yield originalEditor.focus();
-      }
-      const decorationTargets = targets.filter((target) => {
-        const visibleRanges = target.editor.visibleRanges;
-        const startLine = visibleRanges[0].start.line;
-        const endLine = visibleRanges[visibleRanges.length - 1].end.line;
-        return target.contentRange.start.line > startLine || target.contentRange.end.line < endLine || target.contentRange.start.line === startLine && target.contentRange.end.line === endLine;
-      });
-      yield ide().flashRanges(
-        decorationTargets.map((target) => ({
-          editor: target.editor,
-          range: toLineRange(target.contentRange),
-          style: "referenced" /* referenced */
-        }))
-      );
-      return {
-        thatTargets: targets
-      };
+  async run(targets) {
+    const selectionGroups = groupBy2(targets, (t) => t.editor);
+    const lines = Array.from(selectionGroups, ([editor, targets2]) => {
+      return { lineNumber: getLineNumber(targets2, this.at), editor };
     });
+    const originalEditor = ide().activeEditableTextEditor;
+    for (const lineWithEditor of lines) {
+      await ide().getEditableTextEditor(lineWithEditor.editor).revealLine(lineWithEditor.lineNumber, this.at);
+    }
+    if (originalEditor != null && !originalEditor.isActive) {
+      await originalEditor.focus();
+    }
+    const decorationTargets = targets.filter((target) => {
+      const visibleRanges = target.editor.visibleRanges;
+      const startLine = visibleRanges[0].start.line;
+      const endLine = visibleRanges[visibleRanges.length - 1].end.line;
+      return target.contentRange.start.line > startLine || target.contentRange.end.line < endLine || target.contentRange.start.line === startLine && target.contentRange.end.line === endLine;
+    });
+    await ide().flashRanges(
+      decorationTargets.map((target) => ({
+        editor: target.editor,
+        range: toLineRange(target.contentRange),
+        style: "referenced" /* referenced */
+      }))
+    );
+    return {
+      thatTargets: targets
+    };
   }
 };
 var ScrollToTop = class extends Scroll {
@@ -32580,15 +32430,13 @@ var SetSelection = class {
   getSelection(target) {
     return target.contentSelection;
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      const editor = ensureSingleEditor2(targets);
-      const selections = targets.map(this.getSelection);
-      yield ide().getEditableTextEditor(editor).setSelections(selections, { focusEditor: true });
-      return {
-        thatTargets: targets
-      };
-    });
+  async run(targets) {
+    const editor = ensureSingleEditor2(targets);
+    const selections = targets.map(this.getSelection);
+    await ide().getEditableTextEditor(editor).setSelections(selections, { focusEditor: true });
+    return {
+      thatTargets: targets
+    };
   }
 };
 var SetSelectionBefore = class extends SetSelection {
@@ -32609,13 +32457,11 @@ var SetSpecialTarget = class {
     this.noAutomaticTokenExpansion = true;
     this.run = this.run.bind(this);
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      return {
-        thatTargets: targets,
-        [`${this.key}Targets`]: targets
-      };
-    });
+  async run(targets) {
+    return {
+      thatTargets: targets,
+      [`${this.key}Targets`]: targets
+    };
   }
 };
 
@@ -32625,21 +32471,19 @@ var ShowParseTree = class {
     this.treeSitter = treeSitter;
     this.run = this.run.bind(this);
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      yield flashTargets(ide(), targets, "referenced" /* referenced */);
-      const results = ["# Cursorless parse tree"];
-      for (const target of targets) {
-        const { editor, contentRange } = target;
-        const tree = this.treeSitter.getTree(editor.document);
-        results.push(parseTree(editor.document, tree, contentRange));
-      }
-      void ide().openUntitledTextDocument({
-        language: "markdown",
-        content: results.join("\n\n")
-      });
-      return { thatTargets: targets };
+  async run(targets) {
+    await flashTargets(ide(), targets, "referenced" /* referenced */);
+    const results = ["# Cursorless parse tree"];
+    for (const target of targets) {
+      const { editor, contentRange } = target;
+      const tree = this.treeSitter.getTree(editor.document);
+      results.push(parseTree(editor.document, tree, contentRange));
+    }
+    void ide().openUntitledTextDocument({
+      language: "markdown",
+      content: results.join("\n\n")
     });
+    return { thatTargets: targets };
   }
 };
 function parseTree(document, tree, contentRange) {
@@ -32715,17 +32559,15 @@ var IndentLineBase = class {
     this.run = this.run.bind(this);
     this.runForEditor = this.runForEditor.bind(this);
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      if (this.hasCapability()) {
-        return this.runSimpleCommandAction(targets);
-      }
-      yield flashTargets(ide(), targets, "pendingModification0" /* pendingModification0 */);
-      const thatTargets = flatten_default(
-        yield runOnTargetsForEachEditor(targets, this.runForEditor)
-      );
-      return { thatTargets };
-    });
+  async run(targets) {
+    if (this.hasCapability()) {
+      return this.runSimpleCommandAction(targets);
+    }
+    await flashTargets(ide(), targets, "pendingModification0" /* pendingModification0 */);
+    const thatTargets = flatten_default(
+      await runOnTargetsForEachEditor(targets, this.runForEditor)
+    );
+    return { thatTargets };
   }
   hasCapability() {
     return this.isIndent ? ide().capabilities.commands.indentLine != null : ide().capabilities.commands.outdentLine != null;
@@ -32734,26 +32576,24 @@ var IndentLineBase = class {
     const action = this.isIndent ? new IndentLineSimpleAction(this.rangeUpdater) : new OutdentLineSimpleAction(this.rangeUpdater);
     return action.run(targets);
   }
-  runForEditor(editor, targets) {
-    return __async(this, null, function* () {
-      const edits = this.isIndent ? getIndentEdits(editor, targets) : getOutdentEdits(editor, targets);
-      const { targetSelections: updatedTargetSelections } = yield performEditsAndUpdateSelections({
-        rangeUpdater: this.rangeUpdater,
-        editor: ide().getEditableTextEditor(editor),
-        edits,
-        selections: {
-          targetSelections: targets.map(
-            ({ contentSelection }) => contentSelection
-          )
-        }
-      });
-      return zip_default(targets, updatedTargetSelections).map(
-        ([target, range3]) => selectionToStoredTarget({
-          editor,
-          selection: range3.toSelection(target.isReversed)
-        })
-      );
+  async runForEditor(editor, targets) {
+    const edits = this.isIndent ? getIndentEdits(editor, targets) : getOutdentEdits(editor, targets);
+    const { targetSelections: updatedTargetSelections } = await performEditsAndUpdateSelections({
+      rangeUpdater: this.rangeUpdater,
+      editor: ide().getEditableTextEditor(editor),
+      edits,
+      selections: {
+        targetSelections: targets.map(
+          ({ contentSelection }) => contentSelection
+        )
+      }
     });
+    return zip_default(targets, updatedTargetSelections).map(
+      ([target, range3]) => selectionToStoredTarget({
+        editor,
+        selection: range3.toSelection(target.isReversed)
+      })
+    );
   }
 };
 var IndentLine = class extends IndentLineBase {
@@ -32786,7 +32626,7 @@ function getOutdentEdits(editor, targets) {
     const line = document.lineAt(lineNumber);
     const match = line.text.match(regex);
     const { start } = line.range;
-    const end = start.translate(void 0, match == null ? void 0 : match[0].length);
+    const end = start.translate(void 0, match?.[0].length);
     return {
       range: new Range(start, end),
       text: ""
@@ -32827,29 +32667,27 @@ var SortBase = class {
     this.actions = actions;
     this.run = this.run.bind(this);
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      if (targets.length < 2) {
-        void showWarning(
-          ide().messages,
-          "tooFewTargets",
-          'This action works on multiple targets, e.g. "sort every line block" instead of "sort block".'
-        );
+  async run(targets) {
+    if (targets.length < 2) {
+      void showWarning(
+        ide().messages,
+        "tooFewTargets",
+        'This action works on multiple targets, e.g. "sort every line block" instead of "sort block".'
+      );
+    }
+    const sortedTargets = targets.slice().sort((a, b) => a.contentRange.start.compareTo(b.contentRange.start));
+    const { returnValue: unsortedTexts } = await this.actions.getText.run(
+      sortedTargets,
+      {
+        showDecorations: false
       }
-      const sortedTargets = targets.slice().sort((a, b) => a.contentRange.start.compareTo(b.contentRange.start));
-      const { returnValue: unsortedTexts } = yield this.actions.getText.run(
-        sortedTargets,
-        {
-          showDecorations: false
-        }
-      );
-      const sortedTexts = this.sortTexts(unsortedTexts);
-      const { thatSelections } = yield this.actions.replace.run(
-        sortedTargets.map((target) => target.toDestination("to")),
-        sortedTexts
-      );
-      return { thatSelections };
-    });
+    );
+    const sortedTexts = this.sortTexts(unsortedTexts);
+    const { thatSelections } = await this.actions.replace.run(
+      sortedTargets.map((target) => target.toDestination("to")),
+      sortedTexts
+    );
+    return { thatSelections };
   }
 };
 var Sort = class extends SortBase {
@@ -32882,30 +32720,28 @@ var ToggleBreakpoint = class {
     ];
     this.run = this.run.bind(this);
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      const thatTargets = targets.map(({ thatTarget }) => thatTarget);
-      yield flashTargets(ide(), thatTargets, "referenced" /* referenced */);
-      yield runOnTargetsForEachEditor(targets, (editor, targets2) => __async(this, null, function* () {
-        const breakpointDescriptors = targets2.map(
-          (target) => {
-            const range3 = target.contentRange;
-            return target.isLine ? {
-              type: "line",
-              startLine: range3.start.line,
-              endLine: range3.end.line
-            } : {
-              type: "inline",
-              range: range3
-            };
-          }
-        );
-        yield ide().getEditableTextEditor(editor).toggleBreakpoint(breakpointDescriptors);
-      }));
-      return {
-        thatTargets: targets
-      };
+  async run(targets) {
+    const thatTargets = targets.map(({ thatTarget }) => thatTarget);
+    await flashTargets(ide(), thatTargets, "referenced" /* referenced */);
+    await runOnTargetsForEachEditor(targets, async (editor, targets2) => {
+      const breakpointDescriptors = targets2.map(
+        (target) => {
+          const range3 = target.contentRange;
+          return target.isLine ? {
+            type: "line",
+            startLine: range3.start.line,
+            endLine: range3.end.line
+          } : {
+            type: "inline",
+            range: range3
+          };
+        }
+      );
+      await ide().getEditableTextEditor(editor).toggleBreakpoint(breakpointDescriptors);
     });
+    return {
+      thatTargets: targets
+    };
   }
 };
 
@@ -32915,88 +32751,86 @@ var Wrap = class {
     this.rangeUpdater = rangeUpdater;
     this.run = this.run.bind(this);
   }
-  run(targets, left, right) {
-    return __async(this, null, function* () {
-      const results = yield runOnTargetsForEachEditor(
-        targets,
-        (editor, targets2) => __async(this, null, function* () {
-          const boundaries = targets2.map((target) => ({
-            start: new Selection(
-              target.contentRange.start,
-              target.contentRange.start
-            ),
-            end: new Selection(target.contentRange.end, target.contentRange.end)
-          }));
-          const edits = boundaries.flatMap(({ start, end }) => [
-            {
-              text: left,
-              range: start
+  async run(targets, left, right) {
+    const results = await runOnTargetsForEachEditor(
+      targets,
+      async (editor, targets2) => {
+        const boundaries = targets2.map((target) => ({
+          start: new Selection(
+            target.contentRange.start,
+            target.contentRange.start
+          ),
+          end: new Selection(target.contentRange.end, target.contentRange.end)
+        }));
+        const edits = boundaries.flatMap(({ start, end }) => [
+          {
+            text: left,
+            range: start
+          },
+          {
+            text: right,
+            range: end,
+            isReplace: true
+          }
+        ]);
+        const contentSelections = targets2.map(
+          (target) => target.contentSelection
+        );
+        const {
+          boundariesStartSelections: delimiterStartSelections,
+          boundariesEndSelections: delimiterEndSelections,
+          sourceSelections: sourceMarkSelections,
+          thatSelections: thatMarkSelections
+        } = await performEditsAndUpdateSelections({
+          rangeUpdater: this.rangeUpdater,
+          editor: ide().getEditableTextEditor(editor),
+          edits,
+          selections: {
+            boundariesStartSelections: {
+              selections: boundaries.map(({ start }) => start),
+              behavior: 2 /* openClosed */
             },
-            {
-              text: right,
-              range: end,
-              isReplace: true
+            boundariesEndSelections: {
+              selections: boundaries.map(({ end }) => end),
+              behavior: 3 /* closedOpen */
+            },
+            sourceSelections: {
+              selections: contentSelections,
+              behavior: 1 /* closedClosed */
+            },
+            thatSelections: {
+              selections: contentSelections,
+              behavior: 0 /* openOpen */
             }
-          ]);
-          const contentSelections = targets2.map(
-            (target) => target.contentSelection
-          );
-          const {
-            boundariesStartSelections: delimiterStartSelections,
-            boundariesEndSelections: delimiterEndSelections,
-            sourceSelections: sourceMarkSelections,
-            thatSelections: thatMarkSelections
-          } = yield performEditsAndUpdateSelections({
-            rangeUpdater: this.rangeUpdater,
-            editor: ide().getEditableTextEditor(editor),
-            edits,
-            selections: {
-              boundariesStartSelections: {
-                selections: boundaries.map(({ start }) => start),
-                behavior: 2 /* openClosed */
-              },
-              boundariesEndSelections: {
-                selections: boundaries.map(({ end }) => end),
-                behavior: 3 /* closedOpen */
-              },
-              sourceSelections: {
-                selections: contentSelections,
-                behavior: 1 /* closedClosed */
-              },
-              thatSelections: {
-                selections: contentSelections,
-                behavior: 0 /* openOpen */
-              }
-            }
-          });
-          const delimiterSelections = [
-            ...delimiterStartSelections,
-            ...delimiterEndSelections
-          ];
-          yield ide().flashRanges(
-            delimiterSelections.map((selection) => ({
-              editor,
-              range: toCharacterRange(selection),
-              style: "justAdded" /* justAdded */
-            }))
-          );
-          return {
-            sourceMark: sourceMarkSelections.map((selection) => ({
-              editor,
-              selection
-            })),
-            thatMark: thatMarkSelections.map((selection) => ({
-              editor,
-              selection
-            }))
-          };
-        })
-      );
-      return {
-        sourceSelections: results.flatMap(({ sourceMark }) => sourceMark),
-        thatSelections: results.flatMap(({ thatMark }) => thatMark)
-      };
-    });
+          }
+        });
+        const delimiterSelections = [
+          ...delimiterStartSelections,
+          ...delimiterEndSelections
+        ];
+        await ide().flashRanges(
+          delimiterSelections.map((selection) => ({
+            editor,
+            range: toCharacterRange(selection),
+            style: "justAdded" /* justAdded */
+          }))
+        );
+        return {
+          sourceMark: sourceMarkSelections.map((selection) => ({
+            editor,
+            selection
+          })),
+          thatMark: thatMarkSelections.map((selection) => ({
+            editor,
+            selection
+          }))
+        };
+      }
+    );
+    return {
+      sourceSelections: results.flatMap(({ sourceMark }) => sourceMark),
+      thatSelections: results.flatMap(({ thatMark }) => thatMark)
+    };
   }
 };
 
@@ -33025,12 +32859,11 @@ var WrapWithSnippet = class {
     ];
   }
   getScopeType(snippetDescription) {
-    var _a, _b;
     if (snippetDescription.type === "named") {
       const { name, variableName } = snippetDescription;
       const snippet2 = this.snippets.getSnippetStrict(name);
-      const variables = (_a = snippet2.variables) != null ? _a : {};
-      const scopeTypeType = (_b = variables[variableName]) == null ? void 0 : _b.wrapperScopeType;
+      const variables = snippet2.variables ?? {};
+      const scopeTypeType = variables[variableName]?.wrapperScopeType;
       return scopeTypeType == null ? void 0 : {
         type: scopeTypeType
       };
@@ -33052,32 +32885,30 @@ var WrapWithSnippet = class {
       return snippetDescription.body;
     }
   }
-  run(targets, snippetDescription) {
-    return __async(this, null, function* () {
-      const editor = ide().getEditableTextEditor(ensureSingleEditor2(targets));
-      const body = this.getBody(snippetDescription, targets);
-      const parsedSnippet = this.snippetParser.parse(body);
-      transformSnippetVariables(parsedSnippet, snippetDescription.variableName);
-      const snippetString = parsedSnippet.toTextmateString();
-      yield flashTargets(ide(), targets, "pendingModification0" /* pendingModification0 */);
-      const targetSelections = targets.map((target) => target.contentSelection);
-      const callback2 = () => editor.insertSnippet(snippetString, targetSelections);
-      const { targetSelections: updatedTargetSelections } = yield performEditsAndUpdateSelections({
-        rangeUpdater: this.rangeUpdater,
-        editor,
-        callback: callback2,
-        preserveCursorSelections: true,
-        selections: {
-          targetSelections
-        }
-      });
-      return {
-        thatSelections: updatedTargetSelections.map((selection) => ({
-          editor,
-          selection
-        }))
-      };
+  async run(targets, snippetDescription) {
+    const editor = ide().getEditableTextEditor(ensureSingleEditor2(targets));
+    const body = this.getBody(snippetDescription, targets);
+    const parsedSnippet = this.snippetParser.parse(body);
+    transformSnippetVariables(parsedSnippet, snippetDescription.variableName);
+    const snippetString = parsedSnippet.toTextmateString();
+    await flashTargets(ide(), targets, "pendingModification0" /* pendingModification0 */);
+    const targetSelections = targets.map((target) => target.contentSelection);
+    const callback2 = () => editor.insertSnippet(snippetString, targetSelections);
+    const { targetSelections: updatedTargetSelections } = await performEditsAndUpdateSelections({
+      rangeUpdater: this.rangeUpdater,
+      editor,
+      callback: callback2,
+      preserveCursorSelections: true,
+      selections: {
+        targetSelections
+      }
     });
+    return {
+      thatSelections: updatedTargetSelections.map((selection) => ({
+        editor,
+        selection
+      }))
+    };
   }
 };
 
@@ -33089,40 +32920,36 @@ var IncrementDecrement = class {
     this.isIncrement = isIncrement;
     this.run = this.run.bind(this);
   }
-  run(targets) {
-    return __async(this, null, function* () {
-      const thatSelections = [];
-      yield runForEachEditor(
-        targets,
-        (target) => target.editor,
-        (editor, targets2) => __async(this, null, function* () {
-          const selections = yield this.runOnEditor(editor, targets2);
-          thatSelections.push(...selections);
-        })
-      );
-      return { thatSelections };
-    });
-  }
-  runOnEditor(editor, targets) {
-    return __async(this, null, function* () {
-      const { document } = editor;
-      const destinations = [];
-      const replaceWith = [];
-      for (const target of targets) {
-        const offset = document.offsetAt(target.contentRange.start);
-        const text = target.contentText;
-        const matches = matchText(text, REGEX);
-        for (const match of matches) {
-          destinations.push(createDestination(editor, offset, match));
-          replaceWith.push(updateNumber(this.isIncrement, match.text));
-        }
+  async run(targets) {
+    const thatSelections = [];
+    await runForEachEditor(
+      targets,
+      (target) => target.editor,
+      async (editor, targets2) => {
+        const selections = await this.runOnEditor(editor, targets2);
+        thatSelections.push(...selections);
       }
-      const { thatSelections } = yield this.actions.replace.run(
-        destinations,
-        replaceWith
-      );
-      return thatSelections;
-    });
+    );
+    return { thatSelections };
+  }
+  async runOnEditor(editor, targets) {
+    const { document } = editor;
+    const destinations = [];
+    const replaceWith = [];
+    for (const target of targets) {
+      const offset = document.offsetAt(target.contentRange.start);
+      const text = target.contentText;
+      const matches = matchText(text, REGEX);
+      for (const match of matches) {
+        destinations.push(createDestination(editor, offset, match));
+        replaceWith.push(updateNumber(this.isIncrement, match.text));
+      }
+    }
+    const { thatSelections } = await this.actions.replace.run(
+      destinations,
+      replaceWith
+    );
+    return thatSelections;
   }
 };
 var Increment = class extends IncrementDecrement {
@@ -33270,76 +33097,74 @@ var Actions = class {
 };
 
 // ../cursorless-engine/src/core/getCommandFallback.ts
-function getCommandFallback(commandServerApi, runAction, command) {
-  return __async(this, null, function* () {
-    const focusedElementType = yield commandServerApi.getFocusedElementType();
-    if (focusedElementType == null || focusedElementType === "textEditor") {
-      return null;
-    }
-    const action = command.action;
-    switch (action.name) {
-      case "replace":
-        return destinationIsSelection(action.destination) && Array.isArray(action.replaceWith) ? {
+async function getCommandFallback(commandServerApi, runAction, command) {
+  const focusedElementType = await commandServerApi.getFocusedElementType();
+  if (focusedElementType == null || focusedElementType === "textEditor") {
+    return null;
+  }
+  const action = command.action;
+  switch (action.name) {
+    case "replace":
+      return destinationIsSelection(action.destination) && Array.isArray(action.replaceWith) ? {
+        action: "insert",
+        modifiers: getModifiersFromDestination(action.destination),
+        text: action.replaceWith.join("\n")
+      } : null;
+    case "replaceWithTarget":
+      if (destinationIsSelection(action.destination)) {
+        return {
           action: "insert",
           modifiers: getModifiersFromDestination(action.destination),
-          text: action.replaceWith.join("\n")
-        } : null;
-      case "replaceWithTarget":
-        if (destinationIsSelection(action.destination)) {
-          return {
-            action: "insert",
-            modifiers: getModifiersFromDestination(action.destination),
-            text: yield getText(runAction, action.source)
-          };
-        }
-        return null;
-      case "moveToTarget":
-        if (destinationIsSelection(action.destination)) {
-          const text = yield getText(runAction, action.source);
-          yield remove(runAction, action.source);
-          return {
-            action: "insert",
-            modifiers: getModifiersFromDestination(action.destination),
-            text
-          };
-        }
-        return null;
-      case "callAsFunction":
-        if (targetIsSelection(action.argument)) {
-          return {
-            action: action.name,
-            modifiers: getModifiersFromTarget(action.argument),
-            callee: yield getText(runAction, action.callee)
-          };
-        }
-        return null;
-      case "wrapWithPairedDelimiter":
-      case "rewrapWithPairedDelimiter":
-        return targetIsSelection(action.target) ? {
+          text: await getText(runAction, action.source)
+        };
+      }
+      return null;
+    case "moveToTarget":
+      if (destinationIsSelection(action.destination)) {
+        const text = await getText(runAction, action.source);
+        await remove(runAction, action.source);
+        return {
+          action: "insert",
+          modifiers: getModifiersFromDestination(action.destination),
+          text
+        };
+      }
+      return null;
+    case "callAsFunction":
+      if (targetIsSelection(action.argument)) {
+        return {
           action: action.name,
-          modifiers: getModifiersFromTarget(action.target),
-          left: action.left,
-          right: action.right
-        } : null;
-      case "pasteFromClipboard":
-        return destinationIsSelection(action.destination) ? {
-          action: action.name,
-          modifiers: getModifiersFromDestination(action.destination)
-        } : null;
-      case "swapTargets":
-      case "editNew":
-      case "insertSnippet":
-      case "generateSnippet":
-      case "wrapWithSnippet":
-      case "parsed":
-        return null;
-      default:
-        return targetIsSelection(action.target) ? {
-          action: action.name,
-          modifiers: getModifiersFromTarget(action.target)
-        } : null;
-    }
-  });
+          modifiers: getModifiersFromTarget(action.argument),
+          callee: await getText(runAction, action.callee)
+        };
+      }
+      return null;
+    case "wrapWithPairedDelimiter":
+    case "rewrapWithPairedDelimiter":
+      return targetIsSelection(action.target) ? {
+        action: action.name,
+        modifiers: getModifiersFromTarget(action.target),
+        left: action.left,
+        right: action.right
+      } : null;
+    case "pasteFromClipboard":
+      return destinationIsSelection(action.destination) ? {
+        action: action.name,
+        modifiers: getModifiersFromDestination(action.destination)
+      } : null;
+    case "swapTargets":
+    case "editNew":
+    case "insertSnippet":
+    case "generateSnippet":
+    case "wrapWithSnippet":
+    case "parsed":
+      return null;
+    default:
+      return targetIsSelection(action.target) ? {
+        action: action.name,
+        modifiers: getModifiersFromTarget(action.target)
+      } : null;
+  }
 }
 function destinationIsSelection(destination) {
   if (destination.type === "implicit") {
@@ -33366,33 +33191,27 @@ function getModifiersFromDestination(destination) {
   return [];
 }
 function getModifiersFromTarget(target) {
-  var _a;
   if (target.type === "primitive") {
     if (target.modifiers != null && target.modifiers.length > 0) {
       return target.modifiers;
     }
-    if (((_a = target.mark) == null ? void 0 : _a.type) === "cursor") {
+    if (target.mark?.type === "cursor") {
       return [{ type: "containingTokenIfEmpty" }];
     }
   }
   return [];
 }
-function getText(runAction, target) {
-  return __async(this, null, function* () {
-    const response = yield runAction({ name: "getText", target });
-    const texts = response.returnValue;
-    return texts.join("\n");
-  });
+async function getText(runAction, target) {
+  const response = await runAction({ name: "getText", target });
+  const texts = response.returnValue;
+  return texts.join("\n");
 }
-function remove(runAction, target) {
-  return __async(this, null, function* () {
-    yield runAction({ name: "remove", target });
-  });
+async function remove(runAction, target) {
+  await runAction({ name: "remove", target });
 }
 
 // ../cursorless-engine/src/core/handleHoistedModifiers.ts
 function handleHoistedModifiers(targetDescriptor, isAnchorMarkImplicit) {
-  var _a, _b;
   const { anchor, rangeType, active } = targetDescriptor;
   if (anchor.type !== "primitive" || rangeType !== "continuous") {
     return targetDescriptor;
@@ -33406,7 +33225,8 @@ function handleHoistedModifiers(targetDescriptor, isAnchorMarkImplicit) {
           anchor.modifiers.slice(0, idx + 1),
           anchor.modifiers.slice(idx + 1)
         ];
-        let pipelineInputDescriptor = __spreadProps(__spreadValues({}, targetDescriptor), {
+        let pipelineInputDescriptor = {
+          ...targetDescriptor,
           anchor: (
             // If they say "every line past bat", the anchor is implicit, even though
             // it comes across the wire as a primitive target due to the "every line",
@@ -33427,8 +33247,8 @@ function handleHoistedModifiers(targetDescriptor, isAnchorMarkImplicit) {
               ) + 1
             );
           })
-        });
-        pipelineInputDescriptor = (_b = (_a = acceptanceInfo.transformTarget) == null ? void 0 : _a.call(acceptanceInfo, pipelineInputDescriptor)) != null ? _b : pipelineInputDescriptor;
+        };
+        pipelineInputDescriptor = acceptanceInfo.transformTarget?.(pipelineInputDescriptor) ?? pipelineInputDescriptor;
         return {
           type: "primitive",
           mark: {
@@ -33449,9 +33269,10 @@ var hoistedModifierTypes = [
       return modifier.type === "everyScope" && modifier.scopeType.type !== "instance" ? {
         accepted: true,
         transformTarget(target) {
-          return __spreadProps(__spreadValues({}, target), {
+          return {
+            ...target,
             exclusionScopeType: modifier.scopeType
-          });
+          };
         }
       } : { accepted: false };
     }
@@ -33482,7 +33303,8 @@ function inferFullTargetDescriptor(target, previousTargets) {
   }
 }
 function inferListTarget(target, previousTargets) {
-  return __spreadProps(__spreadValues({}, target), {
+  return {
+    ...target,
     elements: target.elements.map((element, index) => {
       const elementPreviousTargets = previousTargets.concat(
         target.elements.slice(0, index)
@@ -33494,7 +33316,7 @@ function inferListTarget(target, previousTargets) {
           return inferPrimitiveTarget(element, elementPreviousTargets);
       }
     })
-  });
+  };
 }
 function inferRangeTargetWithHoist(target, previousTargets) {
   const fullTarget = inferRangeTarget(target, previousTargets);
@@ -33502,12 +33324,11 @@ function inferRangeTargetWithHoist(target, previousTargets) {
   return handleHoistedModifiers(fullTarget, isAnchorMarkImplicit);
 }
 function inferRangeTarget(target, previousTargets) {
-  var _a, _b, _c;
   return {
     type: "range",
-    rangeType: (_a = target.rangeType) != null ? _a : "continuous",
-    excludeAnchor: (_b = target.excludeAnchor) != null ? _b : false,
-    excludeActive: (_c = target.excludeActive) != null ? _c : false,
+    rangeType: target.rangeType ?? "continuous",
+    excludeAnchor: target.excludeAnchor ?? false,
+    excludeActive: target.excludeActive ?? false,
     anchor: target.anchor.type === "implicit" ? target.anchor : inferPrimitiveTarget(target.anchor, previousTargets),
     active: inferPrimitiveTarget(
       target.active,
@@ -33516,13 +33337,12 @@ function inferRangeTarget(target, previousTargets) {
   };
 }
 function inferPrimitiveTarget(target, previousTargets) {
-  var _a, _b, _c, _d, _e;
   const mark = handleTargetMark(
-    (_b = (_a = target.mark) != null ? _a : shouldInferPreviousMark(target) ? getPreviousMark(previousTargets) : null) != null ? _b : {
+    target.mark ?? (shouldInferPreviousMark(target) ? getPreviousMark(previousTargets) : null) ?? {
       type: "cursor"
     }
   );
-  const modifiers = (_e = (_d = (_c = getPreservedModifiers(target)) != null ? _c : getPreviousPreservedModifiers(previousTargets)) != null ? _d : getPreviousLineNumberMarkModifiers(previousTargets)) != null ? _e : [];
+  const modifiers = getPreservedModifiers(target) ?? getPreviousPreservedModifiers(previousTargets) ?? getPreviousLineNumberMarkModifiers(previousTargets) ?? [];
   return {
     type: target.type,
     mark,
@@ -33530,14 +33350,12 @@ function inferPrimitiveTarget(target, previousTargets) {
   };
 }
 function shouldInferPreviousMark(target) {
-  var _a, _b;
-  return (_b = (_a = target.modifiers) == null ? void 0 : _a.some((m) => m.type === "inferPreviousMark")) != null ? _b : false;
+  return target.modifiers?.some((m) => m.type === "inferPreviousMark") ?? false;
 }
 function getPreservedModifiers(target) {
-  var _a, _b;
-  const preservedModifiers = (_b = (_a = target.modifiers) == null ? void 0 : _a.filter(
+  const preservedModifiers = target.modifiers?.filter(
     (modifier) => modifier.type !== "inferPreviousMark"
-  )) != null ? _b : [];
+  ) ?? [];
   return preservedModifiers.length !== 0 ? preservedModifiers : void 0;
 }
 function getLineNumberMarkModifiers(target) {
@@ -33554,12 +33372,11 @@ function getLineNumberMarkModifiers(target) {
   return void 0;
 }
 function isLineNumberMark(target) {
-  var _a;
-  const isLineNumber = (mark) => (mark == null ? void 0 : mark.type) === "lineNumber";
+  const isLineNumber = (mark) => mark?.type === "lineNumber";
   if (isLineNumber(target.mark)) {
     return true;
   }
-  if (((_a = target.mark) == null ? void 0 : _a.type) === "range") {
+  if (target.mark?.type === "range") {
     return isLineNumber(target.mark.anchor) && isLineNumber(target.mark.active);
   }
   return false;
@@ -33617,10 +33434,11 @@ function getPreviousTargetAttribute(previousTargets, getAttribute) {
 function handleTargetMark(mark) {
   switch (mark.type) {
     case "range":
-      return __spreadProps(__spreadValues({}, mark), {
+      return {
+        ...mark,
         anchor: handleTargetMark(mark.anchor),
         active: handleTargetMark(mark.active)
-      });
+      };
     case "target":
       return {
         type: "target",
@@ -33660,42 +33478,39 @@ var CommandRunnerImpl = class {
    *    action, and returns the desired return value indicated by the action, if
    *    it has one.
    */
-  run(command) {
-    return __async(this, null, function* () {
-      if (clientSupportsFallback(command)) {
-        const fallback = yield getCommandFallback(
-          this.commandServerApi,
-          this.runAction,
-          command
-        );
-        if (fallback != null) {
-          return { fallback };
-        }
+  async run(command) {
+    if (clientSupportsFallback(command)) {
+      const fallback = await getCommandFallback(
+        this.commandServerApi,
+        this.runAction,
+        command
+      );
+      if (fallback != null) {
+        return { fallback };
       }
-      const {
-        returnValue,
-        thatSelections: newThatSelections,
-        thatTargets: newThatTargets,
-        sourceSelections: newSourceSelections,
-        sourceTargets: newSourceTargets,
-        instanceReferenceTargets: newInstanceReferenceTargets,
-        keyboardTargets: newKeyboardTargets
-      } = yield this.runAction(command.action);
-      this.storedTargets.set(
-        "that",
-        constructStoredTarget(newThatTargets, newThatSelections)
-      );
-      this.storedTargets.set(
-        "source",
-        constructStoredTarget(newSourceTargets, newSourceSelections)
-      );
-      this.storedTargets.set("instanceReference", newInstanceReferenceTargets);
-      this.storedTargets.set("keyboard", newKeyboardTargets, { history: true });
-      return { returnValue };
-    });
+    }
+    const {
+      returnValue,
+      thatSelections: newThatSelections,
+      thatTargets: newThatTargets,
+      sourceSelections: newSourceSelections,
+      sourceTargets: newSourceTargets,
+      instanceReferenceTargets: newInstanceReferenceTargets,
+      keyboardTargets: newKeyboardTargets
+    } = await this.runAction(command.action);
+    this.storedTargets.set(
+      "that",
+      constructStoredTarget(newThatTargets, newThatSelections)
+    );
+    this.storedTargets.set(
+      "source",
+      constructStoredTarget(newSourceTargets, newSourceSelections)
+    );
+    this.storedTargets.set("instanceReference", newInstanceReferenceTargets);
+    this.storedTargets.set("keyboard", newKeyboardTargets, { history: true });
+    return { returnValue };
   }
   runAction(actionDescriptor) {
-    var _a, _b, _c;
     this.inferenceContext.reset();
     this.finalStages = [];
     switch (actionDescriptor.name) {
@@ -33791,8 +33606,8 @@ var CommandRunnerImpl = class {
         );
       default: {
         const action = this.actions[actionDescriptor.name];
-        this.finalStages = (_b = (_a = action.getFinalStages) == null ? void 0 : _a.call(action)) != null ? _b : [];
-        this.noAutomaticTokenExpansion = (_c = action.noAutomaticTokenExpansion) != null ? _c : false;
+        this.finalStages = action.getFinalStages?.() ?? [];
+        this.noAutomaticTokenExpansion = action.noAutomaticTokenExpansion ?? false;
         return action.run(this.getTargets(actionDescriptor.target));
       }
     }
@@ -34068,43 +33883,39 @@ var MarkStageFactoryImpl = class {
 };
 
 // ../cursorless-engine/src/runCommand.ts
-function runCommand(treeSitter, commandServerApi, debug, hatTokenMap, snippets, storedTargets, languageDefinitions, rangeUpdater, commandRunnerDecorators, command) {
-  return __async(this, null, function* () {
-    if (debug.active) {
-      debug.log(`command:`);
-      debug.log(JSON.stringify(command, null, 2));
-    }
-    const commandComplete = canonicalizeAndValidateCommand(command);
-    const readableHatMap = yield hatTokenMap.getReadableMap(
-      commandComplete.usePrePhraseSnapshot
-    );
-    let commandRunner = createCommandRunner(
-      treeSitter,
-      commandServerApi,
-      languageDefinitions,
-      debug,
-      storedTargets,
-      readableHatMap,
-      snippets,
-      rangeUpdater
-    );
-    for (const decorator of commandRunnerDecorators) {
-      commandRunner = decorator.wrapCommandRunner(readableHatMap, commandRunner);
-    }
-    const response = yield commandRunner.run(commandComplete);
-    return yield unwrapLegacyCommandResponse(command, response);
-  });
+async function runCommand(treeSitter, commandServerApi, debug, hatTokenMap, snippets, storedTargets, languageDefinitions, rangeUpdater, commandRunnerDecorators, command) {
+  if (debug.active) {
+    debug.log(`command:`);
+    debug.log(JSON.stringify(command, null, 2));
+  }
+  const commandComplete = canonicalizeAndValidateCommand(command);
+  const readableHatMap = await hatTokenMap.getReadableMap(
+    commandComplete.usePrePhraseSnapshot
+  );
+  let commandRunner = createCommandRunner(
+    treeSitter,
+    commandServerApi,
+    languageDefinitions,
+    debug,
+    storedTargets,
+    readableHatMap,
+    snippets,
+    rangeUpdater
+  );
+  for (const decorator of commandRunnerDecorators) {
+    commandRunner = decorator.wrapCommandRunner(readableHatMap, commandRunner);
+  }
+  const response = await commandRunner.run(commandComplete);
+  return await unwrapLegacyCommandResponse(command, response);
 }
-function unwrapLegacyCommandResponse(command, response) {
-  return __async(this, null, function* () {
-    if (clientSupportsFallback(command)) {
-      return response;
-    }
-    if ("returnValue" in response) {
-      return response.returnValue;
-    }
-    return void 0;
-  });
+async function unwrapLegacyCommandResponse(command, response) {
+  if (clientSupportsFallback(command)) {
+    return response;
+  }
+  if ("returnValue" in response) {
+    return response.returnValue;
+  }
+  return void 0;
 }
 function createCommandRunner(treeSitter, commandServerApi, languageDefinitions, debug, storedTargets, readableHatMap, snippets, rangeUpdater) {
   const modifierStageFactory = new ModifierStageFactoryImpl(
@@ -34142,33 +33953,27 @@ var legacyLanguageIds = [
 ];
 
 // ../cursorless-engine/src/runIntegrationTests.ts
-function runIntegrationTests(treeSitter, languageDefinitions) {
-  return __async(this, null, function* () {
-    yield assertNoScopesBothLegacyAndNew(treeSitter, languageDefinitions);
-  });
+async function runIntegrationTests(treeSitter, languageDefinitions) {
+  await assertNoScopesBothLegacyAndNew(treeSitter, languageDefinitions);
 }
-function assertNoScopesBothLegacyAndNew(treeSitter, languageDefinitions) {
-  return __async(this, null, function* () {
-    var _a;
-    const errors2 = [];
-    for (const languageId of legacyLanguageIds) {
-      yield treeSitter.loadLanguage(languageId);
-      yield languageDefinitions.loadLanguage(languageId);
-      unsafeKeys((_a = languageMatchers[languageId]) != null ? _a : {}).map((scopeTypeType) => {
-        var _a2;
-        if (((_a2 = languageDefinitions.get(languageId)) == null ? void 0 : _a2.getScopeHandler({
-          type: scopeTypeType
-        })) != null) {
-          errors2.push(
-            `Scope '${scopeTypeType}' defined as both legacy and new for language ${languageId}`
-          );
-        }
-      });
-    }
-    if (errors2.length > 0) {
-      throw Error(errors2.join("\n"));
-    }
-  });
+async function assertNoScopesBothLegacyAndNew(treeSitter, languageDefinitions) {
+  const errors2 = [];
+  for (const languageId of legacyLanguageIds) {
+    await treeSitter.loadLanguage(languageId);
+    await languageDefinitions.loadLanguage(languageId);
+    unsafeKeys(languageMatchers[languageId] ?? {}).map((scopeTypeType) => {
+      if (languageDefinitions.get(languageId)?.getScopeHandler({
+        type: scopeTypeType
+      }) != null) {
+        errors2.push(
+          `Scope '${scopeTypeType}' defined as both legacy and new for language ${languageId}`
+        );
+      }
+    });
+  }
+  if (errors2.length > 0) {
+    throw Error(errors2.join("\n"));
+  }
 }
 
 // ../cursorless-engine/src/scopeProviders/scopeTypeToString.ts
@@ -34216,11 +34021,9 @@ var ScopeInfoProvider = class {
       }
     };
   }
-  onChange() {
-    return __async(this, null, function* () {
-      this.updateScopeTypeInfos();
-      this.listeners.forEach((listener) => listener(this.scopeInfos));
-    });
+  async onChange() {
+    this.updateScopeTypeInfos();
+    this.listeners.forEach((listener) => listener(this.scopeInfos));
   }
   updateScopeTypeInfos() {
     const scopeTypes = [
@@ -34337,7 +34140,6 @@ function isLanguageSpecific(scopeType) {
 
 // ../cursorless-engine/src/scopeProviders/getIterationRange.ts
 function getIterationRange(editor, scopeHandler, visibleOnly) {
-  var _a, _b, _c, _d;
   if (!visibleOnly) {
     return editor.document.range;
   }
@@ -34350,34 +34152,33 @@ function getIterationRange(editor, scopeHandler, visibleOnly) {
       visibleRange.end.translate(10)
     )
   );
-  const expandedStart = (_b = (_a = last_default(
+  const expandedStart = last_default(
     Array.from(
       scopeHandler.generateScopes(editor, visibleRange.start, "forward", {
         containment: "required"
       })
     )
-  )) == null ? void 0 : _a.domain) != null ? _b : visibleRange;
-  const expandedEnd = (_d = (_c = last_default(
+  )?.domain ?? visibleRange;
+  const expandedEnd = last_default(
     Array.from(
       scopeHandler.generateScopes(editor, visibleRange.end, "forward", {
         containment: "required"
       })
     )
-  )) == null ? void 0 : _c.domain) != null ? _d : visibleRange;
+  )?.domain ?? visibleRange;
   return expandedStart.union(expandedEnd);
 }
 
 // ../cursorless-engine/src/scopeProviders/getTargetRanges.ts
 function getTargetRanges(target) {
-  var _a, _b;
   return {
     contentRange: target.contentRange,
     removalRange: target.getRemovalRange(),
     removalHighlightRange: target.isLine ? toLineRange(target.getRemovalHighlightRange()) : toCharacterRange(target.getRemovalHighlightRange()),
     leadingDelimiter: getOptionalTarget(target.getLeadingDelimiterTarget()),
     trailingDelimiter: getOptionalTarget(target.getTrailingDelimiterTarget()),
-    interior: (_a = target.getInterior()) == null ? void 0 : _a.map(getTargetRanges),
-    boundary: (_b = target.getBoundary()) == null ? void 0 : _b.map(getTargetRanges),
+    interior: target.getInterior()?.map(getTargetRanges),
+    boundary: target.getBoundary()?.map(getTargetRanges),
     insertionDelimiter: target.insertionDelimiter
   };
 }
@@ -34639,7 +34440,6 @@ function editorContainsScope(editor, scopeHandler) {
   );
 }
 function getLegacyScopeSupport(languageId, scopeType) {
-  var _a;
   switch (scopeType.type) {
     case "boundedNonWhitespaceSequence":
     case "surroundingPair":
@@ -34647,7 +34447,7 @@ function getLegacyScopeSupport(languageId, scopeType) {
     case "notebookCell":
       return 3 /* unsupported */;
     default:
-      if (((_a = languageMatchers[languageId]) == null ? void 0 : _a[scopeType.type]) != null) {
+      if (languageMatchers[languageId]?.[scopeType.type] != null) {
         return 2 /* supportedLegacy */;
       }
       return 3 /* unsupported */;
@@ -34721,7 +34521,8 @@ var ScopeSupportWatcher = class {
       scopeType
     );
     const scopeTypeInfos = this.scopeInfoProvider.getScopeTypeInfos();
-    return scopeTypeInfos.map((scopeTypeInfo) => __spreadProps(__spreadValues({}, scopeTypeInfo), {
+    return scopeTypeInfos.map((scopeTypeInfo) => ({
+      ...scopeTypeInfo,
       support: getScopeTypeSupport(scopeTypeInfo.scopeType),
       iterationScopeSupport: getIterationScopeTypeSupport(
         scopeTypeInfo.scopeType
@@ -34734,85 +34535,83 @@ var ScopeSupportWatcher = class {
 };
 
 // ../cursorless-engine/src/cursorlessEngine.ts
-function createCursorlessEngine(_0) {
-  return __async(this, arguments, function* ({
-    ide: ide2,
-    hats,
-    treeSitterQueryProvider,
-    treeSitter = new DisabledTreeSitter(),
-    commandServerApi = new DisabledCommandServerApi(),
-    talonSpokenForms = new DisabledTalonSpokenForms(),
-    snippets = new DisabledSnippets()
-  }) {
-    injectIde(ide2);
-    const debug = new Debug(ide2);
-    const rangeUpdater = new RangeUpdater();
-    const storedTargets = new StoredTargetMap();
-    const keyboardTargetUpdater = new KeyboardTargetUpdater(ide2, storedTargets);
-    const customSpokenFormGenerator = new CustomSpokenFormGeneratorImpl(
-      talonSpokenForms
-    );
-    const hatTokenMap = hats != null ? new HatTokenMapImpl(rangeUpdater, debug, hats, commandServerApi) : new DisabledHatTokenMap();
-    void hatTokenMap.allocateHats();
-    const languageDefinitions = treeSitterQueryProvider ? yield LanguageDefinitionsImpl.create(
-      ide2,
+async function createCursorlessEngine({
+  ide: ide2,
+  hats,
+  treeSitterQueryProvider,
+  treeSitter = new DisabledTreeSitter(),
+  commandServerApi = new DisabledCommandServerApi(),
+  talonSpokenForms = new DisabledTalonSpokenForms(),
+  snippets = new DisabledSnippets()
+}) {
+  injectIde(ide2);
+  const debug = new Debug(ide2);
+  const rangeUpdater = new RangeUpdater();
+  const storedTargets = new StoredTargetMap();
+  const keyboardTargetUpdater = new KeyboardTargetUpdater(ide2, storedTargets);
+  const customSpokenFormGenerator = new CustomSpokenFormGeneratorImpl(
+    talonSpokenForms
+  );
+  const hatTokenMap = hats != null ? new HatTokenMapImpl(rangeUpdater, debug, hats, commandServerApi) : new DisabledHatTokenMap();
+  void hatTokenMap.allocateHats();
+  const languageDefinitions = treeSitterQueryProvider ? await LanguageDefinitionsImpl.create(
+    ide2,
+    treeSitter,
+    treeSitterQueryProvider
+  ) : new DisabledLanguageDefinitions();
+  ide2.disposeOnExit(
+    rangeUpdater,
+    languageDefinitions,
+    hatTokenMap,
+    debug,
+    keyboardTargetUpdater
+  );
+  const commandRunnerDecorators = [];
+  let previousCommand = void 0;
+  const runCommandClosure = (command) => {
+    previousCommand = command;
+    return runCommand(
       treeSitter,
-      treeSitterQueryProvider
-    ) : new DisabledLanguageDefinitions();
-    ide2.disposeOnExit(
-      rangeUpdater,
-      languageDefinitions,
-      hatTokenMap,
+      commandServerApi,
       debug,
-      keyboardTargetUpdater
-    );
-    const commandRunnerDecorators = [];
-    let previousCommand = void 0;
-    const runCommandClosure = (command) => {
-      previousCommand = command;
-      return runCommand(
-        treeSitter,
-        commandServerApi,
-        debug,
-        hatTokenMap,
-        snippets,
-        storedTargets,
-        languageDefinitions,
-        rangeUpdater,
-        commandRunnerDecorators,
-        command
-      );
-    };
-    return {
-      commandApi: {
-        runCommand(command) {
-          return runCommandClosure(command);
-        },
-        runCommandSafe(...args) {
-          return runCommandClosure(ensureCommandShape(args));
-        },
-        repeatPreviousCommand() {
-          if (previousCommand == null) {
-            throw new Error("No previous command");
-          }
-          return runCommandClosure(previousCommand);
-        }
-      },
-      scopeProvider: createScopeProvider(
-        languageDefinitions,
-        storedTargets,
-        customSpokenFormGenerator
-      ),
-      customSpokenFormGenerator,
-      storedTargets,
       hatTokenMap,
-      injectIde,
-      runIntegrationTests: () => runIntegrationTests(treeSitter, languageDefinitions),
-      addCommandRunnerDecorator: (decorator) => {
-        commandRunnerDecorators.push(decorator);
+      snippets,
+      storedTargets,
+      languageDefinitions,
+      rangeUpdater,
+      commandRunnerDecorators,
+      command
+    );
+  };
+  return {
+    commandApi: {
+      runCommand(command) {
+        return runCommandClosure(command);
+      },
+      runCommandSafe(...args) {
+        return runCommandClosure(ensureCommandShape(args));
+      },
+      repeatPreviousCommand() {
+        if (previousCommand == null) {
+          throw new Error("No previous command");
+        }
+        return runCommandClosure(previousCommand);
       }
-    };
-  });
+    },
+    scopeProvider: createScopeProvider(
+      languageDefinitions,
+      storedTargets,
+      customSpokenFormGenerator
+    ),
+    customSpokenFormGenerator,
+    storedTargets,
+    hatTokenMap,
+    injectIde,
+    runIntegrationTests: () => runIntegrationTests(treeSitter, languageDefinitions),
+    addCommandRunnerDecorator: (decorator) => {
+      commandRunnerDecorators.push(decorator);
+    }
+  };
 }
 function createScopeProvider(languageDefinitions, storedTargets, customSpokenFormGenerator) {
   const scopeHandlerFactory = new ScopeHandlerFactoryImpl(languageDefinitions);
@@ -34862,15 +34661,13 @@ var argPositions = {
 };
 
 // src/extension.ts
-function activate(plugin) {
-  return __async(this, null, function* () {
-    const jetbrainsIDE = new JetbrainsIDE(plugin.client);
-    const engine = yield createCursorlessEngine({
-      ide: jetbrainsIDE
-    });
-    return engine;
-    console.log("entry completed");
+async function activate(plugin) {
+  const jetbrainsIDE = new JetbrainsIDE(plugin.client);
+  const engine = await createCursorlessEngine({
+    ide: jetbrainsIDE
   });
+  return engine;
+  console.log("activate completed");
 }
 export {
   JetbrainsIDE,
