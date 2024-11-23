@@ -43,7 +43,7 @@ dependencies {
     implementation("org.mozilla:rhino-engine:1.7.15")
     implementation("org.mozilla:rhino-runtime:1.7.15")
 
-    implementation("org.graalvm.js:js:23.0.6")
+    implementation("org.graalvm.js:js:24.1.1")
 //    implementation("org.graalvm.polyglot:js:22.1.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
