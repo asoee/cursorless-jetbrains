@@ -4,6 +4,7 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
@@ -23,6 +24,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 
 // ../../node_modules/.pnpm/lodash@4.17.21/node_modules/lodash/lodash.js
 var require_lodash = __commonJS({
@@ -4495,7 +4497,7 @@ var require_lodash = __commonJS({
         function valuesIn(object) {
           return object == null ? [] : baseValues2(object, keysIn(object));
         }
-        function clamp(number, lower, upper) {
+        function clamp2(number, lower, upper) {
           if (upper === undefined2) {
             upper = lower;
             lower = undefined2;
@@ -5172,7 +5174,7 @@ var require_lodash = __commonJS({
         lodash2.camelCase = camelCase;
         lodash2.capitalize = capitalize;
         lodash2.ceil = ceil;
-        lodash2.clamp = clamp;
+        lodash2.clamp = clamp2;
         lodash2.clone = clone;
         lodash2.cloneDeep = cloneDeep;
         lodash2.cloneDeepWith = cloneDeepWith;
@@ -6723,46 +6725,6 @@ var require_immutability_helper = __commonJS({
     }
   }
 });
-
-// src/ide/JetbrainsPlugin.ts
-var JetbrainsPlugin = class {
-  constructor(client, commandServer) {
-    this.client = client;
-    this.commandServer = commandServer;
-  }
-};
-function createPlugin(client, commandServer) {
-  return new JetbrainsPlugin(client, commandServer);
-}
-
-// src/ide/JetbrainsIDE.ts
-var import_lodash2 = __toESM(require_lodash());
-
-// src/ide/JetbrainsCapabilities.ts
-var COMMAND_CAPABILITIES = {
-  clipboardCopy: { acceptsLocation: false },
-  clipboardPaste: true,
-  toggleLineComment: void 0,
-  indentLine: void 0,
-  outdentLine: void 0,
-  rename: void 0,
-  quickFix: void 0,
-  revealDefinition: void 0,
-  revealTypeDefinition: void 0,
-  showHover: void 0,
-  showDebugHover: void 0,
-  extractVariable: void 0,
-  fold: void 0,
-  highlight: { acceptsLocation: true },
-  unfold: void 0,
-  showReferences: void 0,
-  insertLineAfter: void 0
-};
-var JetbrainsCapabilities = class {
-  constructor() {
-    this.commands = COMMAND_CAPABILITIES;
-  }
-};
 
 // ../common/src/cursorlessCommandIds.ts
 var Command = class {
@@ -9845,6 +9807,183 @@ function matchText(text, regex) {
     index: match.index,
     text: match[0]
   }));
+}
+function getLeadingWhitespace(text) {
+  return text.match(/^\s+/)?.[0] ?? "";
+}
+function getTrailingWhitespace(text) {
+  return text.match(/\s+$/)?.[0] ?? "";
+}
+
+// ../common/src/ide/inMemoryTextDocument/InMemoryTextLine.ts
+var InMemoryTextLine = class {
+  constructor(lineNumber, offset, text, eol) {
+    this.lineNumber = lineNumber;
+    this.offset = offset;
+    this.text = text;
+    this.isEmptyOrWhitespace = /^\s*$/.test(text);
+    this.lengthIncludingEol = text.length + (eol?.length ?? 0);
+    const start = new Position(lineNumber, 0);
+    const end = new Position(lineNumber, text.length);
+    const endIncludingLineBreak = eol != null ? new Position(lineNumber + 1, 0) : end;
+    this.range = new Range(start, end);
+    this.rangeIncludingLineBreak = new Range(start, endIncludingLineBreak);
+    this.rangeTrimmed = this.isEmptyOrWhitespace ? void 0 : new Range(
+      start.translate(void 0, getLeadingWhitespace(text).length),
+      end.translate(void 0, -getTrailingWhitespace(text).length)
+    );
+  }
+};
+
+// ../common/src/ide/inMemoryTextDocument/performEdits.ts
+function performEdits(document, edits) {
+  const changes = createChangeEvents(document, edits);
+  let result = document.getText();
+  for (const change of changes) {
+    const { text, rangeOffset, rangeLength } = change;
+    result = result.slice(0, rangeOffset) + text + result.slice(rangeOffset + rangeLength);
+  }
+  return { text: result, changes };
+}
+function createChangeEvents(document, edits) {
+  const changes = [];
+  const sortedEdits = edits.map((edit, index) => ({ edit, index })).sort((a, b) => {
+    if (a.edit.range.start.isEqual(b.edit.range.start)) {
+      return b.index - a.index;
+    }
+    return b.edit.range.start.compareTo(a.edit.range.start);
+  }).map(({ edit }) => edit);
+  const eol = document.eol === "LF" ? "\n" : "\r\n";
+  for (const edit of sortedEdits) {
+    const previousChange = changes[changes.length - 1];
+    const intersection = previousChange?.range.intersection(edit.range);
+    if (intersection != null && !intersection.isEmpty) {
+      if (!previousChange.text && !edit.text) {
+        changes[changes.length - 1] = createChangeEvent(
+          document,
+          previousChange.range.union(edit.range),
+          ""
+        );
+        continue;
+      }
+      throw Error("Overlapping ranges are not allowed!");
+    }
+    const text = edit.text.replace(/\r?\n/g, eol);
+    changes.push(createChangeEvent(document, edit.range, text));
+  }
+  return changes;
+}
+function createChangeEvent(document, range3, text) {
+  const start = document.offsetAt(range3.start);
+  const end = document.offsetAt(range3.end);
+  return {
+    text,
+    range: range3,
+    rangeOffset: start,
+    rangeLength: end - start
+  };
+}
+
+// ../common/src/ide/inMemoryTextDocument/InMemoryTextDocument.ts
+var InMemoryTextDocument = class {
+  constructor(uri, languageId, text) {
+    this.uri = uri;
+    this.languageId = languageId;
+    this.filename = uri.path.split(/\\|\//g).at(-1) ?? "";
+    this._text = "";
+    this._eol = "LF";
+    this._version = -1;
+    this._lines = [];
+    this.setTextInternal(text);
+  }
+  get version() {
+    return this._version;
+  }
+  get lineCount() {
+    return this._lines.length;
+  }
+  get eol() {
+    return this._eol;
+  }
+  get text() {
+    return this._text;
+  }
+  get range() {
+    return new Range(this._lines[0].range.start, this._lines.at(-1).range.end);
+  }
+  setTextInternal(text) {
+    this._text = text;
+    this._eol = text.includes("\r\n") ? "CRLF" : "LF";
+    this._version++;
+    this._lines = createLines(text);
+  }
+  lineAt(lineOrPosition) {
+    const value = typeof lineOrPosition === "number" ? lineOrPosition : lineOrPosition.line;
+    const index = clamp(value, 0, this.lineCount - 1);
+    return this._lines[index];
+  }
+  offsetAt(position) {
+    console.log("offsetAt ", position);
+    if (position.line < 0) {
+      return 0;
+    }
+    if (position.line > this._lines.length - 1) {
+      return this._text.length;
+    }
+    const line = this._lines[position.line];
+    return line.offset + clamp(position.character, 0, line.text.length);
+  }
+  positionAt(offset) {
+    console.log("positionAt " + JSON.stringify(offset));
+    if (offset <= 0) {
+      return this.range.start;
+    }
+    if (offset >= this._text.length) {
+      return this.range.end;
+    }
+    const line = this._lines.find(
+      (line2) => offset < line2.offset + line2.lengthIncludingEol
+    );
+    if (line == null) {
+      throw Error(`Couldn't find line for offset ${offset}`);
+    }
+    return new Position(
+      line.lineNumber,
+      Math.min(offset - line.offset, line.text.length)
+    );
+  }
+  getText(range3) {
+    if (range3 == null) {
+      return this.text;
+    }
+    const startOffset = this.offsetAt(range3.start);
+    const endOffset = this.offsetAt(range3.end);
+    return this.text.slice(startOffset, endOffset);
+  }
+  edit(edits) {
+    const { text, changes } = performEdits(this, edits);
+    this.setTextInternal(text);
+    return changes;
+  }
+};
+function createLines(text) {
+  const documentParts = text.split(/(\r?\n)/g);
+  const result = [];
+  let offset = 0;
+  for (let i = 0; i < documentParts.length; i += 2) {
+    const line = new InMemoryTextLine(
+      result.length,
+      offset,
+      documentParts[i],
+      documentParts[i + 1]
+    );
+    result.push(line);
+    offset += line.lengthIncludingEol;
+  }
+  return result;
+}
+function clamp(value, min2, max) {
+  return Math.min(Math.max(value, min2), max);
 }
 
 // ../common/src/ide/util/messages.ts
@@ -13183,6 +13322,11 @@ function unsafeKeys(o) {
   return Object.keys(o);
 }
 
+// ../common/src/util/selectionsEqual.ts
+function selectionsEqual(a, b) {
+  return a.length === b.length && a.every((selection, i) => selection.isEqual(b[i]));
+}
+
 // ../common/src/util/splitKey.ts
 function getKey(hatStyle, character) {
   return `${hatStyle}.${character}`;
@@ -13265,12 +13409,128 @@ function zipStrict(list1, list2) {
   return list1.map((value, index) => [value, list2[index]]);
 }
 
-// src/ide/JetbrainsEvents.ts
-function jetbrainsOnDidChangeTextDocument(listener) {
-  return dummyEvent();
+// src/ide/JetbrainsHats.ts
+var HAT_COLORS = [
+  "default",
+  "blue",
+  "green",
+  "red",
+  "pink",
+  "yellow"
+];
+var JetbrainsHats = class {
+  constructor(client) {
+    this.isEnabledNotifier = new Notifier();
+    this.hatRanges = [];
+    this.enabledHatStyles = Object.fromEntries(
+      HAT_COLORS.map((color) => [
+        color,
+        { penalty: color === "default" ? 0 : 1 }
+      ])
+    );
+    this.isEnabled = true;
+    this.client = client;
+  }
+  setHatRanges(hatRanges) {
+    console.log("ASOEE/CL: JetbrainsHats.setHatRanges : " + hatRanges.length);
+    this.hatRanges = hatRanges;
+    const jbHatRanges = this.toJetbransHatRanges(hatRanges);
+    const hatsJson = JSON.stringify(jbHatRanges);
+    console.log("ASOEE/CL: JetbrainsHats.setHatRanges json: " + hatsJson);
+    this.client.hatsUpdated(hatsJson);
+    return Promise.resolve();
+  }
+  toJetbransHatRanges(hatRanges) {
+    return hatRanges.map((range3) => {
+      return {
+        styleName: range3.styleName,
+        editorId: range3.editor.id,
+        range: range3.range
+      };
+    });
+  }
+  onDidChangeEnabledHatStyles(_listener) {
+    return { dispose: () => {
+    } };
+  }
+  onDidChangeIsEnabled(_listener) {
+    return { dispose: () => {
+    } };
+  }
+  toggle(isEnabled) {
+    this.isEnabled = isEnabled ?? !this.isEnabled;
+    this.isEnabledNotifier.notifyListeners(this.isEnabled);
+  }
+};
+
+// src/ide/JetbrainsPlugin.ts
+var JetbrainsPlugin = class {
+  constructor(client, ide2, hats) {
+    this.client = client;
+    this.ide = ide2;
+    this.hats = hats;
+  }
+};
+function createPlugin(client, ide2) {
+  const hats = new JetbrainsHats(client);
+  return new JetbrainsPlugin(client, ide2, hats);
 }
+
+// src/ide/JetbrainsIDE.ts
+var import_lodash2 = __toESM(require_lodash());
+
+// src/ide/JetbrainsCapabilities.ts
+var COMMAND_CAPABILITIES = {
+  clipboardCopy: { acceptsLocation: false },
+  clipboardPaste: true,
+  toggleLineComment: void 0,
+  indentLine: void 0,
+  outdentLine: void 0,
+  rename: void 0,
+  quickFix: void 0,
+  revealDefinition: void 0,
+  revealTypeDefinition: void 0,
+  showHover: void 0,
+  showDebugHover: void 0,
+  extractVariable: void 0,
+  fold: void 0,
+  highlight: { acceptsLocation: true },
+  unfold: void 0,
+  showReferences: void 0,
+  insertLineAfter: void 0
+};
+var JetbrainsCapabilities = class {
+  constructor() {
+    this.commands = COMMAND_CAPABILITIES;
+  }
+};
+
+// src/ide/JetbrainsEvents.ts
 function jetbrainsOnDidOpenTextDocument(listener, _thisArgs, _disposables) {
   return dummyEvent();
+}
+function fromJetbrainsContentChange(document, firstLine, lastLine, linedata) {
+  const result = [];
+  const text = linedata.join("\n");
+  console.debug(
+    `fromJetbrainsContentChange(): document.getText(): '${document.getText()}'`
+  );
+  const range3 = new Range(
+    new Position(firstLine, 0),
+    new Position(lastLine - 1, document.lineAt(lastLine - 1).text.length)
+  );
+  const rangeOffset = document.offsetAt(range3.start);
+  const rangeLength = document.offsetAt(range3.end) - rangeOffset;
+  result.push({
+    range: range3,
+    rangeOffset,
+    rangeLength,
+    text
+  });
+  console.debug(
+    `fromJetbrainsContentChange(): changes=${JSON.stringify(result)}`
+  );
+  return result;
 }
 function dummyEvent() {
   return {
@@ -13325,14 +13585,517 @@ var JetbrainsKeyValueStore = class {
   }
 };
 
+// ../../node_modules/.pnpm/vscode-uri@3.0.8/node_modules/vscode-uri/lib/esm/index.mjs
+var LIB;
+(() => {
+  "use strict";
+  var t = { 470: (t2) => {
+    function e2(t3) {
+      if ("string" != typeof t3) throw new TypeError("Path must be a string. Received " + JSON.stringify(t3));
+    }
+    function r2(t3, e3) {
+      for (var r3, n3 = "", i = 0, o = -1, s = 0, h = 0; h <= t3.length; ++h) {
+        if (h < t3.length) r3 = t3.charCodeAt(h);
+        else {
+          if (47 === r3) break;
+          r3 = 47;
+        }
+        if (47 === r3) {
+          if (o === h - 1 || 1 === s) ;
+          else if (o !== h - 1 && 2 === s) {
+            if (n3.length < 2 || 2 !== i || 46 !== n3.charCodeAt(n3.length - 1) || 46 !== n3.charCodeAt(n3.length - 2)) {
+              if (n3.length > 2) {
+                var a = n3.lastIndexOf("/");
+                if (a !== n3.length - 1) {
+                  -1 === a ? (n3 = "", i = 0) : i = (n3 = n3.slice(0, a)).length - 1 - n3.lastIndexOf("/"), o = h, s = 0;
+                  continue;
+                }
+              } else if (2 === n3.length || 1 === n3.length) {
+                n3 = "", i = 0, o = h, s = 0;
+                continue;
+              }
+            }
+            e3 && (n3.length > 0 ? n3 += "/.." : n3 = "..", i = 2);
+          } else n3.length > 0 ? n3 += "/" + t3.slice(o + 1, h) : n3 = t3.slice(o + 1, h), i = h - o - 1;
+          o = h, s = 0;
+        } else 46 === r3 && -1 !== s ? ++s : s = -1;
+      }
+      return n3;
+    }
+    var n2 = { resolve: function() {
+      for (var t3, n3 = "", i = false, o = arguments.length - 1; o >= -1 && !i; o--) {
+        var s;
+        o >= 0 ? s = arguments[o] : (void 0 === t3 && (t3 = process.cwd()), s = t3), e2(s), 0 !== s.length && (n3 = s + "/" + n3, i = 47 === s.charCodeAt(0));
+      }
+      return n3 = r2(n3, !i), i ? n3.length > 0 ? "/" + n3 : "/" : n3.length > 0 ? n3 : ".";
+    }, normalize: function(t3) {
+      if (e2(t3), 0 === t3.length) return ".";
+      var n3 = 47 === t3.charCodeAt(0), i = 47 === t3.charCodeAt(t3.length - 1);
+      return 0 !== (t3 = r2(t3, !n3)).length || n3 || (t3 = "."), t3.length > 0 && i && (t3 += "/"), n3 ? "/" + t3 : t3;
+    }, isAbsolute: function(t3) {
+      return e2(t3), t3.length > 0 && 47 === t3.charCodeAt(0);
+    }, join: function() {
+      if (0 === arguments.length) return ".";
+      for (var t3, r3 = 0; r3 < arguments.length; ++r3) {
+        var i = arguments[r3];
+        e2(i), i.length > 0 && (void 0 === t3 ? t3 = i : t3 += "/" + i);
+      }
+      return void 0 === t3 ? "." : n2.normalize(t3);
+    }, relative: function(t3, r3) {
+      if (e2(t3), e2(r3), t3 === r3) return "";
+      if ((t3 = n2.resolve(t3)) === (r3 = n2.resolve(r3))) return "";
+      for (var i = 1; i < t3.length && 47 === t3.charCodeAt(i); ++i) ;
+      for (var o = t3.length, s = o - i, h = 1; h < r3.length && 47 === r3.charCodeAt(h); ++h) ;
+      for (var a = r3.length - h, c = s < a ? s : a, f = -1, u = 0; u <= c; ++u) {
+        if (u === c) {
+          if (a > c) {
+            if (47 === r3.charCodeAt(h + u)) return r3.slice(h + u + 1);
+            if (0 === u) return r3.slice(h + u);
+          } else s > c && (47 === t3.charCodeAt(i + u) ? f = u : 0 === u && (f = 0));
+          break;
+        }
+        var l = t3.charCodeAt(i + u);
+        if (l !== r3.charCodeAt(h + u)) break;
+        47 === l && (f = u);
+      }
+      var g = "";
+      for (u = i + f + 1; u <= o; ++u) u !== o && 47 !== t3.charCodeAt(u) || (0 === g.length ? g += ".." : g += "/..");
+      return g.length > 0 ? g + r3.slice(h + f) : (h += f, 47 === r3.charCodeAt(h) && ++h, r3.slice(h));
+    }, _makeLong: function(t3) {
+      return t3;
+    }, dirname: function(t3) {
+      if (e2(t3), 0 === t3.length) return ".";
+      for (var r3 = t3.charCodeAt(0), n3 = 47 === r3, i = -1, o = true, s = t3.length - 1; s >= 1; --s) if (47 === (r3 = t3.charCodeAt(s))) {
+        if (!o) {
+          i = s;
+          break;
+        }
+      } else o = false;
+      return -1 === i ? n3 ? "/" : "." : n3 && 1 === i ? "//" : t3.slice(0, i);
+    }, basename: function(t3, r3) {
+      if (void 0 !== r3 && "string" != typeof r3) throw new TypeError('"ext" argument must be a string');
+      e2(t3);
+      var n3, i = 0, o = -1, s = true;
+      if (void 0 !== r3 && r3.length > 0 && r3.length <= t3.length) {
+        if (r3.length === t3.length && r3 === t3) return "";
+        var h = r3.length - 1, a = -1;
+        for (n3 = t3.length - 1; n3 >= 0; --n3) {
+          var c = t3.charCodeAt(n3);
+          if (47 === c) {
+            if (!s) {
+              i = n3 + 1;
+              break;
+            }
+          } else -1 === a && (s = false, a = n3 + 1), h >= 0 && (c === r3.charCodeAt(h) ? -1 == --h && (o = n3) : (h = -1, o = a));
+        }
+        return i === o ? o = a : -1 === o && (o = t3.length), t3.slice(i, o);
+      }
+      for (n3 = t3.length - 1; n3 >= 0; --n3) if (47 === t3.charCodeAt(n3)) {
+        if (!s) {
+          i = n3 + 1;
+          break;
+        }
+      } else -1 === o && (s = false, o = n3 + 1);
+      return -1 === o ? "" : t3.slice(i, o);
+    }, extname: function(t3) {
+      e2(t3);
+      for (var r3 = -1, n3 = 0, i = -1, o = true, s = 0, h = t3.length - 1; h >= 0; --h) {
+        var a = t3.charCodeAt(h);
+        if (47 !== a) -1 === i && (o = false, i = h + 1), 46 === a ? -1 === r3 ? r3 = h : 1 !== s && (s = 1) : -1 !== r3 && (s = -1);
+        else if (!o) {
+          n3 = h + 1;
+          break;
+        }
+      }
+      return -1 === r3 || -1 === i || 0 === s || 1 === s && r3 === i - 1 && r3 === n3 + 1 ? "" : t3.slice(r3, i);
+    }, format: function(t3) {
+      if (null === t3 || "object" != typeof t3) throw new TypeError('The "pathObject" argument must be of type Object. Received type ' + typeof t3);
+      return function(t4, e3) {
+        var r3 = e3.dir || e3.root, n3 = e3.base || (e3.name || "") + (e3.ext || "");
+        return r3 ? r3 === e3.root ? r3 + n3 : r3 + "/" + n3 : n3;
+      }(0, t3);
+    }, parse: function(t3) {
+      e2(t3);
+      var r3 = { root: "", dir: "", base: "", ext: "", name: "" };
+      if (0 === t3.length) return r3;
+      var n3, i = t3.charCodeAt(0), o = 47 === i;
+      o ? (r3.root = "/", n3 = 1) : n3 = 0;
+      for (var s = -1, h = 0, a = -1, c = true, f = t3.length - 1, u = 0; f >= n3; --f) if (47 !== (i = t3.charCodeAt(f))) -1 === a && (c = false, a = f + 1), 46 === i ? -1 === s ? s = f : 1 !== u && (u = 1) : -1 !== s && (u = -1);
+      else if (!c) {
+        h = f + 1;
+        break;
+      }
+      return -1 === s || -1 === a || 0 === u || 1 === u && s === a - 1 && s === h + 1 ? -1 !== a && (r3.base = r3.name = 0 === h && o ? t3.slice(1, a) : t3.slice(h, a)) : (0 === h && o ? (r3.name = t3.slice(1, s), r3.base = t3.slice(1, a)) : (r3.name = t3.slice(h, s), r3.base = t3.slice(h, a)), r3.ext = t3.slice(s, a)), h > 0 ? r3.dir = t3.slice(0, h - 1) : o && (r3.dir = "/"), r3;
+    }, sep: "/", delimiter: ":", win32: null, posix: null };
+    n2.posix = n2, t2.exports = n2;
+  } }, e = {};
+  function r(n2) {
+    var i = e[n2];
+    if (void 0 !== i) return i.exports;
+    var o = e[n2] = { exports: {} };
+    return t[n2](o, o.exports, r), o.exports;
+  }
+  r.d = (t2, e2) => {
+    for (var n2 in e2) r.o(e2, n2) && !r.o(t2, n2) && Object.defineProperty(t2, n2, { enumerable: true, get: e2[n2] });
+  }, r.o = (t2, e2) => Object.prototype.hasOwnProperty.call(t2, e2), r.r = (t2) => {
+    "undefined" != typeof Symbol && Symbol.toStringTag && Object.defineProperty(t2, Symbol.toStringTag, { value: "Module" }), Object.defineProperty(t2, "__esModule", { value: true });
+  };
+  var n = {};
+  (() => {
+    let t2;
+    if (r.r(n), r.d(n, { URI: () => f, Utils: () => P }), "object" == typeof process) t2 = "win32" === process.platform;
+    else if ("object" == typeof navigator) {
+      let e3 = navigator.userAgent;
+      t2 = e3.indexOf("Windows") >= 0;
+    }
+    const e2 = /^\w[\w\d+.-]*$/, i = /^\//, o = /^\/\//;
+    function s(t3, r2) {
+      if (!t3.scheme && r2) throw new Error(`[UriError]: Scheme is missing: {scheme: "", authority: "${t3.authority}", path: "${t3.path}", query: "${t3.query}", fragment: "${t3.fragment}"}`);
+      if (t3.scheme && !e2.test(t3.scheme)) throw new Error("[UriError]: Scheme contains illegal characters.");
+      if (t3.path) {
+        if (t3.authority) {
+          if (!i.test(t3.path)) throw new Error('[UriError]: If a URI contains an authority component, then the path component must either be empty or begin with a slash ("/") character');
+        } else if (o.test(t3.path)) throw new Error('[UriError]: If a URI does not contain an authority component, then the path cannot begin with two slash characters ("//")');
+      }
+    }
+    const h = "", a = "/", c = /^(([^:/?#]+?):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/;
+    class f {
+      constructor(t3, e3, r2, n2, i2, o2 = false) {
+        __publicField(this, "scheme");
+        __publicField(this, "authority");
+        __publicField(this, "path");
+        __publicField(this, "query");
+        __publicField(this, "fragment");
+        "object" == typeof t3 ? (this.scheme = t3.scheme || h, this.authority = t3.authority || h, this.path = t3.path || h, this.query = t3.query || h, this.fragment = t3.fragment || h) : (this.scheme = /* @__PURE__ */ function(t4, e4) {
+          return t4 || e4 ? t4 : "file";
+        }(t3, o2), this.authority = e3 || h, this.path = function(t4, e4) {
+          switch (t4) {
+            case "https":
+            case "http":
+            case "file":
+              e4 ? e4[0] !== a && (e4 = a + e4) : e4 = a;
+          }
+          return e4;
+        }(this.scheme, r2 || h), this.query = n2 || h, this.fragment = i2 || h, s(this, o2));
+      }
+      static isUri(t3) {
+        return t3 instanceof f || !!t3 && "string" == typeof t3.authority && "string" == typeof t3.fragment && "string" == typeof t3.path && "string" == typeof t3.query && "string" == typeof t3.scheme && "string" == typeof t3.fsPath && "function" == typeof t3.with && "function" == typeof t3.toString;
+      }
+      get fsPath() {
+        return m(this, false);
+      }
+      with(t3) {
+        if (!t3) return this;
+        let { scheme: e3, authority: r2, path: n2, query: i2, fragment: o2 } = t3;
+        return void 0 === e3 ? e3 = this.scheme : null === e3 && (e3 = h), void 0 === r2 ? r2 = this.authority : null === r2 && (r2 = h), void 0 === n2 ? n2 = this.path : null === n2 && (n2 = h), void 0 === i2 ? i2 = this.query : null === i2 && (i2 = h), void 0 === o2 ? o2 = this.fragment : null === o2 && (o2 = h), e3 === this.scheme && r2 === this.authority && n2 === this.path && i2 === this.query && o2 === this.fragment ? this : new l(e3, r2, n2, i2, o2);
+      }
+      static parse(t3, e3 = false) {
+        const r2 = c.exec(t3);
+        return r2 ? new l(r2[2] || h, C(r2[4] || h), C(r2[5] || h), C(r2[7] || h), C(r2[9] || h), e3) : new l(h, h, h, h, h);
+      }
+      static file(e3) {
+        let r2 = h;
+        if (t2 && (e3 = e3.replace(/\\/g, a)), e3[0] === a && e3[1] === a) {
+          const t3 = e3.indexOf(a, 2);
+          -1 === t3 ? (r2 = e3.substring(2), e3 = a) : (r2 = e3.substring(2, t3), e3 = e3.substring(t3) || a);
+        }
+        return new l("file", r2, e3, h, h);
+      }
+      static from(t3) {
+        const e3 = new l(t3.scheme, t3.authority, t3.path, t3.query, t3.fragment);
+        return s(e3, true), e3;
+      }
+      toString(t3 = false) {
+        return y(this, t3);
+      }
+      toJSON() {
+        return this;
+      }
+      static revive(t3) {
+        if (t3) {
+          if (t3 instanceof f) return t3;
+          {
+            const e3 = new l(t3);
+            return e3._formatted = t3.external, e3._fsPath = t3._sep === u ? t3.fsPath : null, e3;
+          }
+        }
+        return t3;
+      }
+    }
+    const u = t2 ? 1 : void 0;
+    class l extends f {
+      constructor() {
+        super(...arguments);
+        __publicField(this, "_formatted", null);
+        __publicField(this, "_fsPath", null);
+      }
+      get fsPath() {
+        return this._fsPath || (this._fsPath = m(this, false)), this._fsPath;
+      }
+      toString(t3 = false) {
+        return t3 ? y(this, true) : (this._formatted || (this._formatted = y(this, false)), this._formatted);
+      }
+      toJSON() {
+        const t3 = { $mid: 1 };
+        return this._fsPath && (t3.fsPath = this._fsPath, t3._sep = u), this._formatted && (t3.external = this._formatted), this.path && (t3.path = this.path), this.scheme && (t3.scheme = this.scheme), this.authority && (t3.authority = this.authority), this.query && (t3.query = this.query), this.fragment && (t3.fragment = this.fragment), t3;
+      }
+    }
+    const g = { 58: "%3A", 47: "%2F", 63: "%3F", 35: "%23", 91: "%5B", 93: "%5D", 64: "%40", 33: "%21", 36: "%24", 38: "%26", 39: "%27", 40: "%28", 41: "%29", 42: "%2A", 43: "%2B", 44: "%2C", 59: "%3B", 61: "%3D", 32: "%20" };
+    function d(t3, e3, r2) {
+      let n2, i2 = -1;
+      for (let o2 = 0; o2 < t3.length; o2++) {
+        const s2 = t3.charCodeAt(o2);
+        if (s2 >= 97 && s2 <= 122 || s2 >= 65 && s2 <= 90 || s2 >= 48 && s2 <= 57 || 45 === s2 || 46 === s2 || 95 === s2 || 126 === s2 || e3 && 47 === s2 || r2 && 91 === s2 || r2 && 93 === s2 || r2 && 58 === s2) -1 !== i2 && (n2 += encodeURIComponent(t3.substring(i2, o2)), i2 = -1), void 0 !== n2 && (n2 += t3.charAt(o2));
+        else {
+          void 0 === n2 && (n2 = t3.substr(0, o2));
+          const e4 = g[s2];
+          void 0 !== e4 ? (-1 !== i2 && (n2 += encodeURIComponent(t3.substring(i2, o2)), i2 = -1), n2 += e4) : -1 === i2 && (i2 = o2);
+        }
+      }
+      return -1 !== i2 && (n2 += encodeURIComponent(t3.substring(i2))), void 0 !== n2 ? n2 : t3;
+    }
+    function p(t3) {
+      let e3;
+      for (let r2 = 0; r2 < t3.length; r2++) {
+        const n2 = t3.charCodeAt(r2);
+        35 === n2 || 63 === n2 ? (void 0 === e3 && (e3 = t3.substr(0, r2)), e3 += g[n2]) : void 0 !== e3 && (e3 += t3[r2]);
+      }
+      return void 0 !== e3 ? e3 : t3;
+    }
+    function m(e3, r2) {
+      let n2;
+      return n2 = e3.authority && e3.path.length > 1 && "file" === e3.scheme ? `//${e3.authority}${e3.path}` : 47 === e3.path.charCodeAt(0) && (e3.path.charCodeAt(1) >= 65 && e3.path.charCodeAt(1) <= 90 || e3.path.charCodeAt(1) >= 97 && e3.path.charCodeAt(1) <= 122) && 58 === e3.path.charCodeAt(2) ? r2 ? e3.path.substr(1) : e3.path[1].toLowerCase() + e3.path.substr(2) : e3.path, t2 && (n2 = n2.replace(/\//g, "\\")), n2;
+    }
+    function y(t3, e3) {
+      const r2 = e3 ? p : d;
+      let n2 = "", { scheme: i2, authority: o2, path: s2, query: h2, fragment: c2 } = t3;
+      if (i2 && (n2 += i2, n2 += ":"), (o2 || "file" === i2) && (n2 += a, n2 += a), o2) {
+        let t4 = o2.indexOf("@");
+        if (-1 !== t4) {
+          const e4 = o2.substr(0, t4);
+          o2 = o2.substr(t4 + 1), t4 = e4.lastIndexOf(":"), -1 === t4 ? n2 += r2(e4, false, false) : (n2 += r2(e4.substr(0, t4), false, false), n2 += ":", n2 += r2(e4.substr(t4 + 1), false, true)), n2 += "@";
+        }
+        o2 = o2.toLowerCase(), t4 = o2.lastIndexOf(":"), -1 === t4 ? n2 += r2(o2, false, true) : (n2 += r2(o2.substr(0, t4), false, true), n2 += o2.substr(t4));
+      }
+      if (s2) {
+        if (s2.length >= 3 && 47 === s2.charCodeAt(0) && 58 === s2.charCodeAt(2)) {
+          const t4 = s2.charCodeAt(1);
+          t4 >= 65 && t4 <= 90 && (s2 = `/${String.fromCharCode(t4 + 32)}:${s2.substr(3)}`);
+        } else if (s2.length >= 2 && 58 === s2.charCodeAt(1)) {
+          const t4 = s2.charCodeAt(0);
+          t4 >= 65 && t4 <= 90 && (s2 = `${String.fromCharCode(t4 + 32)}:${s2.substr(2)}`);
+        }
+        n2 += r2(s2, true, false);
+      }
+      return h2 && (n2 += "?", n2 += r2(h2, false, false)), c2 && (n2 += "#", n2 += e3 ? c2 : d(c2, false, false)), n2;
+    }
+    function v(t3) {
+      try {
+        return decodeURIComponent(t3);
+      } catch {
+        return t3.length > 3 ? t3.substr(0, 3) + v(t3.substr(3)) : t3;
+      }
+    }
+    const b = /(%[0-9A-Za-z][0-9A-Za-z])+/g;
+    function C(t3) {
+      return t3.match(b) ? t3.replace(b, (t4) => v(t4)) : t3;
+    }
+    var A = r(470);
+    const w = A.posix || A, x = "/";
+    var P;
+    !function(t3) {
+      t3.joinPath = function(t4, ...e3) {
+        return t4.with({ path: w.join(t4.path, ...e3) });
+      }, t3.resolvePath = function(t4, ...e3) {
+        let r2 = t4.path, n2 = false;
+        r2[0] !== x && (r2 = x + r2, n2 = true);
+        let i2 = w.resolve(r2, ...e3);
+        return n2 && i2[0] === x && !t4.authority && (i2 = i2.substring(1)), t4.with({ path: i2 });
+      }, t3.dirname = function(t4) {
+        if (0 === t4.path.length || t4.path === x) return t4;
+        let e3 = w.dirname(t4.path);
+        return 1 === e3.length && 46 === e3.charCodeAt(0) && (e3 = ""), t4.with({ path: e3 });
+      }, t3.basename = function(t4) {
+        return w.basename(t4.path);
+      }, t3.extname = function(t4) {
+        return w.extname(t4.path);
+      };
+    }(P || (P = {}));
+  })(), LIB = n;
+})();
+var { URI, Utils } = LIB;
+
+// src/ide/setSelections.ts
+function setSelections(client, document, selections) {
+  const selectionOffsets = selections.map((selection) => ({
+    anchor: document.offsetAt(selection.anchor),
+    active: document.offsetAt(selection.active)
+  }));
+  return Promise.resolve();
+}
+
+// src/ide/jetbrainsPerformEdits.ts
+function jetbrainsPerformEdits(client, ide2, document, edits) {
+  const changes = document.edit(edits);
+  const editorEdit = {
+    text: document.text,
+    changes: changes.map((change) => ({
+      rangeOffset: change.rangeOffset,
+      rangeLength: change.rangeLength,
+      text: change.text
+    }))
+  };
+  client.documentUpdated(JSON.stringify(editorEdit));
+  ide2.emitDidChangeTextDocument({
+    document,
+    contentChanges: changes
+  });
+}
+
+// src/ide/JetbrainsEditor.ts
+var JetbrainsEditor = class {
+  constructor(client, ide2, id2, document, visibleRanges, selections) {
+    this.client = client;
+    this.ide = ide2;
+    this.id = id2;
+    this.document = document;
+    this.visibleRanges = visibleRanges;
+    this.selections = selections;
+    this.options = {
+      tabSize: 4,
+      insertSpaces: true
+    };
+    this.isActive = true;
+  }
+  isEqual(other) {
+    return this.id === other.id;
+  }
+  async setSelections(selections, _opts) {
+    if (!selectionsEqual(this.selections, selections)) {
+      await setSelections(this.client, this.document, selections);
+      this.selections = selections;
+    }
+  }
+  edit(edits) {
+    console.log("editor.edit");
+    jetbrainsPerformEdits(this.client, this.ide, this.document, edits);
+    return Promise.resolve(true);
+  }
+  async clipboardCopy(_ranges) {
+    throw Error("clipboardCopy not implemented.");
+  }
+  async clipboardPaste() {
+    throw Error("clipboardPaste not implemented.");
+  }
+  indentLine(_ranges) {
+    throw Error("indentLine not implemented.");
+  }
+  outdentLine(_ranges) {
+    throw Error("outdentLine not implemented.");
+  }
+  insertLineAfter(_ranges) {
+    throw Error("insertLineAfter not implemented.");
+  }
+  focus() {
+    throw new Error("focus not implemented.");
+  }
+  revealRange(_range) {
+    return Promise.resolve();
+  }
+  revealLine(_lineNumber, _at) {
+    throw new Error("revealLine not implemented.");
+  }
+  openLink(_range, _options) {
+    throw new Error("openLink not implemented.");
+  }
+  fold(_ranges) {
+    throw new Error("fold not implemented.");
+  }
+  unfold(_ranges) {
+    throw new Error("unfold not implemented.");
+  }
+  toggleBreakpoint(_descriptors) {
+    throw new Error("toggleBreakpoint not implemented.");
+  }
+  toggleLineComment(_ranges) {
+    throw new Error("toggleLineComment not implemented.");
+  }
+  insertSnippet(_snippet, _ranges) {
+    throw new Error("insertSnippet not implemented.");
+  }
+  rename(_range) {
+    throw new Error("rename not implemented.");
+  }
+  showReferences(_range) {
+    throw new Error("showReferences not implemented.");
+  }
+  quickFix(_range) {
+    throw new Error("quickFix not implemented.");
+  }
+  revealDefinition(_range) {
+    throw new Error("revealDefinition not implemented.");
+  }
+  revealTypeDefinition(_range) {
+    throw new Error("revealTypeDefinition not implemented.");
+  }
+  showHover(_range) {
+    throw new Error("showHover not implemented.");
+  }
+  showDebugHover(_range) {
+    throw new Error("showDebugHover not implemented.");
+  }
+  extractVariable(_range) {
+    throw new Error("extractVariable not implemented.");
+  }
+  editNewNotebookCellAbove() {
+    throw new Error("editNewNotebookCellAbove not implemented.");
+  }
+  editNewNotebookCellBelow() {
+    throw new Error("editNewNotebookCellBelow not implemented.");
+  }
+};
+
+// src/ide/createTextEditor.ts
+function createTextEditor(client, ide2, editorState) {
+  console.log("createTextEditor");
+  const id2 = editorState.id;
+  const uri = URI.parse(`talon-jetbrains://${id2}`);
+  const languageId = editorState.languageId ?? "plaintext";
+  const document = new InMemoryTextDocument(uri, languageId, editorState.text);
+  const visibleRanges = [document.range];
+  const selections = editorState.selections.map(
+    (selection) => createSelection(document, selection)
+  );
+  return new JetbrainsEditor(
+    client,
+    ide2,
+    id2,
+    document,
+    visibleRanges,
+    selections
+  );
+}
+function createSelection(document, selection) {
+  console.log("createSelection " + JSON.stringify(selection));
+  return new Selection(
+    createPosition(selection.anchor),
+    createPosition(selection.active)
+  );
+}
+function createPosition(jbPosition) {
+  return new Position(jbPosition.line, jbPosition.column);
+}
+
 // src/ide/JetbrainsIDE.ts
 var JetbrainsIDE = class {
   constructor(client) {
     this.client = client;
-    this.cursorlessVersion = "0.0.0";
-    this.workspaceFolders = void 0;
+    this.runMode = "development";
     this.disposables = [];
     this.quickPickReturnValue = void 0;
+    this.editors = [];
+    this.onDidChangeTextDocumentNotifier = new Notifier();
+    this.onDidChangeTextDocumentContentNotifier = new Notifier();
     this.onDidCloseTextDocument = dummyEvent2;
     this.onDidChangeActiveTextEditor = dummyEvent2;
     this.onDidChangeVisibleTextEditors = dummyEvent2;
@@ -13358,26 +14121,36 @@ var JetbrainsIDE = class {
     console.debug("flashRanges Not implemented");
   }
   get assetsRoot() {
-    if (this.assetsRoot_ == null) {
-      throw Error("Field `assetsRoot` has not yet been mocked");
-    }
-    return this.assetsRoot_;
+    console.log("get assetsRoot");
+    throw new Error("assetsRoot not implemented.");
   }
-  //
-  get runMode() {
-    return "production";
+  get cursorlessVersion() {
+    console.log("get cursorlessVersion");
+    throw new Error("cursorlessVersion not implemented.");
+  }
+  get workspaceFolders() {
+    console.log("get workspaceFolders");
+    throw new Error("workspaceFolders not implemented.");
   }
   get activeTextEditor() {
-    throw Error("activeTextEditor Not implemented");
+    console.log("get activeEditableTextEditor");
+    return this.activeEditableTextEditor;
   }
   get activeEditableTextEditor() {
-    throw Error("activeEditableTextEditor Not implemented");
+    console.log("get activeEditableTextEditor");
+    return this.editors[0];
   }
   get visibleTextEditors() {
-    throw Error("visibleTextEditors Not implemented");
+    console.log("get activeEditableTextEditor");
+    return this.editors;
   }
   getEditableTextEditor(editor) {
-    throw Error("getEditableTextEditor Not implemented");
+    console.log("getEditableTextEditor");
+    if (editor instanceof JetbrainsEditor) {
+      console.log("getEditableTextEditor - return current");
+      return editor;
+    }
+    throw Error(`Unsupported text editor type: ${editor}`);
   }
   async findInDocument(_query, _editor) {
     throw Error("findInDocument Not implemented");
@@ -13398,35 +14171,68 @@ var JetbrainsIDE = class {
     throw new Error("executeCommand Method not implemented.");
   }
   onDidChangeTextDocument(listener) {
-    return jetbrainsOnDidChangeTextDocument(listener);
+    return this.onDidChangeTextDocumentNotifier.registerListener(listener);
   }
   onDidOpenTextDocument(listener, thisArgs, disposables) {
     return jetbrainsOnDidOpenTextDocument(listener, thisArgs, disposables);
   }
-  handleCommandError(err) {
+  handleCommandError(_err) {
   }
   disposeOnExit(...disposables) {
     this.disposables.push(...disposables);
     return () => (0, import_lodash2.pull)(this.disposables, ...disposables);
   }
+  documentChanged(editorStateJson) {
+    console.log(
+      "ASOEE/CL: documentChanged : " + JSON.stringify(editorStateJson)
+    );
+    const editorState = editorStateJson;
+    this.updateTextEditors(editorState);
+    const uri = URI.parse("jetbrains://" + editorState);
+    const language = editorState.languageId ? editorState.languageId : "plaintext";
+    const document = new InMemoryTextDocument(uri, language, editorState.text);
+    const linedata = getLines(
+      editorState.text,
+      editorState.firstVisibleLine,
+      editorState.lastVisibleLine
+    );
+    const contentChangeEvents = fromJetbrainsContentChange(
+      document,
+      editorState.firstVisibleLine,
+      editorState.lastVisibleLine,
+      linedata
+    );
+    const documentChangeEvent = {
+      document,
+      contentChanges: contentChangeEvents
+    };
+    console.log("ASOEE/CL: documentChanged : notify...");
+    this.emitDidChangeTextDocument(documentChangeEvent);
+    console.log("ASOEE/CL: documentChanged : notify complete");
+  }
+  emitDidChangeTextDocument(event) {
+    this.onDidChangeTextDocumentNotifier.notifyListeners(event);
+  }
+  updateTextEditors(editorState) {
+    this.editors = [createTextEditor(this.client, this, editorState)];
+    console.log(
+      "ASOEE/CL: updated editor with document " + editorState.firstVisibleLine
+    );
+  }
 };
+function getLines(text, firstLine, lastLine) {
+  const lines = text.split("\n");
+  return lines.slice(firstLine, lastLine);
+}
 function dummyEvent2() {
   return {
     dispose() {
     }
   };
 }
-
-// src/polyfill.ts
-var global2 = globalThis;
-if (global2.process == null) {
-  global2.process = {
-    env: {}
-  };
+function createIDE(client) {
+  return new JetbrainsIDE(client);
 }
-global2.setTimeout = (callback2, _delay) => {
-  callback2();
-};
 
 // ../../node_modules/.pnpm/immer@10.1.1/node_modules/immer/dist/immer.mjs
 var NOTHING = Symbol.for("immer-nothing");
@@ -17509,6 +18315,7 @@ function allocateHats({
   activeTextEditor,
   visibleTextEditors
 }) {
+  console.log("ASOEE/CL: fun allocateHats " + activeTextEditor?.id);
   const forcedHatMap = forceTokenHats == null ? void 0 : getTokenOldHatMap(forceTokenHats);
   const tokenOldHatMap = getTokenOldHatMap(oldTokenHats);
   const rankedTokens = getRankedTokens(
@@ -17525,6 +18332,7 @@ function allocateHats({
   const graphemeRemainingHatCandidates = new DefaultMap(
     () => [...enabledHatStyleNames]
   );
+  console.log("ASOEE/CL: fun allocateHats  - before return");
   return rankedTokens.map(({ token, rank: tokenRank }) => {
     const tokenRemainingHatCandidates = getTokenRemainingHatCandidates(
       tokenGraphemeSplitter2,
@@ -17645,6 +18453,7 @@ var HatAllocator = class {
       activeTextEditor: ide().activeTextEditor,
       visibleTextEditors: ide().visibleTextEditors
     }) : [];
+    console.log("ASOEE/CL: allocateHats : setTokenHats");
     activeMap.setTokenHats(tokenHats);
     await this.hats.setHatRanges(
       tokenHats.map(({ hatStyle, hatRange, token: { editor } }) => ({
@@ -18045,6 +18854,7 @@ function getUpdatedText(changeEventInfo, rangeInfo, newOffsets) {
 
 // ../cursorless-engine/src/core/updateSelections/updateRangeInfos.ts
 function updateRangeInfos(changeEvent, rangeInfoGenerator) {
+  console.log("updateRangeInfos");
   const { document, contentChanges } = changeEvent;
   const changeEventInfos = contentChanges.map((change) => {
     const changeDisplacement = change.text.length - change.rangeLength;
@@ -19698,9 +20508,15 @@ function isPreferredOverHelper(scopeA, scopeB, matchers2) {
 }
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/CharacterScopeHandler.ts
-var SPLIT_REGEX = /\p{L}\p{M}*|[\p{N}\p{P}\p{S}\p{Z}\p{C}]/gu;
+var SPLIT_REGEX = new RegExp(
+  "\\p{L}\\p{M}*|[\\p{N}\\p{P}\\p{S}\\p{Z}\\p{C}]",
+  "gu"
+);
 var PREFERRED_SYMBOLS_REGEX = /[$]/g;
-var NONWHITESPACE_REGEX = /\p{L}\p{M}*|[\p{N}\p{P}\p{S}]/gu;
+var NONWHITESPACE_REGEX = new RegExp(
+  "\\p{L}\\p{M}*|[\\p{N}\\p{P}\\p{S}]",
+  "gu"
+);
 var CharacterScopeHandler = class extends NestedScopeHandler {
   constructor() {
     super(...arguments);
@@ -19738,7 +20554,10 @@ var CharacterScopeHandler = class extends NestedScopeHandler {
 };
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/WordScopeHandler/WordTokenizer.ts
-var CAMEL_REGEX = /\p{Lu}?\p{Ll}+|\p{Lu}+(?!\p{Ll})|\p{N}+/gu;
+var CAMEL_REGEX = new RegExp(
+  "\\p{Lu}?\\p{Ll}+|\\p{Lu}+(?!\\p{Ll})|\\p{N}+",
+  "gu"
+);
 var WordTokenizer = class {
   constructor(languageId) {
     this.wordRegex = getMatcher(languageId).wordMatcher;
@@ -20566,8 +21385,11 @@ function getSentences(text, userOptions) {
 }
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/SentenceScopeHandler/SentenceSegmenter.ts
-var leadingOffsetRegex = /\S*\p{L}/u;
-var skipPartRegex = /(\r?\n[^\p{L}]*\r?\n)|(?<=[.!?])(\s*\r?\n)/gu;
+var leadingOffsetRegex = new RegExp("\\S*\\p{L}", "u");
+var skipPartRegex = new RegExp(
+  "(\\r?\\n[^\\p{sc=Latin}]*\\r?\\n)|(?<=[.!?])(\\s*\\r?\\n)",
+  "ug"
+);
 var options = {
   newlineBoundaries: false,
   preserveWhitespace: true
@@ -34545,6 +35367,7 @@ async function createCursorlessEngine({
   snippets = new DisabledSnippets()
 }) {
   injectIde(ide2);
+  console.log("ASOEE/CL: createCursorlessEngine, hats: " + hats);
   const debug = new Debug(ide2);
   const rangeUpdater = new RangeUpdater();
   const storedTargets = new StoredTargetMap();
@@ -34662,9 +35485,9 @@ var argPositions = {
 
 // src/extension.ts
 async function activate(plugin) {
-  const jetbrainsIDE = new JetbrainsIDE(plugin.client);
   const engine = await createCursorlessEngine({
-    ide: jetbrainsIDE
+    ide: plugin.ide,
+    hats: plugin.hats
   });
   return engine;
   console.log("activate completed");
@@ -34673,6 +35496,7 @@ export {
   JetbrainsIDE,
   JetbrainsPlugin,
   activate,
+  createIDE,
   createPlugin
 };
 /*! Bundled license information:

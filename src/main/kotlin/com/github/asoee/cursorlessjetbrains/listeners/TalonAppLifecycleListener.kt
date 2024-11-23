@@ -13,8 +13,6 @@ import kotlinx.coroutines.runBlocking
 class TalonAppLifecycleListener : AppLifecycleListener {
 
 
-    private var jsDriver: GraalJSDriver? = null
-
     override fun appFrameCreated(commandLineArgs: List<String>) {
         super.appFrameCreated(commandLineArgs)
         println("PHIL: appFrameCreated...")
@@ -22,8 +20,12 @@ class TalonAppLifecycleListener : AppLifecycleListener {
 
     override fun appStarted() {
         super.appStarted()
-        println("PHIL: app started, loading quickjs...")
-        this.jsDriver = GraalJSDriver()
+        println("PHIL: app started, loading js driver...")
+//        val driver = GraalJSDriver()
+//        runBlocking {
+//            driver.loadCursorless()
+//        }
+//        this.jsDriver = driver
         println("PHIL: app started...")
     }
 

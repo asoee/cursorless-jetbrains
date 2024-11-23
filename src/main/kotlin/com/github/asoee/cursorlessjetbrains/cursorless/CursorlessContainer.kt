@@ -41,7 +41,7 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
 
     private val shapeImageCache = mutableMapOf<String, BufferedImage>()
 
-    private val hats = HatsFormat()
+    private var hats = HatsFormat()
 
     init {
         this.parent.add(this)
@@ -203,14 +203,6 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         this.repaint()
     }
 
-    fun startWatchingIfNeeded() {
-        if (started) {
-            return
-        }
-
-        started = true
-    }
-
     fun editorPath(): String? {
         val file = FileDocumentManager.getInstance().getFile(editor.document)
         return file?.path
@@ -219,44 +211,8 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
     /**
      * Returns the list of hat decorations for this editor, if there is a valid one.
      */
-    fun getHats(): HatsFormat? {
-        try {
-            val format = Json { isLenient = true }
-
-//            val map = this.hats
-//                format.decodeFromString<HashMap<String, HashMap<String, ArrayList<CursorlessRange>>>>(
-//                    File(hatsPath().toString()).readText()
-//                )
-//
-//            val editorPath = editorPath()
-//
-//            if (!cursorlessTempFiles.containsKey(editorPath)) {
-//                return null
-//            }
-//
-//            val editorTemporaryPath =
-//                cursorlessTempFiles[editorPath]!!.toAbsolutePath().toString()
-//
-//             Don't render stale hats for other files. This usually happens when switching between files.
-//            if (!map.containsKey(editorTemporaryPath)) {
-//                return null
-//            }
-
-//            return map[editorTemporaryPath]!!
-            return this.hats
-        } catch (e: JsonException) {
-            log.info(e)
-            e.printStackTrace()
-
-            return null
-        } catch (e: Exception) {
-            // kotlinx.serialization.json.internal.JsonDecodingException
-
-            log.info(e)
-            e.printStackTrace()
-
-            return null
-        }
+    fun getHats(): HatsFormat {
+        return this.hats
     }
 
     fun colorForName(colorName: String): JBColor? {
@@ -313,7 +269,7 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
             } else {
                 val size = OVAL_SIZE
                 g.fillOval(
-                    coordinates.x + OVAL_SIZE,
+                    coordinates.x + 1,
                     coordinates.y - size / 2,
                     size,
                     size
@@ -366,8 +322,6 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
             return
         }
 
-        startWatchingIfNeeded()
-
 //        if (!hatsPath().exists()) {
 //            log.info("Hatsfile ${hatsPath()} doesn't exist; not withdrawing...")
 //            return
@@ -384,5 +338,13 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         } catch (e: JsonException) {
             e.printStackTrace()
         }
+    }
+
+    fun updateHats(format: HatsFormat) {
+        this.hats = format
+        this.assignColors()
+        localOffsets.clear()
+        this.invalidate()
+        this.repaint()
     }
 }

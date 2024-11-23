@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
+    kotlin("plugin.serialization") version "1.9.25"
 }
 
 group = providers.gradleProperty("pluginGroup").get()
@@ -35,8 +36,8 @@ dependencies {
     testImplementation(libs.junit)
 
     implementation("io.github.dokar3:quickjs-kt:1.0.0-alpha13")
-    implementation("io.github.dokar3:quickjs-kt-converter-ktxserialization:1.0.0-alpha13")
-    implementation ("app.cash.zipline:zipline:1.18.0")
+//    implementation("io.github.dokar3:quickjs-kt-converter-ktxserialization:1.0.0-alpha13")
+//    implementation ("app.cash.zipline:zipline:1.18.0")
 
     // https://mvnrepository.com/artifact/org.mozilla/rhino
     implementation("org.mozilla:rhino-engine:1.7.15")
@@ -45,6 +46,25 @@ dependencies {
     implementation("org.graalvm.js:js:23.0.6")
 //    implementation("org.graalvm.polyglot:js:22.1.0")
 
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+
+
+    implementation("com.caoccao.javet:javet:4.1.0") // Core (Must-have)
+//    implementation("com.caoccao.javet:javet-node-linux-arm64:4.1.0")
+//    implementation("com.caoccao.javet:javet-node-linux-x86_64:4.1.0")
+    implementation("com.caoccao.javet:javet-node-macos-arm64:4.1.0")
+    implementation("com.caoccao.javet:javet-node-macos-x86_64:4.1.0")
+    implementation("com.caoccao.javet:javet-node-windows-x86_64:4.1.0")
+//    implementation("com.caoccao.javet:javet-v8-linux-arm64:4.1.0")
+//    implementation("com.caoccao.javet:javet-v8-linux-x86_64:4.1.0")
+    implementation("com.caoccao.javet:javet-v8-macos-arm64:4.1.0")
+    implementation("com.caoccao.javet:javet-v8-macos-x86_64:4.1.0")
+    implementation("com.caoccao.javet:javet-v8-windows-x86_64:4.1.0")
+
+    implementation("com.caoccao.javet:javet-node-macos-arm64-i18n:4.1.0")
+
+
+    implementation("com.caoccao.javet:javenode:0.8.0")
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {

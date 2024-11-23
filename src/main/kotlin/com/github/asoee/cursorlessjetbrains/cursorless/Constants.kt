@@ -36,10 +36,11 @@ val SHAPES_DIRECTORY =
 
 // Format of the vscode-hats.json file.
 typealias HatsFormat = HashMap<String, ArrayList<CursorlessRange>>
+typealias HatsList = HashMap<String, ArrayList<CursorlessRange>>
 
 // Format of the colors.json.
 typealias ColorsFormat = HashMap<String, HashMap<String, String>>
 
-val OVAL_SIZE = 4 // px
+val OVAL_SIZE = 6 // px
 
-val SHAPE_SIZE = 8 // px
+val SHAPE_SIZE = 14 // px

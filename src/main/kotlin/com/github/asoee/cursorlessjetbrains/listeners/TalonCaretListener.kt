@@ -1,12 +1,15 @@
 package com.github.asoee.cursorlessjetbrains.listeners
 
+import com.github.asoee.cursorlessjetbrains.services.EditorManager
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.event.CaretEvent
 import com.intellij.openapi.editor.event.CaretListener
 
-class TalonCaretListener : CaretListener, Disposable {
+class TalonCaretListener(val editorManager: EditorManager) : CaretListener, Disposable {
+
     override fun caretPositionChanged(event: CaretEvent) {
         super.caretPositionChanged(event)
+        editorManager.editorChanged(event.editor)
 //        markEditorChange("caret listener -> caret changed")
     }
 

@@ -1,10 +1,14 @@
 package com.github.asoee.cursorlessjetbrains.services
 
+import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessEngine
+import com.github.asoee.cursorlessjetbrains.graaljs.GraalJSDriver
+import com.github.asoee.cursorlessjetbrains.javet.JavetDriver
 import com.github.asoee.cursorlessjetbrains.listeners.*
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.ex.EditorEventMulticasterEx
+import kotlinx.coroutines.runBlocking
 
 class TalonApplicationService : Disposable {
 
@@ -16,62 +20,18 @@ class TalonApplicationService : Disposable {
     private val documentListeners =
         mutableMapOf<Editor, TalonDocumentListener>()
 
+    private val editorManager: EditorManager
+    private var jsDriver: JavetDriver
+
 
     init {
         println("application service init")
 
-        // NOTE(pcohen): this is a useful way to test the socket connection
-        // (doing so from the control socket leads to weird stack traces
-        // if it's a linking issue)
-//        try {
-//            val r = sendCommand(VSCodeCommand("ping"))
-//            println("PH: result |${r}|")
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            println("PH: |${e}|")
-//            throw e
-//        }
-
-        // NOTE(pcohen): terrible workaround
-        // https://github.com/cursorless-everywhere/cursorless-jetbrains/issues/16
-        // NOTE(pcohen): that seems to need to be *distinct* from the current application path
-        // (ie can't use /Applications/IntelliJ IDEA 2023.1.app from /Applications/IntelliJ IDEA 2023.1.app)
-        System.setProperty(
-            "jna.boot.library.path",
-            "/Applications/IntelliJ IDEA.app/Contents/lib/jna/aarch64"
-        )
-
-//        Notifications.Bus.notify(
-//            Notification(
-//                "talon",
-//                "Cursorless root",
-//                "$root",
-//                NotificationType.INFORMATION
-//            )
-//        )
-
-//        System.setProperty("jna.debug_load.jna", "true");
-//        System.setProperty("jna.debug_load", "true");
-//
-//        var watcher = DirectoryWatcher.builder()
-//            .path(Path.of(CURSORLESS_FOLDER))
-//            .logger(NOPLogger.NOP_LOGGER)
-//            .listener { event: DirectoryChangeEvent ->
-//
-//            }.build()
-//
-//        var watchThread = Thread {
-//            try {
-//                watcher.watch()
-//            } catch (e: UnsatisfiedLinkError) {
-//                e.printStackTrace()
-//
-//                println("PH: |${e}|")
-//                // NOTE(pcohen): On 2023.1 there seems to be a JNI link error.
-//                System.exit(1)
-//            }
-//        }
-//        watchThread.start()
+        val driver = JavetDriver()
+        driver.loadCursorless()
+        this.jsDriver = driver
+        val cursorlessEngine = CursorlessEngine(driver)
+        this.editorManager = EditorManager(cursorlessEngine)
 
         // Listening for window changes is necessary, since we don't seem to get them from Talon.
 
@@ -85,7 +45,9 @@ class TalonApplicationService : Disposable {
     fun editorCreated(e: Editor) {
         println("editor created...")
 
-        val cw = TalonCaretListener()
+        editorManager.editorCreated(e)
+
+        val cw = TalonCaretListener(editorManager)
         e.caretModel.addCaretListener(cw)
         cursorWatchers[e] = cw
 

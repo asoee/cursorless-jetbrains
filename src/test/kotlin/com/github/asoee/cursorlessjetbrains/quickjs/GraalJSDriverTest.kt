@@ -1,5 +1,8 @@
 package com.github.asoee.cursorlessjetbrains.quickjs
 
+import com.github.asoee.cursorlessjetbrains.graaljs.GraalJSDriver
+import com.github.asoee.cursorlessjetbrains.sync.Cursor
+import com.github.asoee.cursorlessjetbrains.sync.EditorState
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import javax.script.ScriptEngineManager
@@ -35,11 +38,70 @@ class GraalJSDriverTest {
         """.trimIndent()
 
             val source = Source.newBuilder("js", js, "src.js").build()
-            val result= context.eval( source)
+            val result = context.eval(source)
 
         }
 
     }
 
+
+    @Test
+    fun testDocumentChanged() {
+
+        val context = Context.create()
+
+        val driver = GraalJSDriver()
+
+        runBlocking {
+            driver.loadCursorless()
+
+            val state = EditorState(
+                "test",
+                "/test/foo",
+                "public static void main(String[] args) {\n\n}",
+                true,
+                null,
+                0,
+                4,
+                listOf(Cursor(0, 0)),
+                emptyList(),
+                emptyList(),
+                emptyList()
+            )
+
+            driver.editorChanged(state)
+
+        }
+
+    }
+
+    @Test
+    fun testSetTimeout() {
+
+        val context = Context.create()
+
+        val driver = GraalJSDriver()
+
+        runBlocking {
+//            driver.loadTimeout()
+
+            driver.loadCursorless()
+            val js = """
+              | async function main( ms ) {
+              |   const noop = ( ) => { };
+              |   const sleep = new Promise( function( resolve ) { setTimeout( resolve, ms ); } );
+              |   console.log( 'Sleeping for 5 seconds...' );
+              |   await sleep.then( );
+              |   console.log( 'Done sleeping' );
+              |   console.log( 'Hello, world!' );
+              | }
+              | main( 5000 );
+            """.trimMargin()
+            driver.evaluate(js)
+
+
+        }
+
+    }
 
 }
