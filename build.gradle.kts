@@ -46,7 +46,7 @@ dependencies {
     implementation("org.graalvm.js:js:23.0.6")
 //    implementation("org.graalvm.polyglot:js:22.1.0")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
 
     implementation("com.caoccao.javet:javet:4.1.0") // Core (Must-have)
