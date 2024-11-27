@@ -2,6 +2,8 @@ package com.github.asoee.cursorlessjetbrains.listeners
 
 import com.dokar.quickjs.QuickJs
 import com.dokar.quickjs.binding.define
+import com.github.asoee.cursorlessjetbrains.commandserver.file.FileCommandServer
+import com.github.asoee.cursorlessjetbrains.commandserver.http.HttpCommandServer
 import com.github.asoee.cursorlessjetbrains.graaljs.GraalJSDriver
 import com.github.asoee.cursorlessjetbrains.services.Console
 import com.github.asoee.cursorlessjetbrains.services.IdeClient
@@ -26,6 +28,14 @@ class TalonAppLifecycleListener : AppLifecycleListener {
 //            driver.loadCursorless()
 //        }
 //        this.jsDriver = driver
+
+
+        val httpCommandServer = HttpCommandServer()
+        httpCommandServer.start()
+
+        val fileCommandServer = FileCommandServer()
+        fileCommandServer.start()
+
         println("PHIL: app started...")
     }
 

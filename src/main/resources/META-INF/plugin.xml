@@ -17,6 +17,8 @@
         <editorFactoryListener
                 implementation="com.github.asoee.cursorlessjetbrains.listeners.TalonEditorFactoryListener"/>
 
+        <notificationGroup id="vc-idea" displayType="BALLOON" />
+
     </extensions>
 
     <applicationListeners>
@@ -27,5 +29,6 @@
                 topic="com.intellij.ide.AppLifecycleListener"/>
 
     </applicationListeners>
+
 
 </idea-plugin>

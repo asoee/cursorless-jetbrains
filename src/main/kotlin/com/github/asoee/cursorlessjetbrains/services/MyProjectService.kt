@@ -1,6 +1,7 @@
 package com.github.asoee.cursorlessjetbrains.services
 
 import com.github.asoee.cursorlessjetbrains.MyBundle
+import com.github.asoee.cursorlessjetbrains.commandserver.http.HttpCommandServer
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
@@ -14,6 +15,7 @@ class MyProjectService(
     init {
         thisLogger().info(MyBundle.message("projectService", project.name))
         thisLogger().warn("Don't forget to remove all non-needed sample code files with their corresponding registration entries in `plugin.xml`.")
+
 
 //        val talonJs = javaClass.getResource("/cursorless/cursorless.js").readText()
 //        thisLogger().warn("talon js script size: " + talonJs.length)

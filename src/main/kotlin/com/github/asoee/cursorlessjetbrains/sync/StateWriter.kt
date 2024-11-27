@@ -1,5 +1,6 @@
 package com.github.asoee.cursorlessjetbrains.sync
 
+import com.github.phillco.talonjetbrains.util.caretLanguage
 import com.intellij.dvcs.repo.VcsRepositoryManager
 import com.intellij.ide.RecentProjectsManager
 import com.intellij.ide.RecentProjectsManagerBase
@@ -153,11 +154,15 @@ fun serializeEditor(editor: Editor, active: Boolean, editorId: String): EditorSt
 
     val ve = editor.scrollingModel.visibleArea
 
+//    val language = caretLanguage(editor)?.id ?: "plaintext"
+    val language = "plaintext"
+
     return EditorState(
         editorId,
         currentFile,
         document.text,
         active,
+        language,
         project?.let { serializeProject(it) },
         editor.xyToLogicalPosition(Point(ve.x, ve.y)).line,
         editor.xyToLogicalPosition(Point(ve.x, ve.y + ve.height)).line,

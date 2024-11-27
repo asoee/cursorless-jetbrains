@@ -10,6 +10,7 @@ import com.github.asoee.cursorlessjetbrains.cursorless.HatUpdateCallback
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import java.io.File
 
 
@@ -17,7 +18,7 @@ class JavetDriver() {
 
     private val ideClientCallback = IdeClientCallback()
     public val runtime: V8Runtime
-    val eventLoop : JNEventLoop
+    val eventLoop: JNEventLoop
 
 
     init {
@@ -42,6 +43,12 @@ class JavetDriver() {
         }
 
         eventLoop.loadStaticModules(JNModuleType.Console, JNModuleType.Timers);
+
+        runtime.getExecutor(
+            "process.on('unhandledRejection', (reason, promise) => {\n" +
+                    "    console.error('Unhandled Rejection at:'+ promise+ 'reason:'+ reason);\n" +
+                    "    ideClient.unhandledRejection('' + reason);\n" +
+                    "});").executeVoid();
 
         val cursorlessJs = javaClass.getResource("/cursorless/cursorless.js").readText()
         val module = runtime.getExecutor(cursorlessJs)
@@ -87,7 +94,7 @@ class JavetDriver() {
 
 
     fun editorChanged(editorState: EditorState) {
-        val json = Json.encodeToString(editorState).toString()
+        val json = Json.encodeToString(editorState)
         val js = """
             | console.log("ASOEE/JS: call document changed");
             | (async () => {
@@ -118,4 +125,89 @@ class JavetDriver() {
         ideClientCallback.hatUpdateCallback = callback
     }
 
+    fun setSelectionUpdateCallback(callback: SetSelectionCallbackFunc) {
+        ideClientCallback.setSelectionCallback = callback
+    }
+
+    fun execute(commands: List<JsonObject?>): ExecutionResult {
+
+        try {
+
+            val json = Json.encodeToString(commands[0]).toString()
+            val js = """
+            | console.log("ASOEE/JS: call runCommand");
+            | try {
+            | (async () => {
+            |   console.log("ASOEE/JS: async runCommand");
+            |   const engine = await globalThis.engine;
+            |   if (ide) {
+            |     console.log("ASOEE/JS: ide document changed");
+            |     try {
+            |       engine.commandApi.runCommand(${json});
+            |       console.log("ASOEE/JS: async runCommand completed");
+            |     } catch (e) {                      
+            |       console.error("ASOEE/JS: error in runCommand - " + e);
+            | //      throw e;
+            |     }
+            |   } else {
+            |     console.log("ASOEE/JS: engine not available");
+            |   }
+            | })();
+            | } catch (e) {                      
+            |   console.error("ASOEE/JS: error in async runCommand - " + e);
+            | //      throw e;
+            | }
+            | """.trimMargin()
+
+            runtime.getExecutor(js)
+                .executeVoid();
+            eventLoop.await();
+        } catch (e: Throwable) {
+            println("ASOEE/JS: error in execute - " + e)
+            return ExecutionResult(false, null, e.toString())
+        }
+        if (!ideClientCallback.unhandledRejections.isEmpty()) {
+            val joinedCause = ideClientCallback.unhandledRejections.joinToString(",")
+            ideClientCallback.unhandledRejections.clear()
+            return ExecutionResult(false, null, joinedCause)
+        }
+        return ExecutionResult(true, null, null)
+
+    }
 }
+
+data class ExecutionResult(
+    val success: Boolean,
+    val returnValue: String?,
+    val error: String?
+)
+
+data class CommandV7(
+    val version: Int = 7,
+    val spokenFormat: String?,
+    val usePrePhraseSnapshot: Boolean,
+    val action: ActionDescriptor
+)
+
+
+sealed interface ActionDescriptor {
+}
+
+data class SimpleActionDescriptor(
+    val name: SimpleActionName,
+    val target: PartialTargetDescriptor
+) : ActionDescriptor
+
+
+typealias SimpleActionName = String
+
+val setSelection: SimpleActionName = "setSelection"
+
+sealed interface PartialTargetDescriptor {
+}
+
+data class PartialPrimitiveTargetDescriptor(
+    val type: String = "primitive",
+//    val mark: PartialMark?,
+//    val modifiers: Modifier[]?;
+)

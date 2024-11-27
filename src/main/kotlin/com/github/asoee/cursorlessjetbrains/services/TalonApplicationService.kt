@@ -20,8 +20,8 @@ class TalonApplicationService : Disposable {
     private val documentListeners =
         mutableMapOf<Editor, TalonDocumentListener>()
 
-    private val editorManager: EditorManager
-    private var jsDriver: JavetDriver
+    public val editorManager: EditorManager
+    public var jsDriver: JavetDriver
 
 
     init {

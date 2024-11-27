@@ -7,7 +7,17 @@ import com.github.asoee.cursorlessjetbrains.cursorless.HatsFormat
 import com.github.asoee.cursorlessjetbrains.listeners.getCursorlessContainers
 import com.github.asoee.cursorlessjetbrains.sync.HatRange
 import com.github.asoee.cursorlessjetbrains.sync.serializeEditor
+import com.intellij.openapi.application.Application
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.EDT
+import com.intellij.openapi.command.CommandProcessor
+import com.intellij.openapi.editor.Caret
+import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.LogicalPosition
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
 class EditorManager(private val cursorlessEngine: CursorlessEngine) {
@@ -17,6 +27,8 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine) {
 
     init {
         cursorlessEngine.AddHatUpdateListener(HatUpdateHandler(this))
+        cursorlessEngine.SetSelectionUpdateListener(::setSelectionCallback)
+
     }
 
     fun editorChanged(editor: Editor) {
@@ -24,6 +36,36 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine) {
         val editorId = editorIds[editor]!!
         val editorState = serializeEditor(editor, true, editorId)
         cursorlessEngine.editorChanged(editorState)
+    }
+
+    fun setSelectionCallback(editorId: String, selections: Array<CursorlessRange>) {
+        val editor = editorsById[editorId]
+        if (editor != null) {
+            if (selections.size > 0) {
+                val range = selections[0]
+                val startPos = LogicalPosition(range.start!!.line, range.start!!.character)
+                val endPos = LogicalPosition(range.end!!.line, range.end!!.character)
+                val startOffset = editor.logicalPositionToOffset(startPos)
+                val endOffset = editor.logicalPositionToOffset(endPos)
+                println("launch action : Setting selection to " + startPos.toString() + " - " + endPos.toString())
+
+                ApplicationManager.getApplication().invokeLater {
+                    ApplicationManager.getApplication().runWriteAction {
+                        CommandProcessor.getInstance().executeCommand(
+                            editor.project,
+                            {
+                                println("Setting selection to " + startPos.toString() + " - " + endPos.toString())
+                                editor.caretModel?.caretsAndSelections = listOf(
+                                    CaretState(startPos, startPos, endPos),
+                                )
+                            },
+                            "Insert",
+                            "insertGroup"
+                        )
+                    }
+                }
+            }
+        }
     }
 
     fun editorCreated(editor: Editor) {
@@ -54,7 +96,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine) {
 
                 var ranges = format.get(hatRange.styleName)
                 if (ranges == null) {
-                    ranges =  ArrayList<CursorlessRange>()
+                    ranges = ArrayList<CursorlessRange>()
                     format.put(hatRange.styleName, ranges)
                 }
                 ranges.add(hatRange.range)

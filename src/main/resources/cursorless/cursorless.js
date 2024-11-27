@@ -9934,7 +9934,6 @@ var InMemoryTextDocument = class {
     return line.offset + clamp(position.character, 0, line.text.length);
   }
   positionAt(offset) {
-    console.log("positionAt " + JSON.stringify(offset));
     if (offset <= 0) {
       return this.range.start;
     }
@@ -13436,7 +13435,6 @@ var JetbrainsHats = class {
     this.hatRanges = hatRanges;
     const jbHatRanges = this.toJetbransHatRanges(hatRanges);
     const hatsJson = JSON.stringify(jbHatRanges);
-    console.log("ASOEE/CL: JetbrainsHats.setHatRanges json: " + hatsJson);
     this.client.hatsUpdated(hatsJson);
     return Promise.resolve();
   }
@@ -13926,11 +13924,11 @@ var LIB;
 var { URI, Utils } = LIB;
 
 // src/ide/setSelections.ts
-function setSelections(client, document, selections) {
-  const selectionOffsets = selections.map((selection) => ({
-    anchor: document.offsetAt(selection.anchor),
-    active: document.offsetAt(selection.active)
-  }));
+function setSelections(client, document, editorId, selections) {
+  console.log("setSelections: " + selections);
+  const selectionsJson = JSON.stringify(selections);
+  console.log("setSelections JSON: " + selectionsJson);
+  client.setSelection(editorId, selectionsJson);
   return Promise.resolve();
 }
 
@@ -13971,8 +13969,9 @@ var JetbrainsEditor = class {
     return this.id === other.id;
   }
   async setSelections(selections, _opts) {
+    console.log("editor.setSelections");
     if (!selectionsEqual(this.selections, selections)) {
-      await setSelections(this.client, this.document, selections);
+      await setSelections(this.client, this.document, this.id, selections);
       this.selections = selections;
     }
   }
