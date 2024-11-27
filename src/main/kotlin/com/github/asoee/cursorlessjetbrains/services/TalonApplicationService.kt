@@ -1,14 +1,12 @@
 package com.github.asoee.cursorlessjetbrains.services
 
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessEngine
-import com.github.asoee.cursorlessjetbrains.graaljs.GraalJSDriver
 import com.github.asoee.cursorlessjetbrains.javet.JavetDriver
 import com.github.asoee.cursorlessjetbrains.listeners.*
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.ex.EditorEventMulticasterEx
-import kotlinx.coroutines.runBlocking
 
 class TalonApplicationService : Disposable {
 
@@ -24,6 +22,12 @@ class TalonApplicationService : Disposable {
     public var jsDriver: JavetDriver
 
 
+    private val focusChangeListener: TalonFocusChangeListener
+        get() {
+            val focusChangeListener = TalonFocusChangeListener()
+            return focusChangeListener
+        }
+
     init {
         println("application service init")
 
@@ -38,7 +42,7 @@ class TalonApplicationService : Disposable {
         // https://intellij-support.jetbrains.com/hc/en-us/community/posts/4578776718354-How-do-I-listen-for-editor-focus-events-
         val m = EditorFactory.getInstance()
             .eventMulticaster as EditorEventMulticasterEx;
-        m.addFocusChangeListener(TalonFocusChangeListener()) {}
+        m.addFocusChangeListener(this.focusChangeListener, this)
 
     }
 
@@ -104,5 +108,6 @@ class TalonApplicationService : Disposable {
                 l
             )
         }
+
     }
 }
