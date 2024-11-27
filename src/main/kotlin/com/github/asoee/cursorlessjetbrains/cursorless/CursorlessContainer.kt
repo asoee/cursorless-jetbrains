@@ -242,7 +242,7 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
 
             localOffsets.forEach { pair ->
                 if (offset >= pair.first) {
-                    log.warn("adjusting $offset to ${offset + pair.second} due to local offset: $localOffsets")
+//                    log.warn("adjusting $offset to ${offset + pair.second} due to local offset: $localOffsets")
                     offset += pair.second
                 }
             }
@@ -270,7 +270,7 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
                 val size = OVAL_SIZE
                 g.fillOval(
                     coordinates.x + 1,
-                    coordinates.y - size / 2,
+                    coordinates.y,
                     size,
                     size
                 )
