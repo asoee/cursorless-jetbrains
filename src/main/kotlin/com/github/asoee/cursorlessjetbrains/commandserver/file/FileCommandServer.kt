@@ -16,25 +16,27 @@ class FileCommandServer {
 
     private val PREFIX = PlatformUtils.getPlatformPrefix()
     val LOG = thisLogger<FileCommandServer>()
-    var watcher : FileWatcher? = null
-    var commandServerDir : Path? = null
+    var watcher: FileWatcher? = null
+    val commandServerDir: Path
 
 
-    public fun start() {
-        println("Starting File Commandserver...")
-        println("Platform prefix: $PREFIX")
+    init {
+        println("FileCommandServer: FilePlatform prefix: $PREFIX")
 
         val suffix = getUserIdSuffix()
 
         val commandServerDir = Path(System.getProperty("java.io.tmpdir"))
             .resolve("$PREFIX-command-server$suffix")
-        thisLogger().info("Command server dir: $commandServerDir")
+        thisLogger().info("FileCommandServer: dir: $commandServerDir")
         commandServerDir.toFile().mkdirs()
         this.commandServerDir = commandServerDir
-
-        watcher = FileWatcher(commandServerDir, ::handleFileChanged)
     }
 
+
+    public fun startWatcher() {
+        println("FileCommandServer: Starting File Watcher...")
+        watcher = FileWatcher(this.commandServerDir, ::handleFileChanged)
+    }
 
     fun getUserIdSuffix(): String {
         val selfPath = Paths.get(System.getProperty("user.home"))
@@ -43,6 +45,13 @@ class FileCommandServer {
         }
         val uid = Files.getAttribute(selfPath, "unix:uid")
         return "-$uid"
+    }
+
+    public fun checkAndHandleFileRquest() {
+        val requestPath = commandServerDir.resolve("request.json")
+        if (requestPath.exists()) {
+            readAndHandleFileRquest(requestPath)
+        }
     }
 
     fun handleFileChanged(path: Path) {

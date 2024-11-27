@@ -1,16 +1,10 @@
 package com.github.asoee.cursorlessjetbrains.listeners
 
-import com.dokar.quickjs.QuickJs
-import com.dokar.quickjs.binding.define
 import com.github.asoee.cursorlessjetbrains.commandserver.file.FileCommandServer
 import com.github.asoee.cursorlessjetbrains.commandserver.http.HttpCommandServer
-import com.github.asoee.cursorlessjetbrains.graaljs.GraalJSDriver
-import com.github.asoee.cursorlessjetbrains.services.Console
-import com.github.asoee.cursorlessjetbrains.services.IdeClient
+import com.github.asoee.cursorlessjetbrains.services.FileCommandServerService
 import com.intellij.ide.AppLifecycleListener
-import com.intellij.openapi.diagnostic.thisLogger
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
+import com.intellij.openapi.components.service
 
 class TalonAppLifecycleListener : AppLifecycleListener {
 
@@ -23,18 +17,14 @@ class TalonAppLifecycleListener : AppLifecycleListener {
     override fun appStarted() {
         super.appStarted()
         println("PHIL: app started, loading js driver...")
-//        val driver = GraalJSDriver()
-//        runBlocking {
-//            driver.loadCursorless()
-//        }
-//        this.jsDriver = driver
-
 
         val httpCommandServer = HttpCommandServer()
         httpCommandServer.start()
 
-        val fileCommandServer = FileCommandServer()
-        fileCommandServer.start()
+        val fileCommandServerService = service<FileCommandServerService>()
+        if (fileCommandServerService != null ) {
+            println("File command server service ready...")
+        }
 
         println("PHIL: app started...")
     }

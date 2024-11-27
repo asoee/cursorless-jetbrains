@@ -13,13 +13,31 @@
 
         <applicationService
                 serviceImplementation="com.github.asoee.cursorlessjetbrains.services.TalonApplicationService"/>
+        <applicationService
+                serviceImplementation="com.github.asoee.cursorlessjetbrains.services.FileCommandServerService"/>
 
         <editorFactoryListener
                 implementation="com.github.asoee.cursorlessjetbrains.listeners.TalonEditorFactoryListener"/>
 
         <notificationGroup id="vc-idea" displayType="BALLOON" />
 
+
+
     </extensions>
+
+    <actions>
+        <action
+                id="com.github.asoee.cursorlessjetbrains.action.FileCommandServerCheckAction"
+                class="com.github.asoee.cursorlessjetbrains.action.FileCommandServerCheckAction"
+                text="Check File Command Server"
+                description="Check File Command Server">
+<!--            <override-text place="MainMenu" text="Popup Dialog Action"/>-->
+            <keyboard-shortcut
+                    keymap="$default"
+                    first-keystroke="control shift F17"/>
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+        </action>
+    </actions>
 
     <applicationListeners>
         <listener class="com.github.asoee.cursorlessjetbrains.listeners.MyApplicationActivationListener"
