@@ -7,35 +7,79 @@ import com.github.asoee.cursorlessjetbrains.cursorless.HatsFormat
 import com.github.asoee.cursorlessjetbrains.listeners.getCursorlessContainers
 import com.github.asoee.cursorlessjetbrains.sync.HatRange
 import com.github.asoee.cursorlessjetbrains.sync.serializeEditor
-import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.EDT
 import com.intellij.openapi.command.CommandProcessor
-import com.intellij.openapi.editor.Caret
 import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import java.util.UUID
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import java.util.*
+import kotlin.time.Duration.Companion.milliseconds
 
 class EditorManager(private val cursorlessEngine: CursorlessEngine) {
 
     private val editorIds = HashMap<Editor, String>()
     private val editorsById = HashMap<String, Editor>()
+    private val editorDebounce = HashMap<String, MutableSharedFlow<EditorChange>>()
+
+    private val dispatchScope = CoroutineScope(Dispatchers.Default)
+
 
     init {
         cursorlessEngine.AddHatUpdateListener(HatUpdateHandler(this))
         cursorlessEngine.SetSelectionUpdateListener(::setSelectionCallback)
+    }
 
+    data class EditorChange (
+        val editorId: String,
+        val ts : Long
+    )
+
+
+    fun debouncerById(editorId: String): MutableSharedFlow<EditorChange> {
+        var debouncer = editorDebounce.get(editorId)
+        if (debouncer == null) {
+            debouncer = MutableSharedFlow<EditorChange>()
+            dispatchScope.launch {
+                debouncer
+                    .debounce(75.milliseconds)
+                    .collect { change ->
+                        println("collect... "  + change.editorId)
+                        val editor = editorsById[change.editorId]
+                        if (editor != null) {
+                            try {
+                                editorDidChange(editor)
+                            } catch (e: Exception) {
+                                println("Error in editorDidChange")
+                                e.printStackTrace()
+                            }
+                        }
+                    }
+            }
+        }
+        return debouncer
     }
 
     fun editorChanged(editor: Editor) {
         ensureEditorIdSet(editor)
         val editorId = editorIds[editor]!!
-        val editorState = serializeEditor(editor, true, editorId)
-        cursorlessEngine.editorChanged(editorState)
+        println("Editor changed " + editorId)
+        val debouncer = debouncerById(editorId)
+        dispatchScope.launch {
+            val emitted = debouncer.emit(EditorChange(editorId,System.currentTimeMillis()))
+            println("emitted = ${emitted}")
+        }
+    }
+
+    fun editorDidChange(editor: Editor) {
+        ApplicationManager.getApplication().invokeLater {
+            ensureEditorIdSet(editor)
+            val editorId = editorIds[editor]!!
+            println("Editor did change " + editorId)
+            val editorState = serializeEditor(editor, true, editorId)
+            cursorlessEngine.editorChanged(editorState)
+        }
     }
 
     fun setSelectionCallback(editorId: String, selections: Array<CursorlessRange>) {
@@ -56,7 +100,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine) {
                             {
                                 println("Setting selection to " + startPos.toString() + " - " + endPos.toString())
                                 editor.caretModel?.caretsAndSelections = listOf(
-                                    CaretState(startPos, startPos, endPos),
+                                    CaretState(endPos, startPos, endPos),
                                 )
                             },
                             "Insert",
@@ -82,6 +126,10 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine) {
             editorIds.put(editor, editorId)
             editorsById.put(editorId, editor)
         }
+    }
+
+    fun focusChanged(editor: Editor) {
+        editorChanged(editor)
     }
 
     private class HatUpdateHandler(private val editorManager: EditorManager) : HatUpdateCallback {

@@ -22,11 +22,8 @@ class TalonApplicationService : Disposable {
     public var jsDriver: JavetDriver
 
 
-    private val focusChangeListener: TalonFocusChangeListener
-        get() {
-            val focusChangeListener = TalonFocusChangeListener()
-            return focusChangeListener
-        }
+    private var focusChangeListener: TalonFocusChangeListener
+
 
     init {
         println("application service init")
@@ -36,6 +33,7 @@ class TalonApplicationService : Disposable {
         this.jsDriver = driver
         val cursorlessEngine = CursorlessEngine(driver)
         this.editorManager = EditorManager(cursorlessEngine)
+        this.focusChangeListener = TalonFocusChangeListener(editorManager)
 
         // Listening for window changes is necessary, since we don't seem to get them from Talon.
 
@@ -55,11 +53,11 @@ class TalonApplicationService : Disposable {
         e.caretModel.addCaretListener(cw)
         cursorWatchers[e] = cw
 
-        val sl = TalonSelectionListener()
+        val sl = TalonSelectionListener(editorManager)
         e.selectionModel.addSelectionListener(sl)
         selectionListeners[e] = sl
 
-        val visibleAreaListener = TalonVisibleAreaListener()
+        val visibleAreaListener = TalonVisibleAreaListener(editorManager)
         e.scrollingModel.addVisibleAreaListener(visibleAreaListener)
         visibleAreaListeners[e] = visibleAreaListener
 
