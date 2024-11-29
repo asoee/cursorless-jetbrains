@@ -14061,7 +14061,9 @@ function createTextEditor(client, ide2, editorState) {
   const uri = URI.parse(`talon-jetbrains://${id2}`);
   const languageId = editorState.languageId ?? "plaintext";
   const document = new InMemoryTextDocument(uri, languageId, editorState.text);
-  const visibleRanges = [document.range];
+  const visibleRanges = [
+    new Range(editorState.firstVisibleLine, 0, editorState.lastVisibleLine, 0)
+  ];
   const selections = editorState.selections.map(
     (selection) => createSelection(document, selection)
   );
@@ -14092,7 +14094,7 @@ var JetbrainsIDE = class {
     this.runMode = "development";
     this.disposables = [];
     this.quickPickReturnValue = void 0;
-    this.editors = [];
+    this.editors = /* @__PURE__ */ new Map();
     this.onDidChangeTextDocumentNotifier = new Notifier();
     this.onDidChangeTextDocumentContentNotifier = new Notifier();
     this.onDidCloseTextDocument = dummyEvent2;
@@ -14105,8 +14107,8 @@ var JetbrainsIDE = class {
     this.messages = new JetbrainsMessages();
     this.clipboard = new JetbrainsClipboard(this.client);
     this.capabilities = new JetbrainsCapabilities();
-    this.activeWindow = void 0;
-    this.activeBuffer = void 0;
+    this.activeProject = void 0;
+    this.activeEditor = void 0;
   }
   async init() {
   }
@@ -14137,11 +14139,11 @@ var JetbrainsIDE = class {
   }
   get activeEditableTextEditor() {
     console.log("get activeEditableTextEditor");
-    return this.editors[0];
+    return [...this.editors.values()].find((editor) => editor.isActive);
   }
   get visibleTextEditors() {
-    console.log("get activeEditableTextEditor");
-    return this.editors;
+    console.log("get visibleTextEditors");
+    return [...this.editors.values()].filter((editor) => editor.isActive);
   }
   getEditableTextEditor(editor) {
     console.log("getEditableTextEditor");
@@ -14213,7 +14215,10 @@ var JetbrainsIDE = class {
     this.onDidChangeTextDocumentNotifier.notifyListeners(event);
   }
   updateTextEditors(editorState) {
-    this.editors = [createTextEditor(this.client, this, editorState)];
+    this.editors.set(
+      editorState.id,
+      createTextEditor(this.client, this, editorState)
+    );
     console.log(
       "ASOEE/CL: updated editor with document " + editorState.firstVisibleLine
     );
