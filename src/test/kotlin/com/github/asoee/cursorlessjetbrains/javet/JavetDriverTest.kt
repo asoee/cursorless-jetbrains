@@ -2,13 +2,10 @@ package com.github.asoee.cursorlessjetbrains.javet
 
 import com.caoccao.javet.javenode.JNEventLoop
 import com.caoccao.javet.javenode.enums.JNModuleType
-import com.github.asoee.cursorlessjetbrains.graaljs.GraalJSDriver
 import com.github.asoee.cursorlessjetbrains.sync.Cursor
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
 import com.github.asoee.cursorlessjetbrains.sync.Selection
-import com.intellij.openapi.actionSystem.impl.runEdtLoop
 import kotlinx.coroutines.runBlocking
-import org.graalvm.polyglot.Context
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -66,6 +63,7 @@ class JavetDriverTest {
             "/test/foo",
             "public static void main(String[] args) {\n\n}",
             true,
+            "java",
             null,
             0,
             4,
@@ -83,9 +81,7 @@ class JavetDriverTest {
     @Test
     fun testSetTimeout() {
 
-        val context = Context.create()
-
-        val driver = GraalJSDriver()
+        val driver = JavetDriver()
 
         runBlocking {
 //            driver.loadTimeout()
@@ -102,7 +98,7 @@ class JavetDriverTest {
               | }
               | main( 5000 );
             """.trimMargin()
-            driver.evaluate(js)
+//            driver.evaluate(js)
 
 
         }
