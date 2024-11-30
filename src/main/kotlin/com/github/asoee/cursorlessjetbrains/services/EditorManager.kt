@@ -8,6 +8,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.CaretState
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
 import kotlinx.coroutines.*
@@ -161,6 +162,14 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine) {
 
     fun focusChanged(editor: Editor) {
         editorChanged(editor)
+    }
+
+    fun documentChanged(document: Document) {
+        editorIds.keys.forEach({
+            if (it.document == document) {
+                editorChanged(it)
+            }
+        })
     }
 
     private class HatUpdateHandler(private val editorManager: EditorManager) : HatUpdateCallback {

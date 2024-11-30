@@ -61,7 +61,7 @@ class TalonApplicationService : Disposable {
         e.scrollingModel.addVisibleAreaListener(visibleAreaListener)
         visibleAreaListeners[e] = visibleAreaListener
 
-        val dl = TalonDocumentListener()
+        val dl = TalonDocumentListener(editorManager)
         e.document.addDocumentListener(dl)
         documentListeners[e] = dl
     }
