@@ -5,6 +5,7 @@
     <vendor>asoee</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.vcs</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
@@ -47,6 +48,7 @@
                 topic="com.intellij.ide.AppLifecycleListener"/>
 
     </applicationListeners>
+
 
 
 </idea-plugin>

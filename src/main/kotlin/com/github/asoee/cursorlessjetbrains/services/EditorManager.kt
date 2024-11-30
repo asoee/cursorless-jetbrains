@@ -13,14 +13,13 @@ import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
-import com.intellij.openapi.editor.impl.ScrollingModelImpl
 import com.intellij.openapi.util.Disposer
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.util.*
 import kotlin.time.Duration.Companion.milliseconds
 
-class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDisposable: Disposable) : Disposable {
+class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDisposable: Disposable, cs: CoroutineScope) : Disposable {
 
     val LOG: Logger = Logger.getInstance(EditorManager::class.java)
 
@@ -28,8 +27,8 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     private val editorsById = HashMap<String, Editor>()
     private val editorDebounce = HashMap<String, MutableSharedFlow<EditorChange>>()
 
-    private val dispatchScope = CoroutineScope(Dispatchers.IO)
-    private val emitScope = CoroutineScope(Dispatchers.Default)
+    private val dispatchScope = cs
+    private val emitScope = cs
 
 
     init {

@@ -4,7 +4,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.ui.JBColor
-import com.intellij.util.io.readText
 import groovy.json.JsonException
 import kotlinx.serialization.json.Json
 import java.awt.Color
@@ -175,7 +174,7 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
             // TODO(pcohen): anywhere where we parse JSON, show appropriate errors to the user
             // if the parse fails
             val map = format.decodeFromString<ColorsFormat>(
-                Path.of(COLORS_FILENAME).readText()
+                File(COLORS_FILENAME).readText()
             )
 
             map.forEach { colorScheme, colorMap ->

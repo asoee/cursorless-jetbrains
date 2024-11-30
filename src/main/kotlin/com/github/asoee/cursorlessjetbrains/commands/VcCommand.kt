@@ -1,39 +1,39 @@
-package com.github.asoee.cursorlessjetbrains.commands;
+package com.github.asoee.cursorlessjetbrains.commands
 
-import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.IdeFocusManager;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.psi.PsiDocumentManager;
-import com.intellij.psi.PsiFile;
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.IdeFocusManager
+import com.intellij.openapi.wm.ToolWindow
+import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiFile
+import java.net.URI
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
+import java.util.*
 
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Optional;
+abstract class VcCommand {
+    abstract fun run(): String?
 
-public abstract class VcCommand {
+    companion object {
+        private val LOG = Logger.getInstance(
+            VcCommand::class.java
+        )
 
-    private static final Logger LOG = Logger.getInstance(VcCommand.class);
-
-    public static Optional<VcCommand> fromRequestUri(URI requestURI) {
-
-        String[] split;
-        String decode = URLDecoder.decode(requestURI.toString().substring(1), StandardCharsets.UTF_8);
-        split = decode.split("/");
-        // XXX For debugging
+        fun fromRequestUri(requestURI: URI): Optional<VcCommand> {
+            var split: Array<String>
+            val decode = URLDecoder.decode(requestURI.toString().substring(1), StandardCharsets.UTF_8)
+            split = decode.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            // XXX For debugging
 //            Notification notification =new Notification("vc-idea", "Voicecode Plugin", decode,
 //                    NotificationType.INFORMATION);
 //            Notifications.Bus.notify(notification);
-        split = split[1].split(" ");
+            split = split[1].split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-        String command = split[0];
-//        if (command.equals("goto")) {
+            val command = split[0]
+            //        if (command.equals("goto")) {
 //            return Optional.of(new GotoCommand(Integer.parseInt(split[1]), Integer.parseInt(split[2])));
 //        }
 //        if (command.equals("range")) {
@@ -57,39 +57,42 @@ public abstract class VcCommand {
 //        if (command.equals("psi")) {
 //            return Optional.of(new StructureCommand(split[1], String.join(" ", Arrays.copyOfRange(split, 2, split.length)).split(",")));
 //        }
-        return Optional.empty();
-    }
-
-    static Editor getEditor() {
-        Project currentProject = getProject();
-        Editor e = FileEditorManager.getInstance(currentProject).getSelectedTextEditor();
-        if (e == null) {
-            LOG.debug("No selected editor?");
+            return Optional.empty()
         }
-        return e;
-    }
 
-    static ToolWindow getToolWindow() {
-        Project currentProject = getProject();
-        ToolWindowManager twm = ToolWindowManager.getInstance(currentProject);
-        ToolWindow tw = twm.getToolWindow(twm.getActiveToolWindowId());
-        if (tw == null) {
-            LOG.debug("No selected tool window?");
-        }
-        return tw;
-    }
+        val editor: Editor?
+            get() {
+                val currentProject = project
+                val e =
+                    FileEditorManager.getInstance(currentProject!!).selectedTextEditor
+                if (e == null) {
+                    LOG.debug("No selected editor?")
+                }
+                return e
+            }
 
-    static PsiFile getPsiFile() {
-        Project currentProject = getProject();
-        Editor e = FileEditorManager.getInstance(currentProject).getSelectedTextEditor();
-        final PsiFile psiFile = PsiDocumentManager.getInstance(currentProject)
-            .getPsiFile(e.getDocument());
-        return psiFile;
-    }
+        val toolWindow: ToolWindow?
+            get() {
+                val currentProject = project
+                val twm = ToolWindowManager.getInstance(currentProject!!)
+                val tw = twm.getToolWindow(twm.activeToolWindowId)
+                if (tw == null) {
+                    LOG.debug("No selected tool window?")
+                }
+                return tw
+            }
 
-    static Project getProject() {
-        return IdeFocusManager.findInstance().getLastFocusedFrame().getProject();
-    }
+        val psiFile: PsiFile?
+            get() {
+                val currentProject = project
+                val e =
+                    FileEditorManager.getInstance(currentProject!!).selectedTextEditor
+                val psiFile = PsiDocumentManager.getInstance(currentProject)
+                    .getPsiFile(e!!.document)
+                return psiFile
+            }
 
-    public abstract String run();
+        val project: Project?
+            get() = IdeFocusManager.findInstance().lastFocusedFrame!!.project
+    }
 }

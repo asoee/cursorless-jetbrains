@@ -8,8 +8,9 @@ import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.ex.EditorEventMulticasterEx
+import kotlinx.coroutines.CoroutineScope
 
-class TalonApplicationService : Disposable {
+class TalonApplicationService(private val cs: CoroutineScope) : Disposable {
 
     private val cursorWatchers = mutableMapOf<Editor, TalonCaretListener>()
     private val selectionListeners =
@@ -33,7 +34,7 @@ class TalonApplicationService : Disposable {
         driver.loadCursorless()
         this.jsDriver = driver
         val cursorlessEngine = CursorlessEngine(driver)
-        this.editorManager = EditorManager(cursorlessEngine, this)
+        this.editorManager = EditorManager(cursorlessEngine, this, cs)
         this.focusChangeListener = TalonFocusChangeListener(editorManager)
 
         // Listening for window changes is necessary, since we don't seem to get them from Talon.
