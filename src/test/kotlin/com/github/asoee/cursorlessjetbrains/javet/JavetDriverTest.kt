@@ -64,7 +64,6 @@ class JavetDriverTest {
             "public static void main(String[] args) {\n\n}",
             true,
             "java",
-            null,
             0,
             4,
             listOf(cursorPos),
