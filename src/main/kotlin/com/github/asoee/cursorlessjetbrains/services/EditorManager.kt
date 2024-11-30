@@ -6,6 +6,7 @@ import com.github.asoee.cursorlessjetbrains.sync.HatRange
 import com.github.asoee.cursorlessjetbrains.sync.serializeEditor
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
@@ -20,7 +21,8 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine) {
     private val editorsById = HashMap<String, Editor>()
     private val editorDebounce = HashMap<String, MutableSharedFlow<EditorChange>>()
 
-    private val dispatchScope = CoroutineScope(Dispatchers.Default)
+    private val dispatchScope = CoroutineScope(Dispatchers.IO)
+    private val emitScope = CoroutineScope(Dispatchers.Default)
 
 
     init {
@@ -35,13 +37,16 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine) {
     )
 
 
+    @OptIn(FlowPreview::class)
     fun debouncerById(editorId: String): MutableSharedFlow<EditorChange> {
-        var debouncer = editorDebounce.get(editorId)
+        var debouncer = editorDebounce[editorId]
         if (debouncer == null) {
+            thisLogger().info("Creating debouncer for $editorId")
             debouncer = MutableSharedFlow<EditorChange>()
+            editorDebounce[editorId] = debouncer
             dispatchScope.launch {
                 debouncer
-                    .debounce(75.milliseconds)
+                    .debounce(100.milliseconds)
                     .collect { change ->
                         println("collect... " + change.editorId)
                         val editor = editorsById[change.editorId]
@@ -62,9 +67,9 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine) {
     fun editorChanged(editor: Editor) {
         ensureEditorIdSet(editor)
         val editorId = editorIds[editor]!!
-        println("Editor changed " + editorId)
+        println("Editor changed $editorId")
         val debouncer = debouncerById(editorId)
-        dispatchScope.launch {
+        emitScope.launch {
             val emitted = debouncer.emit(EditorChange(editorId, System.currentTimeMillis()))
             println("emitted = ${emitted}")
         }

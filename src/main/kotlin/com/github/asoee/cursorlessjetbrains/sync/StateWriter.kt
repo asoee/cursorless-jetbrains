@@ -168,8 +168,6 @@ fun serializeEditor(editor: Editor, active: Boolean, editorId: String): EditorSt
         editor.xyToLogicalPosition(Point(ve.x, ve.y + ve.height)).line,
         cursors,
         selections,
-        openFiles(project!!),
-        recentFiles(project),
     )
 }
 

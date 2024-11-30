@@ -14134,16 +14134,21 @@ var JetbrainsIDE = class {
     throw new Error("workspaceFolders not implemented.");
   }
   get activeTextEditor() {
-    console.log("get activeEditableTextEditor");
+    console.log("get activeTextEditor");
     return this.activeEditableTextEditor;
   }
   get activeEditableTextEditor() {
     console.log("get activeEditableTextEditor");
-    return [...this.editors.values()].find((editor) => editor.isActive);
+    return this.activeEditor;
   }
   get visibleTextEditors() {
     console.log("get visibleTextEditors");
-    return [...this.editors.values()].filter((editor) => editor.isActive);
+    if (this.activeEditor) {
+      console.log("visible: " + this.activeEditor.id);
+      return [this.activeEditor];
+    } else {
+      return [];
+    }
   }
   getEditableTextEditor(editor) {
     console.log("getEditableTextEditor");
@@ -14188,23 +14193,20 @@ var JetbrainsIDE = class {
       "ASOEE/CL: documentChanged : " + JSON.stringify(editorStateJson)
     );
     const editorState = editorStateJson;
-    this.updateTextEditors(editorState);
-    const uri = URI.parse("jetbrains://" + editorState);
-    const language = editorState.languageId ? editorState.languageId : "plaintext";
-    const document = new InMemoryTextDocument(uri, language, editorState.text);
+    const editor = this.updateTextEditors(editorState);
     const linedata = getLines(
       editorState.text,
       editorState.firstVisibleLine,
       editorState.lastVisibleLine
     );
     const contentChangeEvents = fromJetbrainsContentChange(
-      document,
+      editor.document,
       editorState.firstVisibleLine,
       editorState.lastVisibleLine,
       linedata
     );
     const documentChangeEvent = {
-      document,
+      document: editor.document,
       contentChanges: contentChangeEvents
     };
     console.log("ASOEE/CL: documentChanged : notify...");
@@ -14215,15 +14217,34 @@ var JetbrainsIDE = class {
     this.onDidChangeTextDocumentNotifier.notifyListeners(event);
   }
   updateTextEditors(editorState) {
-    this.editors.set(
-      editorState.id,
-      createTextEditor(this.client, this, editorState)
-    );
-    console.log(
-      "ASOEE/CL: updated editor with document " + editorState.firstVisibleLine
-    );
+    let editor = this.editors.get(editorState.id);
+    if (editor) {
+      updateEditor(editor, editorState);
+    } else {
+      editor = createTextEditor(this.client, this, editorState);
+      this.editors.set(editorState.id, editor);
+    }
+    if (editorState.active) {
+      this.activeEditor = editor;
+    }
+    return editor;
   }
 };
+function updateEditor(editor, editorState) {
+  console.log("Updating editor " + editorState.id);
+  const oldDocument = editor.document;
+  editor.document = new InMemoryTextDocument(
+    oldDocument.uri,
+    oldDocument.languageId,
+    editorState.text
+  );
+  editor.visibleRanges = [
+    new Range(editorState.firstVisibleLine, 0, editorState.lastVisibleLine, 0)
+  ];
+  editor.selections = editorState.selections.map(
+    (selection) => createSelection(editor.document, selection)
+  );
+}
 function getLines(text, firstLine, lastLine) {
   const lines = text.split("\n");
   return lines.slice(firstLine, lastLine);

@@ -41,12 +41,7 @@ public data class EditorState(
     val lastVisibleLine : Int,
     val cursors: List<Cursor>,
     val selections: List<Selection>,
-
-    val openFiles: List<String>,
-    val recentFiles: List<String>,
-//    val windowCount: Int,
-//    val openFiles: List<String?>?
-)
+    )
 
 /**
  * Represents the state of a "FileEditor". JetBrains treats non-focused tabs as these lesser
