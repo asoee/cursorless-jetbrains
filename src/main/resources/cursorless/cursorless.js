@@ -13933,7 +13933,7 @@ function setSelections(client, document, editorId, selections) {
 }
 
 // src/ide/jetbrainsPerformEdits.ts
-function jetbrainsPerformEdits(client, ide2, document, edits) {
+function jetbrainsPerformEdits(client, ide2, document, id2, edits) {
   const changes = document.edit(edits);
   const editorEdit = {
     text: document.text,
@@ -13943,7 +13943,7 @@ function jetbrainsPerformEdits(client, ide2, document, edits) {
       text: change.text
     }))
   };
-  client.documentUpdated(JSON.stringify(editorEdit));
+  client.documentUpdated(id2, JSON.stringify(editorEdit));
   ide2.emitDidChangeTextDocument({
     document,
     contentChanges: changes
@@ -13977,7 +13977,7 @@ var JetbrainsEditor = class {
   }
   edit(edits) {
     console.log("editor.edit");
-    jetbrainsPerformEdits(this.client, this.ide, this.document, edits);
+    jetbrainsPerformEdits(this.client, this.ide, this.document, this.id, edits);
     return Promise.resolve(true);
   }
   async clipboardCopy(_ranges) {

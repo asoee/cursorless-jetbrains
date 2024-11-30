@@ -1,9 +1,6 @@
 package com.github.asoee.cursorlessjetbrains.services
 
-import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessEngine
-import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessRange
-import com.github.asoee.cursorlessjetbrains.cursorless.HatUpdateCallback
-import com.github.asoee.cursorlessjetbrains.cursorless.HatsFormat
+import com.github.asoee.cursorlessjetbrains.cursorless.*
 import com.github.asoee.cursorlessjetbrains.listeners.getCursorlessContainers
 import com.github.asoee.cursorlessjetbrains.sync.HatRange
 import com.github.asoee.cursorlessjetbrains.sync.serializeEditor
@@ -29,11 +26,12 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine) {
     init {
         cursorlessEngine.AddHatUpdateListener(HatUpdateHandler(this))
         cursorlessEngine.SetSelectionUpdateListener(::setSelectionCallback)
+        cursorlessEngine.SetDocumentUpdateListener(::documentUpdated)
     }
 
-    data class EditorChange (
+    data class EditorChange(
         val editorId: String,
-        val ts : Long
+        val ts: Long
     )
 
 
@@ -45,7 +43,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine) {
                 debouncer
                     .debounce(75.milliseconds)
                     .collect { change ->
-                        println("collect... "  + change.editorId)
+                        println("collect... " + change.editorId)
                         val editor = editorsById[change.editorId]
                         if (editor != null) {
                             try {
@@ -67,7 +65,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine) {
         println("Editor changed " + editorId)
         val debouncer = debouncerById(editorId)
         dispatchScope.launch {
-            val emitted = debouncer.emit(EditorChange(editorId,System.currentTimeMillis()))
+            val emitted = debouncer.emit(EditorChange(editorId, System.currentTimeMillis()))
             println("emitted = ${emitted}")
         }
     }
@@ -102,6 +100,34 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine) {
                                 editor.caretModel?.caretsAndSelections = listOf(
                                     CaretState(endPos, startPos, endPos),
                                 )
+                            },
+                            "Insert",
+                            "insertGroup"
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun documentUpdated(editorId: String, edit: CursorlessEditorEdit) {
+        println("Document updated " + editorId)
+        val editor = editorsById[editorId]
+        if (editor != null) {
+            if (edit.changes.isNotEmpty()) {
+                ApplicationManager.getApplication().invokeLater {
+                    ApplicationManager.getApplication().runWriteAction {
+                        CommandProcessor.getInstance().executeCommand(
+                            editor.project,
+                            {
+                                for (change in edit.changes) {
+                                    println("Setting range to " + change.rangeOffset.toString() + " - " + change.rangeOffset.toString() + " : " + change.text)
+                                    editor.document.replaceString(
+                                        change.rangeOffset,
+                                        change.rangeOffset + change.rangeLength,
+                                        change.text
+                                    )
+                                }
                             },
                             "Insert",
                             "insertGroup"

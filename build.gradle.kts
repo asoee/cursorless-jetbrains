@@ -35,6 +35,8 @@ repositories {
 dependencies {
     testImplementation(libs.junit)
 
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+
     implementation("com.caoccao.javet:javet:4.1.0") // Core (Must-have)
 //    implementation("com.caoccao.javet:javet-node-linux-arm64:4.1.0")
 //    implementation("com.caoccao.javet:javet-node-linux-x86_64:4.1.0")

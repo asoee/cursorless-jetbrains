@@ -128,6 +128,9 @@ class JavetDriver() {
     fun setSelectionUpdateCallback(callback: SetSelectionCallbackFunc) {
         ideClientCallback.setSelectionCallback = callback
     }
+    fun setDocumentUpdateCallback(callback: DocumentUpdateCallbackFunc) {
+        ideClientCallback.documentUpdateCallback = callback
+    }
 
     fun execute(commands: List<JsonObject?>): ExecutionResult {
 

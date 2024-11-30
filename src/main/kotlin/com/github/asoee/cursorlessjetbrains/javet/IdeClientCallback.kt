@@ -1,6 +1,7 @@
 package com.github.asoee.cursorlessjetbrains.javet
 
 import com.caoccao.javet.annotations.V8Function
+import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessEditorEdit
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessRange
 import com.github.asoee.cursorlessjetbrains.cursorless.HatUpdateCallback
 import com.github.asoee.cursorlessjetbrains.sync.HatRange
@@ -9,6 +10,7 @@ import kotlinx.serialization.json.Json
 
 //    typealias HatUpdateCallback = (Array<HatRange>) -> Unit
 public typealias SetSelectionCallbackFunc = (editorId: String, selection: Array<CursorlessRange>) -> Unit
+public typealias DocumentUpdateCallbackFunc = (editorId: String, edit: CursorlessEditorEdit) -> Unit
 
 class IdeClientCallback {
 
@@ -21,9 +23,14 @@ class IdeClientCallback {
     }
 
     var setSelectionCallback: SetSelectionCallbackFunc = ::dummySetSelectionCallback;
+    var documentUpdateCallback: DocumentUpdateCallbackFunc = ::dummyDocumentUpdateCallback;
 
     fun dummySetSelectionCallback(editorId: String, selections: Array<CursorlessRange>) : Unit {
         println("ASOEE/PLUGIN: SetSelectionCallbackFunc not set")
+    }
+
+    fun dummyDocumentUpdateCallback(editorId: String, edit: CursorlessEditorEdit) : Unit {
+        println("ASOEE/PLUGIN: documentUpdateCallback not set")
     }
 
     @V8Function
@@ -43,8 +50,10 @@ class IdeClientCallback {
     }
 
     @V8Function
-    public fun documentUpdated(updateJson: String) {
+    public fun documentUpdated(editorId: String, updateJson: String) {
         println("DocumentUpdated: $updateJson")
+        val edit = Json{ ignoreUnknownKeys = true }.decodeFromString<CursorlessEditorEdit>(updateJson)
+        documentUpdateCallback(editorId, edit)
     }
 
     @V8Function
