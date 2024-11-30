@@ -177,6 +177,14 @@ class JavetDriver() {
         return ExecutionResult(true, null, null)
 
     }
+
+    fun close() {
+        try {
+            runtime.close(false)
+        } catch (e: Throwable) {
+            println("ASOEE/JS: error in close - " + e)
+        }
+    }
 }
 
 data class ExecutionResult(

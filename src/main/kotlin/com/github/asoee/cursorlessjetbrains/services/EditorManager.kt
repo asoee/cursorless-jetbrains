@@ -4,19 +4,25 @@ import com.github.asoee.cursorlessjetbrains.cursorless.*
 import com.github.asoee.cursorlessjetbrains.listeners.getCursorlessContainers
 import com.github.asoee.cursorlessjetbrains.sync.HatRange
 import com.github.asoee.cursorlessjetbrains.sync.serializeEditor
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
+import com.intellij.openapi.editor.impl.ScrollingModelImpl
+import com.intellij.openapi.util.Disposer
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.util.*
 import kotlin.time.Duration.Companion.milliseconds
 
-class EditorManager(private val cursorlessEngine: CursorlessEngine) {
+class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDisposable: Disposable) : Disposable {
+
+    val LOG: Logger = Logger.getInstance(EditorManager::class.java)
 
     private val editorIds = HashMap<Editor, String>()
     private val editorsById = HashMap<String, Editor>()
@@ -27,6 +33,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine) {
 
 
     init {
+        Disposer.register(parentDisposable, this)
         cursorlessEngine.AddHatUpdateListener(HatUpdateHandler(this))
         cursorlessEngine.SetSelectionUpdateListener(::setSelectionCallback)
         cursorlessEngine.SetDocumentUpdateListener(::documentUpdated)
@@ -66,6 +73,10 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine) {
     }
 
     fun editorChanged(editor: Editor) {
+        if (editor.isDisposed) {
+            LOG.info("editorChanged : Editor is disposed")
+            return
+        }
         ensureEditorIdSet(editor)
         val editorId = editorIds[editor]!!
         println("Editor changed $editorId")
@@ -78,11 +89,15 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine) {
 
     fun editorDidChange(editor: Editor) {
         ApplicationManager.getApplication().invokeLater {
-            ensureEditorIdSet(editor)
-            val editorId = editorIds[editor]!!
-            println("Editor did change " + editorId)
-            val editorState = serializeEditor(editor, true, editorId)
-            cursorlessEngine.editorChanged(editorState)
+            if (editor.isDisposed) {
+                println("Editor is disposed")
+            } else {
+                ensureEditorIdSet(editor)
+                val editorId = editorIds[editor]!!
+                println("Editor did change " + editorId)
+                val editorState = serializeEditor(editor, true, editorId)
+                cursorlessEngine.editorChanged(editorState)
+            }
         }
     }
 
@@ -201,5 +216,11 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine) {
                 }
             })
         }
+    }
+
+    override fun dispose() {
+        thisLogger().info("Disposing EditorManager")
+        dispatchScope.cancel()
+        emitScope.cancel()
     }
 }

@@ -29,6 +29,9 @@ class TalonEditorFactoryListener : EditorFactoryListener {
         super.editorReleased(event)
 
         removeCursorlessContainerFromEditor(event.editor)
+
+        val applicationService = service<TalonApplicationService>()
+        applicationService.editorReleased(event.editor)
     }
 }
 

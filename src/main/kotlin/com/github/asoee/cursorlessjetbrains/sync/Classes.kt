@@ -36,7 +36,6 @@ public data class EditorState(
     val text: String?,
     val active: Boolean,
     val languageId: String,
-    val project: ProjectState?,
     val firstVisibleLine: Int,
     val lastVisibleLine : Int,
     val cursors: List<Cursor>,

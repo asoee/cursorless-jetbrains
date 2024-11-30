@@ -163,7 +163,6 @@ fun serializeEditor(editor: Editor, active: Boolean, editorId: String): EditorSt
         document.text,
         active,
         language,
-        project?.let { serializeProject(it) },
         editor.xyToLogicalPosition(Point(ve.x, ve.y)).line,
         editor.xyToLogicalPosition(Point(ve.x, ve.y + ve.height)).line,
         cursors,
