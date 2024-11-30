@@ -12,6 +12,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import java.io.File
+import java.nio.file.Files
 
 
 class JavetDriver() {
@@ -23,12 +24,14 @@ class JavetDriver() {
 
     init {
         println("ASOEE: JavetDriver create")
-        val icuDataDir: File = File(JavetOSUtils.WORKING_DIRECTORY)
-            .toPath()
-            .resolve("./icu")
-            .normalize()
-            .toFile()
+        val icuDataDir  = Files.createTempDirectory("cursorless-icu").toFile()
         println("icuDataDir: " + icuDataDir)
+        icuDataDir.deleteOnExit()
+        val outFile = File(icuDataDir, "icudtl.dat")
+        outFile.outputStream().use { out ->
+            javaClass.getResourceAsStream(  "/icu/icudtl.dat").copyTo(out)
+        }
+
         NodeRuntimeOptions.NODE_FLAGS.setIcuDataDir(icuDataDir.getAbsolutePath());
         runtime = V8Host.getNodeI18nInstance()
             .createV8Runtime<V8Runtime>()
