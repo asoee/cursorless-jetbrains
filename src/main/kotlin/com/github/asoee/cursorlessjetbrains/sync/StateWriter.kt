@@ -1,31 +1,20 @@
 package com.github.asoee.cursorlessjetbrains.sync
 
-import com.github.phillco.talonjetbrains.util.caretLanguage
-import com.intellij.dvcs.repo.VcsRepositoryManager
 import com.intellij.ide.RecentProjectsManager
 import com.intellij.ide.RecentProjectsManagerBase
-import com.intellij.ide.plugins.PluginManagerCore
-import com.intellij.openapi.application.ApplicationInfo
-import com.intellij.openapi.application.ApplicationNamesInfo
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
-import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.IdeFocusManager
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.awt.Point
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.absolutePathString
 
 // ================================================================================
 // StateWriter
@@ -98,14 +87,14 @@ fun getFileEditorManager(): FileEditorManager? {
     return getProject()?.let { FileEditorManager.getInstance(it) }
 }
 
-fun serializeProject(project: Project): ProjectState {
-    navigationHistory(project)
-    val repos =
-        VcsRepositoryManager.getInstance(project).repositories.map { repo ->
-            RepoState(repo.root.path, repo.vcs.name.lowercase())
-        }
-    return ProjectState(project.name, project.basePath, repos)
-}
+//fun serializeProject(project: Project): ProjectState {
+//    navigationHistory(project)
+//    val repos =
+//        VcsRepositoryManager.getInstance(project).repositories.map { repo ->
+//            RepoState(repo.root.path, repo.vcs.name.lowercase())
+//        }
+//    return ProjectState(project.name, project.basePath, repos)
+//}
 
 fun toEditor(fileEditor: FileEditor): Editor =
     (fileEditor as TextEditor).editor
@@ -264,136 +253,6 @@ fun cursorlessRoot(): Path {
     return r
 }
 
-/**
- * Returns the root directory for Cursorless state.
- */
-fun cursorlessRootPath(): Path {
-    // TODO(pcohen): is there better way to detect this?
-    val isDebugging =
-        System.getProperty("idea.plugin.in.sandbox.mode")
 
-    // NOTE(pcohen): automatically switched to the debug subfolder
-    // (created by debugging the extension in VS Code) when debugging
-    // this plugin, to support incompatible changes.
-    //
-    // TODO(pcohen): if this folder doesn't exist, don't use it, for ease of running
-    // without the Visual Studio Code in debug mode
-    return Paths.get(
-        cursorlessRoot().absolutePathString(),
-        if (isDebugging == "true") "debug" else ""
-    )
-}
 
-/**
- * Returns whether we are the "active Cursorless editor" application and should show hats / receive commands / etc.
- * This is to allow multiple applications to support Cursorless.
- *
- * This is set by Talon when switching between different JetBrains editors.
- */
-fun isActiveCursorlessEditor(): Boolean {
-    val path =
-        Paths.get(System.getProperty("user.home"), ".cursorless")
-            .resolve("primary-editor-pid")
 
-    try {
-        return Files.readString(path).trim().toLong() == ProcessHandle.current()
-            .pid()
-    } catch (e: Exception) {
-        return false
-    }
-}
-
-fun stateFilePath(): Path {
-    val pid = ProcessHandle.current().pid()
-    val root = Paths.get(System.getProperty("user.home"), ".jb-state")
-    return root.resolve("$pid.json")
-}
-
-//fun serializeEditorStateToFile(): Path? {
-//    val start = System.nanoTime();
-//    try {
-//        val root = Paths.get(System.getProperty("user.home"), ".jb-state")
-//        val path = stateFilePath()
-//
-//        val state = serializeOverallState()
-//
-//        if (hasShutdown) {
-//            println("Skipping writing state to: $path; shutdown initiated")
-//            return null
-//        }
-//
-//        Files.createDirectories(root)
-//        val json = Json.encodeToString(state)
-//        Files.writeString(path, json)
-//
-//        // Create an alias to the current product, for simplicity when debugging on the command line.
-//        Files.writeString(
-//            root.resolve("${ApplicationNamesInfo.getInstance().fullProductName}.pid"),
-//            "${ProcessHandle.current().pid()}"
-//        )
-//        Files.writeString(
-//            root.resolve("latest.pid"),
-//            "${ProcessHandle.current().pid()}"
-//        )
-//
-//        // NOTE(pcohen): deprecate these
-//        Files.writeString(root.resolve("latest.json"), json)
-//        Files.writeString(
-//            root.resolve("${ApplicationNamesInfo.getInstance().fullProductName}.json"),
-//            json
-//        )
-//
-//        // TODO(pcohen): only write this when debugging
-//        Files.writeString(
-//            root.resolve("pid"),
-//            "${ProcessHandle.current().pid()}"
-//        )
-//
-//        // Also write the cursorless state
-//        if (isActiveCursorlessEditor()) {
-//            val cursorlessRoot = cursorlessRootPath()
-//            Files.createDirectories(cursorlessRoot)
-//            Files.writeString(cursorlessRoot.resolve("editor-state.json"), json)
-//        }
-//
-////        println("Wrote state to: $path")
-//        return path
-//    } catch (e: Exception) {
-//        e.printStackTrace()
-//
-//        return null
-//    } finally {
-//        val delta = System.nanoTime() - start
-//        val ms = delta / 1000000.0
-//        if (ms >= 0) {
-//            println("serializeEditorStateToFile took $ms ms")
-//        }
-//    }
-//}
-
-fun markHasShutdown() {
-//    hasShutdown = true
-//    unlinkStateFile()
-}
-
-fun unlinkStateFile() {
-    try {
-        val pid = ProcessHandle.current().pid()
-        val root = Paths.get(System.getProperty("user.home"), ".jb-state")
-        val path = root.resolve("$pid.json")
-        if (Files.exists(path)) {
-            Files.delete(path)
-            Files.delete(root.resolve("${ApplicationNamesInfo.getInstance().fullProductName}.json"))
-            Files.delete(root.resolve("latest.json"))
-            println("Deleted: $path")
-
-            if (isActiveCursorlessEditor()) {
-                val cursorlessRoot =
-                    Paths.get(System.getProperty("user.home"), ".cursorless")
-                Files.delete(cursorlessRoot.resolve("editor-state.json"))
-            }
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
