@@ -4,7 +4,6 @@ import com.github.asoee.cursorlessjetbrains.javet.ExecutionResult
 import com.github.asoee.cursorlessjetbrains.services.TalonApplicationService
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
-import com.intellij.util.PlatformUtils
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.nio.file.Files
@@ -14,20 +13,21 @@ import kotlin.io.path.*
 
 class FileCommandServer {
 
-    private val PREFIX = PlatformUtils.getPlatformPrefix()
+    private val PREFIX = "jetbrains"
+
     val LOG = thisLogger<FileCommandServer>()
     var watcher: FileWatcher? = null
     val commandServerDir: Path
 
 
     init {
-        println("FileCommandServer: FilePlatform prefix: $PREFIX")
+        LOG.info("FileCommandServer: FilePlatform prefix: $PREFIX")
 
         val suffix = getUserIdSuffix()
 
         val commandServerDir = Path(System.getProperty("java.io.tmpdir"))
             .resolve("$PREFIX-command-server$suffix")
-        thisLogger().info("FileCommandServer: dir: $commandServerDir")
+        LOG.info("FileCommandServer: dir: $commandServerDir")
         commandServerDir.toFile().mkdirs()
         this.commandServerDir = commandServerDir
     }
