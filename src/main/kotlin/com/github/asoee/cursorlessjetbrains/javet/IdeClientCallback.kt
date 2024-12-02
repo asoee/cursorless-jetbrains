@@ -1,11 +1,10 @@
 package com.github.asoee.cursorlessjetbrains.javet
 
 import com.caoccao.javet.annotations.V8Function
+import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCallback
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessEditorEdit
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessRange
-import com.github.asoee.cursorlessjetbrains.cursorless.HatUpdateCallback
 import com.github.asoee.cursorlessjetbrains.sync.HatRange
-import com.github.asoee.cursorlessjetbrains.sync.Selection
 import kotlinx.serialization.json.Json
 
 //    typealias HatUpdateCallback = (Array<HatRange>) -> Unit
@@ -16,22 +15,24 @@ class IdeClientCallback {
 
     val unhandledRejections = mutableListOf<String>()
 
-    var hatUpdateCallback: HatUpdateCallback = object : HatUpdateCallback {
+    var cursorlessCallback: CursorlessCallback = NoopCallback()
+
+
+    private class NoopCallback : CursorlessCallback {
         override fun onHatUpdate(hatRanges: Array<HatRange>) {
-            println("ASOEE/PLUGIN: HatUpdateCallback not set")
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
+
+        override fun setSelection(editorId: String, selections: Array<CursorlessRange>): Unit {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
+        override fun documentUpdated(editorId: String, edit: CursorlessEditorEdit) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
     }
 
-    var setSelectionCallback: SetSelectionCallbackFunc = ::dummySetSelectionCallback;
-    var documentUpdateCallback: DocumentUpdateCallbackFunc = ::dummyDocumentUpdateCallback;
-
-    fun dummySetSelectionCallback(editorId: String, selections: Array<CursorlessRange>) : Unit {
-        println("ASOEE/PLUGIN: SetSelectionCallbackFunc not set")
-    }
-
-    fun dummyDocumentUpdateCallback(editorId: String, edit: CursorlessEditorEdit) : Unit {
-        println("ASOEE/PLUGIN: documentUpdateCallback not set")
-    }
 
     @V8Function
     public fun log(args: String) {
@@ -46,21 +47,21 @@ class IdeClientCallback {
     public fun hatsUpdated(hatsJson: String) {
         println("ASOEE/PLUGIN: Hats updated")
         val hatRanges = Json.decodeFromString<Array<HatRange>>(hatsJson)
-        hatUpdateCallback.onHatUpdate(hatRanges)
+        cursorlessCallback.onHatUpdate(hatRanges)
     }
 
     @V8Function
     public fun documentUpdated(editorId: String, updateJson: String) {
         println("DocumentUpdated: $updateJson")
-        val edit = Json{ ignoreUnknownKeys = true }.decodeFromString<CursorlessEditorEdit>(updateJson)
-        documentUpdateCallback(editorId, edit)
+        val edit = Json { ignoreUnknownKeys = true }.decodeFromString<CursorlessEditorEdit>(updateJson)
+        cursorlessCallback.documentUpdated(editorId, edit)
     }
 
     @V8Function
     public fun setSelection(editorId: String, selectionsJson: String) {
         println("IdeClientCallback.setSelection: $selectionsJson")
-        val selections = Json{ ignoreUnknownKeys = true }.decodeFromString<Array<CursorlessRange>>(selectionsJson)
-        setSelectionCallback(editorId, selections)
+        val selections = Json { ignoreUnknownKeys = true }.decodeFromString<Array<CursorlessRange>>(selectionsJson)
+        cursorlessCallback.setSelection(editorId, selections)
     }
 
     @V8Function

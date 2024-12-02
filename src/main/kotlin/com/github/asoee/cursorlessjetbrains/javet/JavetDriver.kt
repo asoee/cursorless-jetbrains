@@ -5,8 +5,7 @@ import com.caoccao.javet.interop.V8Runtime
 import com.caoccao.javet.interop.options.NodeRuntimeOptions
 import com.caoccao.javet.javenode.JNEventLoop
 import com.caoccao.javet.javenode.enums.JNModuleType
-import com.caoccao.javet.utils.JavetOSUtils
-import com.github.asoee.cursorlessjetbrains.cursorless.HatUpdateCallback
+import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCallback
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -124,15 +123,8 @@ class JavetDriver() {
 
     }
 
-    fun setHatUpdateCallback(callback: HatUpdateCallback) {
-        ideClientCallback.hatUpdateCallback = callback
-    }
-
-    fun setSelectionUpdateCallback(callback: SetSelectionCallbackFunc) {
-        ideClientCallback.setSelectionCallback = callback
-    }
-    fun setDocumentUpdateCallback(callback: DocumentUpdateCallbackFunc) {
-        ideClientCallback.documentUpdateCallback = callback
+    fun setCursorlessCallback(callback: CursorlessCallback) {
+        ideClientCallback.cursorlessCallback = callback
     }
 
     fun execute(commands: List<JsonObject?>): ExecutionResult {

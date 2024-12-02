@@ -19,7 +19,8 @@ import kotlinx.coroutines.flow.*
 import java.util.*
 import kotlin.time.Duration.Companion.milliseconds
 
-class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDisposable: Disposable, cs: CoroutineScope) : Disposable {
+class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDisposable: Disposable, cs: CoroutineScope) :
+    Disposable {
 
     val LOG: Logger = Logger.getInstance(EditorManager::class.java)
 
@@ -33,9 +34,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
 
     init {
         Disposer.register(parentDisposable, this)
-        cursorlessEngine.AddHatUpdateListener(HatUpdateHandler(this))
-        cursorlessEngine.SetSelectionUpdateListener(::setSelectionCallback)
-        cursorlessEngine.SetDocumentUpdateListener(::documentUpdated)
+        cursorlessEngine.setCursorlessCallback(CursorlessHandler(this))
     }
 
     data class EditorChange(
@@ -81,8 +80,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         println("Editor changed $editorId")
         val debouncer = debouncerById(editorId)
         emitScope.launch {
-            val emitted = debouncer.emit(EditorChange(editorId, System.currentTimeMillis()))
-            println("emitted = ${emitted}")
+            debouncer.emit(EditorChange(editorId, System.currentTimeMillis()))
         }
     }
 
@@ -100,15 +98,13 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         }
     }
 
-    fun setSelectionCallback(editorId: String, selections: Array<CursorlessRange>) {
+    fun setSelection(editorId: String, selections: Array<CursorlessRange>) {
         val editor = editorsById[editorId]
         if (editor != null) {
             if (selections.size > 0) {
                 val range = selections[0]
                 val startPos = LogicalPosition(range.start!!.line, range.start!!.character)
                 val endPos = LogicalPosition(range.end!!.line, range.end!!.character)
-                val startOffset = editor.logicalPositionToOffset(startPos)
-                val endOffset = editor.logicalPositionToOffset(endPos)
                 println("launch action : Setting selection to " + startPos.toString() + " - " + endPos.toString())
 
                 ApplicationManager.getApplication().invokeLater {
@@ -186,35 +182,48 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         })
     }
 
-    private class HatUpdateHandler(private val editorManager: EditorManager) : HatUpdateCallback {
+    private class CursorlessHandler(private val editorManager: EditorManager) : CursorlessCallback {
         override fun onHatUpdate(hatRanges: Array<HatRange>) {
-            val editorToFormat = HashMap<String, HatsFormat>()
-            for (hatRange in hatRanges) {
-                var format = editorToFormat.get(hatRange.editorId)
-                if (format == null) {
-                    format = HatsFormat()
-                    editorToFormat.put(hatRange.editorId, format)
-                }
+            editorManager.hatsUpdated(hatRanges)
+        }
 
-                var ranges = format.get(hatRange.styleName)
-                if (ranges == null) {
-                    ranges = ArrayList<CursorlessRange>()
-                    format.put(hatRange.styleName, ranges)
-                }
-                ranges.add(hatRange.range)
+        override fun setSelection(editorId: String, selections: Array<CursorlessRange>) {
+           editorManager.setSelection(editorId, selections)
+        }
+
+        override fun documentUpdated(editorId: String, edit: CursorlessEditorEdit) {
+           editorManager.documentUpdated(editorId, edit)
+        }
+
+    }
+
+    private fun hatsUpdated(hatRanges: Array<HatRange>) {
+        val editorToFormat = HashMap<String, HatsFormat>()
+        for (hatRange in hatRanges) {
+            var format = editorToFormat.get(hatRange.editorId)
+            if (format == null) {
+                format = HatsFormat()
+                editorToFormat.put(hatRange.editorId, format)
             }
 
-            getCursorlessContainers().forEach({
-                val editor = it.editor
-                val editorId = editorManager.editorIds[editor]
-                if (editorId != null) {
-                    val format = editorToFormat[editorId]
-                    if (format != null) {
-                        it.updateHats(format)
-                    }
-                }
-            })
+            var ranges = format.get(hatRange.styleName)
+            if (ranges == null) {
+                ranges = ArrayList<CursorlessRange>()
+                format.put(hatRange.styleName, ranges)
+            }
+            ranges.add(hatRange.range)
         }
+
+        getCursorlessContainers().forEach({
+            val editor = it.editor
+            val editorId = editorIds[editor]
+            if (editorId != null) {
+                val format = editorToFormat[editorId]
+                if (format != null) {
+                    it.updateHats(format)
+                }
+            }
+        })
     }
 
     override fun dispose() {
