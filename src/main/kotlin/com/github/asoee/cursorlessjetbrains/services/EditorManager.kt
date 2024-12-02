@@ -5,6 +5,8 @@ import com.github.asoee.cursorlessjetbrains.listeners.getCursorlessContainers
 import com.github.asoee.cursorlessjetbrains.sync.HatRange
 import com.github.asoee.cursorlessjetbrains.sync.serializeEditor
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.IdeActions
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.diagnostic.Logger
@@ -13,11 +15,19 @@ import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
+import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.util.Disposer
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import com.intellij.openapi.util.TextRange
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.launch
+import java.awt.datatransfer.StringSelection
 import java.util.*
 import kotlin.time.Duration.Companion.milliseconds
+
 
 class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDisposable: Disposable, cs: CoroutineScope) :
     Disposable {
@@ -126,6 +136,50 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         }
     }
 
+    fun clipboardCopy(editorId: String, selections: Array<CursorlessRange>) {
+        val editor = editorsById[editorId]
+        if (editor != null) {
+            if (selections.size > 0) {
+                val range = selections[0]
+                val startPos = LogicalPosition(range.start!!.line, range.start!!.character)
+                val endPos = LogicalPosition(range.end!!.line, range.end!!.character)
+                println("launch action : clipboardCopy to " + startPos.toString() + " - " + endPos.toString())
+
+                val startOffset = editor.logicalPositionToOffset(startPos)
+                val endOffset = editor.logicalPositionToOffset(endPos)
+
+                ApplicationManager.getApplication().invokeLater {
+                    ApplicationManager.getApplication().runReadAction {
+                        val text = editor.document.getText(TextRange(startOffset, endOffset))
+                        CopyPasteManager.getInstance().setContents(StringSelection(text))
+                    }
+                }
+            }
+        }
+    }
+
+    fun clipboardPaste(editorId: String) {
+        val editor = editorsById[editorId]
+        if (editor != null) {
+            println("launch action : clipboardPaste")
+            ApplicationManager.getApplication().invokeLater {
+                ApplicationManager.getApplication().runWriteAction {
+
+                    val actionManager = ActionManager.getInstance();
+
+                    val pasteAction = actionManager.getAction(IdeActions.ACTION_EDITOR_PASTE_SIMPLE);
+                    actionManager.tryToExecute(
+                        pasteAction,
+                        null,
+                        null,
+                        null,
+                        true
+                    );
+                }
+            }
+        }
+    }
+
     fun documentUpdated(editorId: String, edit: CursorlessEditorEdit) {
         println("Document updated " + editorId)
         val editor = editorsById[editorId]
@@ -188,11 +242,19 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         }
 
         override fun setSelection(editorId: String, selections: Array<CursorlessRange>) {
-           editorManager.setSelection(editorId, selections)
+            editorManager.setSelection(editorId, selections)
+        }
+
+        override fun clipboardCopy(editorId: String, selections: Array<CursorlessRange>) {
+            editorManager.clipboardCopy(editorId, selections)
+        }
+
+        override fun clipboardPaste(editorId: String) {
+            editorManager.clipboardPaste(editorId)
         }
 
         override fun documentUpdated(editorId: String, edit: CursorlessEditorEdit) {
-           editorManager.documentUpdated(editorId, edit)
+            editorManager.documentUpdated(editorId, edit)
         }
 
     }

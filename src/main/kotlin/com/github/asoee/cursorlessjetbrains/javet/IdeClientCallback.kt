@@ -5,13 +5,12 @@ import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCallback
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessEditorEdit
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessRange
 import com.github.asoee.cursorlessjetbrains.sync.HatRange
+import com.intellij.openapi.diagnostic.logger
 import kotlinx.serialization.json.Json
 
-//    typealias HatUpdateCallback = (Array<HatRange>) -> Unit
-public typealias SetSelectionCallbackFunc = (editorId: String, selection: Array<CursorlessRange>) -> Unit
-public typealias DocumentUpdateCallbackFunc = (editorId: String, edit: CursorlessEditorEdit) -> Unit
-
 class IdeClientCallback {
+
+    val LOG = logger<IdeClientCallback>()
 
     val unhandledRejections = mutableListOf<String>()
 
@@ -31,6 +30,14 @@ class IdeClientCallback {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
 
+        override fun clipboardCopy(editorId: String, selections: Array<CursorlessRange>) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
+        override fun clipboardPaste(editorId: String) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
     }
 
 
@@ -45,28 +52,41 @@ class IdeClientCallback {
 
     @V8Function
     public fun hatsUpdated(hatsJson: String) {
-        println("ASOEE/PLUGIN: Hats updated")
+        LOG.info("ASOEE/PLUGIN: Hats updated")
         val hatRanges = Json.decodeFromString<Array<HatRange>>(hatsJson)
         cursorlessCallback.onHatUpdate(hatRanges)
     }
 
     @V8Function
     public fun documentUpdated(editorId: String, updateJson: String) {
-        println("DocumentUpdated: $updateJson")
+        LOG.info("DocumentUpdated: $updateJson")
         val edit = Json { ignoreUnknownKeys = true }.decodeFromString<CursorlessEditorEdit>(updateJson)
         cursorlessCallback.documentUpdated(editorId, edit)
     }
 
     @V8Function
     public fun setSelection(editorId: String, selectionsJson: String) {
-        println("IdeClientCallback.setSelection: $selectionsJson")
+        LOG.info("IdeClientCallback.setSelection: $selectionsJson")
         val selections = Json { ignoreUnknownKeys = true }.decodeFromString<Array<CursorlessRange>>(selectionsJson)
         cursorlessCallback.setSelection(editorId, selections)
     }
 
     @V8Function
+    public fun clipboardCopy(editorId: String, rangesJson: String) {
+        LOG.info("IdeClientCallback.clipboardCopy: $rangesJson")
+        val selections = Json { ignoreUnknownKeys = true }.decodeFromString<Array<CursorlessRange>>(rangesJson)
+        cursorlessCallback.clipboardCopy(editorId, selections)
+    }
+
+    @V8Function
+    public fun clipboardPaste(editorId: String) {
+        LOG.info("IdeClientCallback.clipboardCopy")
+        cursorlessCallback.clipboardPaste(editorId)
+    }
+
+    @V8Function
     public fun unhandledRejection(cause: String) {
-        println("IdeClientCallback.v: $cause")
+        LOG.info("IdeClientCallback.unhandledRejection: $cause")
         unhandledRejections.add(cause)
     }
 

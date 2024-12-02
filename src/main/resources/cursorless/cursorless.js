@@ -9923,7 +9923,6 @@ var InMemoryTextDocument = class {
     return this._lines[index];
   }
   offsetAt(position) {
-    console.log("offsetAt ", position);
     if (position.line < 0) {
       return 0;
     }
@@ -13479,7 +13478,7 @@ var import_lodash2 = __toESM(require_lodash());
 
 // src/ide/JetbrainsCapabilities.ts
 var COMMAND_CAPABILITIES = {
-  clipboardCopy: { acceptsLocation: false },
+  clipboardCopy: { acceptsLocation: true },
   clipboardPaste: true,
   toggleLineComment: void 0,
   indentLine: void 0,
@@ -13545,8 +13544,15 @@ var JetbrainsClipboard = class {
   async readText() {
     return "";
   }
-  async writeText(value) {
+  async writeText(_value) {
     return;
+  }
+  async copy(editorId, ranges) {
+    const rangesJson = JSON.stringify(ranges);
+    this.client.clipboardCopy(editorId, rangesJson);
+  }
+  async paste(editorId) {
+    this.client.clipboardPaste(editorId);
   }
 };
 
@@ -13980,11 +13986,11 @@ var JetbrainsEditor = class {
     jetbrainsPerformEdits(this.client, this.ide, this.document, this.id, edits);
     return Promise.resolve(true);
   }
-  async clipboardCopy(_ranges) {
-    throw Error("clipboardCopy not implemented.");
+  async clipboardCopy(ranges) {
+    await this.ide.clipboard.copy(this.id, ranges);
   }
   async clipboardPaste() {
-    throw Error("clipboardPaste not implemented.");
+    await this.ide.clipboard.paste(this.id);
   }
   indentLine(_ranges) {
     throw Error("indentLine not implemented.");
@@ -14171,7 +14177,7 @@ var JetbrainsIDE = class {
     throw Error("openUntitledTextDocument Not implemented");
   }
   async showInputBox(_options) {
-    throw Error("TextDocumentChangeEvent Not implemented");
+    throw Error("showInputBox Not implemented");
   }
   async executeCommand(_command, ..._args) {
     throw new Error("executeCommand Method not implemented.");
@@ -18340,7 +18346,6 @@ function allocateHats({
   activeTextEditor,
   visibleTextEditors
 }) {
-  console.log("ASOEE/CL: fun allocateHats " + activeTextEditor?.id);
   const forcedHatMap = forceTokenHats == null ? void 0 : getTokenOldHatMap(forceTokenHats);
   const tokenOldHatMap = getTokenOldHatMap(oldTokenHats);
   const rankedTokens = getRankedTokens(
@@ -18357,7 +18362,6 @@ function allocateHats({
   const graphemeRemainingHatCandidates = new DefaultMap(
     () => [...enabledHatStyleNames]
   );
-  console.log("ASOEE/CL: fun allocateHats  - before return");
   return rankedTokens.map(({ token, rank: tokenRank }) => {
     const tokenRemainingHatCandidates = getTokenRemainingHatCandidates(
       tokenGraphemeSplitter2,
@@ -18478,7 +18482,6 @@ var HatAllocator = class {
       activeTextEditor: ide().activeTextEditor,
       visibleTextEditors: ide().visibleTextEditors
     }) : [];
-    console.log("ASOEE/CL: allocateHats : setTokenHats");
     activeMap.setTokenHats(tokenHats);
     await this.hats.setHatRanges(
       tokenHats.map(({ hatStyle, hatRange, token: { editor } }) => ({
@@ -18879,7 +18882,6 @@ function getUpdatedText(changeEventInfo, rangeInfo, newOffsets) {
 
 // ../cursorless-engine/src/core/updateSelections/updateRangeInfos.ts
 function updateRangeInfos(changeEvent, rangeInfoGenerator) {
-  console.log("updateRangeInfos");
   const { document, contentChanges } = changeEvent;
   const changeEventInfos = contentChanges.map((change) => {
     const changeDisplacement = change.text.length - change.rangeLength;
@@ -20533,15 +20535,9 @@ function isPreferredOverHelper(scopeA, scopeB, matchers2) {
 }
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/CharacterScopeHandler.ts
-var SPLIT_REGEX = new RegExp(
-  "\\p{L}\\p{M}*|[\\p{N}\\p{P}\\p{S}\\p{Z}\\p{C}]",
-  "gu"
-);
+var SPLIT_REGEX = /\p{L}\p{M}*|[\p{N}\p{P}\p{S}\p{Z}\p{C}]/gu;
 var PREFERRED_SYMBOLS_REGEX = /[$]/g;
-var NONWHITESPACE_REGEX = new RegExp(
-  "\\p{L}\\p{M}*|[\\p{N}\\p{P}\\p{S}]",
-  "gu"
-);
+var NONWHITESPACE_REGEX = /\p{L}\p{M}*|[\p{N}\p{P}\p{S}]/gu;
 var CharacterScopeHandler = class extends NestedScopeHandler {
   constructor() {
     super(...arguments);
@@ -20579,10 +20575,7 @@ var CharacterScopeHandler = class extends NestedScopeHandler {
 };
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/WordScopeHandler/WordTokenizer.ts
-var CAMEL_REGEX = new RegExp(
-  "\\p{Lu}?\\p{Ll}+|\\p{Lu}+(?!\\p{Ll})|\\p{N}+",
-  "gu"
-);
+var CAMEL_REGEX = /\p{Lu}?\p{Ll}+|\p{Lu}+(?!\p{Ll})|\p{N}+/gu;
 var WordTokenizer = class {
   constructor(languageId) {
     this.wordRegex = getMatcher(languageId).wordMatcher;
@@ -21410,11 +21403,8 @@ function getSentences(text, userOptions) {
 }
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/SentenceScopeHandler/SentenceSegmenter.ts
-var leadingOffsetRegex = new RegExp("\\S*\\p{L}", "u");
-var skipPartRegex = new RegExp(
-  "(\\r?\\n[^\\p{sc=Latin}]*\\r?\\n)|(?<=[.!?])(\\s*\\r?\\n)",
-  "ug"
-);
+var leadingOffsetRegex = /\S*\p{L}/u;
+var skipPartRegex = /(\r?\n[^\p{L}]*\r?\n)|(?<=[.!?])(\s*\r?\n)/gu;
 var options = {
   newlineBoundaries: false,
   preserveWhitespace: true
