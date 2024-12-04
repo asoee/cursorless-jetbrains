@@ -10,7 +10,8 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.asoee.cursorlessjetbrains.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+        <toolWindow factoryClass="com.github.asoee.cursorlessjetbrains.toolWindow.MyToolWindowFactory"
+                    id="MyToolWindow"/>
 
         <applicationService
                 serviceImplementation="com.github.asoee.cursorlessjetbrains.services.TalonApplicationService"/>
@@ -20,10 +21,17 @@
         <editorFactoryListener
                 implementation="com.github.asoee.cursorlessjetbrains.listeners.TalonEditorFactoryListener"/>
 
-        <notificationGroup id="vc-idea" displayType="BALLOON" />
+        <notificationGroup id="vc-idea" displayType="BALLOON"/>
 
 
+        <applicationService
+                serviceImplementation="com.github.asoee.cursorlessjetbrains.settings.TalonSettings"/>
 
+        <applicationConfigurable
+                parentId="tools"
+                instance="com.github.asoee.cursorlessjetbrains.settings.TalonSettingsConfigurable"
+                id="com.github.asoee.cursorlessjetbrains.settings.AppSettingsConfigurable"
+                displayName="Talon / Cursorless Settings"/>
     </extensions>
 
     <actions>
@@ -32,7 +40,7 @@
                 class="com.github.asoee.cursorlessjetbrains.action.FileCommandServerCheckAction"
                 text="Check File Command Server"
                 description="Check File Command Server">
-<!--            <override-text place="MainMenu" text="Popup Dialog Action"/>-->
+            <!--            <override-text place="MainMenu" text="Popup Dialog Action"/>-->
             <keyboard-shortcut
                     keymap="$default"
                     first-keystroke="control shift F17"/>
@@ -48,7 +56,6 @@
                 topic="com.intellij.ide.AppLifecycleListener"/>
 
     </applicationListeners>
-
 
 
 </idea-plugin>

@@ -13473,6 +13473,33 @@ function createPlugin(client, ide2) {
   return new JetbrainsPlugin(client, ide2, hats);
 }
 
+// src/ide/JetbrainsConfiguration.ts
+var import_lodash = __toESM(require_lodash());
+var JetbrainsConfiguration = class {
+  constructor(configuration) {
+    this.notifier = new Notifier();
+    this.configuration = CONFIGURATION_DEFAULTS;
+    this.onDidChangeConfiguration = this.notifier.registerListener;
+    this.configuration = configuration;
+  }
+  getOwnConfiguration(path, scope) {
+    return (0, import_lodash.get)(this.configuration, path);
+  }
+  updateConfiguration(configuration) {
+    this.configuration = configuration;
+    this.notifier.notifyListeners();
+  }
+};
+function createJetbrainsConfiguration(configuration) {
+  return new JetbrainsConfiguration(configuration);
+}
+function jetbrainsGetConfigurationString(path) {
+  const index = path.lastIndexOf(".");
+  const section = path.substring(0, index);
+  const field = path.substring(index + 1);
+  return void 0;
+}
+
 // src/ide/JetbrainsIDE.ts
 var import_lodash2 = __toESM(require_lodash());
 
@@ -13553,18 +13580,6 @@ var JetbrainsClipboard = class {
   }
   async paste(editorId) {
     this.client.clipboardPaste(editorId);
-  }
-};
-
-// src/ide/JetbrainsConfiguration.ts
-var import_lodash = __toESM(require_lodash());
-var JetbrainsConfiguration = class {
-  constructor() {
-    this.notifier = new Notifier();
-    this.onDidChangeConfiguration = this.notifier.registerListener;
-  }
-  getOwnConfiguration(path, scope) {
-    return (0, import_lodash.get)(CONFIGURATION_DEFAULTS, path);
   }
 };
 
@@ -14095,7 +14110,7 @@ function createPosition(jbPosition) {
 
 // src/ide/JetbrainsIDE.ts
 var JetbrainsIDE = class {
-  constructor(client) {
+  constructor(client, configuration) {
     this.client = client;
     this.runMode = "development";
     this.disposables = [];
@@ -14108,7 +14123,7 @@ var JetbrainsIDE = class {
     this.onDidChangeVisibleTextEditors = dummyEvent2;
     this.onDidChangeTextEditorSelection = dummyEvent2;
     this.onDidChangeTextEditorVisibleRanges = dummyEvent2;
-    this.configuration = new JetbrainsConfiguration();
+    this.configuration = configuration;
     this.keyValueStore = new JetbrainsKeyValueStore();
     this.messages = new JetbrainsMessages();
     this.clipboard = new JetbrainsClipboard(this.client);
@@ -14261,8 +14276,8 @@ function dummyEvent2() {
     }
   };
 }
-function createIDE(client) {
-  return new JetbrainsIDE(client);
+function createIDE(client, configuration) {
+  return new JetbrainsIDE(client, configuration);
 }
 
 // ../../node_modules/.pnpm/immer@10.1.1/node_modules/immer/dist/immer.mjs
@@ -35508,11 +35523,14 @@ async function activate(plugin) {
   console.log("activate completed");
 }
 export {
+  JetbrainsConfiguration,
   JetbrainsIDE,
   JetbrainsPlugin,
   activate,
   createIDE,
-  createPlugin
+  createJetbrainsConfiguration,
+  createPlugin,
+  jetbrainsGetConfigurationString
 };
 /*! Bundled license information:
 

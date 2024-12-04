@@ -6,6 +6,7 @@ import com.caoccao.javet.interop.options.NodeRuntimeOptions
 import com.caoccao.javet.javenode.JNEventLoop
 import com.caoccao.javet.javenode.enums.JNModuleType
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCallback
+import com.github.asoee.cursorlessjetbrains.cursorless.DEFAULT_CIONFIGURATION
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -14,7 +15,7 @@ import java.io.File
 import java.nio.file.Files
 
 
-class JavetDriver() {
+class JavetDriver {
 
     private val ideClientCallback = IdeClientCallback()
     public val runtime: V8Runtime
@@ -62,12 +63,13 @@ class JavetDriver() {
         }
 
         val importJs = """
-            import { activate, createPlugin, createIDE } from './cursorless.js'; 
+            import { activate, createPlugin, createIDE, createJetbrainsConfiguration } from './cursorless.js'; 
             console.log("activate: " + activate);
             console.log("ideClient: " + ideClient);
             globalThis.activate = activate;
             globalThis.createPlugin = createPlugin;
             globalThis.createIDE = createIDE;
+            globalThis.createJetbrainsConfiguration = createJetbrainsConfiguration;
             """.trimIndent()
         runtime.getExecutor(importJs)
             .setModule(true)
@@ -75,11 +77,15 @@ class JavetDriver() {
             .executeVoid();
         eventLoop.await();
 
+        val configuration = DEFAULT_CIONFIGURATION
+        val configurationJson = Json.encodeToString(configuration)
+
         val activateJs = """
             | ideClient.log("ASOEE/JS: activating plugin 1");
             | (async () => {    
             |   console.log("ASOEE/JS: activating plugin async");
-            |   globalThis.ide = globalThis.createIDE(ideClient);
+            |   globalThis.configuration = globalThis.createJetbrainsConfiguration($configurationJson);
+            |   globalThis.ide = globalThis.createIDE(ideClient, globalThis.configuration);
             |   console.log("ASOEE/JS: ide created");
             |   globalThis.plugin = createPlugin(ideClient, ide);
             |   console.log("ASOEE/JS: plugin created");
