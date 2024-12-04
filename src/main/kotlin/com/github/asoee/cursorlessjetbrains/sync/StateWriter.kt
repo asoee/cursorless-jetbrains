@@ -12,9 +12,7 @@ import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.IdeFocusManager
 import java.awt.Point
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 
 // ================================================================================
 // StateWriter
@@ -143,7 +141,7 @@ fun serializeEditor(editor: Editor, active: Boolean, editorId: String): EditorSt
 
     val ve = editor.scrollingModel.visibleArea
 
-//    val language = caretLanguage(editor)?.id ?: "plaintext"
+//    val language = caretLanguage(editor)?: "plaintext"
     val language = "plaintext"
 
     return EditorState(
@@ -157,100 +155,6 @@ fun serializeEditor(editor: Editor, active: Boolean, editorId: String): EditorSt
         cursors,
         selections,
     )
-}
-
-/**
- * Serializes all open and visible editors (splits) for the given project.
- *
- * It does not include non visible tabs inside of those splits.
- */
-//fun serializeAllEditors(project: Project): List<EditorState> {
-//    val femx = FileEditorManagerEx.getInstanceEx(project)
-//
-//    val allEditors =
-//        femx?.windows?.map { window ->
-//            val selectedFile = window.selectedFile
-//
-//
-//            // TODO(pcohen): this doesn't properly support opening the same window
-//            // across multiple splits
-//            val editors = femx.getEditors(selectedFile!!)
-//            toEditor(editors[0])
-//        }
-//
-//    return allEditors?.let { editors ->
-//        editors.map { it ->
-//            serializeEditor(
-//                it,
-//                it == getEditor()
-//            )
-//        }
-//    } ?: listOf()
-//}
-
-fun serializeFileEditor(editor: FileEditor): FileEditorState {
-    return FileEditorState(
-        editor.file?.path,
-        editor.file?.name,
-        editor.isModified,
-        editor.isValid
-    )
-}
-
-//fun serializeOverallState(): OverallState {
-//    val editor = getEditor()
-//    val project = getProject()
-//    val allEditors = getFileEditorManager()?.allEditors
-//
-//    return OverallState(
-//        ProcessHandle.current().pid(),
-//        serial,
-//        ApplicationNamesInfo.getInstance().fullProductName,
-//        ApplicationInfo.getInstance().fullVersion,
-//        PluginManagerCore.getPlugin(PluginId.findId("com.github.phillco.talonjetbrains"))?.version,
-//        editor?.let { serializeEditor(it, true) },
-//        project?.let { p -> serializeAllEditors(p) } ?: listOf(),
-//        recentProjects()
-//        // NOTE(pcohen): removed for now; not very useful
-////        allEditors?.map { x -> serializeFileEditor(x) }
-//    )
-//}
-
-//fun markEditorChange(source: String) {
-//    serial += 1
-//    log.info("serial bumped to $serial ($source)")
-//    serializeEditorStateToFile()
-//}
-
-var cursorlessRootCache: Path? = null
-
-private fun cursorlessRootDefault() = Paths.get(
-    System.getProperty("user.home"),
-    ".cursorless-new",
-)
-
-fun cursorlessRoot(): Path {
-    if (cursorlessRootCache != null) {
-        return Paths.get(cursorlessRootCache.toString())
-    }
-
-    val versionPath = Paths.get(
-        System.getProperty("user.home"),
-        ".cursorless",
-        "root"
-    )
-    if (Files.exists(versionPath)) {
-        val content = Files.readString(versionPath)
-            .replace("~", System.getProperty("user.home")).strip()
-
-        val r = Paths.get(content)
-        cursorlessRootCache = r
-        return r
-    }
-
-    val r = cursorlessRootDefault()
-    cursorlessRootCache = r
-    return r
 }
 
 

@@ -14,7 +14,6 @@ import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.SecureRandom
-import java.util.*
 
 class HttpCommandServer {
 
@@ -81,5 +80,9 @@ class HttpCommandServer {
             LOG.error("Failed to start server to listen for commands", e)
             return
         }
+    }
+
+    fun stop() {
+        server?.stop(0)
     }
 }

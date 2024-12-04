@@ -1,6 +1,6 @@
 package com.github.asoee.cursorlessjetbrains.listeners
 
-import com.github.asoee.cursorlessjetbrains.commandserver.file.FileCommandServer
+import com.github.asoee.cursorlessjetbrains.commands.CommandRegistryService
 import com.github.asoee.cursorlessjetbrains.commandserver.http.HttpCommandServer
 import com.github.asoee.cursorlessjetbrains.services.FileCommandServerService
 import com.intellij.ide.AppLifecycleListener
@@ -14,12 +14,19 @@ class TalonAppLifecycleListener : AppLifecycleListener {
         println("PHIL: appFrameCreated...")
     }
 
+    private val httpCommandServer: HttpCommandServer
+        get() {
+            val httpCommandServer = HttpCommandServer()
+            return httpCommandServer
+        }
+
     override fun appStarted() {
         super.appStarted()
-        println("PHIL: app started, loading js driver...")
+        println("PHIL: app started")
 
-        val httpCommandServer = HttpCommandServer()
         httpCommandServer.start()
+        val registry = service<CommandRegistryService>()
+        registry.registerInternalCommands()
 
         val fileCommandServerService = service<FileCommandServerService>()
         if (fileCommandServerService != null ) {
@@ -33,6 +40,7 @@ class TalonAppLifecycleListener : AppLifecycleListener {
     override fun appClosing() {
         println("PHIL: app closing...")
         super.appClosing()
+        httpCommandServer.stop()
     }
 
     override fun appWillBeClosed(isRestart: Boolean) {

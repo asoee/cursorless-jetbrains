@@ -1,10 +1,10 @@
 package com.github.asoee.cursorlessjetbrains.commandserver.http
 
+import com.github.asoee.cursorlessjetbrains.commands.CommandExecutorService
+import com.github.asoee.cursorlessjetbrains.commands.CommandRegistryService
 import com.github.asoee.cursorlessjetbrains.commands.CommandRequest
-import com.github.asoee.cursorlessjetbrains.commands.VcCommand
-import com.intellij.notification.Notification
-import com.intellij.notification.NotificationType
-import com.intellij.notification.Notifications
+import com.intellij.notification.*
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.sun.net.httpserver.HttpExchange
@@ -19,8 +19,11 @@ import kotlin.text.toByteArray
 
 class HttpCommandHandler : HttpHandler {
 
-    private val LOG: Logger = logger<HttpCommandServer>()
+    companion object {
+        val group = NotificationGroup("vc-idea", NotificationDisplayType.BALLOON, true)
+    }
 
+    private val LOG: Logger = logger<HttpCommandServer>()
     @Throws(IOException::class)
     override fun handle(httpExchange: HttpExchange) {
         try {
@@ -31,6 +34,7 @@ class HttpCommandHandler : HttpHandler {
                 .map({ handleRquest(it) })
                 .map { resp -> VoicePluginResponse(200, resp) }
                 .orElse(VoicePluginResponse(502, "BAD"))
+            LOG.info("Response: " + response)
             httpExchange.sendResponseHeaders(response.responseCode, response.response.length.toLong())
             val os = httpExchange.responseBody
             os.write(response.response.toByteArray(Charsets.UTF_8))
@@ -46,7 +50,16 @@ class HttpCommandHandler : HttpHandler {
     }
 
     fun handleRquest(request: CommandRequest): String {
-        return "OK"
+        val registryService = service<CommandRegistryService>()
+        val command = registryService.getCommand(request)
+
+        val executorService = service<CommandExecutorService>()
+        if (command != null) {
+            return executorService.execute(command)
+        } else {
+            LOG.error("Command not found: " + request.command)
+            return "NotFound"
+        }
     }
 
     fun fromRequestUri(requestURI: URI): Optional<CommandRequest> {
@@ -56,15 +69,17 @@ class HttpCommandHandler : HttpHandler {
             var split = decode.split("/");
             // XXX For debugging
             val notification = Notification(
-                "vc-idea", "Voicecode Plugin", decode,
+                group.displayId, "Voicecode Plugin", decode,
                 NotificationType.INFORMATION
             );
+
             Notifications.Bus.notify(notification);
 
             split = split[1].split(" ");
             val command: String = split.get(0)
             val args = split.subList(1, split.size)
             val commandRequest = CommandRequest(command, args)
+            LOG.info("Command request: " + commandRequest)
             return Optional.of(commandRequest)
         } catch (e: UnsupportedEncodingException) {
             LOG.error("Failed to parse request URI", e);
