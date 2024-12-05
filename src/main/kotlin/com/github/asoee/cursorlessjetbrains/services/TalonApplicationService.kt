@@ -135,5 +135,7 @@ class TalonApplicationService(private val cs: CoroutineScope) : Disposable {
             editor.selectionModel.removeSelectionListener(it)
         }
         selectionListeners.remove(editor)
+
+        this.editorManager.editorClosed(editor)
     }
 }

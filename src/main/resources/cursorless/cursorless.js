@@ -14209,6 +14209,12 @@ var JetbrainsIDE = class {
     this.disposables.push(...disposables);
     return () => (0, import_lodash2.pull)(this.disposables, ...disposables);
   }
+  documentClosed(editorId) {
+    this.editors.delete(editorId);
+    console.log(
+      "removed editor " + editorId + "remaining after change: " + this.editors.size
+    );
+  }
   documentChanged(editorStateJson) {
     console.log(
       "ASOEE/CL: documentChanged : " + JSON.stringify(editorStateJson)

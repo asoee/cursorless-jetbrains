@@ -186,6 +186,31 @@ class JavetDriver {
             println("ASOEE/JS: error in close - " + e)
         }
     }
+
+    fun editorClosed(editorId: String) {
+        val js = """
+            | (async () => {
+            |   const ide = await globalThis.ide;
+            |   if (ide) {
+            |     console.log("ASOEE/JS: ide document closed");
+            |     try {
+            |       ide.documentClosed("${editorId}");
+            |       console.log("ASOEE/JS: async document closed completed");
+            |     } catch (e) {                      
+            |       console.error("ASOEE/JS: error in document closed - " + e);
+            |       throw e;
+            |     }
+            |   } else {
+            |     console.log("ASOEE/JS: ide not available");
+            |   }
+            | })();
+            | """.trimMargin()
+        println("ASOEE/JS: editorClosed\n" + js)
+        runtime.getExecutor(js)
+            .executeVoid();
+        eventLoop.await();
+
+    }
 }
 
 data class ExecutionResult(

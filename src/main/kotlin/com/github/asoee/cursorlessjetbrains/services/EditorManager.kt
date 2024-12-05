@@ -62,7 +62,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
             editorDebounce[editorId] = debouncer
             dispatchScope.launch {
                 debouncer
-                    .debounce(100.milliseconds)
+                    .debounce(25.milliseconds)
                     .collect { change ->
                         println("collect... " + change.editorId)
                         val editor = editorsById[change.editorId]
@@ -73,6 +73,8 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
                                 println("Error in editorDidChange")
                                 e.printStackTrace()
                             }
+                        } else {
+                            println("Editor not found (closed?)")
                         }
                     }
             }
@@ -212,6 +214,15 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         ensureEditorIdSet(editor)
     }
 
+    fun editorClosed(editor: Editor) {
+        val id = editorIds[editor]
+        editorIds.remove(editor)
+        if (id != null) {
+            editorsById.remove(id)
+            cursorlessEngine.editorClosed(id)
+        }
+    }
+
     fun getEditorId(editor: Editor) {
         editorIds[editor]
     }
@@ -293,4 +304,5 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         dispatchScope.cancel()
         emitScope.cancel()
     }
+
 }

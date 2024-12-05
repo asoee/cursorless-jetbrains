@@ -13,6 +13,9 @@ class CursorlessEngine(private val driver: JavetDriver) {
         driver.setCursorlessCallback(callback)
     }
 
+    fun editorClosed(id: String) {
+        driver.editorClosed(id)
+    }
 
 
 }
