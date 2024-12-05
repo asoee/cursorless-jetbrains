@@ -14,7 +14,6 @@ import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
@@ -115,8 +114,8 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         if (editor != null) {
             if (selections.size > 0) {
                 val range = selections[0]
-                val startPos = LogicalPosition(range.start!!.line, range.start!!.character)
-                val endPos = LogicalPosition(range.end!!.line, range.end!!.character)
+                val startPos = range.logicalStartPosition(editor)
+                val endPos = range.logicalEndPosition(editor)
                 println("launch action : Setting selection to " + startPos.toString() + " - " + endPos.toString())
 
                 ApplicationManager.getApplication().invokeLater {
@@ -125,7 +124,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
                             editor.project,
                             {
                                 println("Setting selection to " + startPos.toString() + " - " + endPos.toString())
-                                editor.caretModel?.caretsAndSelections = listOf(
+                                editor.caretModel.caretsAndSelections = listOf(
                                     CaretState(endPos, startPos, endPos),
                                 )
                             },
@@ -143,8 +142,8 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         if (editor != null) {
             if (selections.size > 0) {
                 val range = selections[0]
-                val startPos = LogicalPosition(range.start!!.line, range.start!!.character)
-                val endPos = LogicalPosition(range.end!!.line, range.end!!.character)
+                val startPos = range.logicalStartPosition(editor)
+                val endPos = range.logicalEndPosition(editor)
                 println("launch action : clipboardCopy to " + startPos.toString() + " - " + endPos.toString())
 
                 val startOffset = editor.logicalPositionToOffset(startPos)

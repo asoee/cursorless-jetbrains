@@ -130,14 +130,11 @@ fun serializeEditor(editor: Editor, active: Boolean, editorId: String): EditorSt
         FileDocumentManager.getInstance().getFile(document)?.path
 
     val cursors = editor.caretModel.allCarets.map { c ->
-        Cursor(
-            c.logicalPosition.line,
-            c.logicalPosition.column
-        )
+        cursorFromLogicalPosition(editor, c.logicalPosition)
     }
 
     val selections =
-        editor.caretModel.caretsAndSelections.map { selectionFromCaretState(it) }
+        editor.caretModel.caretsAndSelections.map { selectionFromCaretState(editor, it) }
 
     val ve = editor.scrollingModel.visibleArea
 
@@ -156,7 +153,5 @@ fun serializeEditor(editor: Editor, active: Boolean, editorId: String): EditorSt
         selections,
     )
 }
-
-
 
 

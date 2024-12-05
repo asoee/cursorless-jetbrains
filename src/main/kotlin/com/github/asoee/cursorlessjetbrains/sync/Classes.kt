@@ -2,6 +2,7 @@ package com.github.asoee.cursorlessjetbrains.sync
 
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessRange
 import com.intellij.openapi.editor.CaretState
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
 import kotlinx.serialization.Serializable
 
@@ -109,13 +110,19 @@ data class HatRange (
 )
 
 // TODO(pcohen): can we put these directly on the data classes?
-fun cursorFromLogicalPosition(lp: LogicalPosition): Cursor =
-    Cursor(lp.line, lp.column)
+fun cursorFromLogicalPosition(editor: Editor, logicalPosition: LogicalPosition): Cursor {
+    val positionOffset = editor.logicalPositionToOffset(logicalPosition)
+    val lineStartOffset = editor.document.getLineStartOffset(logicalPosition.line)
+    return Cursor(
+        logicalPosition.line,
+        positionOffset - lineStartOffset
+    )
+}
 
-fun selectionFromCaretState(lp: CaretState): Selection {
-    val start = lp.selectionStart?.let { cursorFromLogicalPosition(it) }
-    val end = lp.selectionEnd?.let { cursorFromLogicalPosition(it) }
-    val cursor = lp.caretPosition?.let { cursorFromLogicalPosition(it) }
+fun selectionFromCaretState(editor: Editor, lp: CaretState): Selection {
+    val start = lp.selectionStart?.let { cursorFromLogicalPosition(editor, it) }
+    val end = lp.selectionEnd?.let { cursorFromLogicalPosition(editor, it) }
+    val cursor = lp.caretPosition?.let { cursorFromLogicalPosition(editor, it) }
 
     // provide the "anchor" and "active" for ease of implementation inside of Visual Studio Code
     // note - if the cursor isn't either of these, will return null

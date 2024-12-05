@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix various issues when tab characters are used for indentation (hats, cursors and edits)
+
 ## [0.0.1] - 2024-12-05
 
 ### Added
