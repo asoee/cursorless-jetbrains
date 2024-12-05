@@ -66,6 +66,11 @@ jobs:
       #          PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
       #        run: ./gradlew publishPlugin
 
+      # Build plugin artifact
+      - name: Build Plugin
+        run: |
+          ./gradlew buildPlugin
+
       # Upload artifact as a release asset
       - name: Upload Release Asset
         env:
