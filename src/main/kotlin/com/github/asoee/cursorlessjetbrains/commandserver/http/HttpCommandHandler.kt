@@ -19,11 +19,8 @@ import kotlin.text.toByteArray
 
 class HttpCommandHandler : HttpHandler {
 
-    companion object {
-        val group = NotificationGroup("vc-idea", NotificationDisplayType.BALLOON, true)
-    }
-
     private val LOG: Logger = logger<HttpCommandServer>()
+
     @Throws(IOException::class)
     override fun handle(httpExchange: HttpExchange) {
         try {
@@ -41,6 +38,12 @@ class HttpCommandHandler : HttpHandler {
             os.close()
         } catch (e: Exception) {
             LOG.error("Failed to process command... ", e)
+            val notification = Notification(
+                "vc-idea", "Talon Jetbrains", "Failed to process command: " + e.message,
+                NotificationType.WARNING
+            );
+            Notifications.Bus.notify(notification);
+
             val response = e.toString()
             httpExchange.sendResponseHeaders(500, response.length.toLong())
             val os = httpExchange.responseBody
@@ -58,6 +61,12 @@ class HttpCommandHandler : HttpHandler {
             return executorService.execute(command)
         } else {
             LOG.error("Command not found: " + request.command)
+            val notification = Notification(
+                "vc-idea", "Talon Jetbrains", "Command not found: " + request.command,
+                NotificationType.WARNING
+            );
+            Notifications.Bus.notify(notification);
+
             return "NotFound"
         }
     }
@@ -69,10 +78,9 @@ class HttpCommandHandler : HttpHandler {
             var split = decode.split("/");
             // XXX For debugging
             val notification = Notification(
-                group.displayId, "Voicecode Plugin", decode,
+                "vc-idea", "Talon Jetbrains", decode,
                 NotificationType.INFORMATION
             );
-
             Notifications.Bus.notify(notification);
 
             split = split[1].split(" ");
