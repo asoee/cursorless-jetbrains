@@ -10,9 +10,6 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.asoee.cursorlessjetbrains.toolWindow.MyToolWindowFactory"
-                    id="MyToolWindow"/>
-
         <applicationService
                 serviceImplementation="com.github.asoee.cursorlessjetbrains.services.TalonApplicationService"/>
         <applicationService
