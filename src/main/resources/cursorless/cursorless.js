@@ -14155,15 +14155,12 @@ var JetbrainsIDE = class {
     throw new Error("workspaceFolders not implemented.");
   }
   get activeTextEditor() {
-    console.log("get activeTextEditor");
     return this.activeEditableTextEditor;
   }
   get activeEditableTextEditor() {
-    console.log("get activeEditableTextEditor");
     return this.activeEditor;
   }
   get visibleTextEditors() {
-    console.log("get visibleTextEditors");
     if (this.activeEditor) {
       console.log("visible: " + this.activeEditor.id);
       return [this.activeEditor];
@@ -14172,7 +14169,6 @@ var JetbrainsIDE = class {
     }
   }
   getEditableTextEditor(editor) {
-    console.log("getEditableTextEditor");
     if (editor instanceof JetbrainsEditor) {
       console.log("getEditableTextEditor - return current");
       return editor;
@@ -14211,14 +14207,8 @@ var JetbrainsIDE = class {
   }
   documentClosed(editorId) {
     this.editors.delete(editorId);
-    console.log(
-      "removed editor " + editorId + "remaining after change: " + this.editors.size
-    );
   }
   documentChanged(editorStateJson) {
-    console.log(
-      "ASOEE/CL: documentChanged : " + JSON.stringify(editorStateJson)
-    );
     const editorState = editorStateJson;
     const editor = this.updateTextEditors(editorState);
     const linedata = getLines(
@@ -14236,9 +14226,7 @@ var JetbrainsIDE = class {
       document: editor.document,
       contentChanges: contentChangeEvents
     };
-    console.log("ASOEE/CL: documentChanged : notify...");
     this.emitDidChangeTextDocument(documentChangeEvent);
-    console.log("ASOEE/CL: documentChanged : notify complete");
   }
   emitDidChangeTextDocument(event) {
     this.onDidChangeTextDocumentNotifier.notifyListeners(event);
@@ -14258,7 +14246,6 @@ var JetbrainsIDE = class {
   }
 };
 function updateEditor(editor, editorState) {
-  console.log("Updating editor " + editorState.id);
   const oldDocument = editor.document;
   editor.document = new InMemoryTextDocument(
     oldDocument.uri,

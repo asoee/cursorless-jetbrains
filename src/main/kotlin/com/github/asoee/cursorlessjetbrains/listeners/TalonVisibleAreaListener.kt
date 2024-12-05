@@ -6,7 +6,7 @@ import com.intellij.openapi.editor.event.VisibleAreaListener
 
 class TalonVisibleAreaListener(private val editorManager: EditorManager) : VisibleAreaListener {
     override fun visibleAreaChanged(e: VisibleAreaEvent) {
-        println("Visible area changed " + e.toString())
+//        println("Visible area changed " + e.toString())
         editorManager.editorChanged(e.editor)
     }
 }

@@ -12,11 +12,11 @@ var editorToContainer =
 class TalonEditorFactoryListener : EditorFactoryListener {
 
     init {
-        println("PHIL: TalonEditorFactoryListener listener scope")
+//        println("PHIL: TalonEditorFactoryListener listener scope")
     }
 
     override fun editorCreated(event: EditorFactoryEvent) {
-        println("PHIL: editor created; attaching container")
+//        println("PHIL: editor created; attaching container")
 
         val applicationService = service<TalonApplicationService>()
         applicationService.editorCreated(event.editor)
@@ -25,7 +25,7 @@ class TalonEditorFactoryListener : EditorFactoryListener {
     }
 
     override fun editorReleased(event: EditorFactoryEvent) {
-        println("phil: editor released")
+//        println("phil: editor released")
         super.editorReleased(event)
 
         removeCursorlessContainerFromEditor(event.editor)

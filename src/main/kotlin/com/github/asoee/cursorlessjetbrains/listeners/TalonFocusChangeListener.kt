@@ -7,22 +7,22 @@ import java.awt.event.FocusEvent
 
 class TalonFocusChangeListener(private val editorManager: EditorManager) : FocusChangeListener {
     override fun focusGained(editor: Editor) {
-        println("focus gained: $editor")
+//        println("focus gained: $editor")
         editorManager.focusChanged(editor)
     }
 
     override fun focusGained(editor: Editor, event: FocusEvent) {
-        println("focus gained: $editor $event")
+//        println("focus gained: $editor $event")
         editorManager.focusChanged(editor)
     }
 
     override fun focusLost(editor: Editor) {
-        println("focus lost: $editor")
+//        println("focus lost: $editor")
         editorManager.focusChanged(editor)
     }
 
     override fun focusLost(editor: Editor, event: FocusEvent) {
-        println("focus lost: $editor $event")
+//        println("focus lost: $editor $event")
         editorManager.focusChanged(editor)
     }
 }

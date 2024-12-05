@@ -9,7 +9,7 @@ class TalonSelectionListener(private val editorManager: EditorManager) : Selecti
 
     override fun selectionChanged(e: SelectionEvent) {
         super.selectionChanged(e)
-        println("Selection changed " + e.toString())
+//        println("Selection changed " + e.toString())
         editorManager.editorChanged(e.editor)
     }
 

@@ -14,6 +14,7 @@ import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.SecureRandom
+import java.util.*
 
 class HttpCommandServer {
 
@@ -46,8 +47,8 @@ class HttpCommandServer {
         val random = SecureRandom()
         val bytes = ByteArray(20)
         random.nextBytes(bytes)
-//        val nonce = String(Base64.getUrlEncoder().encode(bytes))
-        val nonce = "localdev";
+        val nonce = String(Base64.getUrlEncoder().encode(bytes))
+//        val nonce = "localdev";
         val port: Int = PLATFORM_TO_PORT.getOrDefault(
             PlatformUtils.getPlatformPrefix(),
             DEFAULT_PORT
@@ -61,7 +62,7 @@ class HttpCommandServer {
         } catch (e: IOException) {
             LOG.error("Failed to write nonce file", e)
         }
-
+        LOG.info("Http command server listening on http://localhost:$port/$nonce")
         val notification = Notification(
             "vc-idea",
             "Voicecode Plugin", "Listening on http://localhost:$port/$nonce",

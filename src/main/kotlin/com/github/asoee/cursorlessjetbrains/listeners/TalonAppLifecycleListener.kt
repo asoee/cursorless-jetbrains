@@ -11,7 +11,6 @@ class TalonAppLifecycleListener : AppLifecycleListener {
 
     override fun appFrameCreated(commandLineArgs: List<String>) {
         super.appFrameCreated(commandLineArgs)
-        println("PHIL: appFrameCreated...")
     }
 
     private val httpCommandServer: HttpCommandServer
@@ -22,7 +21,6 @@ class TalonAppLifecycleListener : AppLifecycleListener {
 
     override fun appStarted() {
         super.appStarted()
-        println("PHIL: app started")
 
         httpCommandServer.start()
         val registry = service<CommandRegistryService>()
@@ -33,18 +31,17 @@ class TalonAppLifecycleListener : AppLifecycleListener {
             println("File command server service ready...")
         }
 
-        println("PHIL: app started...")
     }
 
 
     override fun appClosing() {
-        println("PHIL: app closing...")
+//        println("PHIL: app closing...")
         super.appClosing()
         httpCommandServer.stop()
     }
 
     override fun appWillBeClosed(isRestart: Boolean) {
-        println("PHIL: app closed...")
+//        println("PHIL: app closed...")
         super.appWillBeClosed(isRestart)
     }
 }

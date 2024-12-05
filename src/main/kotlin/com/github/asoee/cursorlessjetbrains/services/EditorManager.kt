@@ -57,14 +57,14 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     fun debouncerById(editorId: String): MutableSharedFlow<EditorChange> {
         var debouncer = editorDebounce[editorId]
         if (debouncer == null) {
-            thisLogger().info("Creating debouncer for $editorId")
+//            thisLogger().info("Creating debouncer for $editorId")
             debouncer = MutableSharedFlow<EditorChange>()
             editorDebounce[editorId] = debouncer
             dispatchScope.launch {
                 debouncer
                     .debounce(25.milliseconds)
                     .collect { change ->
-                        println("collect... " + change.editorId)
+//                        println("collect... " + change.editorId)
                         val editor = editorsById[change.editorId]
                         if (editor != null) {
                             try {
@@ -89,7 +89,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         }
         ensureEditorIdSet(editor)
         val editorId = editorIds[editor]!!
-        println("Editor changed $editorId")
+//        println("Editor changed $editorId")
         val debouncer = debouncerById(editorId)
         emitScope.launch {
             debouncer.emit(EditorChange(editorId, System.currentTimeMillis()))
@@ -103,7 +103,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
             } else {
                 ensureEditorIdSet(editor)
                 val editorId = editorIds[editor]!!
-                println("Editor did change " + editorId)
+//                println("Editor did change " + editorId)
                 val editorState = serializeEditor(editor, true, editorId)
                 cursorlessEngine.editorChanged(editorState)
             }
