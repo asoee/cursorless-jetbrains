@@ -205,7 +205,6 @@ class JavetDriver {
             |   }
             | })();
             | """.trimMargin()
-        println("ASOEE/JS: editorClosed\n" + js)
         runtime.getExecutor(js)
             .executeVoid();
         eventLoop.await();
