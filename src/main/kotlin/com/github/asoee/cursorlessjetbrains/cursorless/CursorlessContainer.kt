@@ -246,7 +246,7 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
                 }
             }
 
-            val logicalPosition = range.start?.toLogicalPosition()!!
+            val logicalPosition = editor.offsetToLogicalPosition(offset)
 
             val coordinates = editor.visualPositionToXY(
                 editor.logicalToVisualPosition(logicalPosition)
