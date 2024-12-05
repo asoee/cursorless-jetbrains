@@ -7,7 +7,7 @@
 ## Description
 
 <!-- Plugin description -->
-Adds Talon and Cursorless support to the jetbrains/Intellij.
+Adds Talon and Cursorless support to jetbrains/Intellij.
 
 Uses embedded javascript engine to run cursorless engine.
 
