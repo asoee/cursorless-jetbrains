@@ -38,6 +38,22 @@ class IdeClientCallback {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
 
+        override fun executeCommand(editorId: String, command: String, args: Array<String>) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
+        override fun indentLine(editorId: String, ranges: Array<CursorlessRange>) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
+        override fun outdentLine(editorId: String, ranges: Array<CursorlessRange>) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
+        override fun insertLineAfter(editorId: String, ranges: Array<CursorlessRange>) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
     }
 
 
@@ -82,6 +98,34 @@ class IdeClientCallback {
     public fun clipboardPaste(editorId: String) {
         LOG.info("IdeClientCallback.clipboardCopy")
         cursorlessCallback.clipboardPaste(editorId)
+    }
+
+    @V8Function
+    public fun executeCommand(editorId: String, command: String, argsJson: String) {
+        LOG.info("IdeClientCallback.executeCommand: $command, $argsJson")
+        val args = Json { ignoreUnknownKeys = true }.decodeFromString<Array<String>>(argsJson)
+        cursorlessCallback.executeCommand(editorId, command, args)
+    }
+
+    @V8Function
+    public fun indentLine(editorId: String, rangesJson: String) {
+        LOG.info("IdeClientCallback.indentLine: $rangesJson")
+        val ranges = Json { ignoreUnknownKeys = true }.decodeFromString<Array<CursorlessRange>>(rangesJson)
+        cursorlessCallback.indentLine(editorId, ranges)
+    }
+
+    @V8Function
+    public fun outdentLine(editorId: String, rangesJson: String) {
+        LOG.info("IdeClientCallback.outdentLine: $rangesJson")
+        val ranges = Json { ignoreUnknownKeys = true }.decodeFromString<Array<CursorlessRange>>(rangesJson)
+        cursorlessCallback.outdentLine(editorId, ranges)
+    }
+
+    @V8Function
+    public fun insertLineAfter(editorId: String, rangesJson: String) {
+        LOG.info("IdeClientCallback.insertLineAfter: $rangesJson")
+        val ranges = Json { ignoreUnknownKeys = true }.decodeFromString<Array<CursorlessRange>>(rangesJson)
+        cursorlessCallback.insertLineAfter(editorId, ranges)
     }
 
     @V8Function

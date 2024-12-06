@@ -13,4 +13,9 @@ interface CursorlessCallback {
     fun clipboardCopy(editorId: String, selections: Array<CursorlessRange>)
 
     fun clipboardPaste(editorId: String)
+
+    fun executeCommand(editorId: String, command: String, args: Array<String>)
+    fun indentLine(editorId: String, ranges: Array<CursorlessRange>)
+    fun outdentLine(editorId: String, ranges: Array<CursorlessRange>)
+    fun insertLineAfter(editorId: String, ranges: Array<CursorlessRange>)
 }

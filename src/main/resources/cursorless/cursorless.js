@@ -13508,12 +13508,12 @@ var COMMAND_CAPABILITIES = {
   clipboardCopy: { acceptsLocation: true },
   clipboardPaste: true,
   toggleLineComment: void 0,
-  indentLine: void 0,
-  outdentLine: void 0,
+  indentLine: { acceptsLocation: true },
+  outdentLine: { acceptsLocation: true },
   rename: void 0,
   quickFix: void 0,
   revealDefinition: void 0,
-  revealTypeDefinition: void 0,
+  revealTypeDefinition: { acceptsLocation: true },
   showHover: void 0,
   showDebugHover: void 0,
   extractVariable: void 0,
@@ -13521,7 +13521,7 @@ var COMMAND_CAPABILITIES = {
   highlight: { acceptsLocation: true },
   unfold: void 0,
   showReferences: void 0,
-  insertLineAfter: void 0
+  insertLineAfter: { acceptsLocation: true }
 };
 var JetbrainsCapabilities = class {
   constructor() {
@@ -14007,14 +14007,14 @@ var JetbrainsEditor = class {
   async clipboardPaste() {
     await this.ide.clipboard.paste(this.id);
   }
-  indentLine(_ranges) {
-    throw Error("indentLine not implemented.");
+  async indentLine(ranges) {
+    await this.ide.indentLine(this.id, ranges);
   }
-  outdentLine(_ranges) {
-    throw Error("outdentLine not implemented.");
+  async outdentLine(ranges) {
+    await this.ide.outdentLine(this.id, ranges);
   }
-  insertLineAfter(_ranges) {
-    throw Error("insertLineAfter not implemented.");
+  async insertLineAfter(ranges) {
+    await this.ide.insertLineAfter(this.id, ranges);
   }
   focus() {
     throw new Error("focus not implemented.");
@@ -14055,8 +14055,25 @@ var JetbrainsEditor = class {
   revealDefinition(_range) {
     throw new Error("revealDefinition not implemented.");
   }
-  revealTypeDefinition(_range) {
-    throw new Error("revealTypeDefinition not implemented.");
+  revealTypeDefinition(range3) {
+    if (range3) {
+      return this.setSelections([new Selection(range3.start, range3.end)]).then(
+        () => {
+          this.client.executeCommand(
+            this.id,
+            "QuickImplementations",
+            JSON.stringify([])
+          );
+        }
+      );
+    } else {
+      this.client.executeCommand(
+        this.id,
+        "QuickImplementations",
+        JSON.stringify([])
+      );
+      return Promise.resolve();
+    }
   }
   showHover(_range) {
     throw new Error("showHover not implemented.");
@@ -14243,6 +14260,15 @@ var JetbrainsIDE = class {
       this.activeEditor = editor;
     }
     return editor;
+  }
+  async indentLine(editorId, ranges) {
+    this.client.indentLine(editorId, JSON.stringify(ranges));
+  }
+  async outdentLine(editorId, ranges) {
+    this.client.outdentLine(editorId, JSON.stringify(ranges));
+  }
+  async insertLineAfter(editorId, ranges) {
+    this.client.insertLineAfter(editorId, JSON.stringify(ranges));
   }
 };
 function updateEditor(editor, editorState) {

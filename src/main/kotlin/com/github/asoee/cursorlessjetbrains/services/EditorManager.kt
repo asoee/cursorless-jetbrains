@@ -1,5 +1,6 @@
 package com.github.asoee.cursorlessjetbrains.services
 
+import com.github.asoee.cursorlessjetbrains.commands.*
 import com.github.asoee.cursorlessjetbrains.cursorless.*
 import com.github.asoee.cursorlessjetbrains.listeners.getCursorlessContainers
 import com.github.asoee.cursorlessjetbrains.sync.HatRange
@@ -9,6 +10,7 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.IdeActions
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.CaretState
@@ -261,6 +263,42 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
 
         override fun clipboardPaste(editorId: String) {
             editorManager.clipboardPaste(editorId)
+        }
+
+        override fun executeCommand(editorId: String, command: String, args: Array<String>) {
+            val actionsArgs = listOf(command) + args.toList()
+            val request = CommandRequest("action", actionsArgs)
+            thisLogger().info("Executing command $request")
+            service<CommandRegistryService>().getCommand(request)?.let {
+                thisLogger().info("Found command $it")
+                service<CommandExecutorService>().execute(it)
+            }
+        }
+
+        override fun indentLine(editorId: String, ranges: Array<CursorlessRange>) {
+            thisLogger().info("Executing indentLine $ranges")
+            editorManager.editorsById[editorId]?.let { editor ->
+                val command = IndentLinesCommand.fromRanges(editor, true, ranges.toList())
+                service<CommandExecutorService>().execute(command)
+            }
+        }
+
+        override fun outdentLine(editorId: String, ranges: Array<CursorlessRange>) {
+            thisLogger().info("Executing outdentLine $ranges")
+            editorManager.editorsById[editorId]?.let { editor ->
+                thisLogger().info("Executing outdentLine $ranges - found editor")
+                val command = IndentLinesCommand.fromRanges(editor, false, ranges.toList())
+                service<CommandExecutorService>().execute(command)
+            }
+        }
+
+        override fun insertLineAfter(editorId: String, ranges: Array<CursorlessRange>) {
+            thisLogger().info("Executing insertLineAfter $ranges")
+            editorManager.editorsById[editorId]?.let { editor ->
+                thisLogger().info("Executing insertLineAfter $ranges - found editor")
+                val command = InsertLineAfterCommand.fromRanges(editor, ranges.toList())
+                service<CommandExecutorService>().execute(command)
+            }
         }
 
         override fun documentUpdated(editorId: String, edit: CursorlessEditorEdit) {

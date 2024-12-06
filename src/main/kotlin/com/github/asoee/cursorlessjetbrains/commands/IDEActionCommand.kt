@@ -43,6 +43,9 @@ class IDEActionCommand(private val actionId: String) : VcCommand() {
         if (e != null) {
             component = e.component
         }
+        if (component == null) {
+            component = context.editor?.contentComponent
+        }
         ActionManager.getInstance()
             .tryToExecute(action, event, component, ActionPlaces.UNKNOWN, true)
         return "OK"
