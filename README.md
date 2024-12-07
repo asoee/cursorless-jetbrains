@@ -26,6 +26,7 @@ community. [They are maintained in this PR](https://github.com/talonhub/communit
 
 - No code structure support in cursorless yet (requires treesitter)
 - Only default shape supported for corsorless hats
+- Chaining commands is not supported yet
 
 ## Credits
 
