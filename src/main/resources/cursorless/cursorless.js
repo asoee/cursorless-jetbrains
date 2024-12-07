@@ -13507,20 +13507,20 @@ var import_lodash2 = __toESM(require_lodash());
 var COMMAND_CAPABILITIES = {
   clipboardCopy: { acceptsLocation: true },
   clipboardPaste: true,
-  toggleLineComment: void 0,
+  toggleLineComment: { acceptsLocation: true },
   indentLine: { acceptsLocation: true },
   outdentLine: { acceptsLocation: true },
-  rename: void 0,
-  quickFix: void 0,
-  revealDefinition: void 0,
+  rename: { acceptsLocation: true },
+  quickFix: { acceptsLocation: true },
+  revealDefinition: { acceptsLocation: true },
   revealTypeDefinition: { acceptsLocation: true },
   showHover: void 0,
   showDebugHover: void 0,
-  extractVariable: void 0,
-  fold: void 0,
+  extractVariable: { acceptsLocation: true },
+  fold: { acceptsLocation: true },
   highlight: { acceptsLocation: true },
-  unfold: void 0,
-  showReferences: void 0,
+  unfold: { acceptsLocation: true },
+  showReferences: { acceptsLocation: true },
   insertLineAfter: { acceptsLocation: true }
 };
 var JetbrainsCapabilities = class {
@@ -13971,6 +13971,16 @@ function jetbrainsPerformEdits(client, ide2, document, id2, edits) {
   });
 }
 
+// src/ide/JetbrainsEditorCommand.ts
+var JetbrainsEditorCommand = class {
+  constructor(ranges, singleRange, restoreSelection, ideCommand) {
+    this.ranges = ranges;
+    this.singleRange = singleRange;
+    this.restoreSelection = restoreSelection;
+    this.ideCommand = ideCommand;
+  }
+};
+
 // src/ide/JetbrainsEditor.ts
 var JetbrainsEditor = class {
   constructor(client, ide2, id2, document, visibleRanges, selections) {
@@ -14008,13 +14018,25 @@ var JetbrainsEditor = class {
     await this.ide.clipboard.paste(this.id);
   }
   async indentLine(ranges) {
-    await this.ide.indentLine(this.id, ranges);
+    const command = new JetbrainsEditorCommand(
+      ranges ? ranges : [],
+      true,
+      true,
+      "EditorIndentSelection"
+    );
+    await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
   async outdentLine(ranges) {
-    await this.ide.outdentLine(this.id, ranges);
+    const command = new JetbrainsEditorCommand(
+      ranges ? ranges : [],
+      true,
+      true,
+      "EditorUnindentSelection"
+    );
+    await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
   async insertLineAfter(ranges) {
-    await this.ide.insertLineAfter(this.id, ranges);
+    await this.client.insertLineAfter(this.id, JSON.stringify(ranges));
   }
   focus() {
     throw new Error("focus not implemented.");
@@ -14028,52 +14050,83 @@ var JetbrainsEditor = class {
   openLink(_range, _options) {
     throw new Error("openLink not implemented.");
   }
-  fold(_ranges) {
-    throw new Error("fold not implemented.");
+  async fold(ranges) {
+    const command = new JetbrainsEditorCommand(
+      ranges ? ranges : [],
+      true,
+      false,
+      "CollapseRegion"
+    );
+    await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
-  unfold(_ranges) {
-    throw new Error("unfold not implemented.");
+  async unfold(ranges) {
+    const command = new JetbrainsEditorCommand(
+      ranges ? ranges : [],
+      true,
+      false,
+      "ExpandRegion"
+    );
+    await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
-  toggleBreakpoint(_descriptors) {
+  async toggleBreakpoint(_descriptors) {
     throw new Error("toggleBreakpoint not implemented.");
   }
-  toggleLineComment(_ranges) {
-    throw new Error("toggleLineComment not implemented.");
+  async toggleLineComment(ranges) {
+    const command = new JetbrainsEditorCommand(
+      ranges ? ranges : [],
+      true,
+      false,
+      "CommentByLineComment"
+    );
+    await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
   insertSnippet(_snippet, _ranges) {
     throw new Error("insertSnippet not implemented.");
   }
-  rename(_range) {
-    throw new Error("rename not implemented.");
+  async rename(range3) {
+    const command = new JetbrainsEditorCommand(
+      range3 ? [range3] : [],
+      true,
+      false,
+      "RenameElement"
+    );
+    await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
-  showReferences(_range) {
-    throw new Error("showReferences not implemented.");
+  async showReferences(range3) {
+    const command = new JetbrainsEditorCommand(
+      range3 ? [range3] : [],
+      true,
+      false,
+      "FindUsages"
+    );
+    await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
-  quickFix(_range) {
-    throw new Error("quickFix not implemented.");
+  async quickFix(range3) {
+    const command = new JetbrainsEditorCommand(
+      range3 ? [range3] : [],
+      true,
+      false,
+      "ShowIntentionActions"
+    );
+    await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
-  revealDefinition(_range) {
-    throw new Error("revealDefinition not implemented.");
+  async revealDefinition(range3) {
+    const command = new JetbrainsEditorCommand(
+      range3 ? [range3] : [],
+      true,
+      false,
+      "QuickImplementations"
+    );
+    await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
-  revealTypeDefinition(range3) {
-    if (range3) {
-      return this.setSelections([new Selection(range3.start, range3.end)]).then(
-        () => {
-          this.client.executeCommand(
-            this.id,
-            "QuickImplementations",
-            JSON.stringify([])
-          );
-        }
-      );
-    } else {
-      this.client.executeCommand(
-        this.id,
-        "QuickImplementations",
-        JSON.stringify([])
-      );
-      return Promise.resolve();
-    }
+  async revealTypeDefinition(range3) {
+    const command = new JetbrainsEditorCommand(
+      range3 ? [range3] : [],
+      true,
+      false,
+      "QuickImplementations"
+    );
+    await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
   showHover(_range) {
     throw new Error("showHover not implemented.");
@@ -14081,8 +14134,14 @@ var JetbrainsEditor = class {
   showDebugHover(_range) {
     throw new Error("showDebugHover not implemented.");
   }
-  extractVariable(_range) {
-    throw new Error("extractVariable not implemented.");
+  async extractVariable(range3) {
+    const command = new JetbrainsEditorCommand(
+      range3 ? [range3] : [],
+      true,
+      false,
+      "IntroduceVariable"
+    );
+    await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
   editNewNotebookCellAbove() {
     throw new Error("editNewNotebookCellAbove not implemented.");
@@ -14261,15 +14320,27 @@ var JetbrainsIDE = class {
     }
     return editor;
   }
-  async indentLine(editorId, ranges) {
-    this.client.indentLine(editorId, JSON.stringify(ranges));
-  }
-  async outdentLine(editorId, ranges) {
-    this.client.outdentLine(editorId, JSON.stringify(ranges));
-  }
-  async insertLineAfter(editorId, ranges) {
-    this.client.insertLineAfter(editorId, JSON.stringify(ranges));
-  }
+  // async indentLine(editorId: string, ranges: Range[]): Promise<void> {
+  //   this.client.indentLine(editorId, JSON.stringify(ranges));
+  // }
+  // async outdentLine(editorId: string, ranges: Range[]): Promise<void> {
+  //   this.client.outdentLine(editorId, JSON.stringify(ranges));
+  // }
+  // async insertLineAfter(editorId: string, ranges?: Range[]): Promise<void> {
+  //   this.client.insertLineAfter(editorId, JSON.stringify(ranges));
+  // }
+  // async rename(editorId: string, range?: Range): Promise<void> {
+  //   this.client.rename(editorId, JSON.stringify(range));
+  // }
+  // async showReferences(editorId: string, range?: Range): Promise<void> {
+  //   this.client.showReferences(editorId, JSON.stringify(range));
+  // }
+  // async quickFix(editorId: string, range?: Range): Promise<void> {
+  //   this.client.quickFix(editorId, JSON.stringify(range));
+  // }
+  // async revealDefinition(editorId: string, range?: Range): Promise<void> {
+  //   this.client.revealDefinition(editorId, JSON.stringify(range));
+  // }
 };
 function updateEditor(editor, editorState) {
   const oldDocument = editor.document;

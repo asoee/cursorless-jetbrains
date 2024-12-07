@@ -275,19 +275,16 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
             }
         }
 
-        override fun indentLine(editorId: String, ranges: Array<CursorlessRange>) {
-            thisLogger().info("Executing indentLine $ranges")
+        override fun executeRangeCommand(editorId: String, rangeCommand: CursorlessEditorCommand) {
+            thisLogger().info("Executing executeRangeCommand $rangeCommand")
             editorManager.editorsById[editorId]?.let { editor ->
-                val command = IndentLinesCommand.fromRanges(editor, true, ranges.toList())
-                service<CommandExecutorService>().execute(command)
-            }
-        }
-
-        override fun outdentLine(editorId: String, ranges: Array<CursorlessRange>) {
-            thisLogger().info("Executing outdentLine $ranges")
-            editorManager.editorsById[editorId]?.let { editor ->
-                thisLogger().info("Executing outdentLine $ranges - found editor")
-                val command = IndentLinesCommand.fromRanges(editor, false, ranges.toList())
+                val command = RangedActionCommand(
+                    editor,
+                    rangeCommand.ranges.toTypedArray(),
+                    rangeCommand.singleRange,
+                    rangeCommand.restoreSelection,
+                    rangeCommand.ideCommand
+                )
                 service<CommandExecutorService>().execute(command)
             }
         }

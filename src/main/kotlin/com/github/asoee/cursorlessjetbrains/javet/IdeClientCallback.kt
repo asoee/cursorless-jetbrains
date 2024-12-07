@@ -2,6 +2,7 @@ package com.github.asoee.cursorlessjetbrains.javet
 
 import com.caoccao.javet.annotations.V8Function
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCallback
+import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessEditorCommand
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessEditorEdit
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessRange
 import com.github.asoee.cursorlessjetbrains.sync.HatRange
@@ -41,12 +42,7 @@ class IdeClientCallback {
         override fun executeCommand(editorId: String, command: String, args: Array<String>) {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
-
-        override fun indentLine(editorId: String, ranges: Array<CursorlessRange>) {
-            println("ASOEE/PLUGIN: CursorlessCallback not set")
-        }
-
-        override fun outdentLine(editorId: String, ranges: Array<CursorlessRange>) {
+        override fun executeRangeCommand(editorId: String, rangeCommand: CursorlessEditorCommand) {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
 
@@ -108,17 +104,10 @@ class IdeClientCallback {
     }
 
     @V8Function
-    public fun indentLine(editorId: String, rangesJson: String) {
-        LOG.info("IdeClientCallback.indentLine: $rangesJson")
-        val ranges = Json { ignoreUnknownKeys = true }.decodeFromString<Array<CursorlessRange>>(rangesJson)
-        cursorlessCallback.indentLine(editorId, ranges)
-    }
-
-    @V8Function
-    public fun outdentLine(editorId: String, rangesJson: String) {
-        LOG.info("IdeClientCallback.outdentLine: $rangesJson")
-        val ranges = Json { ignoreUnknownKeys = true }.decodeFromString<Array<CursorlessRange>>(rangesJson)
-        cursorlessCallback.outdentLine(editorId, ranges)
+    public fun executeRangeCommand(editorId: String, commandJson: String) {
+        LOG.info("IdeClientCallback.executeCommand:  $commandJson")
+        val rangeCommand = Json { ignoreUnknownKeys = true }.decodeFromString<CursorlessEditorCommand>(commandJson)
+        cursorlessCallback.executeRangeCommand(editorId, rangeCommand)
     }
 
     @V8Function
@@ -133,5 +122,6 @@ class IdeClientCallback {
         LOG.info("IdeClientCallback.unhandledRejection: $cause")
         unhandledRejections.add(cause)
     }
+
 
 }

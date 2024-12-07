@@ -14,15 +14,22 @@ class CommandContext {
 
     val LOG = thisLogger()
 
-    val editor: Editor?
+    var editor: Editor? = null
         get() {
+            if (field != null) {
+                return field
+            }
             val currentProject = project
             val e =
                 FileEditorManager.getInstance(currentProject!!).selectedTextEditor
             if (e == null) {
                 LOG.debug("No selected editor?")
             }
+            field = e
             return e
+        }
+        set(value) {
+            field = value
         }
 
     val toolWindow: ToolWindow?
