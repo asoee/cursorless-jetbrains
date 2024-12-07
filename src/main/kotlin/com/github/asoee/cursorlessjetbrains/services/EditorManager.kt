@@ -298,6 +298,14 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
             }
         }
 
+        override fun revealLine(editorId: String, line: Int, revealAt: String) {
+            thisLogger().info("Executing insertLineAfter $line, $revealAt")
+            editorManager.editorsById[editorId]?.let { editor ->
+                val command = RevealLineCommand(editor, line, revealAt)
+                service<CommandExecutorService>().execute(command)
+            }
+        }
+
         override fun documentUpdated(editorId: String, edit: CursorlessEditorEdit) {
             editorManager.documentUpdated(editorId, edit)
         }

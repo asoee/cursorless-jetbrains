@@ -50,6 +50,10 @@ class IdeClientCallback {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
 
+        override fun revealLine(editorId: String, line: Int, revealAt: String) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
     }
 
 
@@ -115,6 +119,12 @@ class IdeClientCallback {
         LOG.info("IdeClientCallback.insertLineAfter: $rangesJson")
         val ranges = Json { ignoreUnknownKeys = true }.decodeFromString<Array<CursorlessRange>>(rangesJson)
         cursorlessCallback.insertLineAfter(editorId, ranges)
+    }
+
+    @V8Function
+    public fun revealLine(editorId: String, line: Int, revealAt: String) {
+        LOG.info("IdeClientCallback.revealLine: $line")
+        cursorlessCallback.revealLine(editorId, line, revealAt)
     }
 
     @V8Function

@@ -14044,8 +14044,8 @@ var JetbrainsEditor = class {
   revealRange(_range) {
     return Promise.resolve();
   }
-  revealLine(_lineNumber, _at) {
-    throw new Error("revealLine not implemented.");
+  async revealLine(lineNumber, at) {
+    await this.client.revealLine(this.id, lineNumber, at);
   }
   openLink(_range, _options) {
     throw new Error("openLink not implemented.");
@@ -14320,27 +14320,6 @@ var JetbrainsIDE = class {
     }
     return editor;
   }
-  // async indentLine(editorId: string, ranges: Range[]): Promise<void> {
-  //   this.client.indentLine(editorId, JSON.stringify(ranges));
-  // }
-  // async outdentLine(editorId: string, ranges: Range[]): Promise<void> {
-  //   this.client.outdentLine(editorId, JSON.stringify(ranges));
-  // }
-  // async insertLineAfter(editorId: string, ranges?: Range[]): Promise<void> {
-  //   this.client.insertLineAfter(editorId, JSON.stringify(ranges));
-  // }
-  // async rename(editorId: string, range?: Range): Promise<void> {
-  //   this.client.rename(editorId, JSON.stringify(range));
-  // }
-  // async showReferences(editorId: string, range?: Range): Promise<void> {
-  //   this.client.showReferences(editorId, JSON.stringify(range));
-  // }
-  // async quickFix(editorId: string, range?: Range): Promise<void> {
-  //   this.client.quickFix(editorId, JSON.stringify(range));
-  // }
-  // async revealDefinition(editorId: string, range?: Range): Promise<void> {
-  //   this.client.revealDefinition(editorId, JSON.stringify(range));
-  // }
 };
 function updateEditor(editor, editorState) {
   const oldDocument = editor.document;
