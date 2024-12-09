@@ -40,7 +40,7 @@ dependencies {
     implementation("com.caoccao.javet:javet:4.1.0") // Core (Must-have)
 //    implementation("com.caoccao.javet:javet-node-linux-arm64:4.1.0")
 //    implementation("com.caoccao.javet:javet-node-linux-x86_64:4.1.0")
-    implementation("com.caoccao.javet:javet-node-macos-arm64:4.1.0")
+    implementation("com.caoccao.javet:javet-node-macos-arm64:4.1.1")
     implementation("com.caoccao.javet:javet-node-macos-x86_64:4.1.0")
     implementation("com.caoccao.javet:javet-node-windows-x86_64-i18n:4.1.0")
 //    implementation("com.caoccao.javet:javet-v8-linux-arm64:4.1.0")
@@ -49,7 +49,7 @@ dependencies {
     implementation("com.caoccao.javet:javet-v8-macos-x86_64:4.1.0")
     implementation("com.caoccao.javet:javet-v8-windows-x86_64:4.1.0")
 
-    implementation("com.caoccao.javet:javet-node-macos-arm64-i18n:4.1.0")
+    implementation("com.caoccao.javet:javet-node-macos-arm64-i18n:4.1.1")
 
 
     implementation("com.caoccao.javet:javenode:0.8.0")
