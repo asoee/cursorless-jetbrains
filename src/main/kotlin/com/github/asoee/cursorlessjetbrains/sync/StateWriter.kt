@@ -1,5 +1,6 @@
 package com.github.asoee.cursorlessjetbrains.sync
 
+import com.github.phillco.talonjetbrains.util.caretLanguage
 import com.intellij.ide.RecentProjectsManager
 import com.intellij.ide.RecentProjectsManagerBase
 import com.intellij.openapi.diagnostic.logger
@@ -72,8 +73,6 @@ fun recentProjects(): Map<String, String> {
 }
 
 fun getProject(): Project? {
-
-
     return IdeFocusManager.findInstance().lastFocusedFrame?.project
 }
 
@@ -84,15 +83,6 @@ fun getEditor(): Editor? {
 fun getFileEditorManager(): FileEditorManager? {
     return getProject()?.let { FileEditorManager.getInstance(it) }
 }
-
-//fun serializeProject(project: Project): ProjectState {
-//    navigationHistory(project)
-//    val repos =
-//        VcsRepositoryManager.getInstance(project).repositories.map { repo ->
-//            RepoState(repo.root.path, repo.vcs.name.lowercase())
-//        }
-//    return ProjectState(project.name, project.basePath, repos)
-//}
 
 fun toEditor(fileEditor: FileEditor): Editor =
     (fileEditor as TextEditor).editor
@@ -138,8 +128,8 @@ fun serializeEditor(editor: Editor, active: Boolean, editorId: String): EditorSt
 
     val ve = editor.scrollingModel.visibleArea
 
-//    val language = caretLanguage(editor)?: "plaintext"
-    val language = "plaintext"
+    val language = caretLanguage(editor) ?: "plaintext"
+//    val language = "plaintext"
 
     return EditorState(
         editorId,

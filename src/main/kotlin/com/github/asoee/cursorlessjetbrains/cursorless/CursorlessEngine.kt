@@ -17,5 +17,9 @@ class CursorlessEngine(private val driver: JavetDriver) {
         driver.editorClosed(id)
     }
 
+    fun editorCreated(editorState: EditorState) {
+        driver.editorCreated(editorState)
+    }
+
 
 }

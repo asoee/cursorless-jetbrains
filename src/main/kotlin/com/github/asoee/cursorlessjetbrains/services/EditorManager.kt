@@ -213,6 +213,9 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
 
     fun editorCreated(editor: Editor) {
         ensureEditorIdSet(editor)
+        val editorId = editorIds[editor]!!
+        val editorState = serializeEditor(editor, true, editorId)
+        cursorlessEngine.editorCreated(editorState)
     }
 
     fun editorClosed(editor: Editor) {
@@ -345,6 +348,14 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         thisLogger().info("Disposing EditorManager")
         dispatchScope.cancel()
         emitScope.cancel()
+    }
+
+    fun reloadAllEditors() {
+        this.editorsById.values.forEach(
+            { editor ->
+                editorCreated(editor)
+            }
+        )
     }
 
 }

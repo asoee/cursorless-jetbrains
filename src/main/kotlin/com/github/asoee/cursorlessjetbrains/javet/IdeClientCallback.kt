@@ -1,10 +1,7 @@
 package com.github.asoee.cursorlessjetbrains.javet
 
 import com.caoccao.javet.annotations.V8Function
-import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCallback
-import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessEditorCommand
-import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessEditorEdit
-import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessRange
+import com.github.asoee.cursorlessjetbrains.cursorless.*
 import com.github.asoee.cursorlessjetbrains.sync.HatRange
 import com.intellij.openapi.diagnostic.logger
 import kotlinx.serialization.json.Json
@@ -16,7 +13,10 @@ class IdeClientCallback {
     val unhandledRejections = mutableListOf<String>()
 
     var cursorlessCallback: CursorlessCallback = NoopCallback()
+    var treesitterCallback: TreesitterCallback = NoopTreesitterCallback()
 
+    private class NoopTreesitterCallback : TreesitterCallback {
+    }
 
     private class NoopCallback : CursorlessCallback {
         override fun onHatUpdate(hatRanges: Array<HatRange>) {
@@ -125,6 +125,13 @@ class IdeClientCallback {
     public fun revealLine(editorId: String, line: Int, revealAt: String) {
         LOG.info("IdeClientCallback.revealLine: $line")
         cursorlessCallback.revealLine(editorId, line, revealAt)
+    }
+
+
+    @V8Function
+    public fun readQuery(filename: String): String? {
+        LOG.info("IdeClientCallback.readQuery: $filename")
+        return treesitterCallback.readQuery(filename)
     }
 
     @V8Function

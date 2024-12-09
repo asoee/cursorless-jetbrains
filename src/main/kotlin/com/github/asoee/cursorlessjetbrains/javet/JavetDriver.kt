@@ -7,6 +7,7 @@ import com.caoccao.javet.javenode.JNEventLoop
 import com.caoccao.javet.javenode.enums.JNModuleType
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCallback
 import com.github.asoee.cursorlessjetbrains.cursorless.DEFAULT_CIONFIGURATION
+import com.github.asoee.cursorlessjetbrains.cursorless.TreesitterCallback
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -20,16 +21,16 @@ class JavetDriver {
     private val ideClientCallback = IdeClientCallback()
     public val runtime: V8Runtime
     val eventLoop: JNEventLoop
-
+    val wasmDir = Files.createTempDirectory("cursorless-treesitter-wasm").toFile()
 
     init {
         println("ASOEE: JavetDriver create")
-        val icuDataDir  = Files.createTempDirectory("cursorless-icu").toFile()
+        val icuDataDir = Files.createTempDirectory("cursorless-icu").toFile()
         println("icuDataDir: " + icuDataDir)
         icuDataDir.deleteOnExit()
         val outFile = File(icuDataDir, "icudtl.dat")
         outFile.outputStream().use { out ->
-            javaClass.getResourceAsStream(  "/icu/icudtl.dat").copyTo(out)
+            javaClass.getResourceAsStream("/icu/icudtl.dat").copyTo(out)
         }
 
         NodeRuntimeOptions.NODE_FLAGS.setIcuDataDir(icuDataDir.getAbsolutePath());
@@ -38,7 +39,42 @@ class JavetDriver {
         eventLoop = JNEventLoop(runtime)
     }
 
+    public fun loadTreesitterLanguages(): File {
+
+        saveFileFromClasspath("/cursorless/wasm/tree-sitter.wasm", File(wasmDir, "tree-sitter.wasm"))
+
+        val languages =
+            listOf("c-sharp", "cpp", "go", "java", "javascript", "python", "regex", "ruby", "rust", "tsx", "typescript")
+        languages.forEach { language ->
+            saveFileFromClasspath(
+                "/cursorless/wasm/tree-sitter-$language.wasm",
+                File(wasmDir, "tree-sitter-$language.wasm")
+            )
+        }
+        return wasmDir
+    }
+
+    fun saveFileFromClasspath(resourcePath: String, outputFile: File) {
+        val inputStream = javaClass.getResourceAsStream(resourcePath)
+            ?: throw IllegalArgumentException("Resource not found: $resourcePath")
+        inputStream.use { input ->
+            Files.copy(input, outputFile.toPath())
+        }
+        println("ASOEE: saved file: ${outputFile.absolutePath}")
+    }
+
+    private class ClassPathQuerLoader : TreesitterCallback {
+        val queryPrefix = "/cursorless/queries/"
+        override fun readQuery(fileName: String): String? {
+            val queryContents = javaClass.getResource(queryPrefix + fileName)?.readText()
+            return queryContents
+        }
+    }
+
     public fun loadCursorless() {
+
+        val wasmDir = loadTreesitterLanguages()
+        this.ideClientCallback.treesitterCallback = ClassPathQuerLoader()
 
         runtime.createV8ValueObject().use { v8ValueObject ->
             runtime.getGlobalObject().set("ideClient", v8ValueObject)
@@ -51,7 +87,8 @@ class JavetDriver {
             "process.on('unhandledRejection', (reason, promise) => {\n" +
                     "    console.error('Unhandled Rejection at:'+ promise+ 'reason:'+ reason);\n" +
                     "    ideClient.unhandledRejection('' + reason);\n" +
-                    "});").executeVoid();
+                    "});"
+        ).executeVoid();
 
         val cursorlessJs = javaClass.getResource("/cursorless/cursorless.js").readText()
         val module = runtime.getExecutor(cursorlessJs)
@@ -79,6 +116,7 @@ class JavetDriver {
 
         val configuration = DEFAULT_CIONFIGURATION
         val configurationJson = Json.encodeToString(configuration)
+        val wasmPath = wasmDir.absolutePath
 
         val activateJs = """
             | ideClient.log("ASOEE/JS: activating plugin 1");
@@ -89,7 +127,7 @@ class JavetDriver {
             |   console.log("ASOEE/JS: ide created");
             |   globalThis.plugin = createPlugin(ideClient, ide);
             |   console.log("ASOEE/JS: plugin created");
-            |   globalThis.engine = await globalThis.activate(plugin);
+            |   globalThis.engine = await globalThis.activate(plugin, "$wasmPath/");
             |   console.log("ASOEE/JS: plugin activated");
             | })();
             | ideClient.log("ASOEE/JS: after async");
@@ -210,6 +248,31 @@ class JavetDriver {
         eventLoop.await();
 
     }
+
+    fun editorCreated(editorState: EditorState) {
+        val json = Json.encodeToString(editorState)
+        val js = """
+            | (async () => {
+            |   const ide = await globalThis.ide;
+            |   if (ide) {
+            |     try {
+            |       ide.documentCreated(${json});
+            |     } catch (e) {                      
+            |       console.error("ASOEE/JS: error in document changed - " + e);
+            |       throw e;
+            |     }
+            |   } else {
+            |     console.log("ASOEE/JS: ide not available");
+            |   }
+            | })();
+            | """.trimMargin()
+
+        runtime.getExecutor(js)
+            .executeVoid();
+        eventLoop.await();
+
+    }
+
 }
 
 data class ExecutionResult(

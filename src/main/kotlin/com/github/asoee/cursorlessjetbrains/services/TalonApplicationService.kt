@@ -44,6 +44,9 @@ class TalonApplicationService(private val cs: CoroutineScope) : Disposable {
             .eventMulticaster as EditorEventMulticasterEx;
         m.addFocusChangeListener(this.focusChangeListener, this)
 
+        println("reloading all")
+        this.editorManager.reloadAllEditors()
+        println("reloaded all")
     }
 
     fun editorCreated(e: Editor) {
