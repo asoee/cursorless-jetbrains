@@ -1,5 +1,6 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
@@ -17,7 +18,7 @@ version = providers.gradleProperty("pluginVersion").get()
 
 // Set the JVM language level used to build the project.
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 // Configure project's dependencies
@@ -37,19 +38,20 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
 
-    implementation("com.caoccao.javet:javet:4.1.0") // Core (Must-have)
-//    implementation("com.caoccao.javet:javet-node-linux-arm64:4.1.0")
-//    implementation("com.caoccao.javet:javet-node-linux-x86_64:4.1.0")
-    implementation("com.caoccao.javet:javet-node-macos-arm64:4.1.0")
-    implementation("com.caoccao.javet:javet-node-macos-x86_64:4.1.0")
-    implementation("com.caoccao.javet:javet-node-windows-x86_64-i18n:4.1.0")
-//    implementation("com.caoccao.javet:javet-v8-linux-arm64:4.1.0")
-    implementation("com.caoccao.javet:javet-node-linux-x86_64-i18n:4.1.0")
-    implementation("com.caoccao.javet:javet-v8-macos-arm64:4.1.0")
-    implementation("com.caoccao.javet:javet-v8-macos-x86_64:4.1.0")
-    implementation("com.caoccao.javet:javet-v8-windows-x86_64:4.1.0")
+    implementation("com.caoccao.javet:javet:4.1.1") // Core (Must-have)
+//    implementation("com.caoccao.javet:javet-node-linux-arm64:4.1.1")
+//    implementation("com.caoccao.javet:javet-node-linux-x86_64:4.1.1")
+    implementation("com.caoccao.javet:javet-node-macos-arm64:4.1.1")
+    implementation("com.caoccao.javet:javet-node-macos-x86_64:4.1.1")
+    implementation("com.caoccao.javet:javet-node-windows-x86_64-i18n:4.1.1")
+//    implementation("com.caoccao.javet:javet-v8-linux-arm64:4.1.1")
+    implementation("com.caoccao.javet:javet-node-linux-x86_64-i18n:4.1.1")
+    implementation("com.caoccao.javet:javet-v8-macos-arm64:4.1.1")
+    implementation("com.caoccao.javet:javet-v8-macos-x86_64:4.1.1")
+    implementation("com.caoccao.javet:javet-v8-windows-x86_64:4.1.1")
 
-    implementation("com.caoccao.javet:javet-node-macos-arm64-i18n:4.1.0")
+    implementation("com.caoccao.javet:javet-node-macos-x86_64-i18n:4.1.1")
+    implementation("com.caoccao.javet:javet-node-macos-arm64-i18n:4.1.1")
 
 
     implementation("com.caoccao.javet:javenode:0.8.0")
@@ -124,6 +126,7 @@ intellijPlatform {
 
     pluginVerification {
         ides {
+            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2024.3")
             recommended()
         }
     }
