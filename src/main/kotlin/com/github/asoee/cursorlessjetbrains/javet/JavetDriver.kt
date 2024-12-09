@@ -44,7 +44,47 @@ class JavetDriver {
         saveFileFromClasspath("/cursorless/wasm/tree-sitter.wasm", File(wasmDir, "tree-sitter.wasm"))
 
         val languages =
-            listOf("c-sharp", "cpp", "go", "java", "javascript", "python", "regex", "ruby", "rust", "tsx", "typescript")
+            listOf(
+                "agda",
+                "c",
+                "c-sharp",
+                "clojure",
+                "cpp",
+                "css",
+                "dart",
+                "elixir",
+                "elm",
+                "gleam",
+                "go",
+                "haskell",
+                "hcl",
+                "html",
+                "java",
+                "javascript",
+                "json",
+                "julia",
+                "kotlin",
+                "latex",
+                "lua",
+                "markdown",
+                "nix",
+                "perl",
+                "php",
+                "python",
+                "query",
+                "regex",
+                "ruby",
+                "rust",
+                "scala",
+                "scss",
+                "sparql",
+                "swift",
+                "talon",
+                "tsx",
+                "typescript",
+                "xml",
+                "yaml"
+            )
         languages.forEach { language ->
             saveFileFromClasspath(
                 "/cursorless/wasm/tree-sitter-$language.wasm",
