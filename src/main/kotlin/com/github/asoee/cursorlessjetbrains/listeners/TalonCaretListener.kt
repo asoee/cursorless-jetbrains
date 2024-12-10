@@ -10,7 +10,6 @@ class TalonCaretListener(val editorManager: EditorManager) : CaretListener, Disp
     override fun caretPositionChanged(event: CaretEvent) {
         super.caretPositionChanged(event)
         editorManager.editorChanged(event.editor)
-//        markEditorChange("caret listener -> caret changed")
     }
 
     // TODO(pcohen):
@@ -19,11 +18,11 @@ class TalonCaretListener(val editorManager: EditorManager) : CaretListener, Disp
 
     override fun caretAdded(event: CaretEvent) {
         super.caretAdded(event)
-//        markEditorChange("caret listener -> caret added")
+        editorManager.editorChanged(event.editor)
     }
 
     override fun caretRemoved(event: CaretEvent) {
         super.caretRemoved(event)
-//        markEditorChange("caret listener -> caret removed")
+        editorManager.editorChanged(event.editor)
     }
 }
