@@ -168,16 +168,16 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
             ApplicationManager.getApplication().invokeLater {
                 ApplicationManager.getApplication().runWriteAction {
 
-                    val actionManager = ActionManager.getInstance();
+                    val actionManager = ActionManager.getInstance()
 
-                    val pasteAction = actionManager.getAction(IdeActions.ACTION_EDITOR_PASTE_SIMPLE);
+                    val pasteAction = actionManager.getAction(IdeActions.ACTION_EDITOR_PASTE_SIMPLE)
                     actionManager.tryToExecute(
                         pasteAction,
                         null,
                         null,
                         null,
                         true
-                    );
+                    )
                 }
             }
         }

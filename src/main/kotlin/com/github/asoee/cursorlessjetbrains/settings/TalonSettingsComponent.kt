@@ -22,7 +22,7 @@ class TalonSettingsComponent {
             .addLabeledComponent(JBLabel("User name:"), myUserNameText, 1, false)
             .addComponent(myIdeaUserStatus, 1)
             .addComponentFillVertically(JPanel(), 0)
-            .getPanel()
+            .panel
     }
 
     val preferredFocusedComponent: JComponent

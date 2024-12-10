@@ -2,7 +2,7 @@ package com.github.asoee.cursorlessjetbrains.services
 
 class Console {
 
-    public fun log(args: String) {
+    fun log(args: String) {
 //        var logline = ""
 //        for (s in args) {
 //            logline += s

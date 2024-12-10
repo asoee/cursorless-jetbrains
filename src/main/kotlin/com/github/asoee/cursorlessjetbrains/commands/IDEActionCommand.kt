@@ -27,11 +27,7 @@ class IDEActionCommand(private val actionId: String) : VcCommand() {
     }
 
     override fun readonly(): Boolean {
-        if (readonlyActions.contains(actionId)) {
-            return true
-        } else {
-            return false
-        }
+        return readonlyActions.contains(actionId)
     }
 
     override fun execute(context: CommandContext): String {

@@ -278,7 +278,7 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
     }
 
     fun doPainting(g: Graphics) {
-        val mapping = getHats() ?: return
+        val mapping = getHats()
 
 //        println("Redrawing for ${editorPath()}...")
         mapping.keys.forEach { fullName ->

@@ -13,7 +13,7 @@ class CommandExecutorService {
     private fun executeOnEDT(command: VcCommand): String {
         val result: ArrayList<String> = ArrayList()
 
-        ApplicationManager.getApplication().invokeAndWait() {
+        ApplicationManager.getApplication().invokeAndWait {
             if (command.readonly()) {
 //                ReadAction.run<Throwable> {
                 val res = command.execute(CommandContext())
@@ -34,7 +34,7 @@ class CommandExecutorService {
 
     private fun executeRawCommand(command: VcCommand): String {
         command.execute(CommandContext())
-        return "OK";
+        return "OK"
     }
 
 }

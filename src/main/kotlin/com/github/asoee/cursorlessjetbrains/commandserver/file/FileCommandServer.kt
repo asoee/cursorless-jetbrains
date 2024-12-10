@@ -33,7 +33,7 @@ class FileCommandServer {
     }
 
 
-    public fun startWatcher() {
+    fun startWatcher() {
         println("FileCommandServer: Starting File Watcher...")
         watcher = FileWatcher(this.commandServerDir, ::handleFileChanged)
     }
@@ -47,7 +47,7 @@ class FileCommandServer {
         return "-$uid"
     }
 
-    public fun checkAndHandleFileRquest() {
+    fun checkAndHandleFileRquest() {
         val requestPath = commandServerDir.resolve("request.json")
         if (requestPath.exists()) {
             readAndHandleFileRquest(requestPath)
@@ -60,7 +60,7 @@ class FileCommandServer {
             println("Ignoring file: $path")
             return
         }
-        val fullPath = commandServerDir?.resolve(path)
+        val fullPath = commandServerDir.resolve(path)
         readAndHandleFileRquest(fullPath)
     }
 
@@ -91,9 +91,9 @@ class FileCommandServer {
     }
 
     fun writeResponse(response: CommandServerResponse) {
-        val responsePath = commandServerDir?.resolve("response.json")
+        val responsePath = commandServerDir.resolve("response.json")
         val responseJson = Json.encodeToString(response)
-        responsePath?.writeText(responseJson + "\n")
+        responsePath.writeText(responseJson + "\n")
         println("'Wrote response'..." + responseJson)
     }
 
@@ -101,6 +101,6 @@ class FileCommandServer {
         println("Handling request..." + request.commandId + " " + request.args + " " + request.uuid)
         val service = service<TalonApplicationService>()
         val executionResult = service.jsDriver.execute(request.args)
-        return executionResult;
+        return executionResult
     }
 }

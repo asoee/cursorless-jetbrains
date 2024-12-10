@@ -25,7 +25,7 @@ class IndentLinesCommand(val editor: Editor, val directionIn: Boolean, val lineR
         return false
     }
 
-    override fun execute(context: CommandContext): String? {
+    override fun execute(context: CommandContext): String {
         val e = context.editor!!
         val selection = e.selectionModel
         val origStart = e.selectionModel.selectionStart

@@ -9,16 +9,16 @@ class CommandRegistryService {
 
     private val commands = mutableMapOf<String, CommandFactoryFunction>()
 
-    public fun registerCommand(name: String, factory: CommandFactoryFunction) {
+    fun registerCommand(name: String, factory: CommandFactoryFunction) {
         commands[name] = factory
     }
 
-    public fun getCommand(request: CommandRequest): VcCommand? {
+    fun getCommand(request: CommandRequest): VcCommand? {
         val factoryFunc = commands[request.command] ?: return null
         return factoryFunc(request.args)
     }
 
-    public fun registerInternalCommands() {
+    fun registerInternalCommands() {
         registerCommand("range", LineRangeCommand::fromArgs)
         registerCommand("action", IDEActionCommand::fromArgs)
         registerCommand("goto", GotoCommand::fromArgs)

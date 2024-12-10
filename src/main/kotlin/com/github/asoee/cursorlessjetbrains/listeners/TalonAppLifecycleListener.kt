@@ -40,8 +40,4 @@ class TalonAppLifecycleListener : AppLifecycleListener {
         httpCommandServer.stop()
     }
 
-    override fun appWillBeClosed(isRestart: Boolean) {
-//        println("PHIL: app closed...")
-        super.appWillBeClosed(isRestart)
-    }
 }

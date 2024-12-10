@@ -21,7 +21,7 @@ class ExtendCommand(private val line: Int) : VcCommand() {
         return false
     }
 
-    override fun execute(context: CommandContext): String? {
+    override fun execute(context: CommandContext): String {
         val e = context.editor
         val selection = e!!.selectionModel
         val current = e.caretModel.logicalPosition

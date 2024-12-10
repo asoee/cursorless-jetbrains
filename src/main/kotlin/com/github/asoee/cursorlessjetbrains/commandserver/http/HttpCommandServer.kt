@@ -27,19 +27,19 @@ class HttpCommandServer {
     private var server: HttpServer? = null
 
     init {
-        PLATFORM_TO_PORT[PlatformUtils.IDEA_PREFIX] = 8653;
-        PLATFORM_TO_PORT[PlatformUtils.IDEA_CE_PREFIX] = 8654;
-        PLATFORM_TO_PORT[PlatformUtils.APPCODE_PREFIX] = 8655;
-        PLATFORM_TO_PORT[PlatformUtils.CLION_PREFIX] = 8657;
-        PLATFORM_TO_PORT[PlatformUtils.PYCHARM_PREFIX] = 8658;
-        PLATFORM_TO_PORT[PlatformUtils.PYCHARM_CE_PREFIX] = 8658;
-        PLATFORM_TO_PORT[PlatformUtils.PYCHARM_EDU_PREFIX] = 8658;
-        PLATFORM_TO_PORT[PlatformUtils.RUBY_PREFIX] = 8661;
-        PLATFORM_TO_PORT[PlatformUtils.PHP_PREFIX] = 8662;
-        PLATFORM_TO_PORT[PlatformUtils.WEB_PREFIX] = 8663;
-        PLATFORM_TO_PORT[PlatformUtils.DBE_PREFIX] = 8664;
-        PLATFORM_TO_PORT[PlatformUtils.RIDER_PREFIX] = 8660;
-        PLATFORM_TO_PORT[PlatformUtils.GOIDE_PREFIX] = 8659;
+        PLATFORM_TO_PORT[PlatformUtils.IDEA_PREFIX] = 8653
+        PLATFORM_TO_PORT[PlatformUtils.IDEA_CE_PREFIX] = 8654
+        PLATFORM_TO_PORT[PlatformUtils.APPCODE_PREFIX] = 8655
+        PLATFORM_TO_PORT[PlatformUtils.CLION_PREFIX] = 8657
+        PLATFORM_TO_PORT[PlatformUtils.PYCHARM_PREFIX] = 8658
+        PLATFORM_TO_PORT[PlatformUtils.PYCHARM_CE_PREFIX] = 8658
+        PLATFORM_TO_PORT[PlatformUtils.PYCHARM_EDU_PREFIX] = 8658
+        PLATFORM_TO_PORT[PlatformUtils.RUBY_PREFIX] = 8661
+        PLATFORM_TO_PORT[PlatformUtils.PHP_PREFIX] = 8662
+        PLATFORM_TO_PORT[PlatformUtils.WEB_PREFIX] = 8663
+        PLATFORM_TO_PORT[PlatformUtils.DBE_PREFIX] = 8664
+        PLATFORM_TO_PORT[PlatformUtils.RIDER_PREFIX] = 8660
+        PLATFORM_TO_PORT[PlatformUtils.GOIDE_PREFIX] = 8659
     }
 
     fun start() {
@@ -75,7 +75,7 @@ class HttpCommandServer {
         try {
             server = HttpServer.create(loopbackSocket, -1)
             server?.createContext("/$nonce", HttpCommandHandler())
-            server?.setExecutor(null) // creates a default executor
+            server?.executor = null // creates a default executor
             server?.start()
         } catch (e: IOException) {
             LOG.error("Failed to start server to listen for commands", e)

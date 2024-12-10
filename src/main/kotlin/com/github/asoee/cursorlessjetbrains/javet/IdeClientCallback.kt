@@ -15,8 +15,7 @@ class IdeClientCallback {
     var cursorlessCallback: CursorlessCallback = NoopCallback()
     var treesitterCallback: TreesitterCallback = NoopTreesitterCallback()
 
-    private class NoopTreesitterCallback : TreesitterCallback {
-    }
+    private class NoopTreesitterCallback : TreesitterCallback
 
     private class NoopCallback : CursorlessCallback {
         override fun onHatUpdate(hatRanges: Array<HatRange>) {
@@ -58,7 +57,7 @@ class IdeClientCallback {
 
 
     @V8Function
-    public fun log(args: String) {
+    fun log(args: String) {
 //        var logline = ""
 //        for (s in args) {
 //            logline += s
@@ -67,75 +66,75 @@ class IdeClientCallback {
     }
 
     @V8Function
-    public fun hatsUpdated(hatsJson: String) {
+    fun hatsUpdated(hatsJson: String) {
         LOG.info("ASOEE/PLUGIN: Hats updated")
         val hatRanges = Json.decodeFromString<Array<HatRange>>(hatsJson)
         cursorlessCallback.onHatUpdate(hatRanges)
     }
 
     @V8Function
-    public fun documentUpdated(editorId: String, updateJson: String) {
+    fun documentUpdated(editorId: String, updateJson: String) {
         LOG.info("DocumentUpdated: $updateJson")
         val edit = Json { ignoreUnknownKeys = true }.decodeFromString<CursorlessEditorEdit>(updateJson)
         cursorlessCallback.documentUpdated(editorId, edit)
     }
 
     @V8Function
-    public fun setSelection(editorId: String, selectionsJson: String) {
+    fun setSelection(editorId: String, selectionsJson: String) {
         LOG.info("IdeClientCallback.setSelection: $selectionsJson")
         val selections = Json { ignoreUnknownKeys = true }.decodeFromString<Array<CursorlessRange>>(selectionsJson)
         cursorlessCallback.setSelection(editorId, selections)
     }
 
     @V8Function
-    public fun clipboardCopy(editorId: String, rangesJson: String) {
+    fun clipboardCopy(editorId: String, rangesJson: String) {
         LOG.info("IdeClientCallback.clipboardCopy: $rangesJson")
         val selections = Json { ignoreUnknownKeys = true }.decodeFromString<Array<CursorlessRange>>(rangesJson)
         cursorlessCallback.clipboardCopy(editorId, selections)
     }
 
     @V8Function
-    public fun clipboardPaste(editorId: String) {
+    fun clipboardPaste(editorId: String) {
         LOG.info("IdeClientCallback.clipboardCopy")
         cursorlessCallback.clipboardPaste(editorId)
     }
 
     @V8Function
-    public fun executeCommand(editorId: String, command: String, argsJson: String) {
+    fun executeCommand(editorId: String, command: String, argsJson: String) {
         LOG.info("IdeClientCallback.executeCommand: $command, $argsJson")
         val args = Json { ignoreUnknownKeys = true }.decodeFromString<Array<String>>(argsJson)
         cursorlessCallback.executeCommand(editorId, command, args)
     }
 
     @V8Function
-    public fun executeRangeCommand(editorId: String, commandJson: String) {
+    fun executeRangeCommand(editorId: String, commandJson: String) {
         LOG.info("IdeClientCallback.executeCommand:  $commandJson")
         val rangeCommand = Json { ignoreUnknownKeys = true }.decodeFromString<CursorlessEditorCommand>(commandJson)
         cursorlessCallback.executeRangeCommand(editorId, rangeCommand)
     }
 
     @V8Function
-    public fun insertLineAfter(editorId: String, rangesJson: String) {
+    fun insertLineAfter(editorId: String, rangesJson: String) {
         LOG.info("IdeClientCallback.insertLineAfter: $rangesJson")
         val ranges = Json { ignoreUnknownKeys = true }.decodeFromString<Array<CursorlessRange>>(rangesJson)
         cursorlessCallback.insertLineAfter(editorId, ranges)
     }
 
     @V8Function
-    public fun revealLine(editorId: String, line: Int, revealAt: String) {
+    fun revealLine(editorId: String, line: Int, revealAt: String) {
         LOG.info("IdeClientCallback.revealLine: $line")
         cursorlessCallback.revealLine(editorId, line, revealAt)
     }
 
 
     @V8Function
-    public fun readQuery(filename: String): String? {
+    fun readQuery(filename: String): String? {
         LOG.info("IdeClientCallback.readQuery: $filename")
         return treesitterCallback.readQuery(filename)
     }
 
     @V8Function
-    public fun unhandledRejection(cause: String) {
+    fun unhandledRejection(cause: String) {
         LOG.info("IdeClientCallback.unhandledRejection: $cause")
         unhandledRejections.add(cause)
     }

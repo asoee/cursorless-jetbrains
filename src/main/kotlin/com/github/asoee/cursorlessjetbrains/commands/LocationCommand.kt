@@ -14,7 +14,7 @@ class LocationCommand : VcCommand() {
         return true
     }
 
-    override fun execute(context: CommandContext): String? {
+    override fun execute(context: CommandContext): String {
         val e = arrayOfNulls<Editor>(1)
         e[0] = context.editor
         val logicalPosition = e[0]!!.caretModel.logicalPosition

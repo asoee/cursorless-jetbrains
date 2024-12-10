@@ -19,7 +19,7 @@ import java.nio.file.Files
 class JavetDriver {
 
     private val ideClientCallback = IdeClientCallback()
-    public val runtime: V8Runtime
+    val runtime: V8Runtime
     val eventLoop: JNEventLoop
     val wasmDir = Files.createTempDirectory("cursorless-treesitter-wasm").toFile()
 
@@ -33,13 +33,13 @@ class JavetDriver {
             javaClass.getResourceAsStream("/icu/icudtl.dat").copyTo(out)
         }
 
-        NodeRuntimeOptions.NODE_FLAGS.setIcuDataDir(icuDataDir.getAbsolutePath());
+        NodeRuntimeOptions.NODE_FLAGS.setIcuDataDir(icuDataDir.absolutePath)
         runtime = V8Host.getNodeI18nInstance()
             .createV8Runtime<V8Runtime>()
         eventLoop = JNEventLoop(runtime)
     }
 
-    public fun loadTreesitterLanguages(): File {
+    fun loadTreesitterLanguages(): File {
 
         saveFileFromClasspath("/cursorless/wasm/tree-sitter.wasm", File(wasmDir, "tree-sitter.wasm"))
 
@@ -111,32 +111,32 @@ class JavetDriver {
         }
     }
 
-    public fun loadCursorless() {
+    fun loadCursorless() {
 
         val wasmDir = loadTreesitterLanguages()
         this.ideClientCallback.treesitterCallback = ClassPathQuerLoader()
 
         runtime.createV8ValueObject().use { v8ValueObject ->
-            runtime.getGlobalObject().set("ideClient", v8ValueObject)
+            runtime.globalObject.set("ideClient", v8ValueObject)
             v8ValueObject.bind(ideClientCallback)
         }
 
-        eventLoop.loadStaticModules(JNModuleType.Console, JNModuleType.Timers);
+        eventLoop.loadStaticModules(JNModuleType.Console, JNModuleType.Timers)
 
         runtime.getExecutor(
             "process.on('unhandledRejection', (reason, promise) => {\n" +
                     "    console.error('Unhandled Rejection at:'+ promise+ 'reason:'+ reason);\n" +
                     "    ideClient.unhandledRejection('' + reason);\n" +
                     "});"
-        ).executeVoid();
+        ).executeVoid()
 
         val cursorlessJs = javaClass.getResource("/cursorless/cursorless.js").readText()
         val module = runtime.getExecutor(cursorlessJs)
             .setResourceName("./cursorless.js")
             .compileV8Module()
-        module.executeVoid();
+        module.executeVoid()
         if (runtime.containsV8Module("./cursorless.js")) {
-            System.out.println("./cursorless.js is registered as a module.");
+            System.out.println("./cursorless.js is registered as a module.")
         }
 
         val importJs = """
@@ -151,8 +151,8 @@ class JavetDriver {
         runtime.getExecutor(importJs)
             .setModule(true)
             .setResourceName("./import.js")
-            .executeVoid();
-        eventLoop.await();
+            .executeVoid()
+        eventLoop.await()
 
         val configuration = DEFAULT_CIONFIGURATION
         val configurationJson = Json.encodeToString(configuration)
@@ -173,8 +173,8 @@ class JavetDriver {
             | ideClient.log("ASOEE/JS: after async");
             | """.trimMargin()
         runtime.getExecutor(activateJs)
-            .executeVoid();
-        eventLoop.await();
+            .executeVoid()
+        eventLoop.await()
 
     }
 
@@ -202,8 +202,8 @@ class JavetDriver {
             | """.trimMargin()
 
         runtime.getExecutor(js)
-            .executeVoid();
-        eventLoop.await();
+            .executeVoid()
+        eventLoop.await()
 
     }
 
@@ -242,8 +242,8 @@ class JavetDriver {
             | """.trimMargin()
 
             runtime.getExecutor(js)
-                .executeVoid();
-            eventLoop.await();
+                .executeVoid()
+            eventLoop.await()
         } catch (e: Throwable) {
             println("ASOEE/JS: error in execute - " + e)
             return ExecutionResult(false, null, e.toString())
@@ -284,8 +284,8 @@ class JavetDriver {
             | })();
             | """.trimMargin()
         runtime.getExecutor(js)
-            .executeVoid();
-        eventLoop.await();
+            .executeVoid()
+        eventLoop.await()
 
     }
 
@@ -308,8 +308,8 @@ class JavetDriver {
             | """.trimMargin()
 
         runtime.getExecutor(js)
-            .executeVoid();
-        eventLoop.await();
+            .executeVoid()
+        eventLoop.await()
 
     }
 
@@ -329,8 +329,7 @@ data class CommandV7(
 )
 
 
-sealed interface ActionDescriptor {
-}
+sealed interface ActionDescriptor
 
 data class SimpleActionDescriptor(
     val name: SimpleActionName,
@@ -342,8 +341,7 @@ typealias SimpleActionName = String
 
 val setSelection: SimpleActionName = "setSelection"
 
-sealed interface PartialTargetDescriptor {
-}
+sealed interface PartialTargetDescriptor
 
 data class PartialPrimitiveTargetDescriptor(
     val type: String = "primitive",

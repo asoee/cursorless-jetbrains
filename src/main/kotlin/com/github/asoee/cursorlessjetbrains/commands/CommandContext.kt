@@ -28,9 +28,6 @@ class CommandContext {
             field = e
             return e
         }
-        set(value) {
-            field = value
-        }
 
     val toolWindow: ToolWindow?
         get() {

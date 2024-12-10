@@ -26,21 +26,21 @@ internal class TalonSettingsConfigurable : Configurable {
 
     override fun isModified(): Boolean {
         val state: TalonSettings.State =
-            Objects.requireNonNull(TalonSettings.instance.getState())
+            Objects.requireNonNull(TalonSettings.instance.state)
         return !mySettingsComponent!!.userNameText.equals(state.userId) ||
                 mySettingsComponent!!.ideaUserStatus != state.ideaStatus
     }
 
     override fun apply() {
         val state: TalonSettings.State =
-            Objects.requireNonNull(TalonSettings.instance.getState())
-        state.userId = mySettingsComponent!!.userNameText!!
+            Objects.requireNonNull(TalonSettings.instance.state)
+        state.userId = mySettingsComponent!!.userNameText
         state.ideaStatus = mySettingsComponent!!.ideaUserStatus
     }
 
     override fun reset() {
         val state: TalonSettings.State =
-            Objects.requireNonNull(TalonSettings.instance.getState())
+            Objects.requireNonNull(TalonSettings.instance.state)
         mySettingsComponent!!.userNameText = state.userId
         mySettingsComponent!!.ideaUserStatus = state.ideaStatus
     }

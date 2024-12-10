@@ -16,21 +16,21 @@ data class CursorlessConfiguration(
     val decorationDebounceDelayMs: Int,
     val commandHistory: Boolean,
     val debug: Boolean,
-);
+)
 
 @Serializable
 data class ExperimentalConfiguration(
     val snippetsDir: String?,
     val hatStability: HatStability,
     val keyboardTargetFollowsSelection: Boolean,
-);
+)
 
 @Serializable
 data class TokenHatSplittingMode(
     val preserveCase: Boolean,
     val lettersToPreserve: Array<String>,
     val symbolsToPreserve: Array<String>,
-);
+)
 
 val DEFAULT_CIONFIGURATION = CursorlessConfiguration(
     tokenHatSplittingMode = TokenHatSplittingMode(
@@ -47,4 +47,4 @@ val DEFAULT_CIONFIGURATION = CursorlessConfiguration(
     decorationDebounceDelayMs = 1,
     commandHistory = true,
     debug = false,
-);
+)

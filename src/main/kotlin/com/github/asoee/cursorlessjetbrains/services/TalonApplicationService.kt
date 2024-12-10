@@ -20,8 +20,8 @@ class TalonApplicationService(private val cs: CoroutineScope) : Disposable {
     private val documentListeners =
         mutableMapOf<Editor, TalonDocumentListener>()
 
-    public val editorManager: EditorManager
-    public var jsDriver: JavetDriver
+    val editorManager: EditorManager
+    var jsDriver: JavetDriver
 
 
     private var focusChangeListener: TalonFocusChangeListener
@@ -41,7 +41,7 @@ class TalonApplicationService(private val cs: CoroutineScope) : Disposable {
 
         // https://intellij-support.jetbrains.com/hc/en-us/community/posts/4578776718354-How-do-I-listen-for-editor-focus-events-
         val m = EditorFactory.getInstance()
-            .eventMulticaster as EditorEventMulticasterEx;
+            .eventMulticaster as EditorEventMulticasterEx
         m.addFocusChangeListener(this.focusChangeListener, this)
 
         println("reloading all")

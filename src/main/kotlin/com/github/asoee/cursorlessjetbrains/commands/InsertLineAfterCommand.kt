@@ -21,7 +21,7 @@ class InsertLineAfterCommand(val editor: Editor, val lineRanges: Array<LineRange
         return false
     }
 
-    override fun execute(context: CommandContext): String? {
+    override fun execute(context: CommandContext): String {
         for (lineRange in lineRanges) {
             val startLine = lineRange.startLine
             val endLine = lineRange.endLine

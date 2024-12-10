@@ -20,7 +20,7 @@ class FindCommand(private val direction: String, private val searchTerm: String)
         return true
     }
 
-    override fun execute(context: CommandContext): String? {
+    override fun execute(context: CommandContext): String {
         val e = context.editor
         val document = e!!.document
         val selection = e.selectionModel

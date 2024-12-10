@@ -23,7 +23,7 @@ class GotoCommand(line: Int, column: Int) : VcCommand() {
         return true
     }
 
-    override fun execute(context: CommandContext): String? {
+    override fun execute(context: CommandContext): String {
         val pos = LogicalPosition(line, column)
         val e = context.editor
         e!!.caretModel.removeSecondaryCarets()

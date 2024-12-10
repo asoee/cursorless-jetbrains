@@ -41,8 +41,8 @@ class HttpCommandHandler : HttpHandler {
             val notification = Notification(
                 "vc-idea", "Talon Jetbrains", "Failed to process command: " + e.message,
                 NotificationType.WARNING
-            );
-            Notifications.Bus.notify(notification);
+            )
+            Notifications.Bus.notify(notification)
 
             val response = e.toString()
             httpExchange.sendResponseHeaders(500, response.length.toLong())
@@ -64,8 +64,8 @@ class HttpCommandHandler : HttpHandler {
             val notification = Notification(
                 "vc-idea", "Talon Jetbrains", "Command not found: " + request.command,
                 NotificationType.WARNING
-            );
-            Notifications.Bus.notify(notification);
+            )
+            Notifications.Bus.notify(notification)
 
             return "NotFound"
         }
@@ -74,31 +74,29 @@ class HttpCommandHandler : HttpHandler {
     fun fromRequestUri(requestURI: URI): Optional<CommandRequest> {
 
         try {
-            var decode = URLDecoder.decode(requestURI.toString().substring(1), "UTF-8");
-            var split = decode.split("/");
+            var decode = URLDecoder.decode(requestURI.toString().substring(1), "UTF-8")
+            var split = decode.split("/")
             // XXX For debugging
             val notification = Notification(
                 "vc-idea", "Talon Jetbrains", decode,
                 NotificationType.INFORMATION
-            );
-            Notifications.Bus.notify(notification);
+            )
+            Notifications.Bus.notify(notification)
 
-            split = split[1].split(" ");
+            split = split[1].split(" ")
             val command: String = split.get(0)
             val args = split.subList(1, split.size)
             val commandRequest = CommandRequest(command, args)
             LOG.info("Command request: " + commandRequest)
             return Optional.of(commandRequest)
         } catch (e: UnsupportedEncodingException) {
-            LOG.error("Failed to parse request URI", e);
-            return Optional.empty();
+            LOG.error("Failed to parse request URI", e)
+            return Optional.empty()
 
         }
     }
 
 
-    data class VoicePluginResponse(val responseCode: Int, val response: String) {
-
-    }
+    data class VoicePluginResponse(val responseCode: Int, val response: String)
 
 }

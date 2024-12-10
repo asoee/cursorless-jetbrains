@@ -22,17 +22,17 @@ class LineRangeCommand(private val startLine: Int, private val endLine: Int) : V
         return false
     }
 
-    override fun execute(context: CommandContext): String? {
+    override fun execute(context: CommandContext): String {
         val e = context.editor!!
         val selection = e.selectionModel
 
         val startOffset: Int = e.logicalPositionToOffset(LogicalPosition(startLine - 1, 0))
         val endOffset: Int = e.logicalPositionToOffset(LogicalPosition(endLine, 0)) - 1
         selection.setSelection(startOffset, endOffset)
-        e.getCaretModel().moveToOffset(endOffset)
+        e.caretModel.moveToOffset(endOffset)
 
-        e.getScrollingModel().scrollToCaret(ScrollType.CENTER)
-        IdeFocusManager.getGlobalInstance().requestFocus(e.getContentComponent(), true)
+        e.scrollingModel.scrollToCaret(ScrollType.CENTER)
+        IdeFocusManager.getGlobalInstance().requestFocus(e.contentComponent, true)
 
         return "OK"
     }

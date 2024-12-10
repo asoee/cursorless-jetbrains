@@ -5,7 +5,7 @@ import com.intellij.openapi.Disposable
 
 class FileCommandServerService : Disposable {
 
-    public val commandServer = FileCommandServer()
+    val commandServer = FileCommandServer()
 
     init {
     }

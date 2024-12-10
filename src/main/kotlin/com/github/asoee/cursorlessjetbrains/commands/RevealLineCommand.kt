@@ -13,12 +13,12 @@ class RevealLineCommand(val editor: Editor, val line: Int, val revealAt: String)
         return false
     }
 
-    override fun execute(context: CommandContext): String? {
+    override fun execute(context: CommandContext): String {
 
         val scrollPos = scrollPosFromType(revealAt)
         thisLogger().info("Centering line $scrollPos")
-        editor.getScrollingModel().scrollTo(scrollPos, ScrollType.CENTER)
-        editor.getScrollingModel().scrollTo(LogicalPosition(line, 0), ScrollType.RELATIVE)
+        editor.scrollingModel.scrollTo(scrollPos, ScrollType.CENTER)
+        editor.scrollingModel.scrollTo(LogicalPosition(line, 0), ScrollType.RELATIVE)
         return "OK"
     }
 

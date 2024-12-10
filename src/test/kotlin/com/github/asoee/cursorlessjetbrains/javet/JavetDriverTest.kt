@@ -6,7 +6,7 @@ import com.github.asoee.cursorlessjetbrains.sync.Cursor
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
 import com.github.asoee.cursorlessjetbrains.sync.Selection
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.*
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 
 class JavetDriverTest {
@@ -24,30 +24,30 @@ class JavetDriverTest {
 
         val runtime = driver.runtime
         val eventLoop = JNEventLoop(runtime)
-        eventLoop.loadStaticModules(JNModuleType.Console, JNModuleType.Timers);
+        eventLoop.loadStaticModules(JNModuleType.Console, JNModuleType.Timers)
         runtime.getExecutor(
             "const a = [];\n" +
                     "setTimeout(() => a.push('Hello Javenode'), 10);"
-        ).executeVoid();
-        eventLoop.await();
-        runtime.getExecutor("console.log(a[0]);").executeVoid();
+        ).executeVoid()
+        eventLoop.await()
+        runtime.getExecutor("console.log(a[0]);").executeVoid()
 
         val cursorlessJs = javaClass.getResource("/cursorless/cursorless.js").readText()
 
         val module = runtime.getExecutor(cursorlessJs)
             .setResourceName("./cursorless.js")
             .compileV8Module()
-        module.executeVoid();
+        module.executeVoid()
 
         if (runtime.containsV8Module("./module.js")) {
-            System.out.println("./module.js is registered as a module.");
+            System.out.println("./module.js is registered as a module.")
         }
 
         runtime.getExecutor("import { activate } from './cursorless.js'; globalThis.activate = activate; console.log(activate)")
-            .setModule(true).setResourceName("./import.js").executeVoid();
-        eventLoop.await();
+            .setModule(true).setResourceName("./import.js").executeVoid()
+        eventLoop.await()
         // Step 5: Call test() in global context.
-        System.out.println("activate() -> " + runtime.getExecutor("activate(null)").executeVoid());
+        System.out.println("activate() -> " + runtime.getExecutor("activate(null)").executeVoid())
     }
 
 

@@ -31,7 +31,7 @@ data class OverallState(
  * Represents the state of the primary editor (the one focused).
  */
 @Serializable
-public data class EditorState(
+data class EditorState(
     val id: String,
     val path: String?,
     val text: String?,
