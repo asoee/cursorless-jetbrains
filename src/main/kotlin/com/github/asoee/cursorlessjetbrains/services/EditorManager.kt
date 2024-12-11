@@ -270,42 +270,52 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
 
         override fun executeCommand(editorId: String, command: String, args: Array<String>) {
             val actionsArgs = listOf(command) + args.toList()
-            val request = CommandRequest("action", actionsArgs)
-            thisLogger().info("Executing command $request")
-            service<CommandRegistryService>().getCommand(request)?.let {
-                thisLogger().info("Found command $it")
-                service<CommandExecutorService>().execute(it)
+            editorManager.editorsById[editorId]?.let { editor ->
+                editor.project?.let { project ->
+                    val request = CommandRequest(project, "action", actionsArgs)
+                    thisLogger().info("Executing command $request")
+                    service<CommandRegistryService>().getCommand(request)?.let {
+                        thisLogger().info("Found command $it")
+                        service<CommandExecutorService>().execute(it)
+                    }
+                }
             }
         }
 
         override fun executeRangeCommand(editorId: String, rangeCommand: CursorlessEditorCommand) {
             thisLogger().info("Executing executeRangeCommand $rangeCommand")
             editorManager.editorsById[editorId]?.let { editor ->
-                val command = RangedActionCommand(
-                    editor,
-                    rangeCommand.ranges.toTypedArray(),
-                    rangeCommand.singleRange,
-                    rangeCommand.restoreSelection,
-                    rangeCommand.ideCommand
-                )
-                service<CommandExecutorService>().execute(command)
+                editor.project?.let { project ->
+                    val command = RangedActionCommand(
+                        project,
+                        editor,
+                        rangeCommand.ranges.toTypedArray(),
+                        rangeCommand.singleRange,
+                        rangeCommand.restoreSelection,
+                        rangeCommand.ideCommand
+                    )
+                    service<CommandExecutorService>().execute(command)
+                }
             }
         }
 
         override fun insertLineAfter(editorId: String, ranges: Array<CursorlessRange>) {
             thisLogger().info("Executing insertLineAfter $ranges")
             editorManager.editorsById[editorId]?.let { editor ->
-                thisLogger().info("Executing insertLineAfter $ranges - found editor")
-                val command = InsertLineAfterCommand.fromRanges(editor, ranges.toList())
-                service<CommandExecutorService>().execute(command)
+                editor.project?.let { project ->
+                    val command = InsertLineAfterCommand.fromRanges(project, editor, ranges.toList())
+                    service<CommandExecutorService>().execute(command)
+                }
             }
         }
 
         override fun revealLine(editorId: String, line: Int, revealAt: String) {
             thisLogger().info("Executing insertLineAfter $line, $revealAt")
             editorManager.editorsById[editorId]?.let { editor ->
-                val command = RevealLineCommand(editor, line, revealAt)
-                service<CommandExecutorService>().execute(command)
+                editor.project?.let { project ->
+                    val command = RevealLineCommand(project, editor, line, revealAt)
+                    service<CommandExecutorService>().execute(command)
+                }
             }
         }
 

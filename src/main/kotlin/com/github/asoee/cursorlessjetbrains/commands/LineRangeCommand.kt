@@ -2,19 +2,20 @@ package com.github.asoee.cursorlessjetbrains.commands
 
 import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.editor.ScrollType
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.IdeFocusManager
 
-class LineRangeCommand(private val startLine: Int, private val endLine: Int) : VcCommand() {
+class LineRangeCommand(project: Project, private val startLine: Int, private val endLine: Int) : VcCommand(project) {
 
     companion object {
-        fun fromArgs(args: List<String>): LineRangeCommand {
+        fun fromArgs(project: Project, args: List<String>): LineRangeCommand {
             val startLine = args[0].toInt()
             val endLine = if (args.size == 1) {
                 args[0].toInt()
             } else {
                 args[1].toInt()
             }
-            return LineRangeCommand(startLine, endLine)
+            return LineRangeCommand(project, startLine, endLine)
         }
     }
 

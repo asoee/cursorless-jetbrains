@@ -6,18 +6,29 @@ import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.IdeActions
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.playback.commands.ActionCommand
 
 
-class IndentLinesCommand(val editor: Editor, val directionIn: Boolean, val lineRanges: Array<LineRange>) : VcCommand() {
+class IndentLinesCommand(
+    project: Project,
+    val editor: Editor,
+    val directionIn: Boolean,
+    val lineRanges: Array<LineRange>
+) : VcCommand(project) {
 
     companion object {
 
-        fun fromRanges(editor: Editor, directionIn: Boolean, ranges: List<CursorlessRange>): IndentLinesCommand {
+        fun fromRanges(
+            project: Project,
+            editor: Editor,
+            directionIn: Boolean,
+            ranges: List<CursorlessRange>
+        ): IndentLinesCommand {
             val lineRanges = ranges.map {
                 LineRange(it.start.line, it.end.line)
             }.toTypedArray()
-            return IndentLinesCommand(editor, directionIn, lineRanges)
+            return IndentLinesCommand(project, editor, directionIn, lineRanges)
         }
     }
 

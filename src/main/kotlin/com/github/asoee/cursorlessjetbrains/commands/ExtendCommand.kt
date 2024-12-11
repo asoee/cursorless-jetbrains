@@ -2,16 +2,17 @@ package com.github.asoee.cursorlessjetbrains.commands
 
 import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.editor.ScrollType
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.IdeFocusManager
 import kotlin.math.max
 import kotlin.math.min
 
-class ExtendCommand(private val line: Int) : VcCommand() {
+class ExtendCommand(project: Project, private val line: Int) : VcCommand(project) {
 
     companion object {
-        fun fromArgs(args: List<String>): ExtendCommand {
+        fun fromArgs(project: Project, args: List<String>): ExtendCommand {
             val line = args[0].toInt()
-            return ExtendCommand(line)
+            return ExtendCommand(project, line)
         }
     }
 

@@ -3,15 +3,17 @@ package com.github.asoee.cursorlessjetbrains.commands
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessRange
 import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.project.Project
 
 
 class RangedActionCommand(
+    project: Project,
     val editor: Editor,
     val ranges: Array<CursorlessRange>,
     val singleRange: Boolean,
     val restoreSelection: Boolean,
     val ideCommandId: String
-) : VcCommand() {
+) : VcCommand(project) {
 
 
     override fun readonly(): Boolean {
@@ -26,8 +28,7 @@ class RangedActionCommand(
             CaretState(endPos, startPos, endPos)
         }
         editor.caretModel.caretsAndSelections = carets
-
-        IDEActionCommand.fromArgs(listOf(ideCommandId)).execute(context)
+        IDEActionCommand.fromArgs(project, listOf(ideCommandId)).execute(context)
 
         return "OK"
     }

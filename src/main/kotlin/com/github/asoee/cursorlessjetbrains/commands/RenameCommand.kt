@@ -4,14 +4,15 @@ import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessRange
 import com.intellij.openapi.actionSystem.IdeActions
 import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.project.Project
 
 
-class RenameCommand(val editor: Editor, val range: CursorlessRange) : VcCommand() {
+class RenameCommand(project: Project, val editor: Editor, val range: CursorlessRange) : VcCommand(project) {
 
     companion object {
 
-        fun fromRange(editor: Editor, range: CursorlessRange): RenameCommand {
-            return RenameCommand(editor, range)
+        fun fromRange(project: Project, editor: Editor, range: CursorlessRange): RenameCommand {
+            return RenameCommand(project, editor, range)
         }
     }
 
@@ -30,7 +31,7 @@ class RenameCommand(val editor: Editor, val range: CursorlessRange) : VcCommand(
             CaretState(endPos, startPos, endPos),
         )
 
-        IDEActionCommand.fromArgs(listOf(IdeActions.ACTION_RENAME)).execute(context)
+        IDEActionCommand.fromArgs(project, listOf(IdeActions.ACTION_RENAME)).execute(context)
 
         return "OK"
     }

@@ -4,10 +4,12 @@ import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.editor.ScrollType
+import com.intellij.openapi.project.Project
 import java.awt.Point
 
 
-class RevealLineCommand(val editor: Editor, val line: Int, val revealAt: String) : VcCommand() {
+class RevealLineCommand(project: Project, val editor: Editor, val line: Int, val revealAt: String) :
+    VcCommand(project) {
 
     override fun readonly(): Boolean {
         return false

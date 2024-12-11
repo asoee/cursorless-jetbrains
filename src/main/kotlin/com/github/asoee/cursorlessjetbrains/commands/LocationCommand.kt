@@ -1,12 +1,13 @@
 package com.github.asoee.cursorlessjetbrains.commands
 
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.project.Project
 
-class LocationCommand : VcCommand() {
+class LocationCommand(project: Project) : VcCommand(project) {
 
     companion object {
-        fun fromArgs(args: List<String>): LocationCommand {
-            return LocationCommand()
+        fun fromArgs(project: Project, args: List<String>): LocationCommand {
+            return LocationCommand(project)
         }
     }
 

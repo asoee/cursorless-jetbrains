@@ -10902,6 +10902,9 @@ var JetbrainsConfiguration = class {
     this.notifier.notifyListeners();
   }
 };
+function createJetbrainsConfiguration(configuration) {
+  return new JetbrainsConfiguration(configuration);
+}
 
 // src/ide/JetbrainsCapabilities.ts
 var COMMAND_CAPABILITIES = {
@@ -33079,7 +33082,7 @@ var JetbrainsTreeSitterQueryProvider = class {
 
 // src/extension.ts
 async function activate(plugin, wasmDirectory) {
-  console.log("activate started");
+  console.log("activate started with wasm dir " + wasmDirectory);
   await import_web_tree_sitter2.default.init({
     locateFile(scriptName, _scriptDirectory) {
       console.log("locateFile called for " + scriptName);
@@ -33103,6 +33106,7 @@ export {
   JetbrainsPlugin,
   activate,
   createIDE,
+  createJetbrainsConfiguration,
   createPlugin
 };
 /*! Bundled license information:

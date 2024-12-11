@@ -4,17 +4,18 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.IdeActions
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.playback.commands.ActionCommand
 import com.intellij.openapi.wm.ToolWindow
 import java.awt.Component
 
 
-class IDEActionCommand(private val actionId: String) : VcCommand() {
+class IDEActionCommand(project: Project, private val actionId: String) : VcCommand(project) {
 
     companion object {
-        fun fromArgs(args: List<String>): IDEActionCommand {
+        fun fromArgs(project: Project, args: List<String>): IDEActionCommand {
             val actionId = args[0]
-            return IDEActionCommand(actionId)
+            return IDEActionCommand(project, actionId)
         }
 
         val readonlyActions = listOf(IdeActions.ACTION_SHOW_INTENTION_ACTIONS)

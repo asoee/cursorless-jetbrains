@@ -1,14 +1,8 @@
 package com.github.asoee.cursorlessjetbrains.commands
 
-class CommandRequest {
+import com.intellij.openapi.project.Project
 
-    var command: String = ""
-    var args: List<String> = emptyList()
-
-    constructor(command: String, args: List<String>) {
-        this.command = command
-        this.args = args
-    }
+class CommandRequest(val project: Project, val command: String, val args: List<String>) {
 
     override fun toString(): String {
         return "CommandRequest(command=$command, args=$args)"

@@ -3,17 +3,19 @@ package com.github.asoee.cursorlessjetbrains.commands
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessRange
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.project.Project
 
 
-class InsertLineAfterCommand(val editor: Editor, val lineRanges: Array<LineRange>) : VcCommand() {
+class InsertLineAfterCommand(project: Project, val editor: Editor, val lineRanges: Array<LineRange>) :
+    VcCommand(project) {
 
     companion object {
 
-        fun fromRanges(editor: Editor, ranges: List<CursorlessRange>): InsertLineAfterCommand {
+        fun fromRanges(project: Project, editor: Editor, ranges: List<CursorlessRange>): InsertLineAfterCommand {
             val lineRanges = ranges.map {
                 LineRange(it.start.line, it.end.line)
             }.toTypedArray()
-            return InsertLineAfterCommand(editor, lineRanges)
+            return InsertLineAfterCommand(project, editor, lineRanges)
         }
     }
 

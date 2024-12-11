@@ -3,16 +3,17 @@ package com.github.asoee.cursorlessjetbrains.commands
 import com.intellij.find.FindManager
 import com.intellij.find.FindModel
 import com.intellij.openapi.editor.ScrollType
-import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.IdeFocusManager
 
-class FindCommand(private val direction: String, private val searchTerm: String) : VcCommand() {
+class FindCommand(project: Project, private val direction: String, private val searchTerm: String) :
+    VcCommand(project) {
 
     companion object {
-        fun fromArgs(args: List<String>): FindCommand {
+        fun fromArgs(project: Project, args: List<String>): FindCommand {
             val direction = args[0]
             val searchTerm = java.lang.String.join(" ", args.subList(1, args.size))
-            return FindCommand(direction, searchTerm)
+            return FindCommand(project, direction, searchTerm)
         }
     }
 
@@ -24,7 +25,6 @@ class FindCommand(private val direction: String, private val searchTerm: String)
         val e = context.editor
         val document = e!!.document
         val selection = e.selectionModel
-        val project = ProjectManager.getInstance().openProjects[0]
         val findManager = FindManager.getInstance(project)
         val findModel = FindModel()
         findModel.stringToFind = searchTerm

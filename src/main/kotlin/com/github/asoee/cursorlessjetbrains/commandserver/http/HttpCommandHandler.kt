@@ -7,6 +7,9 @@ import com.intellij.notification.*
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpHandler
 import io.ktor.utils.io.core.*
@@ -86,14 +89,26 @@ class HttpCommandHandler : HttpHandler {
             split = split[1].split(" ")
             val command: String = split.get(0)
             val args = split.subList(1, split.size)
-            val commandRequest = CommandRequest(command, args)
-            LOG.info("Command request: " + commandRequest)
-            return Optional.of(commandRequest)
+            val focusedProject = getFocusedProject()
+            if (focusedProject == null) {
+                LOG.error("No focused project")
+                return Optional.empty()
+            } else {
+                val commandRequest = CommandRequest(focusedProject, command, args)
+                LOG.info("Command request: " + commandRequest)
+                return Optional.of(commandRequest)
+
+            }
         } catch (e: UnsupportedEncodingException) {
             LOG.error("Failed to parse request URI", e)
             return Optional.empty()
 
         }
+    }
+
+    fun getFocusedProject(): Project? {
+        return FileEditorManager.getInstance(ProjectManager.getInstance().defaultProject)
+            .selectedTextEditor?.project
     }
 
 
