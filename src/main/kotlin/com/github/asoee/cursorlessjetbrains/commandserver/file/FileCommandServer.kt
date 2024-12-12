@@ -59,7 +59,13 @@ class FileCommandServer {
             val userName = System.getProperty("user.name")
             val command = "id -u $userName"
             readProcessOutput(command).let {
-                return "-$it"
+                try {
+                    Integer.parseInt(it)
+                    return "-$it"
+                } catch (e: NumberFormatException) {
+                    LOG.warn("Error parsing uid from id command output " + it)
+                }
+
             }
         } catch (e: IOException) {
             LOG.warn("Error getting uid from id command " + e.message)
