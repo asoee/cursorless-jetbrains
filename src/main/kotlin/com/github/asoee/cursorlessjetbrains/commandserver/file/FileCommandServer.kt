@@ -6,10 +6,14 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.*
+
 
 class FileCommandServer {
 
@@ -49,9 +53,33 @@ class FileCommandServer {
             val uid = Files.getAttribute(selfPath, "unix:uid")
             return "-$uid"
         } catch (e: UnsupportedOperationException) {
-            LOG.error("Error getting home uid attribute (not supported on this platform)", e)
-            return ""
+            LOG.warn("Error getting home uid attribute (not supported on this platform) " + e.message)
         }
+        try {
+            val userName = System.getProperty("user.name")
+            val command = "id -u $userName"
+            readProcessOutput(command).let {
+                return "-$it"
+            }
+        } catch (e: IOException) {
+            LOG.warn("Error getting uid from id command " + e.message)
+        }
+        LOG.warn("Fallback to no uid suffix")
+        return ""
+    }
+
+    fun readProcessOutput(command: String): String {
+        val process = Runtime.getRuntime().exec(command)
+        val output = StringBuilder()
+
+        BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
+            var line: String?
+            while (reader.readLine().also { line = it } != null) {
+                output.append(line).append("\n")
+            }
+        }
+        process.waitFor()
+        return output.toString()
     }
 
     fun checkAndHandleFileRquest() {
