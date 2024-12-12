@@ -45,8 +45,13 @@ class FileCommandServer {
         if (!selfPath.exists()) {
             return ""
         }
-        val uid = Files.getAttribute(selfPath, "unix:uid")
-        return "-$uid"
+        try {
+            val uid = Files.getAttribute(selfPath, "unix:uid")
+            return "-$uid"
+        } catch (e: UnsupportedOperationException) {
+            LOG.error("Error getting home uid attribute (not supported on this platform)", e)
+            return ""
+        }
     }
 
     fun checkAndHandleFileRquest() {
