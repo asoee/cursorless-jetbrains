@@ -122,7 +122,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Setup xvfb for screen 1
+      - name: Setup xvfb for screen 0, display 1
         run: Xvfb :1 -screen 0 1600x1200x24 &
 
       # Run tests
