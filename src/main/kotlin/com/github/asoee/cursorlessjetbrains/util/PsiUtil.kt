@@ -1,4 +1,4 @@
-package com.github.phillco.talonjetbrains.util
+package com.github.asoee.cursorlessjetbrains.util
 
 import com.intellij.lang.Language
 import com.intellij.openapi.editor.Editor

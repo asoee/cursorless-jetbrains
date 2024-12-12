@@ -22,7 +22,7 @@ class IdeClientCallback {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
 
-        override fun setSelection(editorId: String, selections: Array<CursorlessRange>): Unit {
+        override fun setSelection(editorId: String, selections: Array<CursorlessRange>) {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
 

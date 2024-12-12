@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package com.github.asoee.cursorlessjetbrains.javet
 
 import com.caoccao.javet.interop.V8Host
@@ -9,6 +11,9 @@ import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCallback
 import com.github.asoee.cursorlessjetbrains.cursorless.DEFAULT_CIONFIGURATION
 import com.github.asoee.cursorlessjetbrains.cursorless.TreesitterCallback
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -21,7 +26,7 @@ class JavetDriver {
     private val ideClientCallback = IdeClientCallback()
     val runtime: V8Runtime
     val eventLoop: JNEventLoop
-    val wasmDir = Files.createTempDirectory("cursorless-treesitter-wasm").toFile()
+    val wasmDir: File = Files.createTempDirectory("cursorless-treesitter-wasm").toFile()
 
     init {
         println("ASOEE: JavetDriver create")
@@ -30,7 +35,8 @@ class JavetDriver {
         icuDataDir.deleteOnExit()
         val outFile = File(icuDataDir, "icudtl.dat")
         outFile.outputStream().use { out ->
-            javaClass.getResourceAsStream("/icu/icudtl.dat").copyTo(out)
+            javaClass.getResourceAsStream("/icu/icudtl.dat")?.copyTo(out)
+                ?: throw IllegalArgumentException("Resource not found: /icu/icudtl.dat")
         }
 
         NodeRuntimeOptions.NODE_FLAGS.setIcuDataDir(icuDataDir.absolutePath)
@@ -215,7 +221,8 @@ class JavetDriver {
 
         try {
 
-            val json = Json.encodeToString(commands[0]).toString()
+            val json = Json.encodeToString(commands[0])
+            println("command json $json")
             val js = """
             | console.log("ASOEE/JS: call runCommand");
             | try {
@@ -315,36 +322,52 @@ class JavetDriver {
 
 }
 
+@Serializable
 data class ExecutionResult(
     val success: Boolean,
     val returnValue: String?,
     val error: String?
 )
 
+@Serializable
 data class CommandV7(
     val version: Int = 7,
     val spokenFormat: String?,
     val usePrePhraseSnapshot: Boolean,
-    val action: ActionDescriptor
+    val action: SimpleActionDescriptor
 )
 
+//@Serializable
+//sealed interface ActionDescriptor
 
-sealed interface ActionDescriptor
-
+@Serializable
 data class SimpleActionDescriptor(
     val name: SimpleActionName,
     val target: PartialTargetDescriptor
-) : ActionDescriptor
+)
 
 
 typealias SimpleActionName = String
 
 val setSelection: SimpleActionName = "setSelection"
 
+@Serializable
 sealed interface PartialTargetDescriptor
 
+@Serializable()
+@SerialName("primitive")
 data class PartialPrimitiveTargetDescriptor(
-    val type: String = "primitive",
-//    val mark: PartialMark?,
+    val mark: PartialMark
+) : PartialTargetDescriptor {
 //    val modifiers: Modifier[]?;
-)
+}
+
+@Serializable
+sealed interface PartialMark
+
+@Serializable
+@SerialName("decoratedSymbol")
+data class DecoratedSymbolMark(
+    val symbolColor: String,
+    val character: String
+) : PartialMark

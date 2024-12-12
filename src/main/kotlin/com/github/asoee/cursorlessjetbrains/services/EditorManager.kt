@@ -328,16 +328,16 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     private fun hatsUpdated(hatRanges: Array<HatRange>) {
         val editorToFormat = HashMap<String, HatsFormat>()
         for (hatRange in hatRanges) {
-            var format = editorToFormat.get(hatRange.editorId)
+            var format = editorToFormat[hatRange.editorId]
             if (format == null) {
                 format = HatsFormat()
-                editorToFormat.put(hatRange.editorId, format)
+                editorToFormat[hatRange.editorId] = format
             }
 
-            var ranges = format.get(hatRange.styleName)
+            var ranges = format[hatRange.styleName]
             if (ranges == null) {
                 ranges = ArrayList<CursorlessRange>()
-                format.put(hatRange.styleName, ranges)
+                format[hatRange.styleName] = ranges
             }
             ranges.add(hatRange.range)
         }
@@ -352,6 +352,10 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
                 }
             }
         })
+    }
+
+    fun getEditorHats(editor: Editor): HatsFormat? {
+        return getCursorlessContainers().find { it.editor == editor }?.getHats()
     }
 
     override fun dispose() {

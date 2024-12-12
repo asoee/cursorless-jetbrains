@@ -11680,6 +11680,9 @@ var JetbrainsIDE = class {
     this.editors.delete(editorId);
   }
   documentCreated(editorStateJson) {
+    console.log(
+      "ASOEE/CL: documentCreated : " + JSON.stringify(editorStateJson)
+    );
     this.documentChanged(editorStateJson);
     const editorState = editorStateJson;
     const editor = this.editors.get(editorState.id);
@@ -11688,6 +11691,9 @@ var JetbrainsIDE = class {
     }
   }
   documentChanged(editorStateJson) {
+    console.log(
+      "ASOEE/CL: documentChanged : " + JSON.stringify(editorStateJson)
+    );
     const editorState = editorStateJson;
     const editor = this.updateTextEditors(editorState);
     const linedata = getLines(

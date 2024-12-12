@@ -65,7 +65,7 @@ class HttpCommandServer {
         LOG.info("Http command server listening on http://localhost:$port/$nonce")
         val notification = Notification(
             "vc-idea",
-            "Voicecode Plugin", "Listening on http://localhost:$port/$nonce",
+            "Voicecode plugin", "Listening on http://localhost:$port/$nonce",
             NotificationType.INFORMATION
         )
         Notifications.Bus.notify(notification)

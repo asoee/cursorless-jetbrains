@@ -85,6 +85,7 @@ data class Cursor(
     val column: Int
 )
 
+
 /**
  * Represents a single selection.
  */

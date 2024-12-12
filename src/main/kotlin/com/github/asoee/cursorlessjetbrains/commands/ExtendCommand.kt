@@ -7,7 +7,7 @@ import com.intellij.openapi.wm.IdeFocusManager
 import kotlin.math.max
 import kotlin.math.min
 
-class ExtendCommand(project: Project, private val line: Int) : VcCommand(project) {
+class ExtendCommand(project: Project, line: Int) : VcCommand(project) {
 
     companion object {
         fun fromArgs(project: Project, args: List<String>): ExtendCommand {

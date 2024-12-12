@@ -42,7 +42,7 @@ class HttpCommandHandler : HttpHandler {
         } catch (e: Exception) {
             LOG.error("Failed to process command... ", e)
             val notification = Notification(
-                "vc-idea", "Talon Jetbrains", "Failed to process command: " + e.message,
+                "vc-idea", "Talon jetbrains", "Failed to process command: " + e.message,
                 NotificationType.WARNING
             )
             Notifications.Bus.notify(notification)
@@ -65,7 +65,7 @@ class HttpCommandHandler : HttpHandler {
         } else {
             LOG.error("Command not found: " + request.command)
             val notification = Notification(
-                "vc-idea", "Talon Jetbrains", "Command not found: " + request.command,
+                "vc-idea", "Talon jetbrains", "Command not found: " + request.command,
                 NotificationType.WARNING
             )
             Notifications.Bus.notify(notification)
@@ -77,11 +77,11 @@ class HttpCommandHandler : HttpHandler {
     fun fromRequestUri(requestURI: URI): Optional<CommandRequest> {
 
         try {
-            var decode = URLDecoder.decode(requestURI.toString().substring(1), "UTF-8")
+            val decode = URLDecoder.decode(requestURI.toString().substring(1), "UTF-8")
             var split = decode.split("/")
             // XXX For debugging
             val notification = Notification(
-                "vc-idea", "Talon Jetbrains", decode,
+                "vc-idea", "Talon jetbrains", decode,
                 NotificationType.INFORMATION
             )
             Notifications.Bus.notify(notification)

@@ -1,7 +1,6 @@
 package com.github.asoee.cursorlessjetbrains.services
 
 import com.github.asoee.cursorlessjetbrains.MyBundle
-import com.github.asoee.cursorlessjetbrains.commandserver.http.HttpCommandServer
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
@@ -9,8 +8,7 @@ import com.intellij.openapi.project.Project
 @Service(Service.Level.PROJECT)
 class MyProjectService(
     private val project: Project,
-)
-  {
+) {
 
     init {
         thisLogger().info(MyBundle.message("projectService", project.name))

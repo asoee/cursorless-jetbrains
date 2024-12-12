@@ -1,5 +1,6 @@
 package com.github.asoee.cursorlessjetbrains.cursorless
 
+import java.nio.file.Path
 import java.nio.file.Paths
 
 // Default hat colors.
@@ -31,7 +32,7 @@ var HATS_FILENAME = "vscode-hats.json"
 var COLORS_FILENAME = "colors.json"
 
 // TODO(pcohen): embed in this plugin
-val SHAPES_DIRECTORY =
+val SHAPES_DIRECTORY: Path =
     Paths.get(System.getProperty("user.home"), "bin/vendor/cursorless-hats")
 
 // Format of the vscode-hats.json file.

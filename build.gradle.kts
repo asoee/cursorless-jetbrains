@@ -154,6 +154,10 @@ tasks {
         gradleVersion = providers.gradleProperty("gradleVersion").get()
     }
 
+    test {
+        systemProperty("idea.log.debug.categories", "com.github.asoee,com.caoccao.javet")
+    }
+
     publishPlugin {
         dependsOn(patchChangelog)
     }

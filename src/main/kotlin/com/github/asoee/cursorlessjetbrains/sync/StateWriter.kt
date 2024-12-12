@@ -1,6 +1,6 @@
 package com.github.asoee.cursorlessjetbrains.sync
 
-import com.github.phillco.talonjetbrains.util.caretLanguage
+import com.github.asoee.cursorlessjetbrains.util.caretLanguage
 import com.intellij.ide.RecentProjectsManager
 import com.intellij.ide.RecentProjectsManagerBase
 import com.intellij.openapi.diagnostic.logger
@@ -12,7 +12,6 @@ import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.IdeFocusManager
-import java.awt.Point
 import java.nio.file.Path
 
 // ================================================================================
@@ -126,10 +125,12 @@ fun serializeEditor(editor: Editor, active: Boolean, editorId: String): EditorSt
     val selections =
         editor.caretModel.caretsAndSelections.map { selectionFromCaretState(editor, it) }
 
-    val ve = editor.scrollingModel.visibleArea
-
     val language = caretLanguage(editor) ?: "plaintext"
 //    val language = "plaintext"
+
+    val visibleRange = editor.calculateVisibleRange()
+    val startLine = editor.offsetToLogicalPosition(visibleRange.startOffset).line
+    val endLine = editor.offsetToLogicalPosition(visibleRange.endOffset).line
 
     return EditorState(
         editorId,
@@ -137,8 +138,8 @@ fun serializeEditor(editor: Editor, active: Boolean, editorId: String): EditorSt
         document.text,
         active,
         language,
-        editor.xyToLogicalPosition(Point(ve.x, ve.y)).line,
-        editor.xyToLogicalPosition(Point(ve.x, ve.y + ve.height)).line,
+        startLine,
+        endLine,
         cursors,
         selections,
     )

@@ -10,8 +10,12 @@ import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.ex.EditorEventMulticasterEx
 import kotlinx.coroutines.CoroutineScope
 
-class TalonApplicationService(private val cs: CoroutineScope) : Disposable {
+class TalonApplicationService(cs: CoroutineScope) : Disposable {
 
+    var cursorlessEngine: CursorlessEngine
+        get() {
+            return field
+        }
     private val cursorWatchers = mutableMapOf<Editor, TalonCaretListener>()
     private val selectionListeners =
         mutableMapOf<Editor, TalonSelectionListener>()
@@ -33,7 +37,7 @@ class TalonApplicationService(private val cs: CoroutineScope) : Disposable {
         val driver = JavetDriver()
         driver.loadCursorless()
         this.jsDriver = driver
-        val cursorlessEngine = CursorlessEngine(driver)
+        this.cursorlessEngine = CursorlessEngine(driver)
         this.editorManager = EditorManager(cursorlessEngine, this, cs)
         this.focusChangeListener = TalonFocusChangeListener(editorManager)
 
