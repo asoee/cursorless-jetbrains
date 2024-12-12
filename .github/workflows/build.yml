@@ -122,9 +122,17 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Setup xvfb for screen 1
+        run: Xvfb :1 -screen 0 1600x1200x24 &
+
       # Run tests
       - name: Run Tests
         run: ./gradlew check
+        env:
+          DISPLAY: :1
+
+      - name: Tear down xvfb
+        run: killall Xvfb
 
       # Collect Tests Result of failed tests
       - name: Collect Tests Result
