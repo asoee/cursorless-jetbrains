@@ -162,10 +162,10 @@ class JavetDriver {
 
         val configuration = DEFAULT_CIONFIGURATION
         val configurationJson = Json.encodeToString(configuration)
-        val wasmPath = wasmDir.absolutePath
+        val wasmPath = escapeString(wasmDir.absolutePath)
 
         val activateJs = """
-            | ideClient.log("ASOEE/JS: activating plugin 1");
+            | ideClient.log("ASOEE/JS: activating plugin 1 with wasm path : " + '$wasmPath');
             | (async () => {    
             |   console.log("ASOEE/JS: activating plugin async");
             |   globalThis.configuration = globalThis.createJetbrainsConfiguration($configurationJson);
@@ -173,17 +173,26 @@ class JavetDriver {
             |   console.log("ASOEE/JS: ide created");
             |   globalThis.plugin = createPlugin(ideClient, ide);
             |   console.log("ASOEE/JS: plugin created");
-            |   globalThis.engine = await globalThis.activate(plugin, "$wasmPath/");
+            |   globalThis.engine = await globalThis.activate(plugin, "$wasmPath");
             |   console.log("ASOEE/JS: plugin activated");
             | })();
             | ideClient.log("ASOEE/JS: after async");
             | """.trimMargin()
+        println(activateJs)
         runtime.getExecutor(activateJs)
             .executeVoid()
         eventLoop.await()
 
     }
 
+    fun escapeString(rawString: String): String {
+        return rawString
+            .replace("\\", "\\\\")
+            .replace("\n", "\\n")
+            .replace("\t", "\\t")
+            .replace("\"", "\\\"")
+            .replace("\'", "\\'")
+    }
 
     fun editorChanged(editorState: EditorState) {
         val json = Json.encodeToString(editorState)
