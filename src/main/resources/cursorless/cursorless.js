@@ -1284,11 +1284,11 @@ var require_tree_sitter = __commonJS({
               throw toThrow;
             };
             var scriptDirectory = "";
-            function locateFile(path) {
+            function locateFile(path2) {
               if (Module["locateFile"]) {
-                return Module["locateFile"](path, scriptDirectory);
+                return Module["locateFile"](path2, scriptDirectory);
               }
-              return scriptDirectory + path;
+              return scriptDirectory + path2;
             }
             var readAsync, readBinary;
             if (ENVIRONMENT_IS_NODE) {
@@ -4138,6 +4138,413 @@ ${JSON.stringify(symbolNames, null, 2)}`);
   }
 });
 
+// ../../node_modules/.pnpm/path-browserify@1.0.1/node_modules/path-browserify/index.js
+var require_path_browserify = __commonJS({
+  "../../node_modules/.pnpm/path-browserify@1.0.1/node_modules/path-browserify/index.js"(exports2, module2) {
+    "use strict";
+    function assertPath(path2) {
+      if (typeof path2 !== "string") {
+        throw new TypeError("Path must be a string. Received " + JSON.stringify(path2));
+      }
+    }
+    function normalizeStringPosix(path2, allowAboveRoot) {
+      var res = "";
+      var lastSegmentLength = 0;
+      var lastSlash = -1;
+      var dots = 0;
+      var code;
+      for (var i2 = 0; i2 <= path2.length; ++i2) {
+        if (i2 < path2.length)
+          code = path2.charCodeAt(i2);
+        else if (code === 47)
+          break;
+        else
+          code = 47;
+        if (code === 47) {
+          if (lastSlash === i2 - 1 || dots === 1) {
+          } else if (lastSlash !== i2 - 1 && dots === 2) {
+            if (res.length < 2 || lastSegmentLength !== 2 || res.charCodeAt(res.length - 1) !== 46 || res.charCodeAt(res.length - 2) !== 46) {
+              if (res.length > 2) {
+                var lastSlashIndex = res.lastIndexOf("/");
+                if (lastSlashIndex !== res.length - 1) {
+                  if (lastSlashIndex === -1) {
+                    res = "";
+                    lastSegmentLength = 0;
+                  } else {
+                    res = res.slice(0, lastSlashIndex);
+                    lastSegmentLength = res.length - 1 - res.lastIndexOf("/");
+                  }
+                  lastSlash = i2;
+                  dots = 0;
+                  continue;
+                }
+              } else if (res.length === 2 || res.length === 1) {
+                res = "";
+                lastSegmentLength = 0;
+                lastSlash = i2;
+                dots = 0;
+                continue;
+              }
+            }
+            if (allowAboveRoot) {
+              if (res.length > 0)
+                res += "/..";
+              else
+                res = "..";
+              lastSegmentLength = 2;
+            }
+          } else {
+            if (res.length > 0)
+              res += "/" + path2.slice(lastSlash + 1, i2);
+            else
+              res = path2.slice(lastSlash + 1, i2);
+            lastSegmentLength = i2 - lastSlash - 1;
+          }
+          lastSlash = i2;
+          dots = 0;
+        } else if (code === 46 && dots !== -1) {
+          ++dots;
+        } else {
+          dots = -1;
+        }
+      }
+      return res;
+    }
+    function _format(sep, pathObject) {
+      var dir = pathObject.dir || pathObject.root;
+      var base = pathObject.base || (pathObject.name || "") + (pathObject.ext || "");
+      if (!dir) {
+        return base;
+      }
+      if (dir === pathObject.root) {
+        return dir + base;
+      }
+      return dir + sep + base;
+    }
+    var posix = {
+      // path.resolve([from ...], to)
+      resolve: function resolve() {
+        var resolvedPath = "";
+        var resolvedAbsolute = false;
+        var cwd;
+        for (var i2 = arguments.length - 1; i2 >= -1 && !resolvedAbsolute; i2--) {
+          var path2;
+          if (i2 >= 0)
+            path2 = arguments[i2];
+          else {
+            if (cwd === void 0)
+              cwd = process.cwd();
+            path2 = cwd;
+          }
+          assertPath(path2);
+          if (path2.length === 0) {
+            continue;
+          }
+          resolvedPath = path2 + "/" + resolvedPath;
+          resolvedAbsolute = path2.charCodeAt(0) === 47;
+        }
+        resolvedPath = normalizeStringPosix(resolvedPath, !resolvedAbsolute);
+        if (resolvedAbsolute) {
+          if (resolvedPath.length > 0)
+            return "/" + resolvedPath;
+          else
+            return "/";
+        } else if (resolvedPath.length > 0) {
+          return resolvedPath;
+        } else {
+          return ".";
+        }
+      },
+      normalize: function normalize(path2) {
+        assertPath(path2);
+        if (path2.length === 0) return ".";
+        var isAbsolute = path2.charCodeAt(0) === 47;
+        var trailingSeparator = path2.charCodeAt(path2.length - 1) === 47;
+        path2 = normalizeStringPosix(path2, !isAbsolute);
+        if (path2.length === 0 && !isAbsolute) path2 = ".";
+        if (path2.length > 0 && trailingSeparator) path2 += "/";
+        if (isAbsolute) return "/" + path2;
+        return path2;
+      },
+      isAbsolute: function isAbsolute(path2) {
+        assertPath(path2);
+        return path2.length > 0 && path2.charCodeAt(0) === 47;
+      },
+      join: function join() {
+        if (arguments.length === 0)
+          return ".";
+        var joined;
+        for (var i2 = 0; i2 < arguments.length; ++i2) {
+          var arg = arguments[i2];
+          assertPath(arg);
+          if (arg.length > 0) {
+            if (joined === void 0)
+              joined = arg;
+            else
+              joined += "/" + arg;
+          }
+        }
+        if (joined === void 0)
+          return ".";
+        return posix.normalize(joined);
+      },
+      relative: function relative(from, to) {
+        assertPath(from);
+        assertPath(to);
+        if (from === to) return "";
+        from = posix.resolve(from);
+        to = posix.resolve(to);
+        if (from === to) return "";
+        var fromStart = 1;
+        for (; fromStart < from.length; ++fromStart) {
+          if (from.charCodeAt(fromStart) !== 47)
+            break;
+        }
+        var fromEnd = from.length;
+        var fromLen = fromEnd - fromStart;
+        var toStart = 1;
+        for (; toStart < to.length; ++toStart) {
+          if (to.charCodeAt(toStart) !== 47)
+            break;
+        }
+        var toEnd = to.length;
+        var toLen = toEnd - toStart;
+        var length = fromLen < toLen ? fromLen : toLen;
+        var lastCommonSep = -1;
+        var i2 = 0;
+        for (; i2 <= length; ++i2) {
+          if (i2 === length) {
+            if (toLen > length) {
+              if (to.charCodeAt(toStart + i2) === 47) {
+                return to.slice(toStart + i2 + 1);
+              } else if (i2 === 0) {
+                return to.slice(toStart + i2);
+              }
+            } else if (fromLen > length) {
+              if (from.charCodeAt(fromStart + i2) === 47) {
+                lastCommonSep = i2;
+              } else if (i2 === 0) {
+                lastCommonSep = 0;
+              }
+            }
+            break;
+          }
+          var fromCode = from.charCodeAt(fromStart + i2);
+          var toCode = to.charCodeAt(toStart + i2);
+          if (fromCode !== toCode)
+            break;
+          else if (fromCode === 47)
+            lastCommonSep = i2;
+        }
+        var out2 = "";
+        for (i2 = fromStart + lastCommonSep + 1; i2 <= fromEnd; ++i2) {
+          if (i2 === fromEnd || from.charCodeAt(i2) === 47) {
+            if (out2.length === 0)
+              out2 += "..";
+            else
+              out2 += "/..";
+          }
+        }
+        if (out2.length > 0)
+          return out2 + to.slice(toStart + lastCommonSep);
+        else {
+          toStart += lastCommonSep;
+          if (to.charCodeAt(toStart) === 47)
+            ++toStart;
+          return to.slice(toStart);
+        }
+      },
+      _makeLong: function _makeLong(path2) {
+        return path2;
+      },
+      dirname: function dirname(path2) {
+        assertPath(path2);
+        if (path2.length === 0) return ".";
+        var code = path2.charCodeAt(0);
+        var hasRoot = code === 47;
+        var end = -1;
+        var matchedSlash = true;
+        for (var i2 = path2.length - 1; i2 >= 1; --i2) {
+          code = path2.charCodeAt(i2);
+          if (code === 47) {
+            if (!matchedSlash) {
+              end = i2;
+              break;
+            }
+          } else {
+            matchedSlash = false;
+          }
+        }
+        if (end === -1) return hasRoot ? "/" : ".";
+        if (hasRoot && end === 1) return "//";
+        return path2.slice(0, end);
+      },
+      basename: function basename(path2, ext) {
+        if (ext !== void 0 && typeof ext !== "string") throw new TypeError('"ext" argument must be a string');
+        assertPath(path2);
+        var start2 = 0;
+        var end = -1;
+        var matchedSlash = true;
+        var i2;
+        if (ext !== void 0 && ext.length > 0 && ext.length <= path2.length) {
+          if (ext.length === path2.length && ext === path2) return "";
+          var extIdx = ext.length - 1;
+          var firstNonSlashEnd = -1;
+          for (i2 = path2.length - 1; i2 >= 0; --i2) {
+            var code = path2.charCodeAt(i2);
+            if (code === 47) {
+              if (!matchedSlash) {
+                start2 = i2 + 1;
+                break;
+              }
+            } else {
+              if (firstNonSlashEnd === -1) {
+                matchedSlash = false;
+                firstNonSlashEnd = i2 + 1;
+              }
+              if (extIdx >= 0) {
+                if (code === ext.charCodeAt(extIdx)) {
+                  if (--extIdx === -1) {
+                    end = i2;
+                  }
+                } else {
+                  extIdx = -1;
+                  end = firstNonSlashEnd;
+                }
+              }
+            }
+          }
+          if (start2 === end) end = firstNonSlashEnd;
+          else if (end === -1) end = path2.length;
+          return path2.slice(start2, end);
+        } else {
+          for (i2 = path2.length - 1; i2 >= 0; --i2) {
+            if (path2.charCodeAt(i2) === 47) {
+              if (!matchedSlash) {
+                start2 = i2 + 1;
+                break;
+              }
+            } else if (end === -1) {
+              matchedSlash = false;
+              end = i2 + 1;
+            }
+          }
+          if (end === -1) return "";
+          return path2.slice(start2, end);
+        }
+      },
+      extname: function extname(path2) {
+        assertPath(path2);
+        var startDot = -1;
+        var startPart = 0;
+        var end = -1;
+        var matchedSlash = true;
+        var preDotState = 0;
+        for (var i2 = path2.length - 1; i2 >= 0; --i2) {
+          var code = path2.charCodeAt(i2);
+          if (code === 47) {
+            if (!matchedSlash) {
+              startPart = i2 + 1;
+              break;
+            }
+            continue;
+          }
+          if (end === -1) {
+            matchedSlash = false;
+            end = i2 + 1;
+          }
+          if (code === 46) {
+            if (startDot === -1)
+              startDot = i2;
+            else if (preDotState !== 1)
+              preDotState = 1;
+          } else if (startDot !== -1) {
+            preDotState = -1;
+          }
+        }
+        if (startDot === -1 || end === -1 || // We saw a non-dot character immediately before the dot
+        preDotState === 0 || // The (right-most) trimmed path component is exactly '..'
+        preDotState === 1 && startDot === end - 1 && startDot === startPart + 1) {
+          return "";
+        }
+        return path2.slice(startDot, end);
+      },
+      format: function format(pathObject) {
+        if (pathObject === null || typeof pathObject !== "object") {
+          throw new TypeError('The "pathObject" argument must be of type Object. Received type ' + typeof pathObject);
+        }
+        return _format("/", pathObject);
+      },
+      parse: function parse(path2) {
+        assertPath(path2);
+        var ret = { root: "", dir: "", base: "", ext: "", name: "" };
+        if (path2.length === 0) return ret;
+        var code = path2.charCodeAt(0);
+        var isAbsolute = code === 47;
+        var start2;
+        if (isAbsolute) {
+          ret.root = "/";
+          start2 = 1;
+        } else {
+          start2 = 0;
+        }
+        var startDot = -1;
+        var startPart = 0;
+        var end = -1;
+        var matchedSlash = true;
+        var i2 = path2.length - 1;
+        var preDotState = 0;
+        for (; i2 >= start2; --i2) {
+          code = path2.charCodeAt(i2);
+          if (code === 47) {
+            if (!matchedSlash) {
+              startPart = i2 + 1;
+              break;
+            }
+            continue;
+          }
+          if (end === -1) {
+            matchedSlash = false;
+            end = i2 + 1;
+          }
+          if (code === 46) {
+            if (startDot === -1) startDot = i2;
+            else if (preDotState !== 1) preDotState = 1;
+          } else if (startDot !== -1) {
+            preDotState = -1;
+          }
+        }
+        if (startDot === -1 || end === -1 || // We saw a non-dot character immediately before the dot
+        preDotState === 0 || // The (right-most) trimmed path component is exactly '..'
+        preDotState === 1 && startDot === end - 1 && startDot === startPart + 1) {
+          if (end !== -1) {
+            if (startPart === 0 && isAbsolute) ret.base = ret.name = path2.slice(1, end);
+            else ret.base = ret.name = path2.slice(startPart, end);
+          }
+        } else {
+          if (startPart === 0 && isAbsolute) {
+            ret.name = path2.slice(1, startDot);
+            ret.base = path2.slice(1, end);
+          } else {
+            ret.name = path2.slice(startPart, startDot);
+            ret.base = path2.slice(startPart, end);
+          }
+          ret.ext = path2.slice(startDot, end);
+        }
+        if (startPart > 0) ret.dir = path2.slice(0, startPart - 1);
+        else if (isAbsolute) ret.dir = "/";
+        return ret;
+      },
+      sep: "/",
+      delimiter: ":",
+      win32: null,
+      posix: null
+    };
+    posix.posix = posix;
+    module2.exports = posix;
+  }
+});
+
 // ../common/src/cursorlessCommandIds.ts
 var Command = class {
   constructor(baseTitle) {
@@ -5388,19 +5795,19 @@ function toKey(value) {
 var toKey_default = toKey;
 
 // ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/_baseGet.js
-function baseGet(object, path) {
-  path = castPath_default(path, object);
-  var index = 0, length = path.length;
+function baseGet(object, path2) {
+  path2 = castPath_default(path2, object);
+  var index = 0, length = path2.length;
   while (object != null && index < length) {
-    object = object[toKey_default(path[index++])];
+    object = object[toKey_default(path2[index++])];
   }
   return index && index == length ? object : void 0;
 }
 var baseGet_default = baseGet;
 
 // ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/get.js
-function get(object, path, defaultValue) {
-  var result = object == null ? void 0 : baseGet_default(object, path);
+function get(object, path2, defaultValue) {
+  var result = object == null ? void 0 : baseGet_default(object, path2);
   return result === void 0 ? defaultValue : result;
 }
 var get_default = get;
@@ -6205,11 +6612,11 @@ function baseHasIn(object, key) {
 var baseHasIn_default = baseHasIn;
 
 // ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/_hasPath.js
-function hasPath(object, path, hasFunc) {
-  path = castPath_default(path, object);
-  var index = -1, length = path.length, result = false;
+function hasPath(object, path2, hasFunc) {
+  path2 = castPath_default(path2, object);
+  var index = -1, length = path2.length, result = false;
   while (++index < length) {
-    var key = toKey_default(path[index]);
+    var key = toKey_default(path2[index]);
     if (!(result = object != null && hasFunc(object, key))) {
       break;
     }
@@ -6224,21 +6631,21 @@ function hasPath(object, path, hasFunc) {
 var hasPath_default = hasPath;
 
 // ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/hasIn.js
-function hasIn(object, path) {
-  return object != null && hasPath_default(object, path, baseHasIn_default);
+function hasIn(object, path2) {
+  return object != null && hasPath_default(object, path2, baseHasIn_default);
 }
 var hasIn_default = hasIn;
 
 // ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/_baseMatchesProperty.js
 var COMPARE_PARTIAL_FLAG6 = 1;
 var COMPARE_UNORDERED_FLAG4 = 2;
-function baseMatchesProperty(path, srcValue) {
-  if (isKey_default(path) && isStrictComparable_default(srcValue)) {
-    return matchesStrictComparable_default(toKey_default(path), srcValue);
+function baseMatchesProperty(path2, srcValue) {
+  if (isKey_default(path2) && isStrictComparable_default(srcValue)) {
+    return matchesStrictComparable_default(toKey_default(path2), srcValue);
   }
   return function(object) {
-    var objValue = get_default(object, path);
-    return objValue === void 0 && objValue === srcValue ? hasIn_default(object, path) : baseIsEqual_default(srcValue, objValue, COMPARE_PARTIAL_FLAG6 | COMPARE_UNORDERED_FLAG4);
+    var objValue = get_default(object, path2);
+    return objValue === void 0 && objValue === srcValue ? hasIn_default(object, path2) : baseIsEqual_default(srcValue, objValue, COMPARE_PARTIAL_FLAG6 | COMPARE_UNORDERED_FLAG4);
   };
 }
 var baseMatchesProperty_default = baseMatchesProperty;
@@ -6252,16 +6659,16 @@ function baseProperty(key) {
 var baseProperty_default = baseProperty;
 
 // ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/_basePropertyDeep.js
-function basePropertyDeep(path) {
+function basePropertyDeep(path2) {
   return function(object) {
-    return baseGet_default(object, path);
+    return baseGet_default(object, path2);
   };
 }
 var basePropertyDeep_default = basePropertyDeep;
 
 // ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/property.js
-function property(path) {
-  return isKey_default(path) ? baseProperty_default(toKey_default(path)) : basePropertyDeep_default(path);
+function property(path2) {
+  return isKey_default(path2) ? baseProperty_default(toKey_default(path2)) : basePropertyDeep_default(path2);
 }
 var property_default = property;
 
@@ -10894,8 +11301,8 @@ var JetbrainsConfiguration = class {
     this.onDidChangeConfiguration = this.notifier.registerListener;
     this.configuration = configuration;
   }
-  getOwnConfiguration(path, _scope) {
-    return get_default(this.configuration, path);
+  getOwnConfiguration(path2, _scope) {
+    return get_default(this.configuration, path2);
   }
   updateConfiguration(configuration) {
     this.configuration = configuration;
@@ -12008,14 +12415,14 @@ function processResult(result, scope) {
   }
   return result !== NOTHING ? result : void 0;
 }
-function finalize(rootScope, value, path) {
+function finalize(rootScope, value, path2) {
   if (isFrozen(value))
     return value;
   const state = value[DRAFT_STATE];
   if (!state) {
     each(
       value,
-      (key, childValue) => finalizeProperty(rootScope, state, value, key, childValue, path)
+      (key, childValue) => finalizeProperty(rootScope, state, value, key, childValue, path2)
     );
     return value;
   }
@@ -12038,13 +12445,13 @@ function finalize(rootScope, value, path) {
     }
     each(
       resultEach,
-      (key, childValue) => finalizeProperty(rootScope, state, result, key, childValue, path, isSet2)
+      (key, childValue) => finalizeProperty(rootScope, state, result, key, childValue, path2, isSet2)
     );
     maybeFreeze(rootScope, result, false);
-    if (path && rootScope.patches_) {
+    if (path2 && rootScope.patches_) {
       getPlugin("Patches").generatePatches_(
         state,
-        path,
+        path2,
         rootScope.patches_,
         rootScope.inversePatches_
       );
@@ -12056,9 +12463,9 @@ function finalizeProperty(rootScope, parentState, targetObject, prop, childValue
   if (process.env.NODE_ENV !== "production" && childValue === targetObject)
     die(5);
   if (isDraft(childValue)) {
-    const path = rootPath && parentState && parentState.type_ !== 3 && // Set objects are atomic since they have no keys.
+    const path2 = rootPath && parentState && parentState.type_ !== 3 && // Set objects are atomic since they have no keys.
     !has(parentState.assigned_, prop) ? rootPath.concat(prop) : void 0;
-    const res = finalize(rootScope, childValue, path);
+    const res = finalize(rootScope, childValue, path2);
     set2(targetObject, prop, res);
     if (isDraft(res)) {
       rootScope.canAutoFreeze_ = false;
@@ -20233,8 +20640,8 @@ function getErrorMap() {
   return overrideErrorMap;
 }
 var makeIssue = (params) => {
-  const { data, path, errorMaps, issueData } = params;
-  const fullPath = [...path, ...issueData.path || []];
+  const { data, path: path2, errorMaps, issueData } = params;
+  const fullPath = [...path2, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -20356,11 +20763,11 @@ var errorUtil;
 var _ZodEnum_cache;
 var _ZodNativeEnum_cache;
 var ParseInputLazyPath = class {
-  constructor(parent, value, path, key) {
+  constructor(parent, value, path2, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path;
+    this._path = path2;
     this._key = key;
   }
   get path() {
@@ -33022,6 +33429,7 @@ var import_web_tree_sitter2 = __toESM(require_tree_sitter(), 1);
 
 // src/ide/JetbrainsTreeSitter.ts
 var import_web_tree_sitter = __toESM(require_tree_sitter(), 1);
+var import_path_browserify = __toESM(require_path_browserify(), 1);
 var JetbrainsTreeSitter = class {
   constructor(wasmDirectory) {
     this.wasmDirectory = wasmDirectory;
@@ -33040,9 +33448,10 @@ var JetbrainsTreeSitter = class {
   async loadLanguage(languageId) {
     console.log(`Loading language ${languageId}`);
     const parser = new import_web_tree_sitter.default();
-    const language = await import_web_tree_sitter.default.Language.load(
-      `${this.wasmDirectory}/tree-sitter-${languageId}.wasm`
-    );
+    const dir = import_path_browserify.default.parse(this.wasmDirectory).dir;
+    const filePath = import_path_browserify.default.join(dir, `tree-sitter-${languageId}.wasm`);
+    console.log(`Loading language from ${filePath}`);
+    const language = await import_web_tree_sitter.default.Language.load(filePath);
     parser.setLanguage(language);
     this.parsers.set(languageId, parser);
     return true;
