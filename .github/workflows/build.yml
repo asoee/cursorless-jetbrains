@@ -16,7 +16,7 @@ name: Build
 on:
   # Trigger the workflow on pushes to only the 'main' branch (this avoids duplicate checks being run e.g., for dependabot pull requests)
   push:
-    branches: [ main ]
+#    branches: [ main ]
   # Trigger the workflow on any pull request
   pull_request:
 
@@ -104,7 +104,21 @@ jobs:
   test:
     name: Test
     needs: [ build ]
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+#      max-parallel: 1
+      matrix:
+        include:
+          - os: ubuntu-latest
+            runIde: |
+              export DISPLAY=:99.0
+              Xvfb -ac :99 -screen 0 1920x1080x16 &
+              ./gradlew check
+          - os: windows-latest
+            runIde: .\gradlew.bat check
+          - os: macos-latest
+            runIde: ./gradlew check
     steps:
 
       # Check out the current repository
@@ -122,17 +136,9 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Setup xvfb for screen 0, display 1
-        run: Xvfb :1 -screen 0 1600x1200x24 &
-
       # Run tests
       - name: Run Tests
-        run: ./gradlew check
-        env:
-          DISPLAY: :1
-
-      - name: Tear down xvfb
-        run: killall Xvfb
+        run: ${{ matrix.runIde }}
 
       # Collect Tests Result of failed tests
       - name: Collect Tests Result
