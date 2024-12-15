@@ -17,8 +17,8 @@ class FindCommand(project: Project, private val direction: String, private val s
         }
     }
 
-    override fun readonly(): Boolean {
-        return true
+    override fun executionMode(): ExecutionMode {
+        return ExecutionMode.READ
     }
 
     override fun execute(context: CommandContext): String {

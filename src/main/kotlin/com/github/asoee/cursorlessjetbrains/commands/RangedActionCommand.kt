@@ -16,10 +16,6 @@ class RangedActionCommand(
 ) : VcCommand(project) {
 
 
-    override fun readonly(): Boolean {
-        return false
-    }
-
     override fun execute(context: CommandContext): String {
         context.editor = editor
         val carets = ranges.map { range ->

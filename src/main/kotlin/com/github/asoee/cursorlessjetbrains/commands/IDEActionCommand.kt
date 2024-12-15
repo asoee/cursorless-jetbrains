@@ -1,9 +1,7 @@
 package com.github.asoee.cursorlessjetbrains.commands
 
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.IdeActions
+import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.playback.commands.ActionCommand
 import com.intellij.openapi.wm.ToolWindow
@@ -19,6 +17,7 @@ class IDEActionCommand(project: Project, private val actionId: String) : VcComma
         }
 
         val readonlyActions = listOf(IdeActions.ACTION_SHOW_INTENTION_ACTIONS)
+        val writeActions = listOf<String>()
     }
 
     val action: AnAction
@@ -27,14 +26,17 @@ class IDEActionCommand(project: Project, private val actionId: String) : VcComma
         action = ActionManager.getInstance().getAction(actionId)
     }
 
-    override fun readonly(): Boolean {
-        return readonlyActions.contains(actionId)
+    override fun executionMode(): ExecutionMode {
+        if (readonlyActions.contains(actionId)) {
+            return ExecutionMode.READ
+        } else if (writeActions.contains(actionId)) {
+            return ExecutionMode.WRITE
+        } else {
+            return ExecutionMode.EDT
+        }
     }
 
-    override fun execute(context: CommandContext): String {
-        val event = ActionCommand.getInputEvent(
-            actionId
-        )
+    private fun findComponent(context: CommandContext): Component? {
         val e: ToolWindow? = context.toolWindow
         var component: Component? = null
         if (e != null) {
@@ -43,8 +45,14 @@ class IDEActionCommand(project: Project, private val actionId: String) : VcComma
         if (component == null) {
             component = context.editor?.contentComponent
         }
+        return component
+    }
+
+    override fun execute(context: CommandContext): String {
+        val component = findComponent(context)
+
         ActionManager.getInstance()
-            .tryToExecute(action, event, component, ActionPlaces.UNKNOWN, true)
+            .tryToExecute(action, null, component, ActionPlaces.UNKNOWN, true)
         return "OK"
     }
 }

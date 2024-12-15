@@ -11,10 +11,6 @@ import java.awt.Point
 class RevealLineCommand(project: Project, val editor: Editor, val line: Int, val revealAt: String) :
     VcCommand(project) {
 
-    override fun readonly(): Boolean {
-        return false
-    }
-
     override fun execute(context: CommandContext): String {
 
         val scrollPos = scrollPosFromType(revealAt)

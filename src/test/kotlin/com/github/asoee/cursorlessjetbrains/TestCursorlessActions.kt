@@ -11,7 +11,6 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
-import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.EditorTestUtil
@@ -24,6 +23,10 @@ import kotlinx.coroutines.runBlocking
 class TestCursorlessActions : BasePlatformTestCase() {
 
     override fun getTestDataPath() = "src/test/testData/commands"
+
+    override fun runInDispatchThread(): Boolean {
+        return false
+    }
 
     //    @Test
     fun testHatsAllocated() {
@@ -43,10 +46,6 @@ class TestCursorlessActions : BasePlatformTestCase() {
             TestCase.assertEquals("default", clTarget.shape)
             TestCase.assertEquals("m", clTarget.letter)
         }
-
-//        val
-        //        executionResult = service.jsDriver.execute(request.args)
-//        myFixture.checkResultByFile("org/example/Main_after_insert_lines.java")
     }
 
     //    @Test
@@ -66,27 +65,25 @@ class TestCursorlessActions : BasePlatformTestCase() {
             val clCommand = "take " + clTarget.spokenForm()
             println("command: $clCommand")
 
-            runBackgroundableTask("Talon command server", fixture.project) {
-                fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand("take", clTarget))
-                println("command executed")
+            fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand("take", clTarget))
+            println("command executed")
 
-                runBlocking {
-                    delay(100)
-                }
+            runBlocking {
+                delay(50)
+            }
 
-                println("queue assert")
-                runInEdtAndWait {
-                    println("Asserting in EDT...")
-                    TestCase.assertEquals("main", fixture.editor.selectionModel.selectedText)
-                    TestCase.assertEquals(
-                        targetRange.startOffset(fixture.editor),
-                        fixture.editor.selectionModel.selectionStart
-                    )
-                    TestCase.assertEquals(
-                        targetRange.endOffset(fixture.editor),
-                        fixture.editor.selectionModel.selectionEnd
-                    )
-                }
+            println("queue assert")
+            runInEdtAndWait {
+                println("Asserting in EDT...")
+                TestCase.assertEquals("main", fixture.editor.selectionModel.selectedText)
+                TestCase.assertEquals(
+                    targetRange.startOffset(fixture.editor),
+                    fixture.editor.selectionModel.selectionStart
+                )
+                TestCase.assertEquals(
+                    targetRange.endOffset(fixture.editor),
+                    fixture.editor.selectionModel.selectionEnd
+                )
             }
         }
     }
@@ -126,8 +123,10 @@ class TestCursorlessActions : BasePlatformTestCase() {
         val appService = service<TalonApplicationService>()
         val editor = getEditorFromPsiFile(psiFile)
         assertNotNull(editor)
-        EditorTestUtil.setEditorVisibleSize(editor, 80, 20)
-        appService.editorManager.reloadAllEditors()
+        runInEdtAndWait {
+            EditorTestUtil.setEditorVisibleSize(editor, 80, 20)
+            appService.editorManager.reloadAllEditors()
+        }
 
         return MainJavaFixture(psiFile, commandExecutorService, psiFile.project, editor!!, appService)
     }

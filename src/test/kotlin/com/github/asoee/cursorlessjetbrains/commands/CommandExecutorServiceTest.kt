@@ -7,14 +7,27 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
+import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import com.intellij.testFramework.TestDataPath
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.testFramework.runInEdtAndWait
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
+import java.awt.datatransfer.StringSelection
 
-@TestDataPath("\$CONTENT_ROOT/src/test/testData")
+//@TestDataPath("\$CONTENT_ROOT/src/test/testData")
+@RunWith(JUnit4::class)
 class CommandExecutorServiceTest : BasePlatformTestCase() {
 
+    override fun runInDispatchThread(): Boolean {
+        return false
+    }
+
+    @Test
     fun testInsertLineAfter() {
         val fixture = mainJavaFixture()
         val command = InsertLineAfterCommand(fixture.project, fixture.editor, listOf(LineRange(3, 3)).toTypedArray())
@@ -22,6 +35,7 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
         myFixture.checkResultByFile("org/example/Main_after_insert_lines.java")
     }
 
+    @Test
     fun testCloneLine() {
         val fixture = mainJavaFixture()
         val command = CloneLineCommand(fixture.project, 7)
@@ -29,6 +43,7 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
         myFixture.checkResultByFile("org/example/Main_after_clone_line.java")
     }
 
+    @Test
     fun testFind() {
         val fixture = mainJavaFixture()
         val command = FindCommand(fixture.project, "next", "print")
@@ -40,6 +55,7 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
 
     }
 
+    @Test
     fun testGoto() {
         val fixture = mainJavaFixture()
         val command = GotoCommand(fixture.project, 5, 20)
@@ -49,15 +65,43 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
 
     }
 
+    @Test
     fun testIdeActionCommandIntroduceVariable() {
         val fixture = mainJavaFixture()
         val startPos = LogicalPosition(5, 31)
         val endPos = LogicalPosition(5, 32)
-        fixture.editor.caretModel.caretsAndSelections = listOf(CaretState(endPos, startPos, endPos))
+        runInEdtAndWait {
+            fixture.editor.caretModel.caretsAndSelections = listOf(CaretState(endPos, startPos, endPos))
+        }
         val command = IDEActionCommand(fixture.project, "IntroduceVariable")
         val result = fixture.commandExecutorService.execute(command)
         myFixture.checkResultByFile("org/example/Main.java")
 
+    }
+
+    @Test
+    fun testIdeActionCommandEditorPaste() {
+        val fixture = mainJavaFixture()
+        val startPos = LogicalPosition(6, 31)
+        val endPos = LogicalPosition(6, 31)
+        runInEdtAndWait {
+            fixture.editor.caretModel.caretsAndSelections = listOf(CaretState(endPos, startPos, endPos))
+        }
+        val text = " // My comment here"
+        CopyPasteManager.getInstance().setContents(StringSelection(text))
+        val command = IDEActionCommand(fixture.project, "EditorPaste")
+        println("execute")
+        val result = fixture.commandExecutorService.execute(command)
+        runBlocking {
+            delay(50)
+        }
+        runInEdtAndWait {
+            println("check")
+            myFixture.checkResultByFile("org/example/Main_after_editor_paste.java")
+        }
+        println("bg done")
+
+        println("test done")
     }
 
     private fun assertSelectedOffset(fixture: MainJavaFixture, startOffset: Int, endOffset: Int) {

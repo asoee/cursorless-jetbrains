@@ -19,10 +19,6 @@ class LineRangeCommand(project: Project, private val startLine: Int, private val
         }
     }
 
-    override fun readonly(): Boolean {
-        return false
-    }
-
     override fun execute(context: CommandContext): String {
         val e = context.editor!!
         val selection = e.selectionModel
