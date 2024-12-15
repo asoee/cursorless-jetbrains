@@ -8,6 +8,8 @@ import groovy.json.JsonException
 import kotlinx.serialization.json.Json
 import java.awt.Color
 import java.awt.Graphics
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.file.Files
@@ -42,81 +44,32 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
 
     private var hats = HatsFormat()
 
+    private val boundsListener = BoundsChangeListener(this)
+
     init {
         this.parent.add(this)
         this.bounds = parent.bounds
+        parent.addComponentListener(boundsListener)
 
         this.assignColors()
 
-
-        // We create a watcher for the Cursorless hats file, as well as the colors configuration
-        // file.
-        //
-        // It's necessary to watch the hats file because `paintComponent()` is only called
-        // when there are changes on the JetBrains side, but the new hats come from the sidecar
-        // slightly after that, so we need to know when that happens and trigger a re-render.
-//        this.watcher = DirectoryWatcher.builder()
-//            .path(rootPath)
-//            .logger(NOPLogger.NOP_LOGGER)
-//            .listener { event: DirectoryChangeEvent ->
-//                if (event.path() == colorsPath()) {
-//                    log.debug("Colors updated ($event); re rendering...")
-//                    this.assignColors()
-//                } else if (event.path() == hatsPath()) {
-//                    log.debug("Hats updated ($event); re rendering...")
-////                    println("Hats updated ($event); re rendering...")
-//                    this.assignColors()
-//                    localOffsets.clear()
-//                    this.invalidate()
-//                    this.repaint()
-////                } else if (event.path().fileName.toString() == "root") {
-////                    println("Root updated ($event); reevaluating...")
-////                    forceRefreshCursorlessRoot()
-//                } else {
-//                    log.debug("Other event ($event); ignoring...")
-//                }
-//            }.build()
-//
-//        watchThread = Thread {
-//            try {
-//                this.watcher.watch()
-//            } catch (e: UnsatisfiedLinkError) {
-//
-//                println("PH: |${e}|")
-//                // NOTE(pcohen): On 2023.1 there seems to be a JNI link error.
-//                Notifications.Bus.notify(
-//                    Notification(
-//                        "talon",
-//                        "JNI UnsatisfiedLinkError",
-//                        e.message ?: "Unknown JNI error",
-//                        NotificationType.ERROR
-//                    )
-//                )
-//                throw e;
-//            }
-//        }
-//        watchThread.start()
-
         isVisible = true
         log.info("Cursorless container initialized for editor $editor!")
+    }
+
+    private class BoundsChangeListener(val container: CursorlessContainer) : ComponentAdapter() {
+        override fun componentResized(e: ComponentEvent) {
+            container.bounds.size = e.component.bounds.size
+        }
     }
 
     fun remove() {
         this.parent.remove(this)
         this.parent.invalidate()
         this.parent.repaint()
-//        this.watcher.close()
-//        this.watchThread.interrupt()
+        this.parent.removeComponentListener(boundsListener)
     }
 
-    //    fun hatsPath(): Path {
-//        return Paths.get(cursorlessRootPath().toString(), HATS_FILENAME)
-//    }
-//
-//    fun colorsPath(): Path {
-//        return Paths.get(cursorlessRootPath().toString(), COLORS_FILENAME)
-//    }
-//
     fun shapeImage(name: String): BufferedImage {
         val imagePath = SHAPES_DIRECTORY.resolve("$name.png").toUri()
         return ImageIO.read(File(imagePath))
