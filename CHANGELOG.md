@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix broken project resolution for http commands
+- Fix some actions not executed with the right editor locks
+- Fix deadlock when cursorless command triggered opening new editor
+
 ## [0.0.3] - 2024-12-13
 
 ### Added

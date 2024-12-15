@@ -13,6 +13,8 @@ abstract class VcCommand(val project: Project) {
 
     abstract fun execute(context: CommandContext): String?
 
-    abstract fun readonly(): Boolean
+    open fun executionMode(): ExecutionMode {
+        return ExecutionMode.EDT
+    }
 
 }

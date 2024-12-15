@@ -38,8 +38,7 @@ class CloneLineCommand(project: Project, private val sourceLine: Int) : VcComman
         return "OK"
     }
 
-    override fun readonly(): Boolean {
-        return false
+    override fun executionMode(): ExecutionMode {
+        return ExecutionMode.WRITE
     }
-
 }

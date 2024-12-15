@@ -3,6 +3,7 @@ package com.github.asoee.cursorlessjetbrains.commandserver.http
 import com.github.asoee.cursorlessjetbrains.commands.CommandExecutorService
 import com.github.asoee.cursorlessjetbrains.commands.CommandRegistryService
 import com.github.asoee.cursorlessjetbrains.commands.CommandRequest
+import com.intellij.ide.impl.ProjectUtil
 import com.intellij.notification.*
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
@@ -10,6 +11,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.wm.IdeFocusManager
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpHandler
 import io.ktor.utils.io.core.*
@@ -27,7 +29,7 @@ class HttpCommandHandler : HttpHandler {
     @Throws(IOException::class)
     override fun handle(httpExchange: HttpExchange) {
         try {
-            LOG.info("Handling " + httpExchange.requestURI.toString() + httpExchange.requestMethod)
+            LOG.info("Handling " + httpExchange.requestMethod + " " + httpExchange.requestURI.toString())
             val bodyStream = httpExchange.requestBody
             val s = Scanner(bodyStream).useDelimiter("\\A")
             val response: VoicePluginResponse = fromRequestUri(httpExchange.requestURI)
@@ -107,10 +109,26 @@ class HttpCommandHandler : HttpHandler {
     }
 
     fun getFocusedProject(): Project? {
-        return FileEditorManager.getInstance(ProjectManager.getInstance().defaultProject)
-            .selectedTextEditor?.project
+        //best effort to find an active project
+
+        var project = ProjectUtil.getActiveProject()
+
+        if (project == null || !isProjectValid(project)) {
+            project = IdeFocusManager.getGlobalInstance().lastFocusedFrame?.project
+        }
+
+        if (project == null || !isProjectValid(project)) {
+            project = ProjectManager.getInstance().openProjects.firstOrNull { p -> !p.isDisposed }
+        }
+
+        return project?.takeIf { isProjectValid(project) }
+
     }
 
+
+    fun isProjectValid(project: Project?): Boolean {
+        return project != null && !project.isDisposed && !project.isDefault && project.isOpen
+    }
 
     data class VoicePluginResponse(val responseCode: Int, val response: String)
 

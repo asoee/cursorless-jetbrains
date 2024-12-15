@@ -118,14 +118,14 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
                 val range = selections[0]
                 val startPos = range.logicalStartPosition(editor)
                 val endPos = range.logicalEndPosition(editor)
-                println("launch action : Setting selection to " + startPos.toString() + " - " + endPos.toString())
+                println("launch action : Setting selection to $startPos - $endPos")
 
                 ApplicationManager.getApplication().invokeLater {
                     ApplicationManager.getApplication().runWriteAction {
                         CommandProcessor.getInstance().executeCommand(
                             editor.project,
                             {
-                                println("Setting selection to " + startPos.toString() + " - " + endPos.toString())
+                                println("Setting selection to $startPos - $endPos")
                                 editor.caretModel.caretsAndSelections = listOf(
                                     CaretState(endPos, startPos, endPos),
                                 )
@@ -146,7 +146,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
                 val range = selections[0]
                 val startPos = range.logicalStartPosition(editor)
                 val endPos = range.logicalEndPosition(editor)
-                println("launch action : clipboardCopy to " + startPos.toString() + " - " + endPos.toString())
+                println("launch action : clipboardCopy to $startPos - $endPos")
 
                 val startOffset = editor.logicalPositionToOffset(startPos)
                 val endOffset = editor.logicalPositionToOffset(endPos)
@@ -215,7 +215,9 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         ensureEditorIdSet(editor)
         val editorId = editorIds[editor]!!
         val editorState = serializeEditor(editor, true, editorId)
-        cursorlessEngine.editorCreated(editorState)
+        dispatchScope.launch {
+            cursorlessEngine.editorCreated(editorState)
+        }
     }
 
     fun editorClosed(editor: Editor) {
@@ -223,7 +225,9 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         editorIds.remove(editor)
         if (id != null) {
             editorsById.remove(id)
-            cursorlessEngine.editorClosed(id)
+            dispatchScope.launch {
+                cursorlessEngine.editorClosed(id)
+            }
         }
     }
 

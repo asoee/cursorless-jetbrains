@@ -33025,7 +33025,6 @@ var JetbrainsTreeSitter = class {
     this.parsers = /* @__PURE__ */ new Map();
   }
   getTree(document2) {
-    console.log(`get tree ${document2.languageId}`);
     if (this.getLanguage(document2.languageId)) {
       const parser = this.parsers.get(document2.languageId);
       if (parser) {
@@ -33041,18 +33040,15 @@ var JetbrainsTreeSitter = class {
       this.wasmDirectory,
       `tree-sitter-${languageId}.wasm`
     );
-    console.log(`Loading language from ${filePath}`);
     const language = await import_web_tree_sitter.default.Language.load(filePath);
     parser.setLanguage(language);
     this.parsers.set(languageId, parser);
     return true;
   }
   getLanguage(languageId) {
-    console.log(`get language ${languageId}`);
     return this.parsers.get(languageId)?.getLanguage();
   }
   getNodeAtLocation(document2, range3) {
-    console.log(`get node at ${document2.languageId}`);
     const tree = this.getTree(document2);
     const node = tree.rootNode.descendantForPosition(
       {
@@ -33088,11 +33084,10 @@ var JetbrainsTreeSitterQueryProvider = class {
 
 // src/extension.ts
 async function activate(plugin, wasmDirectory) {
-  console.log("activate started with wasm dir " + wasmDirectory);
+  console.log("activate started");
   await import_web_tree_sitter2.default.init({
     locateFile(scriptName, _scriptDirectory) {
       const fullPath = pathJoin(wasmDirectory, scriptName);
-      console.log("fullPath " + fullPath);
       return fullPath;
     }
   });

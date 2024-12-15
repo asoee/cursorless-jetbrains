@@ -18,9 +18,6 @@ class ExtendCommand(project: Project, line: Int) : VcCommand(project) {
 
     private val targetLine = line - 1
 
-    override fun readonly(): Boolean {
-        return false
-    }
 
     override fun execute(context: CommandContext): String {
         val e = context.editor

@@ -20,8 +20,8 @@ class GotoCommand(project: Project, line: Int, column: Int) : VcCommand(project)
     private val line = max((line - 1).toDouble(), 0.0).toInt()
     private val column = max((column - 1).toDouble(), 0.0).toInt()
 
-    override fun readonly(): Boolean {
-        return true
+    override fun executionMode(): ExecutionMode {
+        return ExecutionMode.READ
     }
 
     override fun execute(context: CommandContext): String {

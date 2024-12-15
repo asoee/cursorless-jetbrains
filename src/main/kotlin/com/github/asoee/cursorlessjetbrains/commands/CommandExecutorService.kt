@@ -15,19 +15,27 @@ class CommandExecutorService {
         val result: ArrayList<String> = ArrayList()
 
         ApplicationManager.getApplication().invokeAndWait {
-            if (command.readonly()) {
-                val context = CommandContext(command.project)
-                val res = command.execute(CommandContext(command.project))
-                if (res != null) {
-                    result.add(res)
-                }
-//                }
-            } else {
-                val context = CommandContext(command.project)
-                WriteCommandAction.runWriteCommandAction(command.project) {
+            val context = CommandContext(command.project)
+            when (command.executionMode()) {
+                ExecutionMode.EDT -> {
                     val res = command.execute(context)
                     if (res != null) {
                         result.add(res)
+                    }
+                }
+                ExecutionMode.READ -> {
+                    val res = command.execute(context)
+                    if (res != null) {
+                        result.add(res)
+                    }
+
+                }
+                ExecutionMode.WRITE -> {
+                    WriteCommandAction.runWriteCommandAction(command.project) {
+                        val res = command.execute(context)
+                        if (res != null) {
+                            result.add(res)
+                        }
                     }
                 }
             }

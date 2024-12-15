@@ -11,8 +11,8 @@ class LocationCommand(project: Project) : VcCommand(project) {
         }
     }
 
-    override fun readonly(): Boolean {
-        return true
+    override fun executionMode(): ExecutionMode {
+        return ExecutionMode.READ
     }
 
     override fun execute(context: CommandContext): String {
