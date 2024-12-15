@@ -19,7 +19,11 @@ import com.intellij.testFramework.runInEdtAndWait
 import junit.framework.TestCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
 
+@RunWith(JUnit4::class)
 class TestCursorlessActions : BasePlatformTestCase() {
 
     override fun getTestDataPath() = "src/test/testData/commands"
@@ -28,7 +32,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
         return false
     }
 
-    //    @Test
+    @Test
     fun testHatsAllocated() {
         val fixture = mainJavaFixture()
 //        Thread.sleep(100)
@@ -48,7 +52,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
         }
     }
 
-    //    @Test
+    @Test
     fun testTakeSingle() {
         val fixture = mainJavaFixture()
 //        Thread.sleep(50)
@@ -88,6 +92,46 @@ class TestCursorlessActions : BasePlatformTestCase() {
         }
     }
 
+  @Test
+    fun testTypeDefTarget() {
+        val fixture = mainJavaFixture()
+//        Thread.sleep(50)
+        val editorHats = fixture.appService.editorManager.getEditorHats(fixture.editor)
+        TestCase.assertNotNull(editorHats)
+        assertNotEmpty(editorHats!!.values)
+
+//      target the println call in visual line 5
+        val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 4, 19, 4, 26)
+        println("target: $targetRange")
+        val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
+        TestCase.assertNotNull(clTarget)
+        if (clTarget != null) {
+            val clCommand = "type deaf"
+            println("command: $clCommand")
+
+            fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand(clCommand, clTarget))
+            println("command executed")
+
+            runBlocking {
+                delay(150)
+            }
+
+            println("queue assert")
+            runInEdtAndWait {
+                println("Asserting in EDT...")
+                TestCase.assertEquals("println", fixture.editor.selectionModel.selectedText)
+                TestCase.assertEquals(
+                    targetRange.startOffset(fixture.editor),
+                    fixture.editor.selectionModel.selectionStart
+                )
+                TestCase.assertEquals(
+                    targetRange.endOffset(fixture.editor),
+                    fixture.editor.selectionModel.selectionEnd
+                )
+            }
+        }
+    }
+
 
     private fun findHatForRange(editor: Editor, editorHats: HatsFormat, target: CursorlessRange): CursorlessTarget? {
         editorHats.entries.forEach { entry ->
@@ -98,7 +142,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
                     val split = entry.key.split(" ")
                     var color = "default"
                     var shape = "default"
-                    if (split.size >= 1) {
+                    if (split.isNotEmpty()) {
                         color = split[0]
                     }
                     if (split.size >= 2) {
@@ -131,7 +175,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
         return MainJavaFixture(psiFile, commandExecutorService, psiFile.project, editor!!, appService)
     }
 
-    fun getEditorFromPsiFile(psiFile: PsiFile): Editor? {
+    private fun getEditorFromPsiFile(psiFile: PsiFile): Editor? {
         val project: Project = psiFile.project
         val virtualFile = psiFile.virtualFile
         val fileEditor = FileEditorManager.getInstance(project).getSelectedEditor(virtualFile)

@@ -29,7 +29,7 @@ class CursorlessEngine(private val driver: JavetDriver) {
             spokenFormat = command.command + " " + command.target.spokenForm(),
             usePrePhraseSnapshot = false,
             action = SimpleActionDescriptor(
-                name = "setSelection",
+                name = command.actionName(),
                 target = PartialPrimitiveTargetDescriptor(
                     mark = DecoratedSymbolMark(
                         symbolColor = command.target.color,
@@ -47,5 +47,6 @@ class CursorlessEngine(private val driver: JavetDriver) {
         val jsonElement = Json.encodeToJsonElement(cmd)
         return listOf(jsonElement as JsonObject)
     }
+
 
 }

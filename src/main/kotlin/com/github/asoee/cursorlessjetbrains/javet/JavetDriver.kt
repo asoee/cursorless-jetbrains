@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalSerializationApi::class)
-
 package com.github.asoee.cursorlessjetbrains.javet
 
 import com.caoccao.javet.interop.V8Host
@@ -11,7 +9,6 @@ import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCallback
 import com.github.asoee.cursorlessjetbrains.cursorless.DEFAULT_CIONFIGURATION
 import com.github.asoee.cursorlessjetbrains.cursorless.TreesitterCallback
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -25,8 +22,8 @@ class JavetDriver {
 
     private val ideClientCallback = IdeClientCallback()
     val runtime: V8Runtime
-    val eventLoop: JNEventLoop
-    val wasmDir: File = Files.createTempDirectory("cursorless-treesitter-wasm").toFile()
+    private val eventLoop: JNEventLoop
+    private val wasmDir: File = Files.createTempDirectory("cursorless-treesitter-wasm").toFile()
 
     init {
         println("ASOEE: JavetDriver create")
@@ -41,11 +38,11 @@ class JavetDriver {
 
         NodeRuntimeOptions.NODE_FLAGS.setIcuDataDir(icuDataDir.absolutePath)
         runtime = V8Host.getNodeI18nInstance()
-            .createV8Runtime<V8Runtime>()
+            .createV8Runtime()
         eventLoop = JNEventLoop(runtime)
     }
 
-    fun loadTreesitterLanguages(): File {
+    private fun loadTreesitterLanguages(): File {
 
         saveFileFromClasspath("/cursorless/wasm/tree-sitter.wasm", File(wasmDir, "tree-sitter.wasm"))
 
@@ -100,7 +97,7 @@ class JavetDriver {
         return wasmDir
     }
 
-    fun saveFileFromClasspath(resourcePath: String, outputFile: File) {
+    private fun saveFileFromClasspath(resourcePath: String, outputFile: File) {
         val inputStream = javaClass.getResourceAsStream(resourcePath)
             ?: throw IllegalArgumentException("Resource not found: $resourcePath")
         inputStream.use { input ->
@@ -109,7 +106,7 @@ class JavetDriver {
         println("ASOEE: saved file: ${outputFile.absolutePath}")
     }
 
-    private class ClassPathQuerLoader : TreesitterCallback {
+    private class ClassPathQueryLoader : TreesitterCallback {
         val queryPrefix = "/cursorless/queries/"
         override fun readQuery(fileName: String): String? {
             val queryContents = javaClass.getResource(queryPrefix + fileName)?.readText()
@@ -117,10 +114,11 @@ class JavetDriver {
         }
     }
 
+    @Synchronized
     fun loadCursorless() {
 
         val wasmDir = loadTreesitterLanguages()
-        this.ideClientCallback.treesitterCallback = ClassPathQuerLoader()
+        this.ideClientCallback.treesitterCallback = ClassPathQueryLoader()
 
         runtime.createV8ValueObject().use { v8ValueObject ->
             runtime.globalObject.set("ideClient", v8ValueObject)
@@ -142,7 +140,7 @@ class JavetDriver {
             .compileV8Module()
         module.executeVoid()
         if (runtime.containsV8Module("./cursorless.js")) {
-            System.out.println("./cursorless.js is registered as a module.")
+            println("./cursorless.js is registered as a module.")
         }
 
         val importJs = """
@@ -185,7 +183,7 @@ class JavetDriver {
 
     }
 
-    fun escapeString(rawString: String): String {
+    private fun escapeString(rawString: String): String {
         return rawString
             .replace("\\", "\\\\")
             .replace("\n", "\\n")
@@ -194,6 +192,7 @@ class JavetDriver {
             .replace("\'", "\\'")
     }
 
+    @Synchronized
     fun editorChanged(editorState: EditorState) {
         val json = Json.encodeToString(editorState)
         val js = """
@@ -222,10 +221,12 @@ class JavetDriver {
 
     }
 
+    @Synchronized
     fun setCursorlessCallback(callback: CursorlessCallback) {
         ideClientCallback.cursorlessCallback = callback
     }
 
+    @Synchronized
     fun execute(commands: List<JsonObject?>): ExecutionResult {
 
         try {
@@ -264,7 +265,7 @@ class JavetDriver {
             println("ASOEE/JS: error in execute - " + e)
             return ExecutionResult(false, null, e.toString())
         }
-        if (!ideClientCallback.unhandledRejections.isEmpty()) {
+        if (ideClientCallback.unhandledRejections.isNotEmpty()) {
             val joinedCause = ideClientCallback.unhandledRejections.joinToString(",")
             ideClientCallback.unhandledRejections.clear()
             return ExecutionResult(false, null, joinedCause)
@@ -273,6 +274,7 @@ class JavetDriver {
 
     }
 
+    @Synchronized
     fun close() {
         try {
             runtime.close(false)
@@ -281,6 +283,7 @@ class JavetDriver {
         }
     }
 
+    @Synchronized
     fun editorClosed(editorId: String) {
         val js = """
             | (async () => {
@@ -305,6 +308,7 @@ class JavetDriver {
 
     }
 
+    @Synchronized
     fun editorCreated(editorState: EditorState) {
         val json = Json.encodeToString(editorState)
         val js = """
@@ -355,10 +359,7 @@ data class SimpleActionDescriptor(
     val target: PartialTargetDescriptor
 )
 
-
 typealias SimpleActionName = String
-
-val setSelection: SimpleActionName = "setSelection"
 
 @Serializable
 sealed interface PartialTargetDescriptor
