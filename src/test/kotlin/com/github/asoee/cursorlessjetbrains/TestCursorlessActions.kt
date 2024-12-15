@@ -19,9 +19,13 @@ import com.intellij.testFramework.runInEdtAndWait
 import junit.framework.TestCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.awaitility.kotlin.await
+import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import java.util.concurrent.TimeUnit
+
 
 @RunWith(JUnit4::class)
 class TestCursorlessActions : BasePlatformTestCase() {
@@ -35,10 +39,9 @@ class TestCursorlessActions : BasePlatformTestCase() {
     @Test
     fun testHatsAllocated() {
         val fixture = mainJavaFixture()
-//        Thread.sleep(100)
-        val editorHats = fixture.appService.editorManager.getEditorHats(fixture.editor)
+        val editorHats: HatsFormat = awaitHats(fixture)
         TestCase.assertNotNull(editorHats)
-        assertNotEmpty(editorHats!!.values)
+        assertNotEmpty(editorHats.values)
 
 //      target the main method, expect a default hat over 'm'
         val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 3, 23, 3, 27)
@@ -55,14 +58,10 @@ class TestCursorlessActions : BasePlatformTestCase() {
     @Test
     fun testTakeSingle() {
         val fixture = mainJavaFixture()
-//        Thread.sleep(50)
-        val editorHats = fixture.appService.editorManager.getEditorHats(fixture.editor)
-        TestCase.assertNotNull(editorHats)
-        assertNotEmpty(editorHats!!.values)
-
 //      target the main method, expect a default hat over 'm'
         val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 3, 23, 3, 27)
         println("target: $targetRange")
+        val editorHats: HatsFormat = awaitHats(fixture)
         val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
         TestCase.assertNotNull(clTarget)
         if (clTarget != null) {
@@ -92,13 +91,20 @@ class TestCursorlessActions : BasePlatformTestCase() {
         }
     }
 
-  @Test
+    private fun awaitHats(fixture: MainJavaFixture): HatsFormat {
+        var editorHats: HatsFormat? = null
+        await.atMost(2, TimeUnit.SECONDS).until {
+            editorHats = fixture.appService.editorManager.getEditorHats(fixture.editor)
+            editorHats != null && editorHats!!.isNotEmpty()
+        }
+        return editorHats!!
+    }
+
+    @Test
     fun testTypeDefTarget() {
         val fixture = mainJavaFixture()
-//        Thread.sleep(50)
-        val editorHats = fixture.appService.editorManager.getEditorHats(fixture.editor)
-        TestCase.assertNotNull(editorHats)
-        assertNotEmpty(editorHats!!.values)
+        val editorHats: HatsFormat = awaitHats(fixture)
+        assertNotEmpty(editorHats.values)
 
 //      target the println call in visual line 5
         val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 4, 19, 4, 26)
@@ -180,6 +186,17 @@ class TestCursorlessActions : BasePlatformTestCase() {
         val virtualFile = psiFile.virtualFile
         val fileEditor = FileEditorManager.getInstance(project).getSelectedEditor(virtualFile)
         return (fileEditor as? TextEditor)?.editor
+    }
+
+    companion object {
+        @JvmStatic
+        @BeforeClass
+        fun beforeClass(): Unit {
+            System.setProperty(
+                "java.util.logging.config.file",
+                ClassLoader.getSystemResource("logging.properties").path
+            )
+        }
     }
 
 }
