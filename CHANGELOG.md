@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix selection position sometimes incorrect after cursorless edit actions
+
 ## [0.0.4] - 2024-12-15
 
 ### Fixed
