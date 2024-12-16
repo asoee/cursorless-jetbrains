@@ -105,10 +105,12 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
     }
 
     private fun assertSelectedOffset(fixture: MainJavaFixture, startOffset: Int, endOffset: Int) {
-        val selectionStart = fixture.editor.selectionModel.selectionStart
-        val selectionEnd = fixture.editor.selectionModel.selectionEnd
-        assertEquals(startOffset, selectionStart)
-        assertEquals(endOffset, selectionEnd)
+        runInEdtAndWait {
+            val selectionStart = fixture.editor.selectionModel.selectionStart
+            val selectionEnd = fixture.editor.selectionModel.selectionEnd
+            assertEquals(startOffset, selectionStart)
+            assertEquals(endOffset, selectionEnd)
+        }
     }
 
     private fun moveCursorTo(editor: Editor, line: Int, column: Int) {
