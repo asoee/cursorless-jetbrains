@@ -93,6 +93,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
             }
         }
     }
+
     @Test
     fun testBringToEndOfLine() {
         val fixture = mainJavaFixture()
@@ -126,6 +127,50 @@ class TestCursorlessActions : BasePlatformTestCase() {
                 val caretPos = fixture.editor.caretModel.currentCaret.logicalPosition
                 val expectedPos = LogicalPosition(7, 13)
                 assertEquals(expectedPos, caretPos)
+            }
+        }
+    }
+
+    @Test
+    fun testChangeEveryInstance() {
+        val fixture = mainJavaFixture()
+//      target the println method method name
+        val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 4, 19, 4, 26)
+        println("target: $targetRange")
+        val editorHats: HatsFormat = awaitHats(fixture)
+        val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
+        TestCase.assertNotNull(clTarget)
+        if (clTarget != null) {
+
+            val commandV7 = CursorlessCommand.changeEveryInstance(clTarget)
+            println("clTarget: $clTarget")
+
+            fixture.appService.cursorlessEngine.executeCommand(commandV7)
+
+            runBlocking {
+                delay(50)
+            }
+
+            runInEdtAndWait {
+                val expectedFirst = "        System.out.(\"Hello IDEA welcome!\");"
+                assertEquals(expectedFirst, getTextFromLine(fixture.editor, 4))
+
+                val expectedSecond = "        System.out.(\"i = \" + i);"
+                assertEquals(expectedSecond, getTextFromLine(fixture.editor, 10))
+
+                val carets = fixture.editor.caretModel.caretsAndSelections
+                assertEquals(2, carets.size)
+
+                assertEquals(carets[0].caretPosition, LogicalPosition(4, 19))
+                assertEquals(carets[1].caretPosition, LogicalPosition(10, 19))
+
+                myFixture.type("write")
+
+                val expectedFirstAfter = "        System.out.write(\"Hello IDEA welcome!\");"
+                assertEquals(expectedFirstAfter, getTextFromLine(fixture.editor, 4))
+
+                val expectedSecondAfter = "        System.out.write(\"i = \" + i);"
+                assertEquals(expectedSecondAfter, getTextFromLine(fixture.editor, 10))
             }
         }
     }
