@@ -8,10 +8,13 @@ import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessTarget
 import com.github.asoee.cursorlessjetbrains.cursorless.HatsFormat
 import com.github.asoee.cursorlessjetbrains.services.TalonApplicationService
 import com.intellij.openapi.components.service
+import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.EditorTestUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
@@ -88,6 +91,53 @@ class TestCursorlessActions : BasePlatformTestCase() {
                     fixture.editor.selectionModel.selectionEnd
                 )
             }
+        }
+    }
+    @Test
+    fun testBringToEndOfLine() {
+        val fixture = mainJavaFixture()
+//      target the main method, expect a default hat over 'm'
+        val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 3, 23, 3, 27)
+        println("target: $targetRange")
+        val editorHats: HatsFormat = awaitHats(fixture)
+        val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
+        TestCase.assertNotNull(clTarget)
+        if (clTarget != null) {
+            //place cursor after the curly in the for loop
+            moveCursorTo(fixture.editor, 7, 9)
+
+            runBlocking {
+                // wait for editor state to update with new cursor position
+                delay(50)
+            }
+
+            val commandV7 = CursorlessCommand.bringImplicit(clTarget)
+            println("clTarget: $clTarget")
+
+            fixture.appService.cursorlessEngine.executeCommand(commandV7)
+
+            runBlocking {
+                delay(50)
+            }
+
+            runInEdtAndWait {
+                val expected = "        }main"
+                assertEquals(expected, getTextFromLine(fixture.editor, 7))
+                val caretPos = fixture.editor.caretModel.currentCaret.logicalPosition
+                val expectedPos = LogicalPosition(7, 13)
+                assertEquals(expectedPos, caretPos)
+            }
+        }
+    }
+
+    fun getTextFromLine(editor: Editor, lineNumber: Int): String? {
+        val document = editor.document
+        return if (lineNumber in 0 until document.lineCount) {
+            val startOffset = document.getLineStartOffset(lineNumber)
+            val endOffset = document.getLineEndOffset(lineNumber)
+            document.getText(TextRange(startOffset, endOffset))
+        } else {
+            null
         }
     }
 
@@ -186,6 +236,19 @@ class TestCursorlessActions : BasePlatformTestCase() {
         val virtualFile = psiFile.virtualFile
         val fileEditor = FileEditorManager.getInstance(project).getSelectedEditor(virtualFile)
         return (fileEditor as? TextEditor)?.editor
+    }
+
+
+    private fun moveCursorTo(editor: Editor, line: Int, column: Int) {
+        setSelectionTo(editor, line, column, line, column)
+    }
+
+    private fun setSelectionTo(editor: Editor, startLine: Int, startColumn: Int, endLine: Int, endColumn: Int) {
+        val startPos = LogicalPosition(startLine, startColumn)
+        val endPos = LogicalPosition(endLine, endColumn)
+        runInEdtAndWait {
+            editor.caretModel.caretsAndSelections = listOf(CaretState(endPos, startPos, endPos))
+        }
     }
 
     companion object {

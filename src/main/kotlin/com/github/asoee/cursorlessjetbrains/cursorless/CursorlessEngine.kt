@@ -43,6 +43,11 @@ class CursorlessEngine(private val driver: JavetDriver) {
         driver.execute(jsonCmd)
     }
 
+    fun executeCommand(command: CommandV7) {
+        val jsonCmd = serialize(command)
+        driver.execute(jsonCmd)
+    }
+
     fun serialize(cmd: CommandV7): List<JsonObject> {
         val jsonElement = Json.encodeToJsonElement(cmd)
         return listOf(jsonElement as JsonObject)

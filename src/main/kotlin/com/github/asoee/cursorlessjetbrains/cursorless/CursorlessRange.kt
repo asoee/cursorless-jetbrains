@@ -42,11 +42,13 @@ class CursorlessRange(val start: CursorlessPosition, val end: CursorlessPosition
     }
 
     fun startOffset(editor: Editor): Int {
-        return editor.logicalPositionToOffset(LogicalPosition(start.line, 0)) + start.character
+        val lineStartOffset = editor.document.getLineStartOffset(start.line)
+        return lineStartOffset + start.character
     }
 
     fun endOffset(editor: Editor): Int {
-        return editor.logicalPositionToOffset(LogicalPosition(end.line, 0)) + end.character
+        val lineStartOffset = editor.document.getLineStartOffset(end.line)
+        return lineStartOffset + end.character
     }
 
     fun logicalStartPosition(editor: Editor): LogicalPosition {

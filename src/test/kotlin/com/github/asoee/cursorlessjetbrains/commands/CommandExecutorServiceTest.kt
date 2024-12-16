@@ -105,11 +105,26 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
     }
 
     private fun assertSelectedOffset(fixture: MainJavaFixture, startOffset: Int, endOffset: Int) {
-        val selectionStart = fixture.editor.selectionModel.selectionStart
-        val selectionEnd = fixture.editor.selectionModel.selectionEnd
-        assertEquals(startOffset, selectionStart)
-        assertEquals(endOffset, selectionEnd)
+        runInEdtAndWait {
+            val selectionStart = fixture.editor.selectionModel.selectionStart
+            val selectionEnd = fixture.editor.selectionModel.selectionEnd
+            assertEquals(startOffset, selectionStart)
+            assertEquals(endOffset, selectionEnd)
+        }
     }
+
+    private fun moveCursorTo(editor: Editor, line: Int, column: Int) {
+        setSelectionTo(editor, line, column, line, column)
+    }
+
+    private fun setSelectionTo(editor: Editor, startLine: Int, startColumn: Int, endLine: Int, endColumn: Int) {
+        val startPos = LogicalPosition(startLine, startColumn)
+        val endPos = LogicalPosition(endLine, endColumn)
+        runInEdtAndWait {
+            editor.caretModel.caretsAndSelections = listOf(CaretState(endPos, startPos, endPos))
+        }
+    }
+
 
     data class MainJavaFixture(
         val psiFile: PsiFile,
