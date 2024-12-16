@@ -156,6 +156,11 @@ tasks {
     }
 
     test {
+        systemProperty(
+            "java.util.logging.config.file",
+            project.file("src/test/resources/logging.properties").absolutePath
+        )
+//        systemProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager")
         systemProperty("idea.log.debug.categories", "com.github.asoee,com.caoccao.javet")
         testLogging {
             events("passed", "skipped", "failed")

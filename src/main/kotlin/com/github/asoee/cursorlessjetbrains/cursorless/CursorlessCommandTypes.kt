@@ -18,6 +18,7 @@ sealed interface ActionDescriptor
 typealias SimpleActionName = String
 const val setSelection: SimpleActionName = "setSelection"
 const val revealTypeDefinition: SimpleActionName = "revealTypeDefinition"
+const val clearAndSetSelection: SimpleActionName = "clearAndSetSelection"
 
 @Serializable
 data class SimpleActionDescriptor(
@@ -44,9 +45,9 @@ sealed interface PartialTargetDescriptor
 @Serializable()
 @SerialName("primitive")
 data class PartialPrimitiveTargetDescriptor(
-    val mark: PartialMark
+    val mark: PartialMark,
+    val modifiers: List<Modifier> = emptyList()
 ) : PartialTargetDescriptor {
-//    val modifiers: Modifier[]?;
 }
 
 @Serializable
@@ -56,7 +57,7 @@ sealed interface PartialMark
 @SerialName("decoratedSymbol")
 data class DecoratedSymbolMark(
     val symbolColor: String,
-    val character: String
+    val character: String,
 ) : PartialMark
 
 @Serializable
@@ -79,3 +80,18 @@ data class PrimitiveDestinationDescriptor(
 ): DestinationDescriptor {
 }
 
+@Serializable
+sealed interface Modifier
+
+@Serializable
+sealed interface ScopeType
+
+@Serializable
+@SerialName("instance")
+class ScopeTypeInstance : ScopeType
+
+@Serializable
+@SerialName("everyScope")
+data class EveryScopeModifier(
+    val scopeType: ScopeType,
+) : Modifier

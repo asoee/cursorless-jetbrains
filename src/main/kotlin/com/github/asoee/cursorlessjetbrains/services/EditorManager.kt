@@ -133,16 +133,16 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
                         CommandProcessor.getInstance().executeCommand(
                             editor.project,
                             {
-                                val range = selections[0]
-                                val startPos = range.logicalStartPosition(editor)
-                                val endPos = range.logicalEndPosition(editor)
-                                println("Setting selection to $startPos - $endPos")
-                                editor.caretModel.caretsAndSelections = listOf(
-                                    CaretState(endPos, startPos, endPos),
-                                )
+                                val carets = selections.map {
+                                    println("Setting selection to $it")
+                                    val startPos = it.logicalStartPosition(editor)
+                                    val endPos = it.logicalEndPosition(editor)
+                                    CaretState(endPos, startPos, endPos)
+                                }
+                                editor.caretModel.caretsAndSelections = carets
                             },
-                            "Insert",
-                            "insertGroup"
+                            "Select",
+                            "SelectGroup"
                         )
                     }
                 }
