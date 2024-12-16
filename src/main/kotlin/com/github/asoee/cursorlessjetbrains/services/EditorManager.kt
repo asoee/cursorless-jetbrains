@@ -3,12 +3,14 @@ package com.github.asoee.cursorlessjetbrains.services
 import com.github.asoee.cursorlessjetbrains.commands.*
 import com.github.asoee.cursorlessjetbrains.cursorless.*
 import com.github.asoee.cursorlessjetbrains.listeners.getCursorlessContainers
+import com.github.asoee.cursorlessjetbrains.sync.EditorState
 import com.github.asoee.cursorlessjetbrains.sync.HatRange
 import com.github.asoee.cursorlessjetbrains.sync.serializeEditor
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.IdeActions
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
@@ -98,33 +100,42 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     }
 
     fun editorDidChange(editor: Editor) {
-        ApplicationManager.getApplication().invokeLater {
-            if (editor.isDisposed) {
-                println("Editor is disposed")
-            } else {
+        if (editor.isDisposed) {
+            println("Editor is disposed")
+            return
+        }
+
+        var edtState: EditorState? = null
+        ApplicationManager.getApplication().invokeAndWait {
+            edtState = ReadAction.compute<EditorState, Throwable> {
                 ensureEditorIdSet(editor)
                 val editorId = editorIds[editor]!!
 //                println("Editor did change " + editorId)
                 val editorState = serializeEditor(editor, true, editorId)
-                cursorlessEngine.editorChanged(editorState)
+//                println("Editor state " + editorState)
+                editorState
             }
         }
+        edtState?.let {
+//            println("trigger Editor state changed")
+            cursorlessEngine.editorChanged(it)
+        }
     }
+
 
     fun setSelection(editorId: String, selections: Array<CursorlessRange>) {
         val editor = editorsById[editorId]
         if (editor != null) {
             if (selections.size > 0) {
-                val range = selections[0]
-                val startPos = range.logicalStartPosition(editor)
-                val endPos = range.logicalEndPosition(editor)
-                println("launch action : Setting selection to $startPos - $endPos")
 
-                ApplicationManager.getApplication().invokeLater {
+                ApplicationManager.getApplication().invokeAndWait {
                     ApplicationManager.getApplication().runWriteAction {
                         CommandProcessor.getInstance().executeCommand(
                             editor.project,
                             {
+                                val range = selections[0]
+                                val startPos = range.logicalStartPosition(editor)
+                                val endPos = range.logicalEndPosition(editor)
                                 println("Setting selection to $startPos - $endPos")
                                 editor.caretModel.caretsAndSelections = listOf(
                                     CaretState(endPos, startPos, endPos),
@@ -143,16 +154,15 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         val editor = editorsById[editorId]
         if (editor != null) {
             if (selections.size > 0) {
-                val range = selections[0]
-                val startPos = range.logicalStartPosition(editor)
-                val endPos = range.logicalEndPosition(editor)
-                println("launch action : clipboardCopy to $startPos - $endPos")
-
-                val startOffset = editor.logicalPositionToOffset(startPos)
-                val endOffset = editor.logicalPositionToOffset(endPos)
-
                 ApplicationManager.getApplication().invokeAndWait {
                     ApplicationManager.getApplication().runReadAction {
+                        val range = selections[0]
+                        val startPos = range.logicalStartPosition(editor)
+                        val endPos = range.logicalEndPosition(editor)
+                        println("launch action : clipboardCopy to $startPos - $endPos")
+
+                        val startOffset = editor.logicalPositionToOffset(startPos)
+                        val endOffset = editor.logicalPositionToOffset(endPos)
                         val text = editor.document.getText(TextRange(startOffset, endOffset))
                         CopyPasteManager.getInstance().setContents(StringSelection(text))
                     }

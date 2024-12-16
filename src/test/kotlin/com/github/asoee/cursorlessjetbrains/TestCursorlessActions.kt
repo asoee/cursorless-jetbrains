@@ -106,7 +106,13 @@ class TestCursorlessActions : BasePlatformTestCase() {
             //place cursor after the curly in the for loop
             moveCursorTo(fixture.editor, 7, 9)
 
+            runBlocking {
+                // wait for editor state to update with new cursor position
+                delay(50)
+            }
+
             val commandV7 = CursorlessCommand.bringImplicit(clTarget)
+            println("clTarget: $clTarget")
 
             fixture.appService.cursorlessEngine.executeCommand(commandV7)
 

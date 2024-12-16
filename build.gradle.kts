@@ -157,6 +157,16 @@ tasks {
 
     test {
         systemProperty("idea.log.debug.categories", "com.github.asoee,com.caoccao.javet")
+        testLogging {
+            events("passed", "skipped", "failed")
+            showStandardStreams = true
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            info {
+                events("passed", "skipped", "failed")
+                showStandardStreams = true
+                exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            }
+        }
     }
 
     publishPlugin {
@@ -189,6 +199,9 @@ intellijPlatformTesting {
 tasks.withType<Test> {
     this.testLogging {
         this.showStandardStreams = true
+        this.events("passed", "skipped", "failed")
+        showStandardStreams = true
+        this.exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
     }
 }
 
