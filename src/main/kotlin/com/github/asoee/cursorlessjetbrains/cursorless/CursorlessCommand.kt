@@ -1,9 +1,5 @@
 package com.github.asoee.cursorlessjetbrains.cursorless
 
-import com.github.asoee.cursorlessjetbrains.javet.SimpleActionName
-
-const val setSelection: SimpleActionName = "setSelection"
-const val revealTypeDefinition: SimpleActionName = "revealTypeDefinition"
 
 class CursorlessCommand(val command: String, val target: CursorlessTarget) {
 
@@ -16,6 +12,25 @@ class CursorlessCommand(val command: String, val target: CursorlessTarget) {
                 else -> "unknown"
             }
         }
+
+        fun bringImplicit(source: CursorlessTarget): CommandV7 {
+            return CommandV7(
+                spokenFormat = "bring " + source.spokenForm(),
+                usePrePhraseSnapshot = false,
+                action = BringMoveActionDescriptor(
+                    name = replaceWithTarget,
+                    source = PartialPrimitiveTargetDescriptor(
+                        mark = DecoratedSymbolMark(
+                            symbolColor = source.color,
+                            character = source.letter
+                        )
+                    ),
+                    destination = ImplicitDestinationDescriptor()
+                )
+            )
+
+        }
+
     }
 
     fun actionName(): String {

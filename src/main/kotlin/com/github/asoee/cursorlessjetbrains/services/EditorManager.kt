@@ -151,7 +151,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
                 val startOffset = editor.logicalPositionToOffset(startPos)
                 val endOffset = editor.logicalPositionToOffset(endPos)
 
-                ApplicationManager.getApplication().invokeLater {
+                ApplicationManager.getApplication().invokeAndWait {
                     ApplicationManager.getApplication().runReadAction {
                         val text = editor.document.getText(TextRange(startOffset, endOffset))
                         CopyPasteManager.getInstance().setContents(StringSelection(text))
@@ -165,7 +165,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         val editor = editorsById[editorId]
         if (editor != null) {
             println("launch action : clipboardPaste")
-            ApplicationManager.getApplication().invokeLater {
+            ApplicationManager.getApplication().invokeAndWait {
                 ApplicationManager.getApplication().runWriteAction {
 
                     val actionManager = ActionManager.getInstance()
@@ -188,7 +188,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         val editor = editorsById[editorId]
         if (editor != null) {
             if (edit.changes.isNotEmpty()) {
-                ApplicationManager.getApplication().invokeLater {
+                ApplicationManager.getApplication().invokeAndWait {
                     ApplicationManager.getApplication().runWriteAction {
                         CommandProcessor.getInstance().executeCommand(
                             editor.project,
