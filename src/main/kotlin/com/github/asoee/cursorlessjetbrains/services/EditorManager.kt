@@ -111,7 +111,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
                 ensureEditorIdSet(editor)
                 val editorId = editorIds[editor]!!
 //                println("Editor did change " + editorId)
-                val editorState = serializeEditor(editor, true, editorId)
+                val editorState = serializeEditor(editor, editorId)
 //                println("Editor state " + editorState)
                 editorState
             }
@@ -176,19 +176,16 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         if (editor != null) {
             println("launch action : clipboardPaste")
             ApplicationManager.getApplication().invokeAndWait {
-                ApplicationManager.getApplication().runWriteAction {
+                val actionManager = ActionManager.getInstance()
 
-                    val actionManager = ActionManager.getInstance()
-
-                    val pasteAction = actionManager.getAction(IdeActions.ACTION_EDITOR_PASTE_SIMPLE)
-                    actionManager.tryToExecute(
-                        pasteAction,
-                        null,
-                        null,
-                        null,
-                        true
-                    )
-                }
+                val pasteAction = actionManager.getAction(IdeActions.ACTION_EDITOR_PASTE_SIMPLE)
+                actionManager.tryToExecute(
+                    pasteAction,
+                    null,
+                    editor.component,
+                    null,
+                    true
+                )
             }
         }
     }
@@ -224,7 +221,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     fun editorCreated(editor: Editor) {
         ensureEditorIdSet(editor)
         val editorId = editorIds[editor]!!
-        val editorState = serializeEditor(editor, true, editorId)
+        val editorState = serializeEditor(editor, editorId)
         dispatchScope.launch {
             cursorlessEngine.editorCreated(editorState)
         }

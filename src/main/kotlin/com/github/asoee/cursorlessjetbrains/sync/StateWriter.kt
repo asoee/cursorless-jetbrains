@@ -111,10 +111,17 @@ fun navigationHistory(project: Project) {
 //    println("$psiE, $containingFunction")
 }
 
-fun serializeEditor(editor: Editor, active: Boolean, editorId: String): EditorState {
+fun serializeEditor(editor: Editor, editorId: String): EditorState {
     val project = editor.project
     val document = editor.document
-
+    val visible = FileEditorManager.getInstance(project!!).selectedEditors.any {
+        if (it is TextEditor) {
+            it.editor == editor
+        } else {
+            false
+        }
+    }
+    val active = isEditorFocused(editor)
     val currentFile =
         FileDocumentManager.getInstance().getFile(document)?.path
 
@@ -132,6 +139,7 @@ fun serializeEditor(editor: Editor, active: Boolean, editorId: String): EditorSt
     val startLine = editor.offsetToLogicalPosition(visibleRange.startOffset).line
     val endLine = editor.offsetToLogicalPosition(visibleRange.endOffset).line
 
+//    println("editorState: $currentFile, active: $active, visible: $visible")
     return EditorState(
         editorId,
         currentFile,
@@ -142,7 +150,13 @@ fun serializeEditor(editor: Editor, active: Boolean, editorId: String): EditorSt
         endLine,
         cursors,
         selections,
+        visible
     )
 }
 
+fun isEditorFocused(editor: Editor): Boolean {
+    FileEditorManager.getInstance(editor.project!!).selectedEditor.let { selectedEditor ->
+        return selectedEditor is TextEditor && selectedEditor.editor == editor
+    }
 
+}

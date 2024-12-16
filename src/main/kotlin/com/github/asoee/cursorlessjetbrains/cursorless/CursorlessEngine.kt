@@ -1,6 +1,6 @@
 package com.github.asoee.cursorlessjetbrains.cursorless
 
-import com.github.asoee.cursorlessjetbrains.javet.*
+import com.github.asoee.cursorlessjetbrains.javet.JavetDriver
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -22,25 +22,6 @@ class CursorlessEngine(private val driver: JavetDriver) {
 
     fun editorCreated(editorState: EditorState) {
         driver.editorCreated(editorState)
-    }
-
-    fun executeCommand(command: CursorlessCommand) {
-        val clCmd = CommandV7(
-            spokenFormat = command.command + " " + command.target.spokenForm(),
-            usePrePhraseSnapshot = false,
-            action = SimpleActionDescriptor(
-                name = command.actionName(),
-                target = PartialPrimitiveTargetDescriptor(
-                    mark = DecoratedSymbolMark(
-                        symbolColor = command.target.color,
-                        character = command.target.letter
-                    )
-
-                ),
-            )
-        )
-        val jsonCmd = serialize(clCmd)
-        driver.execute(jsonCmd)
     }
 
     fun executeCommand(command: CommandV7) {

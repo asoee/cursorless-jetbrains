@@ -71,7 +71,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
             val clCommand = "take " + clTarget.spokenForm()
             println("command: $clCommand")
 
-            fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand("take", clTarget))
+            fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand.takeSingle(clTarget))
             println("command executed")
 
             runBlocking {
@@ -109,7 +109,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
 
             runBlocking {
                 // wait for editor state to update with new cursor position
-                delay(50)
+                delay(100)
             }
 
             val commandV7 = CursorlessCommand.bringImplicit(clTarget)
@@ -118,7 +118,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
             fixture.appService.cursorlessEngine.executeCommand(commandV7)
 
             runBlocking {
-                delay(50)
+                delay(100)
             }
 
             runInEdtAndWait {
@@ -207,10 +207,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
         val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
         TestCase.assertNotNull(clTarget)
         if (clTarget != null) {
-            val clCommand = "type deaf"
-            println("command: $clCommand")
-
-            fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand(clCommand, clTarget))
+            fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand.typeDeaf(clTarget))
             println("command executed")
 
             runBlocking {
@@ -285,6 +282,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
 
 
     private fun moveCursorTo(editor: Editor, line: Int, column: Int) {
+        println("moving cursor to $line, $column")
         setSelectionTo(editor, line, column, line, column)
     }
 

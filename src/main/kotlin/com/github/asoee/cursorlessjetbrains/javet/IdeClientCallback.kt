@@ -67,7 +67,7 @@ class IdeClientCallback {
 
     @V8Function
     fun hatsUpdated(hatsJson: String) {
-        LOG.info("ASOEE/PLUGIN: Hats updated")
+//        println("PLUGIN: Hats updated")
         val hatRanges = Json.decodeFromString<Array<HatRange>>(hatsJson)
         cursorlessCallback.onHatUpdate(hatRanges)
     }
