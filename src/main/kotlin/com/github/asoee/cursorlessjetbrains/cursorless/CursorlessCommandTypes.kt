@@ -1,43 +1,68 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package com.github.asoee.cursorlessjetbrains.cursorless
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonClassDiscriminator
 
 
 @Serializable
 data class CommandV7(
-    val version: Int = 7,
+    val version: Int,
     val spokenFormat: String?,
     val usePrePhraseSnapshot: Boolean,
     val action: ActionDescriptor
 )
 
 @Serializable
+@JsonClassDiscriminator("name")
 sealed interface ActionDescriptor
 
-typealias SimpleActionName = String
-const val setSelection: SimpleActionName = "setSelection"
-const val revealTypeDefinition: SimpleActionName = "revealTypeDefinition"
-const val clearAndSetSelection: SimpleActionName = "clearAndSetSelection"
+@Serializable
+sealed class SimpleActionDescriptor : ActionDescriptor {
+    abstract val target: PartialTargetDescriptor
+}
 
 @Serializable
-data class SimpleActionDescriptor(
-    val name: SimpleActionName,
-    val target: PartialTargetDescriptor
-) : ActionDescriptor
+@SerialName("setSelection")
+class SetSelectionActionDescriptor(
+    override val target: PartialTargetDescriptor,
+) : SimpleActionDescriptor()
 
-typealias BringMoveActionName = String
-val replaceWithTarget: BringMoveActionName = "replaceWithTarget"
-val moveToTarget: BringMoveActionName = "moveToTarget"
+@Serializable
+@SerialName("revealTypeDefinition")
+class RevealTypeDefinitionActionDescriptor(
+    override val target: PartialTargetDescriptor,
+) : SimpleActionDescriptor()
+
+@Serializable
+@SerialName("clearAndSetSelection")
+class ClearAndSetSelectionActionDescriptor(
+    override val target: PartialTargetDescriptor,
+) : SimpleActionDescriptor()
 
 
-@Serializable()
-data class BringMoveActionDescriptor (
-    val name: BringMoveActionName,
-    val source: PartialTargetDescriptor,
-    val destination: DestinationDescriptor
-): ActionDescriptor
+@Serializable
+sealed class BringMoveActionDescriptor : ActionDescriptor {
+    abstract val source: PartialTargetDescriptor
+    abstract val destination: DestinationDescriptor
+}
 
+@Serializable
+@SerialName("replaceWithTarget")
+class ReplaceWithTargetActionDescriptor(
+    override val source: PartialTargetDescriptor,
+    override val destination: DestinationDescriptor
+) : BringMoveActionDescriptor()
+
+@Serializable
+@SerialName("moveToTarget")
+class MoveToTargetActionDescriptor(
+    override val source: PartialTargetDescriptor,
+    override val destination: DestinationDescriptor
+) : BringMoveActionDescriptor()
 
 @Serializable
 sealed interface PartialTargetDescriptor
@@ -65,9 +90,10 @@ sealed interface DestinationDescriptor
 
 @Serializable
 @SerialName("implicit")
-data class ImplicitDestinationDescriptor(val implicit: Boolean = true): DestinationDescriptor
+data class ImplicitDestinationDescriptor(val implicit: Boolean = true) : DestinationDescriptor
 
 typealias InsertionMode = String
+
 val before: InsertionMode = "before"
 val after: InsertionMode = "after"
 val to: InsertionMode = "to"
@@ -77,7 +103,7 @@ val to: InsertionMode = "to"
 data class PrimitiveDestinationDescriptor(
     val insertionMode: InsertionMode,
     val target: PartialTargetDescriptor
-): DestinationDescriptor {
+) : DestinationDescriptor {
 }
 
 @Serializable

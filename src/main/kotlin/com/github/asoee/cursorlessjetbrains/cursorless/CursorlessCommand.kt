@@ -13,12 +13,44 @@ class CursorlessCommand(val command: String, val target: CursorlessTarget) {
             }
         }
 
+        fun takeSingle(source: CursorlessTarget): CommandV7 {
+            return CommandV7(
+                version = 7,
+                spokenFormat = "take " + source.spokenForm(),
+                usePrePhraseSnapshot = false,
+                action = SetSelectionActionDescriptor(
+                    target = PartialPrimitiveTargetDescriptor(
+                        mark = DecoratedSymbolMark(
+                            symbolColor = source.color,
+                            character = source.letter
+                        )
+                    )
+                )
+            )
+        }
+
+        fun typeDeaf(source: CursorlessTarget): CommandV7 {
+            return CommandV7(
+                version = 7,
+                spokenFormat = "type deaf " + source.spokenForm(),
+                usePrePhraseSnapshot = false,
+                action = RevealTypeDefinitionActionDescriptor(
+                    target = PartialPrimitiveTargetDescriptor(
+                        mark = DecoratedSymbolMark(
+                            symbolColor = source.color,
+                            character = source.letter
+                        )
+                    )
+                )
+            )
+        }
+
         fun bringImplicit(source: CursorlessTarget): CommandV7 {
             return CommandV7(
+                version = 7,
                 spokenFormat = "bring " + source.spokenForm(),
                 usePrePhraseSnapshot = false,
-                action = BringMoveActionDescriptor(
-                    name = replaceWithTarget,
+                action = ReplaceWithTargetActionDescriptor(
                     source = PartialPrimitiveTargetDescriptor(
                         mark = DecoratedSymbolMark(
                             symbolColor = source.color,
@@ -33,10 +65,10 @@ class CursorlessCommand(val command: String, val target: CursorlessTarget) {
 
         fun changeEveryInstance(source: CursorlessTarget): CommandV7 {
             return CommandV7(
+                version = 7,
                 spokenFormat = "change every instance " + source.spokenForm(),
                 usePrePhraseSnapshot = false,
-                action = SimpleActionDescriptor(
-                    name = clearAndSetSelection,
+                action = ClearAndSetSelectionActionDescriptor(
                     target = PartialPrimitiveTargetDescriptor(
                         mark = DecoratedSymbolMark(
                             symbolColor = source.color,

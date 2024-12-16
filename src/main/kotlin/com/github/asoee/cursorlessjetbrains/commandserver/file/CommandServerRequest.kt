@@ -1,6 +1,5 @@
 package com.github.asoee.cursorlessjetbrains.commandserver.file
 
-import com.jetbrains.rd.generator.nova.PredefinedType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 

@@ -5,6 +5,13 @@
 ### Fixed
 
 - Fix selection position sometimes incorrect after cursorless edit actions
+- Fix curorless paste action not working
+-
+
+### Added
+
+- Improved multi-cursor support
+- Improved multi-editor support (split panel)
 
 ## [0.0.4] - 2024-12-15
 

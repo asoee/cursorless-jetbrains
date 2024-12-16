@@ -11389,6 +11389,7 @@ var JetbrainsEditor = class {
       insertSpaces: true
     };
     this.isActive = true;
+    this.isVisible = true;
   }
   isEqual(other) {
     return this.id === other.id;
@@ -11632,12 +11633,7 @@ var JetbrainsIDE = class {
     return this.activeEditor;
   }
   get visibleTextEditors() {
-    if (this.activeEditor) {
-      console.log("visible: " + this.activeEditor.id);
-      return [this.activeEditor];
-    } else {
-      return [];
-    }
+    return [...this.editors.values()].filter((editor) => editor.isVisible);
   }
   getEditableTextEditor(editor) {
     if (editor instanceof JetbrainsEditor) {
@@ -11740,6 +11736,8 @@ function updateEditor(editor, editorState) {
   editor.selections = editorState.selections.map(
     (selection) => createSelection(editor.document, selection)
   );
+  editor.isActive = editorState.active;
+  editor.isVisible = editorState.visible;
 }
 function getLines(text, firstLine, lastLine) {
   const lines = text.split("\n");

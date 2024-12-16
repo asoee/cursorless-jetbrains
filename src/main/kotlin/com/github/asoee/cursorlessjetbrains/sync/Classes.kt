@@ -41,6 +41,7 @@ data class EditorState(
     val lastVisibleLine : Int,
     val cursors: List<Cursor>,
     val selections: List<Selection>,
+    val visible: Boolean
     )
 
 /**
