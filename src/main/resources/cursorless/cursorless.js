@@ -11611,8 +11611,17 @@ var JetbrainsIDE = class {
   async setHighlightRanges(_highlightId, _editor, _ranges) {
     throw Error("setHighlightRanges Not implemented");
   }
-  async flashRanges(_flashDescriptors) {
-    console.debug("flashRanges Not implemented");
+  async flashRanges(flashDescriptors) {
+    console.log("flashRangeses");
+    const jbfs = flashDescriptors.map((flashDescriptor) => {
+      const jbf = {
+        editorId: flashDescriptor.editor.id,
+        range: flashDescriptor.range,
+        style: flashDescriptor.style
+      };
+      return jbf;
+    });
+    this.client.flashRanges(JSON.stringify(jbfs));
   }
   get assetsRoot() {
     console.log("get assetsRoot");

@@ -15,6 +15,8 @@ class IdeClientCallback {
     var cursorlessCallback: CursorlessCallback = NoopCallback()
     var treesitterCallback: TreesitterCallback = NoopTreesitterCallback()
 
+    private val jsonDecoder = Json { ignoreUnknownKeys = true }
+
     private class NoopTreesitterCallback : TreesitterCallback
 
     private class NoopCallback : CursorlessCallback {
@@ -50,6 +52,10 @@ class IdeClientCallback {
         }
 
         override fun revealLine(editorId: String, line: Int, revealAt: String) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
+        override fun flashRanges(flashRanges: Array<CursorlessFlashRange>) {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
 
@@ -124,6 +130,14 @@ class IdeClientCallback {
     fun revealLine(editorId: String, line: Int, revealAt: String) {
         LOG.info("IdeClientCallback.revealLine: $line")
         cursorlessCallback.revealLine(editorId, line, revealAt)
+    }
+
+
+    @V8Function
+    fun flashRanges(flashRangesJson: String) {
+        LOG.info("IdeClientCallback.flashRanges: $flashRangesJson")
+        val ranges = jsonDecoder.decodeFromString<Array<CursorlessFlashRange>>(flashRangesJson)
+        cursorlessCallback.flashRanges(ranges)
     }
 
 
