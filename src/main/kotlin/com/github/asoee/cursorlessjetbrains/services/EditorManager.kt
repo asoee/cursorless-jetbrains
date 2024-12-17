@@ -18,6 +18,7 @@ import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
@@ -145,6 +146,8 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
                             "SelectGroup"
                         )
                     }
+                    editor.scrollingModel.scrollToCaret(ScrollType.RELATIVE)
+
                 }
             }
         }
