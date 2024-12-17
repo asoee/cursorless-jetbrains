@@ -59,7 +59,7 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
 
     private class BoundsChangeListener(val container: CursorlessContainer) : ComponentAdapter() {
         override fun componentResized(e: ComponentEvent) {
-            container.bounds.size = e.component.bounds.size
+            container.size = e.component.bounds.size
         }
     }
 
@@ -189,7 +189,11 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         colorName: String,
         shapeName: String?
     ) {
+        val lineCount = editor.document.lineCount
         mapping[fullKeyName]!!.forEach { range: CursorlessRange ->
+            if (range.end.line > lineCount) {
+                return@forEach
+            }
             var offset = range.startOffset(editor)
 
             localOffsets.forEach { pair ->
@@ -232,8 +236,6 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
 
     fun doPainting(g: Graphics) {
         val mapping = getHats()
-
-//        println("Redrawing for ${editorPath()}...")
         mapping.keys.forEach { fullName ->
             run {
                 var shape: String? = null
@@ -274,18 +276,11 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
             return
         }
 
-//        if (!hatsPath().exists()) {
-//            log.info("Hatsfile ${hatsPath()} doesn't exist; not withdrawing...")
-//            return
-//        }
-
-//        if (!isActiveCursorlessEditor()) {
-//            return
-//        }
-
         try {
             doPainting(g)
         } catch (e: NullPointerException) {
+            e.printStackTrace()
+        } catch (e: IndexOutOfBoundsException) {
             e.printStackTrace()
         } catch (e: JsonException) {
             e.printStackTrace()
