@@ -7,6 +7,7 @@
 - Fix selection position sometimes incorrect after cursorless edit actions
 - Fix curorless paste action not working
 - Removed unneeded dependency on VCS plugin
+- Scroll to cursor after selection
 
 ### Added
 
