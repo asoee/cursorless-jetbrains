@@ -8,7 +8,12 @@ import com.intellij.openapi.components.Service
 class CommandExecutorService {
 
     fun execute(command: VcCommand): String {
-        return executeOnEDT(command)
+        if (command.executionMode() == ExecutionMode.BACKGROUND) {
+            val context = CommandContext(command.project)
+            return command.execute(context)
+        } else {
+            return executeOnEDT(command)
+        }
     }
 
     private fun executeOnEDT(command: VcCommand): String {
@@ -23,6 +28,7 @@ class CommandExecutorService {
                         result.add(res)
                     }
                 }
+
                 ExecutionMode.READ -> {
                     val res = command.execute(context)
                     if (res != null) {
@@ -30,6 +36,7 @@ class CommandExecutorService {
                     }
 
                 }
+
                 ExecutionMode.WRITE -> {
                     WriteCommandAction.runWriteCommandAction(command.project) {
                         val res = command.execute(context)
@@ -37,6 +44,10 @@ class CommandExecutorService {
                             result.add(res)
                         }
                     }
+                }
+
+                ExecutionMode.BACKGROUND -> {
+                    // do nothing
                 }
             }
         }

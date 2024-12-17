@@ -11,7 +11,7 @@ abstract class VcCommand(val project: Project) {
         )
     }
 
-    abstract fun execute(context: CommandContext): String?
+    abstract fun execute(context: CommandContext): String
 
     open fun executionMode(): ExecutionMode {
         return ExecutionMode.EDT

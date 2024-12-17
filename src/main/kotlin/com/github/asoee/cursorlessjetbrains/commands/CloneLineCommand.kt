@@ -16,7 +16,7 @@ class CloneLineCommand(project: Project, private val sourceLine: Int) : VcComman
         }
     }
 
-    override fun execute(context: CommandContext): String? {
+    override fun execute(context: CommandContext): String {
         val cp = CommandProcessor.getInstance()
         try {
             val e = context.editor
@@ -33,7 +33,7 @@ class CloneLineCommand(project: Project, private val sourceLine: Int) : VcComman
             )
         } catch (ex: Exception) {
             LOG.error("Failed to run clone line command", ex)
-            return null
+            return "" + ex.message
         }
         return "OK"
     }

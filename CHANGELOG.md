@@ -6,12 +6,13 @@
 
 - Fix selection position sometimes incorrect after cursorless edit actions
 - Fix curorless paste action not working
--
+- Removed unneeded dependency on VCS plugin
 
 ### Added
 
 - Improved multi-cursor support
 - Improved multi-editor support (split panel)
+- Add support for flashing ranges
 
 ## [0.0.4] - 2024-12-15
 

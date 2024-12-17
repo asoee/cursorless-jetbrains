@@ -4,4 +4,5 @@ enum class ExecutionMode {
     EDT,
     READ,
     WRITE,
+    BACKGROUND,
 }

@@ -330,6 +330,22 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
             }
         }
 
+        override fun flashRanges(flashRanges: Array<CursorlessFlashRange>) {
+            thisLogger().info("Executing flashRanges $flashRanges")
+            val flashRangesByEditor = flashRanges
+                .groupBy { editorManager.editorsById[it.editorId] }
+                .filter { it.key != null }
+            if (flashRangesByEditor.isNotEmpty()) {
+                // assume all belongs to same project, so take project from the first
+                val project = flashRangesByEditor.keys.first()?.project
+                if (project != null) {
+                    val command = HighligthRangeCommand(project, flashRangesByEditor)
+                    service<CommandExecutorService>().execute(command)
+                }
+                return
+            }
+        }
+
         override fun documentUpdated(editorId: String, edit: CursorlessEditorEdit) {
             editorManager.documentUpdated(editorId, edit)
         }

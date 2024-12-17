@@ -5,7 +5,6 @@
     <vendor>asoee</vendor>
 
     <depends>com.intellij.modules.platform</depends>
-    <depends>com.intellij.modules.vcs</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
