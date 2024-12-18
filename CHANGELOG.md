@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Fix indentation and cursor position issues after pour command
+- Fix hats sometimes not drawn, when editor size increases
+
 ## [0.0.5] - 2024-12-17
 
 ### Fixed

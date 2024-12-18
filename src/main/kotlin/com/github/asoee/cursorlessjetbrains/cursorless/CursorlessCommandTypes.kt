@@ -43,6 +43,19 @@ class ClearAndSetSelectionActionDescriptor(
     override val target: PartialTargetDescriptor,
 ) : SimpleActionDescriptor()
 
+@Serializable
+@SerialName("editNewLineBefore")
+class EditNewLineBeforeActionDescriptor(
+    override val target: PartialTargetDescriptor,
+) : SimpleActionDescriptor()
+
+
+@Serializable
+@SerialName("editNewLineAfter")
+class EditNewLineAfterActionDescriptor(
+    override val target: PartialTargetDescriptor,
+) : SimpleActionDescriptor()
+
 
 @Serializable
 sealed class BringMoveActionDescriptor : ActionDescriptor {

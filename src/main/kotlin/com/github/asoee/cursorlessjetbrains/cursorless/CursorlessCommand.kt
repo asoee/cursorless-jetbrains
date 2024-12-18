@@ -85,6 +85,37 @@ class CursorlessCommand(val command: String, val target: CursorlessTarget) {
 
         }
 
+        fun drink(source: CursorlessTarget): CommandV7 {
+            return CommandV7(
+                version = 7,
+                spokenFormat = "drink " + source.spokenForm(),
+                usePrePhraseSnapshot = false,
+                action = EditNewLineBeforeActionDescriptor(
+                    target = PartialPrimitiveTargetDescriptor(
+                        mark = DecoratedSymbolMark(
+                            symbolColor = source.color,
+                            character = source.letter,
+                        ),
+                    )
+                )
+            )
+        }
+
+        fun pour(source: CursorlessTarget): CommandV7 {
+            return CommandV7(
+                version = 7,
+                spokenFormat = "pour " + source.spokenForm(),
+                usePrePhraseSnapshot = false,
+                action = EditNewLineAfterActionDescriptor(
+                    target = PartialPrimitiveTargetDescriptor(
+                        mark = DecoratedSymbolMark(
+                            symbolColor = source.color,
+                            character = source.letter,
+                        ),
+                    )
+                )
+            )
+        }
     }
 
     fun actionName(): String {

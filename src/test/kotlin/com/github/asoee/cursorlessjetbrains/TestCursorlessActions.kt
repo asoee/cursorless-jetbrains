@@ -15,6 +15,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.EditorTestUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
@@ -42,7 +43,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
     @Test
     fun testHatsAllocated() {
         val fixture = mainJavaFixture()
-        val editorHats: HatsFormat = awaitHats(fixture)
+        val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
         TestCase.assertNotNull(editorHats)
         assertNotEmpty(editorHats.values)
 
@@ -64,7 +65,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
 //      target the main method, expect a default hat over 'm'
         val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 3, 23, 3, 27)
         println("target: $targetRange")
-        val editorHats: HatsFormat = awaitHats(fixture)
+        val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
         val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
         TestCase.assertNotNull(clTarget)
         if (clTarget != null) {
@@ -100,7 +101,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
 //      target the main method, expect a default hat over 'm'
         val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 3, 23, 3, 27)
         println("target: $targetRange")
-        val editorHats: HatsFormat = awaitHats(fixture)
+        val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
         val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
         TestCase.assertNotNull(clTarget)
         if (clTarget != null) {
@@ -137,7 +138,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
 //      target the println method method name
         val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 4, 19, 4, 26)
         println("target: $targetRange")
-        val editorHats: HatsFormat = awaitHats(fixture)
+        val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
         val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
         TestCase.assertNotNull(clTarget)
         if (clTarget != null) {
@@ -175,6 +176,77 @@ class TestCursorlessActions : BasePlatformTestCase() {
         }
     }
 
+    @Test
+    fun testDrink() {
+        val fixture = mainJavaFixture()
+//      target the println method method name in line 11
+        val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 10, 19, 10, 26)
+        println("target: $targetRange")
+        val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
+        val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
+        TestCase.assertNotNull(clTarget)
+        if (clTarget != null) {
+
+            val commandV7 = CursorlessCommand.drink(clTarget)
+            println("clTarget: $clTarget")
+
+            fixture.appService.cursorlessEngine.executeCommand(commandV7)
+
+            runBlocking {
+                delay(50)
+            }
+
+            runInEdtAndWait {
+                val expectedFirst = "        "
+                assertEquals(expectedFirst, getTextFromLine(fixture.editor, 10))
+
+                val carets = fixture.editor.caretModel.caretsAndSelections
+                assertEquals(1, carets.size)
+
+                assertEquals(carets[0].caretPosition, LogicalPosition(10, 8))
+            }
+        }
+    }
+
+    @Test
+    fun testPour() {
+        val fixture = mainJavaFixture()
+        // auto-indent does not work for java files in BasePlatformTestCase, so use xml instead
+        val xmlFile = myFixture.configureByFile("org/example/book-catalog.xml")
+        val xmlEditor = getEditorFromPsiFile(xmlFile)!!
+        runInEdtAndWait {
+            EditorTestUtil.setEditorVisibleSize(xmlEditor, 80, 20)
+            IdeFocusManager.getGlobalInstance().requestFocus(xmlEditor.contentComponent, true)
+        }
+//      target the Computer genre in line 6
+        val targetRange = CursorlessRange.fromLogicalPositions(xmlEditor, 5, 15, 5, 23)
+        println("target: $targetRange")
+        val editorHats: HatsFormat = awaitHats(fixture, xmlEditor)
+        val clTarget = findHatForRange(xmlEditor, editorHats, targetRange)
+        TestCase.assertNotNull(clTarget)
+        if (clTarget != null) {
+
+            val commandV7 = CursorlessCommand.pour(clTarget)
+            println("clTarget: $clTarget")
+
+            fixture.appService.cursorlessEngine.executeCommand(commandV7)
+
+            runBlocking {
+                delay(150)
+            }
+
+            runInEdtAndWait {
+                val expectedFirst = "        "
+                assertEquals(expectedFirst, getTextFromLine(xmlEditor, 6))
+
+                val carets = xmlEditor.caretModel.caretsAndSelections
+                assertEquals(1, carets.size)
+
+                assertEquals(carets[0].caretPosition, LogicalPosition(6, 8))
+            }
+        }
+    }
+
     fun getTextFromLine(editor: Editor, lineNumber: Int): String? {
         val document = editor.document
         return if (lineNumber in 0 until document.lineCount) {
@@ -186,10 +258,10 @@ class TestCursorlessActions : BasePlatformTestCase() {
         }
     }
 
-    private fun awaitHats(fixture: MainJavaFixture): HatsFormat {
+    private fun awaitHats(fixture: MainJavaFixture, editor: Editor): HatsFormat {
         var editorHats: HatsFormat? = null
         await.atMost(2, TimeUnit.SECONDS).until {
-            editorHats = fixture.appService.editorManager.getEditorHats(fixture.editor)
+            editorHats = fixture.appService.editorManager.getEditorHats(editor)
             editorHats != null && editorHats!!.isNotEmpty()
         }
         return editorHats!!
@@ -198,7 +270,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
     @Test
     fun testTypeDefTarget() {
         val fixture = mainJavaFixture()
-        val editorHats: HatsFormat = awaitHats(fixture)
+        val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
         assertNotEmpty(editorHats.values)
 
 //      target the println call in visual line 5
