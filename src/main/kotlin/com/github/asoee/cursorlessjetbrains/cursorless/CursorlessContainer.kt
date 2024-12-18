@@ -1,6 +1,7 @@
 package com.github.asoee.cursorlessjetbrains.cursorless
 
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.ui.JBColor
@@ -59,7 +60,7 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
 
     private class BoundsChangeListener(val container: CursorlessContainer) : ComponentAdapter() {
         override fun componentResized(e: ComponentEvent) {
-            container.bounds.size = e.component.bounds.size
+            container.size = e.component.bounds.size
         }
     }
 
@@ -189,7 +190,11 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         colorName: String,
         shapeName: String?
     ) {
+        val lineCount = editor.document.lineCount
         mapping[fullKeyName]!!.forEach { range: CursorlessRange ->
+            if (range.end.line > lineCount) {
+                return@forEach
+            }
             var offset = range.startOffset(editor)
 
             localOffsets.forEach { pair ->
@@ -232,8 +237,6 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
 
     fun doPainting(g: Graphics) {
         val mapping = getHats()
-
-//        println("Redrawing for ${editorPath()}...")
         mapping.keys.forEach { fullName ->
             run {
                 var shape: String? = null
@@ -274,19 +277,13 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
             return
         }
 
-//        if (!hatsPath().exists()) {
-//            log.info("Hatsfile ${hatsPath()} doesn't exist; not withdrawing...")
-//            return
-//        }
-
-//        if (!isActiveCursorlessEditor()) {
-//            return
-//        }
-
         try {
             doPainting(g)
         } catch (e: NullPointerException) {
             e.printStackTrace()
+        } catch (e: IndexOutOfBoundsException) {
+            // This might happen in some cases, if the document has been updated, and is shorter than the hat range
+            thisLogger().warn("Index out of bounds exception in CursorlessContainer.paintComponent: " + e.message)
         } catch (e: JsonException) {
             e.printStackTrace()
         }
