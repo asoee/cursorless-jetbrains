@@ -1,6 +1,7 @@
 package com.github.asoee.cursorlessjetbrains.cursorless
 
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.ui.JBColor
@@ -281,7 +282,8 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         } catch (e: NullPointerException) {
             e.printStackTrace()
         } catch (e: IndexOutOfBoundsException) {
-            e.printStackTrace()
+            // This might happen in some cases, if the document has been updated, and is shorter than the hat range
+            thisLogger().warn("Index out of bounds exception in CursorlessContainer.paintComponent: " + e.message)
         } catch (e: JsonException) {
             e.printStackTrace()
         }
