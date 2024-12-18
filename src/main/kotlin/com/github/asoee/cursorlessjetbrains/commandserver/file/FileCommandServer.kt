@@ -24,7 +24,7 @@ class FileCommandServer {
 
     var watcher: FileWatcher? = null
     val commandServerDir: Path
-
+    val signalsDir: Path
 
     init {
         LOG.info("FileCommandServer: FilePlatform prefix: ${PREFIX}")
@@ -36,6 +36,8 @@ class FileCommandServer {
         LOG.info("FileCommandServer: dir: $commandServerDir")
         commandServerDir.toFile().mkdirs()
         this.commandServerDir = commandServerDir
+        this.signalsDir = commandServerDir.resolve("signals")
+        this.signalsDir.toFile().mkdirs()
     }
 
 
@@ -103,6 +105,16 @@ class FileCommandServer {
         }
         val fullPath = commandServerDir.resolve(path)
         readAndHandleFileRquest(fullPath)
+    }
+
+    fun prePhraseVersion(): String? {
+        val prePhrasePath = this.signalsDir.resolve("prePhrase")
+        if (prePhrasePath.exists()) {
+            val prePhraseVersion = prePhrasePath.toFile().lastModified().toString()
+            return prePhraseVersion
+        } else {
+            return null
+        }
     }
 
     private fun readAndHandleFileRquest(fullPath: Path?) {

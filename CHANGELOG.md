@@ -2,8 +2,14 @@
 
 ## [Unreleased]
 
-- Fix indentation and cursor position issues after pour command
+### Fixed
+
+- Fix indentation and cursor position issues after cursorless `pour` command
 - Fix hats sometimes not drawn, when editor size increases
+
+### Added
+
+- Add support for chaining commands, using `prePhraseSnapshot`
 
 ## [0.0.5] - 2024-12-17
 

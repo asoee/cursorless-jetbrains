@@ -25,10 +25,7 @@ community. [They are maintained in this PR](https://github.com/talonhub/communit
 ## Issues and known limitations
 
 - Targets jetbrains 2024.2+ (might work with older versions, but not tested)
-- Only default shape supported for corsorless hats
-- Chaining commands is not supported yet
-- Inconsistent multi-cursor support
-- Multi-panel support is not implemented
+- Only default shape supported for cursorless hats
 
 ## Credits
 

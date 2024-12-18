@@ -349,6 +349,10 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
             }
         }
 
+        override fun prePhraseVersion(): String? {
+            return service<FileCommandServerService>().commandServer.prePhraseVersion()
+        }
+
         override fun documentUpdated(editorId: String, edit: CursorlessEditorEdit) {
             editorManager.documentUpdated(editorId, edit)
         }

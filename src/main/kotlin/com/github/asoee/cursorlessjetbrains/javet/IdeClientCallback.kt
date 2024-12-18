@@ -59,6 +59,11 @@ class IdeClientCallback {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
 
+        override fun prePhraseVersion(): String? {
+            println("ASOEE/PLUGIN: prePhraseVersion/CursorlessCallback not set")
+            return null
+        }
+
     }
 
 
@@ -145,6 +150,13 @@ class IdeClientCallback {
     fun readQuery(filename: String): String? {
         LOG.info("IdeClientCallback.readQuery: $filename")
         return treesitterCallback.readQuery(filename)
+    }
+
+    @V8Function
+    fun prePhraseVersion(): String? {
+        val prePhraseVersion = cursorlessCallback.prePhraseVersion()
+        LOG.info("IdeClientCallback.prePhraseVersion: $prePhraseVersion")
+        return prePhraseVersion
     }
 
     @V8Function
