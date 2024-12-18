@@ -11633,7 +11633,7 @@ var JetbrainsIDE = class {
   }
   get workspaceFolders() {
     console.log("get workspaceFolders");
-    throw new Error("workspaceFolders not implemented.");
+    throw new Error("workspaceFolders not get implemented.");
   }
   get activeTextEditor() {
     return this.activeEditableTextEditor;
@@ -33089,6 +33089,23 @@ var JetbrainsTreeSitterQueryProvider = class {
   }
 };
 
+// src/ide/JetbrainsCommandServer.ts
+var JetbrainsCommandServer = class {
+  constructor(client) {
+    this.signals = {
+      prePhrase: {
+        getVersion: async () => {
+          return this.client.prePhraseVersion();
+        }
+      }
+    };
+    this.client = client;
+  }
+  getFocusedElementType() {
+    return Promise.resolve(void 0);
+  }
+};
+
 // src/extension.ts
 async function activate(plugin, wasmDirectory) {
   console.log("activate started");
@@ -33099,12 +33116,14 @@ async function activate(plugin, wasmDirectory) {
     }
   });
   console.log("Parser initialized");
+  const commandServerApi = new JetbrainsCommandServer(plugin.client);
   const queryProvider = new JetbrainsTreeSitterQueryProvider(plugin.ide);
   const engine = await createCursorlessEngine({
     ide: plugin.ide,
     hats: plugin.hats,
     treeSitterQueryProvider: queryProvider,
-    treeSitter: new JetbrainsTreeSitter(wasmDirectory)
+    treeSitter: new JetbrainsTreeSitter(wasmDirectory),
+    commandServerApi
   });
   console.log("activate completed");
   return engine;
