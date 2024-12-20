@@ -57,6 +57,8 @@ dependencies {
 
     implementation("com.caoccao.javet:javenode:0.8.0")
 
+    implementation("com.github.weisj:jsvg:1.6.0")
+
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
         create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))

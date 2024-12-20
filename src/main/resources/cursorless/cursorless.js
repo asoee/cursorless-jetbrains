@@ -10832,15 +10832,12 @@ var HAT_COLORS = [
 var JetbrainsHats = class {
   constructor(client) {
     this.isEnabledNotifier = new Notifier();
+    this.hatStyleChangedNotifier = new Notifier();
     this.hatRanges = [];
-    this.enabledHatStyles = Object.fromEntries(
-      HAT_COLORS.map((color) => [
-        color,
-        { penalty: color === "default" ? 0 : 1 }
-      ])
-    );
+    this.enabledHatShapes = ["default"];
     this.isEnabled = true;
     this.client = client;
+    this.enabledHatStyles = this.generateHatStyles();
   }
   setHatRanges(hatRanges) {
     console.log("ASOEE/CL: JetbrainsHats.setHatRanges : " + hatRanges.length);
@@ -10849,6 +10846,11 @@ var JetbrainsHats = class {
     const hatsJson = JSON.stringify(jbHatRanges);
     this.client.hatsUpdated(hatsJson);
     return Promise.resolve();
+  }
+  setEnabledHatShapes(enabledHatShapes) {
+    this.enabledHatShapes = enabledHatShapes;
+    this.enabledHatStyles = this.generateHatStyles();
+    this.hatStyleChangedNotifier.notifyListeners(this.enabledHatStyles);
   }
   toJetbransHatRanges(hatRanges) {
     return hatRanges.map((range3) => {
@@ -10859,13 +10861,28 @@ var JetbrainsHats = class {
       };
     });
   }
-  onDidChangeEnabledHatStyles(_listener) {
-    return { dispose: () => {
-    } };
+  generateHatStyles() {
+    const res = /* @__PURE__ */ new Map();
+    for (const color of HAT_COLORS) {
+      const colorPenalty = color === "default" ? 0 : 1;
+      for (const shape of this.enabledHatShapes) {
+        const shapePenalty = shape === "default" ? 0 : 2;
+        let styleName;
+        if (shape === "default") {
+          styleName = color;
+        } else {
+          styleName = `${color}-${shape}`;
+        }
+        res.set(styleName, { penalty: colorPenalty + shapePenalty });
+      }
+    }
+    return Object.fromEntries(res);
   }
-  onDidChangeIsEnabled(_listener) {
-    return { dispose: () => {
-    } };
+  onDidChangeEnabledHatStyles(listener) {
+    return this.hatStyleChangedNotifier.registerListener(listener);
+  }
+  onDidChangeIsEnabled(listener) {
+    return this.isEnabledNotifier.registerListener(listener);
   }
   toggle(isEnabled) {
     this.isEnabled = isEnabled ?? !this.isEnabled;
@@ -11740,7 +11757,12 @@ function updateEditor(editor, editorState) {
     editorState.text
   );
   editor.visibleRanges = [
-    new Range(editorState.firstVisibleLine, 0, editorState.lastVisibleLine, 0)
+    new Range(
+      editorState.firstVisibleLine,
+      0,
+      editorState.lastVisibleLine + 1,
+      0
+    )
   ];
   editor.selections = editorState.selections.map(
     (selection) => createSelection(editor.document, selection)

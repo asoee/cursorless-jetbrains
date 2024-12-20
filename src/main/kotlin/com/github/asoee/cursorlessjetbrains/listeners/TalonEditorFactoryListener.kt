@@ -1,7 +1,7 @@
 package com.github.asoee.cursorlessjetbrains.listeners
 
-import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessContainer
 import com.github.asoee.cursorlessjetbrains.services.TalonApplicationService
+import com.github.asoee.cursorlessjetbrains.ui.CursorlessContainer
 import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.event.EditorFactoryEvent
 import com.intellij.openapi.editor.event.EditorFactoryListener
