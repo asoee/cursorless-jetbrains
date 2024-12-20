@@ -1,8 +1,5 @@
 package com.github.asoee.cursorlessjetbrains.cursorless
 
-import java.nio.file.Path
-import java.nio.file.Paths
-
 // Default hat colors.
 val DEFAULT_COLORS = mapOf(
     "light" to mapOf(
@@ -27,21 +24,21 @@ val DEFAULT_COLORS = mapOf(
     )
 )
 
-var HATS_FILENAME = "vscode-hats.json"
-
-var COLORS_FILENAME = "colors.json"
-
-// TODO(pcohen): embed in this plugin
-val SHAPES_DIRECTORY: Path =
-    Paths.get(System.getProperty("user.home"), "bin/vendor/cursorless-hats")
-
+val ALL_SHAPES = listOf(
+    "default",
+    "bolt",
+    "crosshairs",
+    "curve",
+    "ex",
+    "eye",
+    "fox",
+    "frame",
+    "hole",
+    "play",
+    "wing",
+)
 // Format of the vscode-hats.json file.
 typealias HatsFormat = HashMap<String, ArrayList<CursorlessRange>>
-typealias HatsList = HashMap<String, ArrayList<CursorlessRange>>
 
 // Format of the colors.json.
 typealias ColorsFormat = HashMap<String, HashMap<String, String>>
-
-val OVAL_SIZE = 4 // px
-
-val SHAPE_SIZE = 8 // px

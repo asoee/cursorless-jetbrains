@@ -1,22 +1,23 @@
-package com.github.asoee.cursorlessjetbrains.cursorless
+package com.github.asoee.cursorlessjetbrains.ui
 
+import com.github.asoee.cursorlessjetbrains.cursorless.*
+import com.github.weisj.jsvg.attributes.ViewBox
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.colors.EditorFontType
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.ui.JBColor
 import groovy.json.JsonException
-import kotlinx.serialization.json.Json
 import java.awt.Color
 import java.awt.Graphics
+import java.awt.Graphics2D
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.image.BufferedImage
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentLinkedQueue
-import javax.imageio.ImageIO
 import javax.swing.JComponent
 
 
@@ -47,6 +48,8 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
 
     private val boundsListener = BoundsChangeListener(this)
 
+    private val shapes = ALL_SHAPES.map { it to CursorlessShape.loadShape(it) }.toMap()
+
     init {
         this.parent.add(this)
         this.bounds = parent.bounds
@@ -56,6 +59,8 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
 
         isVisible = true
         log.info("Cursorless container initialized for editor $editor!")
+
+
     }
 
     private class BoundsChangeListener(val container: CursorlessContainer) : ComponentAdapter() {
@@ -71,43 +76,6 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         this.parent.removeComponentListener(boundsListener)
     }
 
-    fun shapeImage(name: String): BufferedImage {
-        val imagePath = SHAPES_DIRECTORY.resolve("$name.png").toUri()
-        return ImageIO.read(File(imagePath))
-    }
-
-    fun coloredShapeImage(
-        fullKeyName: String,
-        shapeName: String,
-        colorName: String
-    ): BufferedImage? {
-        if (shapeImageCache.containsKey(fullKeyName)) {
-            return shapeImageCache[fullKeyName]
-        }
-
-        println("generating image for $fullKeyName")
-        val shape = shapeImage(shapeName)
-        val color = colorForName(colorName) ?: return null
-
-        // TODO(pcohen): don't hard code dark mode
-        val coloredImage = colorImageAndPreserveAlpha(shape, color.darkVariant)
-        shapeImageCache[fullKeyName] = coloredImage
-        return coloredImage
-    }
-
-    private fun colorImageAndPreserveAlpha(
-        img: BufferedImage,
-        c: Color
-    ): BufferedImage {
-        val raster = img.raster
-        val pixel = intArrayOf(c.red, c.green, c.blue)
-        for (x in 0 until raster.width) for (y in 0 until raster.height) for (b in pixel.indices) raster.setSample(
-            x, y, b,
-            pixel[b]
-        )
-        return img
-    }
-
     /**
      * Assigns our colors by taking the default colors and overriding them with
      * the values (if any) in `COLORS_PATH`.
@@ -119,22 +87,6 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
             run {
                 colors[colorScheme] = HashMap()
                 colors[colorScheme]!!.putAll(defaults)
-            }
-        }
-
-        if (Files.exists(Path.of(COLORS_FILENAME))) {
-            val format = Json { isLenient = true }
-
-            // TODO(pcohen): anywhere where we parse JSON, show appropriate errors to the user
-            // if the parse fails
-            val map = format.decodeFromString<ColorsFormat>(
-                File(COLORS_FILENAME).readText()
-            )
-
-            map.forEach { colorScheme, colorMap ->
-                colorMap.forEach { name, hex ->
-                    colors[colorScheme]?.set(name, hex)
-                }
             }
         }
 
@@ -191,18 +143,19 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         shapeName: String?
     ) {
         val lineCount = editor.document.lineCount
-        mapping[fullKeyName]!!.forEach { range: CursorlessRange ->
+        val charWidth = getCharacterWidth(editor, 'm')
+        mapping[fullKeyName]?.forEach { range: CursorlessRange ->
             if (range.end.line > lineCount) {
                 return@forEach
             }
             var offset = range.startOffset(editor)
-
-            localOffsets.forEach { pair ->
-                if (offset >= pair.first) {
-//                    log.warn("adjusting $offset to ${offset + pair.second} due to local offset: $localOffsets")
-                    offset += pair.second
-                }
-            }
+//
+//            localOffsets.forEach { pair ->
+//                if (offset >= pair.first) {
+////                    log.warn("adjusting $offset to ${offset + pair.second} due to local offset: $localOffsets")
+//                    offset += pair.second
+//                }
+//            }
 
             val logicalPosition = editor.offsetToLogicalPosition(offset)
 
@@ -211,25 +164,21 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
             )
 
             val color = this.colorForName(colorName) ?: return
-            g.color = color
 
-            if (shapeName != null) {
-                val size = SHAPE_SIZE
-                val image = coloredShapeImage(fullKeyName, shapeName, colorName)
-                g.drawImage(
-                    image,
-                    coordinates.x,
-                    coordinates.y - SHAPE_SIZE / 2 + 1,
-                    size, size,
-                    null
-                )
-            } else {
-                val size = OVAL_SIZE
-                g.fillOval(
-                    coordinates.x + 1,
-                    coordinates.y,
-                    size,
-                    size
+            val svgIcon = shapes[shapeName ?: "default"]
+
+            val shapeSize = charWidth * 0.7f
+            val offsetX = (charWidth - shapeSize) / 2
+            val offsetY = 0f// charWidth * 0.05f
+            val posX = coordinates.x + offsetX
+            val posY = coordinates.y + offsetY
+            svgIcon?.let {
+                svgIcon.setColor(color)
+                svgIcon.svg().render(
+                    this, g as Graphics2D, ViewBox(
+                        posX, posY,
+                        shapeSize, shapeSize,
+                    )
                 )
             }
         }
@@ -267,6 +216,11 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         return !editor.document.isWritable || path == null || !Files.isWritable(
             Path.of(path)
         ) || isLibraryFile()
+    }
+
+    fun getCharacterWidth(editor: Editor, character: Char): Int {
+        val fontMetrics = editor.contentComponent.getFontMetrics(editor.colorsScheme.getFont(EditorFontType.PLAIN))
+        return fontMetrics.charWidth(character)
     }
 
     override fun paintComponent(g: Graphics) {

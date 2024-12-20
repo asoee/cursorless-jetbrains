@@ -32,7 +32,7 @@ data class TokenHatSplittingMode(
     val symbolsToPreserve: Array<String>,
 )
 
-val DEFAULT_CIONFIGURATION = CursorlessConfiguration(
+val DEFAULT_CONFIGURATION = CursorlessConfiguration(
     tokenHatSplittingMode = TokenHatSplittingMode(
         preserveCase = false,
         lettersToPreserve = arrayOf(),

@@ -6,10 +6,9 @@ import com.caoccao.javet.interop.options.NodeRuntimeOptions
 import com.caoccao.javet.javenode.JNEventLoop
 import com.caoccao.javet.javenode.enums.JNModuleType
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCallback
-import com.github.asoee.cursorlessjetbrains.cursorless.DEFAULT_CIONFIGURATION
+import com.github.asoee.cursorlessjetbrains.cursorless.DEFAULT_CONFIGURATION
 import com.github.asoee.cursorlessjetbrains.cursorless.TreesitterCallback
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -158,7 +157,7 @@ class JavetDriver {
             .executeVoid()
         eventLoop.await()
 
-        val configuration = DEFAULT_CIONFIGURATION
+        val configuration = DEFAULT_CONFIGURATION
         val configurationJson = Json.encodeToString(configuration)
         val wasmPath = escapeString(wasmDir.absolutePath)
 
@@ -331,6 +330,28 @@ class JavetDriver {
             .executeVoid()
         eventLoop.await()
 
+    }
+
+    fun setEnabledHatShapes(enabledHatShapes: List<String>) {
+        val js = """
+            | (async () => {
+            |   const plugin = await globalThis.plugin;
+            |   if (plugin) {
+            |     try {
+            |       plugin.hats.setEnabledHatShapes(${Json.encodeToString(enabledHatShapes)});
+            |     } catch (e) {                      
+            |       console.error("ASOEE/JS: error in setEnabledHatShapes - " + e);
+            |       throw e;
+            |     }
+            |   } else {
+            |     console.log("ASOEE/JS: plugin not available");
+            |   }
+            | })();
+            | """.trimMargin()
+
+        runtime.getExecutor(js)
+            .executeVoid()
+        eventLoop.await()
     }
 
 }

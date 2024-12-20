@@ -34,5 +34,9 @@ class CursorlessEngine(private val driver: JavetDriver) {
         return listOf(jsonElement as JsonObject)
     }
 
+    fun setEnableHatShapes(enabledHatShapes: List<String>) {
+        driver.setEnabledHatShapes(enabledHatShapes)
+    }
+
 
 }
