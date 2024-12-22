@@ -27,7 +27,7 @@
                 parentId="tools"
                 instance="com.github.asoee.cursorlessjetbrains.settings.TalonSettingsConfigurable"
                 id="com.github.asoee.cursorlessjetbrains.settings.AppSettingsConfigurable"
-                displayName="Talon / Cursorless Settings"/>
+                displayName="Talon / Cursorless"/>
     </extensions>
 
     <actions>
@@ -50,6 +50,9 @@
         <listener
                 class="com.github.asoee.cursorlessjetbrains.listeners.TalonAppLifecycleListener"
                 topic="com.intellij.ide.AppLifecycleListener"/>
+        <listener
+                class="com.github.asoee.cursorlessjetbrains.settings.TalonSettingsChangeListener"
+                topic="com.github.asoee.cursorlessjetbrains.settings.TalonSettingsListener"/>
 
     </applicationListeners>
 

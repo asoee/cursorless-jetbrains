@@ -14,30 +14,40 @@ import javax.swing.JPanel
  */
 class TalonSettingsComponent {
     val panel: JPanel
-    private val myUserNameText = JBTextField()
-    private val myIdeaUserStatus = JBCheckBox("IntelliJ IDEA user")
+    private val myHatsScaleFactor = JBTextField()
+    private val myHatsVerticalOffset = JBTextField()
+    private val myEnableHats = JBCheckBox("Enable Cursorless hats")
 
     init {
         panel = FormBuilder.createFormBuilder()
-            .addLabeledComponent(JBLabel("User name:"), myUserNameText, 1, false)
-            .addComponent(myIdeaUserStatus, 1)
+            .addComponent(myEnableHats, 1)
+            .addLabeledComponent(JBLabel("Hats scale factor"), myHatsScaleFactor, 1, false)
+            .addLabeledComponent(JBLabel("Hats vertical offset"), myHatsVerticalOffset, 1, false)
+
             .addComponentFillVertically(JPanel(), 0)
             .panel
     }
 
     val preferredFocusedComponent: JComponent
-        get() = myUserNameText
+        get() = myEnableHats
 
     @get:NotNull
-    var userNameText: String
-        get() = myUserNameText.text
+    var hatsScaleFactor: String
+        get() = myHatsScaleFactor.text
         set(newText) {
-            myUserNameText.text = newText
+            myHatsScaleFactor.text = newText
         }
 
-    var ideaUserStatus: Boolean
-        get() = myIdeaUserStatus.isSelected
+    @get:NotNull
+    var hatsVerticalOffset: String
+        get() = myHatsVerticalOffset.text
+        set(newText) {
+            myHatsVerticalOffset.text = newText
+        }
+
+    var enableHats: Boolean
+        get() = myEnableHats.isSelected
         set(newStatus) {
-            myIdeaUserStatus.isSelected = newStatus
+            myEnableHats.isSelected = newStatus
         }
 }

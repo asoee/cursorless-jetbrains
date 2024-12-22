@@ -27,6 +27,9 @@ import javax.swing.JComponent
  * One is created for every editor and attached directly to its AWT component as a child component.
  */
 class CursorlessContainer(val editor: Editor) : JComponent() {
+    private var verticalOffset: Int = 0
+    private var scaleFactorPercent: Int = 100
+    private var hatsEnabled: Boolean = true
     private val parent: JComponent = editor.contentComponent
 
     private var started = false
@@ -167,9 +170,9 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
 
             val svgIcon = shapes[shapeName ?: "default"]
 
-            val shapeSize = charWidth * 0.7f
+            val shapeSize = charWidth * 0.7f * (scaleFactorPercent / 100.0f)
             val offsetX = (charWidth - shapeSize) / 2
-            val offsetY = 0f// charWidth * 0.05f
+            val offsetY = 0f - this.verticalOffset
             val posX = coordinates.x + offsetX
             val posY = coordinates.y + offsetY
             svgIcon?.let {
@@ -232,7 +235,9 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         }
 
         try {
-            doPainting(g)
+            if (hatsEnabled) {
+                doPainting(g)
+            }
         } catch (e: NullPointerException) {
             e.printStackTrace()
         } catch (e: IndexOutOfBoundsException) {
@@ -249,5 +254,17 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         localOffsets.clear()
         this.invalidate()
         this.repaint()
+    }
+
+    fun setHatsEnabled(enableHats: Boolean) {
+        this.hatsEnabled = enableHats
+    }
+
+    fun setHatScaleFactor(scaleFactorPercent: Int) {
+        this.scaleFactorPercent = scaleFactorPercent
+    }
+
+    fun setHatVerticalOffset(verticalOffset: Int) {
+        this.verticalOffset = verticalOffset
     }
 }

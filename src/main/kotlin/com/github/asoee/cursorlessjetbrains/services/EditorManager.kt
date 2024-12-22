@@ -3,9 +3,11 @@ package com.github.asoee.cursorlessjetbrains.services
 import com.github.asoee.cursorlessjetbrains.commands.*
 import com.github.asoee.cursorlessjetbrains.cursorless.*
 import com.github.asoee.cursorlessjetbrains.listeners.getCursorlessContainers
+import com.github.asoee.cursorlessjetbrains.settings.TalonSettings
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
 import com.github.asoee.cursorlessjetbrains.sync.HatRange
 import com.github.asoee.cursorlessjetbrains.sync.serializeEditor
+import com.github.asoee.cursorlessjetbrains.ui.CursorlessContainer
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.IdeActions
@@ -36,6 +38,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDisposable: Disposable, cs: CoroutineScope) :
     Disposable {
 
+    private var hatsEnabled: Boolean = true
     val LOG: Logger = Logger.getInstance(EditorManager::class.java)
 
     private val editorIds = HashMap<Editor, String>()
@@ -404,6 +407,22 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
                 editorCreated(editor)
             }
         )
+    }
+
+    fun settingsUpdated(settings: TalonSettings.State) {
+        this.hatsEnabled = settings.enableHats
+        getCursorlessContainers().forEach {
+            applySettingsToContainer(it, settings)
+        }
+    }
+
+    private fun applySettingsToContainer(
+        it: CursorlessContainer,
+        settings: TalonSettings.State
+    ) {
+        it.setHatsEnabled(settings.enableHats)
+        it.setHatScaleFactor(settings.hatScaleFactor)
+        it.setHatVerticalOffset(settings.hatVerticalOffset)
     }
 
 }
