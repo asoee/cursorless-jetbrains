@@ -3,7 +3,11 @@ package com.github.asoee.cursorlessjetbrains.services
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessEngine
 import com.github.asoee.cursorlessjetbrains.javet.JavetDriver
 import com.github.asoee.cursorlessjetbrains.listeners.*
+import com.github.asoee.cursorlessjetbrains.vscode.VsCodeSettings
+import com.github.asoee.cursorlessjetbrains.vscode.VsCodeSettingsListener
+import com.github.asoee.cursorlessjetbrains.vscode.VsCodeSettingsService
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
@@ -41,16 +45,35 @@ class TalonApplicationService(cs: CoroutineScope) : Disposable {
         this.editorManager = EditorManager(cursorlessEngine, this, cs)
         this.focusChangeListener = TalonFocusChangeListener(editorManager)
 
-        // Listening for window changes is necessary, since we don't seem to get them from Talon.
-
         // https://intellij-support.jetbrains.com/hc/en-us/community/posts/4578776718354-How-do-I-listen-for-editor-focus-events-
         val m = EditorFactory.getInstance()
             .eventMulticaster as EditorEventMulticasterEx
         m.addFocusChangeListener(this.focusChangeListener, this)
 
+        val listener = object : VsCodeSettingsListener {
+            override fun onDidChangeSettings(settings: VsCodeSettings) {
+                settings.enabledHatShapes().let {
+                    updateEnabledHatShapes(it)
+                }
+            }
+        }
+
+        val vsCodeSettingsService = service<VsCodeSettingsService>()
+        val vsCodeSettings = vsCodeSettingsService.currentSettings()
+        vsCodeSettings?.enabledHatShapes()?.let {
+            updateEnabledHatShapes(it)
+        }
+        vsCodeSettingsService.addListener(listener)
+
         println("reloading all")
         this.editorManager.reloadAllEditors()
         println("reloaded all")
+    }
+
+    private fun updateEnabledHatShapes(shapes: List<String>) {
+        val shapeSet = shapes.toMutableSet()
+        shapeSet.add("default")
+        cursorlessEngine.setEnableHatShapes(shapeSet.toList())
     }
 
     fun editorCreated(e: Editor) {
@@ -75,50 +98,11 @@ class TalonApplicationService(cs: CoroutineScope) : Disposable {
         documentListeners[e] = dl
     }
 
-    fun rebindListeners() {
-        println("rebinding listeners...")
-        EditorFactory.getInstance().allEditors.forEach { e ->
-            println("hi $e")
-            this.editorCreated(e)
-        }
-//        ProjectManager.getInstance().openProjects.forEach { proj ->
-//            println("project: ${proj} ${FileEditorManager.getInstance(proj).allEditors.size}")
-//            FileEditorManager.getInstance(proj).allEditors.forEach { editor ->
-//                run {
-//                    println("editor: ${editor.edit}")
-//
-//                    this.editorCreated(editor.)
-//                }
-//            }
-//        }
-    }
 
     override fun dispose() {
         thisLogger().info("Disposing TalonApplicationService")
         jsDriver.close()
 
-//        unlinkStateFile()
-//        quickJs.close()
-
-//        println("PHIL: unhooking listeners")
-//        cursorWatchers.forEach { (e, l) -> e.caretModel.removeCaretListener(l) }
-//        selectionListeners.forEach { (e, l) ->
-//            e.selectionModel.removeSelectionListener(
-//                l
-//            )
-//        }
-//        visibleAreaListeners.forEach { (e, l) ->
-//            e.scrollingModel.removeVisibleAreaListener(
-//                l
-//            )
-//        }
-//        documentListeners.forEach { (e, l) ->
-//            e.document.removeDocumentListener(
-//                l
-//            )
-//        }
-//
-//        editorManager.dispose()
     }
 
     fun editorReleased(editor: Editor) {
