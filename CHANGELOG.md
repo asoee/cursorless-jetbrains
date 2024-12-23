@@ -6,7 +6,8 @@
 
 - Add support for multiple hat shapes using SVG
 - Add settings to tweak hat size and position
-- Add setting disable hats
+- Add setting to disable hats
+- Add setting for flash range duration
 
 ## [0.0.6] - 2024-12-18
 

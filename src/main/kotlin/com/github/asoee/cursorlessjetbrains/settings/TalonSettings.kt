@@ -20,6 +20,7 @@ class TalonSettings
         var enableHats: Boolean = true
         var hatScaleFactor: Int = 100
         var hatVerticalOffset: Int = 0
+        var flashRangeDuration: Int = 100
     }
 
     private var myState = State()

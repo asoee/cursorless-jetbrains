@@ -37,7 +37,7 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     implementation("com.caoccao.javet:javet:4.1.1") // Core (Must-have)
 //    implementation("com.caoccao.javet:javet-node-linux-arm64:4.1.1")

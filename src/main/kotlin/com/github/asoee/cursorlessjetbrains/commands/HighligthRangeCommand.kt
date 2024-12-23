@@ -3,6 +3,7 @@ package com.github.asoee.cursorlessjetbrains.commands
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessFlashRange
 import com.github.asoee.cursorlessjetbrains.cursorless.FlashCharacterRange
 import com.github.asoee.cursorlessjetbrains.cursorless.FlashLineRange
+import com.github.asoee.cursorlessjetbrains.settings.TalonSettings
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.markup.HighlighterLayer
@@ -55,6 +56,8 @@ class HighligthRangeCommand(project: Project, val rangesByEditor: Map<Editor?, L
 
     override fun execute(context: CommandContext): String {
 
+        val flashDuration: Long = TalonSettings.instance.state.flashRangeDuration.toLong()
+
         val highlightsByEditor: MutableMap<Editor, List<RangeHighlighter?>> = mutableMapOf()
         ApplicationManager.getApplication().invokeAndWait {
             rangesByEditor.forEach({ (editor, flashRanges) ->
@@ -98,7 +101,7 @@ class HighligthRangeCommand(project: Project, val rangesByEditor: Map<Editor?, L
         }
 
         runBlocking {
-            delay(FLASH_DURATION_MILLIS)
+            delay(flashDuration)
         }
 
         ApplicationManager.getApplication().invokeAndWait {
