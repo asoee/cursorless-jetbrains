@@ -49,10 +49,11 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
         val command = FindCommand(fixture.project, "next", "print")
         val result = fixture.commandExecutorService.execute(command)
         myFixture.checkResultByFile("org/example/Main.java")
-        val selectedText = fixture.editor.selectionModel.getSelectedText()
-        assertEquals("print", selectedText)
-        assertSelectedOffset(fixture, 106, 111)
-
+        runInEdtAndWait {
+            val selectedText = fixture.editor.selectionModel.getSelectedText()
+            assertEquals("print", selectedText)
+            assertSelectedOffset(fixture, 106, 111)
+        }
     }
 
     @Test

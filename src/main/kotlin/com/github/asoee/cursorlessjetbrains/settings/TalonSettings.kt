@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull
 
 @State(
     name = "com.github.asoee.cursorlessjetbrains.settings.TalonSettings",
-    storages = arrayOf(Storage("TalonSettingsPlugin.xml"))
+    storages = [Storage("TalonSettingsPlugin.xml")]
 )
 class TalonSettings
 
@@ -20,6 +20,7 @@ class TalonSettings
         var enableHats: Boolean = true
         var hatScaleFactor: Int = 100
         var hatVerticalOffset: Int = 0
+        var flashRangeDuration: Int = 100
     }
 
     private var myState = State()

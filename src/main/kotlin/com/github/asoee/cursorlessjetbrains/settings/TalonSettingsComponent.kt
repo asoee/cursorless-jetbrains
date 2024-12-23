@@ -17,12 +17,14 @@ class TalonSettingsComponent {
     private val myHatsScaleFactor = JBTextField()
     private val myHatsVerticalOffset = JBTextField()
     private val myEnableHats = JBCheckBox("Enable Cursorless hats")
+    private val myFlashRangeDuration = JBTextField()
 
     init {
         panel = FormBuilder.createFormBuilder()
             .addComponent(myEnableHats, 1)
             .addLabeledComponent(JBLabel("Hats scale factor"), myHatsScaleFactor, 1, false)
             .addLabeledComponent(JBLabel("Hats vertical offset"), myHatsVerticalOffset, 1, false)
+            .addLabeledComponent(JBLabel("Flash range duration (milliseconds)"), myFlashRangeDuration, 1, false)
 
             .addComponentFillVertically(JPanel(), 0)
             .panel
@@ -49,5 +51,12 @@ class TalonSettingsComponent {
         get() = myEnableHats.isSelected
         set(newStatus) {
             myEnableHats.isSelected = newStatus
+        }
+
+    @get:NotNull
+    var flashRangeDuration: String
+        get() = myFlashRangeDuration.text
+        set(newText) {
+            myFlashRangeDuration.text = newText
         }
 }

@@ -3,6 +3,7 @@ package com.github.asoee.cursorlessjetbrains.commands
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessFlashRange
 import com.github.asoee.cursorlessjetbrains.cursorless.FlashCharacterRange
 import com.github.asoee.cursorlessjetbrains.cursorless.FlashLineRange
+import com.github.asoee.cursorlessjetbrains.settings.TalonSettings
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.markup.HighlighterLayer
@@ -15,8 +16,6 @@ import kotlinx.coroutines.runBlocking
 import java.awt.Color
 import java.util.Collections.unmodifiableMap
 
-
-private const val FLASH_DURATION_MILLIS = 100L
 
 private const val STYLE_REFERENCE = "reference"
 
@@ -46,7 +45,7 @@ private fun parseHexColor(hexString: String): Color {
     }
 }
 
-class HighligthRangeCommand(project: Project, val rangesByEditor: Map<Editor?, List<CursorlessFlashRange>>) :
+class HighlightRangeCommand(project: Project, private val rangesByEditor: Map<Editor?, List<CursorlessFlashRange>>) :
     VcCommand(project) {
 
     override fun executionMode(): ExecutionMode {
@@ -55,9 +54,11 @@ class HighligthRangeCommand(project: Project, val rangesByEditor: Map<Editor?, L
 
     override fun execute(context: CommandContext): String {
 
+        val flashDuration: Long = TalonSettings.instance.state.flashRangeDuration.toLong()
+
         val highlightsByEditor: MutableMap<Editor, List<RangeHighlighter?>> = mutableMapOf()
         ApplicationManager.getApplication().invokeAndWait {
-            rangesByEditor.forEach({ (editor, flashRanges) ->
+            rangesByEditor.forEach { (editor, flashRanges) ->
                 if (editor == null || editor.isDisposed) {
                     return@forEach
                 }
@@ -65,51 +66,53 @@ class HighligthRangeCommand(project: Project, val rangesByEditor: Map<Editor?, L
                 val markupModel = editor.markupModel
                 val rangeHighlighters = flashRanges.map { flashRange ->
                     textAttributes.backgroundColor = colorForStyle(flashRange)
-                    if (flashRange.range is FlashLineRange) {
-                        val lineRange: FlashLineRange = flashRange.range
-                        val startOffset = editor.document.getLineStartOffset(lineRange.start)
-                        val endOffset = editor.document.getLineEndOffset(lineRange.end)
-                        markupModel.addRangeHighlighter(
-                            startOffset,
-                            endOffset,
-                            HighlighterLayer.SELECTION,
-                            textAttributes,
-                            HighlighterTargetArea.LINES_IN_RANGE
-                        )
-                    } else if (flashRange.range is FlashCharacterRange) {
-                        val characterRange = flashRange.range as FlashCharacterRange
-                        val startOffset =
-                            editor.document.getLineStartOffset(characterRange.start.line) + characterRange.start.character
-                        val endOffset =
-                            editor.document.getLineStartOffset(characterRange.end.line) + characterRange.end.character
-                        markupModel.addRangeHighlighter(
-                            startOffset,
-                            endOffset,
-                            HighlighterLayer.SELECTION,
-                            textAttributes,
-                            HighlighterTargetArea.EXACT_RANGE
-                        )
-                    } else {
-                        null
+                    when (flashRange.range) {
+                        is FlashLineRange -> {
+                            val lineRange: FlashLineRange = flashRange.range
+                            val startOffset = editor.document.getLineStartOffset(lineRange.start)
+                            val endOffset = editor.document.getLineEndOffset(lineRange.end)
+                            markupModel.addRangeHighlighter(
+                                startOffset,
+                                endOffset,
+                                HighlighterLayer.SELECTION,
+                                textAttributes,
+                                HighlighterTargetArea.LINES_IN_RANGE
+                            )
+                        }
+
+                        is FlashCharacterRange -> {
+                            val characterRange = flashRange.range
+                            val startOffset =
+                                editor.document.getLineStartOffset(characterRange.start.line) + characterRange.start.character
+                            val endOffset =
+                                editor.document.getLineStartOffset(characterRange.end.line) + characterRange.end.character
+                            markupModel.addRangeHighlighter(
+                                startOffset,
+                                endOffset,
+                                HighlighterLayer.SELECTION,
+                                textAttributes,
+                                HighlighterTargetArea.EXACT_RANGE
+                            )
+                        }
                     }
                 }
                 highlightsByEditor[editor] = rangeHighlighters
-            })
+            }
         }
 
         runBlocking {
-            delay(FLASH_DURATION_MILLIS)
+            delay(flashDuration)
         }
 
         ApplicationManager.getApplication().invokeAndWait {
-            highlightsByEditor.forEach({ (editor, highlighters) ->
+            highlightsByEditor.forEach { (editor, highlighters) ->
                 highlighters.forEach {
                     it?.let {
                         editor.markupModel.removeHighlighter(it)
                         it.dispose()
                     }
                 }
-            })
+            }
         }
 
         return "OK"

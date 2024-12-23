@@ -5,6 +5,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.EventDispatcher
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import java.nio.file.Path
@@ -12,8 +13,9 @@ import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
 
+@OptIn(ExperimentalSerializationApi::class)
 @Service(Service.Level.APP)
-class VsCodeSettingsService() : Disposable {
+class VsCodeSettingsService : Disposable {
 
     private val vsCodeSettingsDir: Path?
     private val watcher: FileWatcher?
@@ -77,7 +79,7 @@ class VsCodeSettingsService() : Disposable {
         this.eventDispatcher.multicaster.onDidChangeSettings(settings)
     }
 
-    public fun addListener(listener: VsCodeSettingsListener) {
+    fun addListener(listener: VsCodeSettingsListener) {
         this.eventDispatcher.addListener(listener)
     }
 
@@ -86,16 +88,18 @@ class VsCodeSettingsService() : Disposable {
         this.watcher?.dispose()
     }
 
-    fun currentSettings(): VsCodeSettings? {
+    private val json = Json { allowTrailingComma = true }
+
+    fun currentSettings(): VsCodeSettings {
         val fullPath = this.vsCodeSettingsDir?.resolve("settings.json")
         if (fullPath != null && fullPath.exists()) {
             val jsonString = fullPath.toFile().readText()
             println("FileCommandServer: settings.json content: $jsonString")
-            val jsonObject = Json.decodeFromString<JsonObject>(jsonString)
+            val jsonObject = json.decodeFromString<JsonObject>(jsonString)
             val settings = VsCodeSettings(jsonObject)
             return settings
         }
-        return VsCodeSettings(JsonObject(emptyMap()));
+        return VsCodeSettings(JsonObject(emptyMap()))
     }
 
 }

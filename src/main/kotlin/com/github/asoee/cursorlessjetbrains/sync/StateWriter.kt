@@ -3,6 +3,7 @@ package com.github.asoee.cursorlessjetbrains.sync
 import com.github.asoee.cursorlessjetbrains.util.caretLanguage
 import com.intellij.ide.RecentProjectsManager
 import com.intellij.ide.RecentProjectsManagerBase
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -83,75 +84,53 @@ fun getFileEditorManager(): FileEditorManager? {
     return getProject()?.let { FileEditorManager.getInstance(it) }
 }
 
-fun toEditor(fileEditor: FileEditor): Editor =
-    (fileEditor as TextEditor).editor
-
-fun openFiles(project: Project): List<String> {
-    return FileEditorManager.getInstance(project).openFiles.map { it.path }
-}
-
-fun recentFiles(project: Project): List<String> {
-    return EditorHistoryManager.getInstance(project).fileList.map { it.path }
-        .reversed()
-}
-
-fun navigationHistory(project: Project) {
-//    val k = FileEditorManager.getInstance(project)
-//    val k2 = k as FileEditorManagerImpl
-//
-//    val p = k2.getSelectionHistory()
-//    println(p)
-
-//    com.intellij.ide.actions.Switcher.SwitcherPanel
-    // NOTE(pcohen): forward locations is not exposed
-    // we could still do pop last based on the list
-    // and then for pop forward iterate until we change files
-//    val psiE = selectElementAtCaret(getEditor()!!)
-//    val containingFunction = findContainingFunction(psiE!!)
-//    println("$psiE, $containingFunction")
-}
-
 fun serializeEditor(editor: Editor, editorId: String): EditorState {
-    val project = editor.project
-    val document = editor.document
-    val visible = FileEditorManager.getInstance(project!!).selectedEditors.any {
-        if (it is TextEditor) {
-            it.editor == editor
-        } else {
-            false
+
+    val edtState = ReadAction.compute<EditorState, Throwable> {
+
+        val project = editor.project
+        val document = editor.document
+        val visible = FileEditorManager.getInstance(project!!).selectedEditors.any {
+            if (it is TextEditor) {
+                it.editor == editor
+            } else {
+                false
+            }
         }
-    }
-    val active = isEditorFocused(editor)
-    val currentFile =
-        FileDocumentManager.getInstance().getFile(document)?.path
+        val active = isEditorFocused(editor)
+        val currentFile =
+            FileDocumentManager.getInstance().getFile(document)?.path
 
-    val cursors = editor.caretModel.allCarets.map { c ->
-        cursorFromLogicalPosition(editor, c.logicalPosition)
-    }
+        val cursors = editor.caretModel.allCarets.map { c ->
+            cursorFromLogicalPosition(editor, c.logicalPosition)
+        }
 
-    val selections =
-        editor.caretModel.caretsAndSelections.map { selectionFromCaretState(editor, it) }
+        val selections =
+            editor.caretModel.caretsAndSelections.map { selectionFromCaretState(editor, it) }
 
-    val language = caretLanguage(editor) ?: "plaintext"
+        val language = caretLanguage(editor) ?: "plaintext"
 //    val language = "plaintext"
 
-    val visibleRange = editor.calculateVisibleRange()
-    val startLine = editor.offsetToLogicalPosition(visibleRange.startOffset).line
-    val endLine = editor.offsetToLogicalPosition(visibleRange.endOffset).line
+        val visibleRange = editor.calculateVisibleRange()
+        val startLine = editor.offsetToLogicalPosition(visibleRange.startOffset).line
+        val endLine = editor.offsetToLogicalPosition(visibleRange.endOffset).line
 
 //    println("editorState: $currentFile, active: $active, visible: $visible")
-    return EditorState(
-        editorId,
-        currentFile,
-        document.text,
-        active,
-        language,
-        startLine,
-        endLine,
-        cursors,
-        selections,
-        visible
-    )
+        return@compute EditorState(
+            editorId,
+            currentFile,
+            document.text,
+            active,
+            language,
+            startLine,
+            endLine,
+            cursors,
+            selections,
+            visible
+        )
+    }
+    return edtState
+
 }
 
 fun isEditorFocused(editor: Editor): Boolean {
