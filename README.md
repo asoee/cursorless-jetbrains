@@ -25,7 +25,8 @@ community. [They are maintained in this PR](https://github.com/talonhub/communit
 ## Issues and known limitations
 
 - Targets jetbrains 2024.2+ (might work with older versions, but not tested)
-- Only default shape supported for cursorless hats
+- To configure hat shapes, you currently have to do it in VSCode, due to the current implementation in talon-cursorless.
+
 
 ## Credits
 
