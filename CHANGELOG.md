@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.0.7] - 2024-12-23
+
 ### Added
 
 - Add support for multiple hat shapes using SVG
@@ -78,7 +80,8 @@
 - Communication with talon using both HTTP and file based command server
 - Most voice-code commands added to the plugin
 
-[Unreleased]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.6...HEAD
+[Unreleased]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.7...HEAD
+[0.0.7]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.3...v0.0.4
