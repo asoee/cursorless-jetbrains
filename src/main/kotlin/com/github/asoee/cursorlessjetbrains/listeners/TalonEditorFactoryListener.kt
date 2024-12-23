@@ -1,6 +1,7 @@
 package com.github.asoee.cursorlessjetbrains.listeners
 
 import com.github.asoee.cursorlessjetbrains.services.TalonApplicationService
+import com.github.asoee.cursorlessjetbrains.settings.TalonSettings
 import com.github.asoee.cursorlessjetbrains.ui.CursorlessContainer
 import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.event.EditorFactoryEvent
@@ -11,12 +12,7 @@ var editorToContainer =
 
 class TalonEditorFactoryListener : EditorFactoryListener {
 
-    init {
-//        println("PHIL: TalonEditorFactoryListener listener scope")
-    }
-
     override fun editorCreated(event: EditorFactoryEvent) {
-//        println("PHIL: editor created; attaching container")
 
         val applicationService = service<TalonApplicationService>()
         applicationService.editorCreated(event.editor)
@@ -25,7 +21,6 @@ class TalonEditorFactoryListener : EditorFactoryListener {
     }
 
     override fun editorReleased(event: EditorFactoryEvent) {
-//        println("phil: editor released")
         super.editorReleased(event)
 
         removeCursorlessContainerFromEditor(event.editor)
@@ -37,6 +32,10 @@ class TalonEditorFactoryListener : EditorFactoryListener {
 
 fun addCursorlessContainerToEditor(editor: com.intellij.openapi.editor.Editor) {
     val container = CursorlessContainer(editor)
+    val settings = TalonSettings.instance.state
+    container.setHatsEnabled(settings.enableHats)
+    container.setHatScaleFactor(settings.hatScaleFactor)
+    container.setHatVerticalOffset(settings.hatVerticalOffset)
     editorToContainer[editor] = container
 }
 

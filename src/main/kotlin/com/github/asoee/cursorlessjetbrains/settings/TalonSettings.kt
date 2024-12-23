@@ -12,13 +12,14 @@ import org.jetbrains.annotations.NotNull
     name = "com.github.asoee.cursorlessjetbrains.settings.TalonSettings",
     storages = arrayOf(Storage("TalonSettingsPlugin.xml"))
 )
-internal class TalonSettings
+class TalonSettings
 
     : PersistentStateComponent<TalonSettings.State> {
-    internal class State {
+    class State {
         @NonNls
-        var userId: String = "John Smith"
-        var ideaStatus: Boolean = false
+        var enableHats: Boolean = true
+        var hatScaleFactor: Int = 100
+        var hatVerticalOffset: Int = 0
     }
 
     private var myState = State()

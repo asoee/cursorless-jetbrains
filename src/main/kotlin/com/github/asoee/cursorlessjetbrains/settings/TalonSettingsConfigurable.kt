@@ -1,5 +1,6 @@
 package com.github.asoee.cursorlessjetbrains.settings
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.Configurable
 import org.jetbrains.annotations.Nls
 import org.jetbrains.annotations.Nullable
@@ -14,7 +15,7 @@ internal class TalonSettingsConfigurable : Configurable {
     private var mySettingsComponent: TalonSettingsComponent? = null
 
     @Nls(capitalization = Nls.Capitalization.Title)
-    override fun getDisplayName(): String = "SDK: Application Settings Example"
+    override fun getDisplayName(): String = "Talon / Cursorless"
 
     override fun getPreferredFocusedComponent(): JComponent = mySettingsComponent!!.preferredFocusedComponent
 
@@ -27,22 +28,29 @@ internal class TalonSettingsConfigurable : Configurable {
     override fun isModified(): Boolean {
         val state: TalonSettings.State =
             Objects.requireNonNull(TalonSettings.instance.state)
-        return !mySettingsComponent!!.userNameText.equals(state.userId) ||
-                mySettingsComponent!!.ideaUserStatus != state.ideaStatus
+        return mySettingsComponent!!.hatsScaleFactor.toInt() != state.hatScaleFactor ||
+                mySettingsComponent!!.hatsVerticalOffset.toInt() != state.hatVerticalOffset ||
+                mySettingsComponent!!.enableHats != state.enableHats
     }
 
     override fun apply() {
         val state: TalonSettings.State =
             Objects.requireNonNull(TalonSettings.instance.state)
-        state.userId = mySettingsComponent!!.userNameText
-        state.ideaStatus = mySettingsComponent!!.ideaUserStatus
+        state.hatScaleFactor = mySettingsComponent!!.hatsScaleFactor.toInt()
+        state.hatVerticalOffset = mySettingsComponent!!.hatsVerticalOffset.toInt()
+        state.enableHats = mySettingsComponent!!.enableHats
+
+        val messageBus = ApplicationManager.getApplication().messageBus
+        messageBus.syncPublisher(TalonSettingsListener.TOPIC).onSettingsChanged(state)
+
     }
 
     override fun reset() {
         val state: TalonSettings.State =
             Objects.requireNonNull(TalonSettings.instance.state)
-        mySettingsComponent!!.userNameText = state.userId
-        mySettingsComponent!!.ideaUserStatus = state.ideaStatus
+        mySettingsComponent!!.hatsScaleFactor = state.hatScaleFactor.toString()
+        mySettingsComponent!!.hatsVerticalOffset = state.hatVerticalOffset.toString()
+        mySettingsComponent!!.enableHats = state.enableHats
     }
 
     override fun disposeUIResources() {
