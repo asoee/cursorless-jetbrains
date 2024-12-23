@@ -12,6 +12,7 @@ import groovy.json.JsonException
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
+import java.awt.RenderingHints
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.image.BufferedImage
@@ -188,6 +189,9 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
     }
 
     fun doPainting(g: Graphics) {
+        if (g is Graphics2D) {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
         val mapping = getHats()
         mapping.keys.forEach { fullName ->
             run {
