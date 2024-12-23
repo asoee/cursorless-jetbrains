@@ -28,8 +28,8 @@ internal class TalonSettingsConfigurable : Configurable {
     override fun isModified(): Boolean {
         val state: TalonSettings.State =
             Objects.requireNonNull(TalonSettings.instance.state)
-        return !mySettingsComponent!!.hatsScaleFactor.equals(state.hatScaleFactor) ||
-                !mySettingsComponent!!.hatsVerticalOffset.equals(state.hatVerticalOffset) ||
+        return mySettingsComponent!!.hatsScaleFactor.toInt() != state.hatScaleFactor ||
+                mySettingsComponent!!.hatsVerticalOffset.toInt() != state.hatVerticalOffset ||
                 mySettingsComponent!!.enableHats != state.enableHats
     }
 
