@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Added
+
+- Add support for multiple hat shapes using SVG
+- Add settings to tweak hat size and position
+- Add setting disable hats
+
 ## [0.0.6] - 2024-12-18
 
 ### Fixed
