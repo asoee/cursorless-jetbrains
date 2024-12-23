@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull
 
 @State(
     name = "com.github.asoee.cursorlessjetbrains.settings.TalonSettings",
-    storages = arrayOf(Storage("TalonSettingsPlugin.xml"))
+    storages = [Storage("TalonSettingsPlugin.xml")]
 )
 class TalonSettings
 

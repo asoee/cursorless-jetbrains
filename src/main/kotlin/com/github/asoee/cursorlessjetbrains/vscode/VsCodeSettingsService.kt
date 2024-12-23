@@ -15,7 +15,7 @@ import kotlin.io.path.exists
 
 @OptIn(ExperimentalSerializationApi::class)
 @Service(Service.Level.APP)
-class VsCodeSettingsService() : Disposable {
+class VsCodeSettingsService : Disposable {
 
     private val vsCodeSettingsDir: Path?
     private val watcher: FileWatcher?
@@ -79,7 +79,7 @@ class VsCodeSettingsService() : Disposable {
         this.eventDispatcher.multicaster.onDidChangeSettings(settings)
     }
 
-    public fun addListener(listener: VsCodeSettingsListener) {
+    fun addListener(listener: VsCodeSettingsListener) {
         this.eventDispatcher.addListener(listener)
     }
 
@@ -90,7 +90,7 @@ class VsCodeSettingsService() : Disposable {
 
     private val json = Json { allowTrailingComma = true }
 
-    fun currentSettings(): VsCodeSettings? {
+    fun currentSettings(): VsCodeSettings {
         val fullPath = this.vsCodeSettingsDir?.resolve("settings.json")
         if (fullPath != null && fullPath.exists()) {
             val jsonString = fullPath.toFile().readText()
@@ -99,7 +99,7 @@ class VsCodeSettingsService() : Disposable {
             val settings = VsCodeSettings(jsonObject)
             return settings
         }
-        return VsCodeSettings(JsonObject(emptyMap()));
+        return VsCodeSettings(JsonObject(emptyMap()))
     }
 
 }

@@ -345,7 +345,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
                 // assume all belongs to same project, so take project from the first
                 val project = flashRangesByEditor.keys.first()?.project
                 if (project != null) {
-                    val command = HighligthRangeCommand(project, flashRangesByEditor)
+                    val command = HighlightRangeCommand(project, flashRangesByEditor)
                     service<CommandExecutorService>().execute(command)
                 }
                 return
