@@ -13,15 +13,22 @@ import org.jetbrains.annotations.NotNull
     storages = [Storage("TalonSettingsPlugin.xml")]
 )
 class TalonSettings
-
     : PersistentStateComponent<TalonSettings.State> {
+
     class State {
         @NonNls
         var enableHats: Boolean = true
         var hatScaleFactor: Int = 100
         var hatVerticalOffset: Int = 0
         var flashRangeDuration: Int = 100
+        var hatShapeSettings: List<ShapeSetting> = listOf(ShapeSetting("default", true, 0))
     }
+
+    data class ShapeSetting(
+        val shapeName: String = "default",
+        var enabled: Boolean = true,
+        var penalty: Int = 1
+    )
 
     private var myState = State()
 
