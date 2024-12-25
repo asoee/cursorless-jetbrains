@@ -48,8 +48,8 @@ class HttpCommandServer {
         val bytes = ByteArray(20)
         random.nextBytes(bytes)
         val nonce = String(Base64.getUrlEncoder().encode(bytes))
-//        val nonce = "localdev";
-        val port: Int = PLATFORM_TO_PORT.getOrDefault(
+        val portOverride = System.getProperty("talon.http.port")?.toIntOrNull()
+        val port: Int = portOverride ?: PLATFORM_TO_PORT.getOrDefault(
             PlatformUtils.getPlatformPrefix(),
             DEFAULT_PORT
         )
