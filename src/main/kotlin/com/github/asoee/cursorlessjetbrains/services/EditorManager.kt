@@ -112,6 +112,10 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         var edtState: EditorState? = null
         ApplicationManager.getApplication().invokeAndWait {
             edtState = ReadAction.compute<EditorState, Throwable> {
+                if (editor.isDisposed) {
+                    println("Editor is disposed")
+                    return@compute null
+                }
                 ensureEditorIdSet(editor)
                 val editorId = editorIds[editor]!!
 //                println("Editor did change " + editorId)
