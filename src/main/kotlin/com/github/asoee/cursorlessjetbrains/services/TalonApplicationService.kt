@@ -3,11 +3,7 @@ package com.github.asoee.cursorlessjetbrains.services
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessEngine
 import com.github.asoee.cursorlessjetbrains.javet.JavetDriver
 import com.github.asoee.cursorlessjetbrains.listeners.*
-import com.github.asoee.cursorlessjetbrains.vscode.VsCodeSettings
-import com.github.asoee.cursorlessjetbrains.vscode.VsCodeSettingsListener
-import com.github.asoee.cursorlessjetbrains.vscode.VsCodeSettingsService
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
@@ -50,30 +46,13 @@ class TalonApplicationService(cs: CoroutineScope) : Disposable {
             .eventMulticaster as EditorEventMulticasterEx
         m.addFocusChangeListener(this.focusChangeListener, this)
 
-        val listener = object : VsCodeSettingsListener {
-            override fun onDidChangeSettings(settings: VsCodeSettings) {
-                settings.enabledHatShapes().let {
-                    updateEnabledHatShapes(it)
-                }
-            }
-        }
-
-        val vsCodeSettingsService = service<VsCodeSettingsService>()
-        val vsCodeSettings = vsCodeSettingsService.currentSettings()
-        vsCodeSettings?.enabledHatShapes()?.let {
-            updateEnabledHatShapes(it)
-        }
-        vsCodeSettingsService.addListener(listener)
-
         println("reloading all")
         this.editorManager.reloadAllEditors()
         println("reloaded all")
     }
 
-    private fun updateEnabledHatShapes(shapes: List<String>) {
-        val shapeSet = shapes.toMutableSet()
-        shapeSet.add("default")
-        cursorlessEngine.setEnableHatShapes(shapeSet.toList())
+    fun updateEnabledHatShapes(shapes: List<String>) {
+        cursorlessEngine.setEnableHatShapes(shapes)
     }
 
     fun editorCreated(e: Editor) {
@@ -129,4 +108,5 @@ class TalonApplicationService(cs: CoroutineScope) : Disposable {
 
         this.editorManager.editorClosed(editor)
     }
+
 }

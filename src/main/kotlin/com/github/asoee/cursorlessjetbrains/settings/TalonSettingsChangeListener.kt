@@ -6,7 +6,13 @@ import com.intellij.openapi.components.service
 class TalonSettingsChangeListener : TalonSettingsListener {
     override fun onSettingsChanged(settings: TalonSettings.State) {
 
-        service<TalonApplicationService>().editorManager.settingsUpdated(settings)
+        val applicationService = service<TalonApplicationService>()
 
+        applicationService.editorManager.settingsUpdated(settings)
+
+        val enabledShapes = settings.hatShapeSettings
+            .filter { it.enabled }
+            .map { it.shapeName }
+        applicationService.updateEnabledHatShapes(enabledShapes)
     }
 }

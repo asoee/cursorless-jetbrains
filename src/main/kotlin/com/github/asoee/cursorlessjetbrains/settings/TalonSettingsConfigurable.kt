@@ -31,7 +31,8 @@ internal class TalonSettingsConfigurable : Configurable {
         return mySettingsComponent!!.hatsScaleFactor.toInt() != state.hatScaleFactor ||
                 mySettingsComponent!!.hatsVerticalOffset.toInt() != state.hatVerticalOffset ||
                 mySettingsComponent!!.enableHats != state.enableHats ||
-                mySettingsComponent!!.flashRangeDuration.toInt() != state.flashRangeDuration
+                mySettingsComponent!!.flashRangeDuration.toInt() != state.flashRangeDuration ||
+                mySettingsComponent!!.hatShapeSettings != state.hatShapeSettings
     }
 
     override fun apply() {
@@ -41,6 +42,7 @@ internal class TalonSettingsConfigurable : Configurable {
         state.hatVerticalOffset = mySettingsComponent!!.hatsVerticalOffset.toInt()
         state.enableHats = mySettingsComponent!!.enableHats
         state.flashRangeDuration = mySettingsComponent!!.flashRangeDuration.toInt()
+        state.hatShapeSettings = mySettingsComponent!!.hatShapeSettings
 
         val messageBus = ApplicationManager.getApplication().messageBus
         messageBus.syncPublisher(TalonSettingsListener.TOPIC).onSettingsChanged(state)
@@ -54,6 +56,7 @@ internal class TalonSettingsConfigurable : Configurable {
         mySettingsComponent!!.hatsVerticalOffset = state.hatVerticalOffset.toString()
         mySettingsComponent!!.enableHats = state.enableHats
         mySettingsComponent!!.flashRangeDuration = state.flashRangeDuration.toString()
+        mySettingsComponent!!.hatShapeSettings = state.hatShapeSettings
     }
 
     override fun disposeUIResources() {
