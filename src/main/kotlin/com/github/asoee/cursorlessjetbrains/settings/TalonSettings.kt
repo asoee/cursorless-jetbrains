@@ -4,6 +4,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
+import com.intellij.util.xmlb.annotations.Attribute
 import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.NotNull
 
@@ -25,9 +26,12 @@ class TalonSettings
     }
 
     data class ShapeSetting(
-        val shapeName: String = "default",
-        var enabled: Boolean = true,
-        var penalty: Int = 1
+        @Attribute("shapeName")
+        val shapeName: String = "",
+        @Attribute("enabled")
+        var enabled: Boolean = false,
+        @Attribute("penalty")
+        var penalty: Int = -1
     )
 
     private var myState = State()
