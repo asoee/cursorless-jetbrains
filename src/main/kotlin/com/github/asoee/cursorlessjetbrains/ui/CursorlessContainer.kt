@@ -1,6 +1,7 @@
 package com.github.asoee.cursorlessjetbrains.ui
 
 import com.github.asoee.cursorlessjetbrains.cursorless.*
+import com.github.asoee.cursorlessjetbrains.settings.TalonSettings
 import com.github.weisj.jsvg.attributes.ViewBox
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.thisLogger
@@ -15,7 +16,6 @@ import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
-import java.awt.image.BufferedImage
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -33,8 +33,6 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
     private var hatsEnabled: Boolean = true
     private val parent: JComponent = editor.contentComponent
 
-    private var started = false
-
     /**
      * When local changes are made (e.g., a keystroke is pushed) we record these offsets
      * temporarily, so we can adjust hats later in the document before we get them back from
@@ -42,17 +40,26 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
      */
     private val localOffsets = ConcurrentLinkedQueue<Pair<Int, Int>>()
 
-    private var colors = DEFAULT_COLORS
+    private var colors: Map<String, JBColor> = toJbColorMap(DEFAULT_COLORS)
 
     private val log = logger<CursorlessContainer>()
-
-    private val shapeImageCache = mutableMapOf<String, BufferedImage>()
 
     private var hats = HatsFormat()
 
     private val boundsListener = BoundsChangeListener(this)
 
-    private val shapes = ALL_SHAPES.map { it to CursorlessShape.loadShape(it) }.toMap()
+    private val shapes = ALL_SHAPES.associateWith { CursorlessShape.loadShape(it) }
+
+    companion object {
+        private fun toJbColorMap(colors: Map<String, Map<String, String>>): Map<String, JBColor> {
+            return ALL_COLORS.associateWith { colorName: String ->
+                val dark = Color.decode(colors["dark"]?.get(colorName))
+                val light = Color.decode(colors["light"]?.get(colorName))
+                JBColor(light, dark)
+            }
+        }
+    }
+
 
     init {
         this.parent.add(this)
@@ -82,18 +89,20 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
 
     /**
      * Assigns our colors by taking the default colors and overriding them with
-     * the values (if any) in `COLORS_PATH`.
+     * the values from settings.
      */
-    fun assignColors() {
-        val colors = ColorsFormat()
-
-        DEFAULT_COLORS.forEach { (colorScheme, defaults) ->
-            run {
-                colors[colorScheme] = HashMap()
-                colors[colorScheme]!!.putAll(defaults)
+    private fun assignColors() {
+        val colors = HashMap<String, JBColor>()
+        val hatColorSettings = TalonSettings.instance.state.hatColorSettings
+        ALL_COLORS.forEach { colorName ->
+            hatColorSettings.find { setting ->
+                setting.colorName == colorName
+            }?.let { setting ->
+                colors[colorName] = JBColor(setting.light, setting.dark)
+            } ?: run {
+                colors[colorName] = this.colors[colorName]!!
             }
         }
-
         this.colors = colors
     }
 
@@ -101,7 +110,7 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
      * Records a "local offset" (a change to the document that's created before
      * VS Code has had time to generate new hats from that edit).
      *
-     * This is just to make hats a little look bit less janky as the user performs edits. It's pretty fragile
+     * This is just to make hats a little look a bit less janky as the user performs edits. It's pretty fragile
      * because we don't handle overlapping requests well (the hats file isn't associated with local serial,
      * so we will load old hats if the user is making a large series of changes)
      */
@@ -112,7 +121,7 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         this.repaint()
     }
 
-    fun editorPath(): String? {
+    private fun editorPath(): String? {
         val file = FileDocumentManager.getInstance().getFile(editor.document)
         return file?.path
     }
@@ -124,22 +133,7 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         return this.hats
     }
 
-    fun colorForName(colorName: String): JBColor? {
-        val lightColor = this.colors["light"]?.get(colorName)
-        val darkColor = this.colors["dark"]?.get(colorName)
-
-        if (lightColor == null || darkColor == null) {
-            println("Missing color for $colorName")
-            return null
-        }
-
-        return JBColor(
-            Color.decode(lightColor),
-            Color.decode(darkColor)
-        )
-    }
-
-    fun renderForColor(
+    private fun renderForColor(
         g: Graphics,
         mapping: HatsFormat,
         fullKeyName: String,
@@ -148,32 +142,24 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
     ) {
         val lineCount = editor.document.lineCount
         val charWidth = getCharacterWidth(editor, 'm')
+
+        val color = this.colors[colorName] ?: return
+        val svgIcon = shapes[shapeName ?: "default"]
+
         mapping[fullKeyName]?.forEach { range: CursorlessRange ->
             if (range.end.line > lineCount) {
                 return@forEach
             }
-            var offset = range.startOffset(editor)
-//
-//            localOffsets.forEach { pair ->
-//                if (offset >= pair.first) {
-////                    log.warn("adjusting $offset to ${offset + pair.second} due to local offset: $localOffsets")
-//                    offset += pair.second
-//                }
-//            }
-
+            val offset = range.startOffset(editor)
             val logicalPosition = editor.offsetToLogicalPosition(offset)
 
             val coordinates = editor.visualPositionToXY(
                 editor.logicalToVisualPosition(logicalPosition)
             )
 
-            val color = this.colorForName(colorName) ?: return
-
-            val svgIcon = shapes[shapeName ?: "default"]
-
             val shapeSize = charWidth * 0.7f * (scaleFactorPercent / 100.0f)
             val offsetX = (charWidth - shapeSize) / 2
-            val offsetY = 0f - this.verticalOffset
+            val offsetY = -1.0f - this.verticalOffset
             val posX = coordinates.x + offsetX
             val posY = coordinates.y + offsetY
             svgIcon?.let {
@@ -188,9 +174,9 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         }
     }
 
-    fun doPainting(g: Graphics) {
+    private fun doPainting(g: Graphics) {
         if (g is Graphics2D) {
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
         }
         val mapping = getHats()
         mapping.keys.forEach { fullName ->
@@ -211,21 +197,21 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         }
     }
 
-    fun isLibraryFile(): Boolean {
+    private fun isLibraryFile(): Boolean {
         val path = editorPath()
         // TODO(pcohen): hack for now; detect if the module is marked as a library
         // /Users/phillco/Library/Java/JavaVirtualMachines/corretto-11.0.14.1/Contents/Home/lib/src.zip!/java.desktop/javax/swing/JComponent.java
         return (path != null) && "node_modules/" in path
     }
 
-    fun isReadOnly(): Boolean {
+    private fun isReadOnly(): Boolean {
         val path = editorPath()
         return !editor.document.isWritable || path == null || !Files.isWritable(
             Path.of(path)
         ) || isLibraryFile()
     }
 
-    fun getCharacterWidth(editor: Editor, character: Char): Int {
+    private fun getCharacterWidth(editor: Editor, character: Char): Int {
         val fontMetrics = editor.contentComponent.getFontMetrics(editor.colorsScheme.getFont(EditorFontType.PLAIN))
         return fontMetrics.charWidth(character)
     }

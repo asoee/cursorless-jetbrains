@@ -10,9 +10,6 @@ class TalonSettingsChangeListener : TalonSettingsListener {
 
         applicationService.editorManager.settingsUpdated(settings)
 
-        val enabledShapes = settings.hatShapeSettings
-            .filter { it.enabled }
-            .map { it.shapeName }
-        applicationService.updateEnabledHatShapes(enabledShapes)
+        applicationService.settingsUpdated(settings)
     }
 }

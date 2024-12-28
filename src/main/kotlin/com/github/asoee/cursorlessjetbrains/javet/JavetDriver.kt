@@ -290,7 +290,7 @@ class JavetDriver {
             |   if (ide) {
             |     console.log("ASOEE/JS: ide document closed");
             |     try {
-            |       ide.documentClosed("${editorId}");
+            |       ide.documentClosed("$editorId");
             |       console.log("ASOEE/JS: async document closed completed");
             |     } catch (e) {                      
             |       console.error("ASOEE/JS: error in document closed - " + e);
@@ -341,6 +341,72 @@ class JavetDriver {
             |       plugin.hats.setEnabledHatShapes(${Json.encodeToString(enabledHatShapes)});
             |     } catch (e) {                      
             |       console.error("ASOEE/JS: error in setEnabledHatShapes - " + e);
+            |       throw e;
+            |     }
+            |   } else {
+            |     console.log("ASOEE/JS: plugin not available");
+            |   }
+            | })();
+            | """.trimMargin()
+
+        runtime.getExecutor(js)
+            .executeVoid()
+        eventLoop.await()
+    }
+
+    fun setHatShapePenalties(penalties: Map<String,Int>) {
+        val js = """
+            | (async () => {
+            |   const plugin = await globalThis.plugin;
+            |   if (plugin) {
+            |     try {
+            |       plugin.hats.setHatShapePenalties(${Json.encodeToString(penalties)});
+            |     } catch (e) {                      
+            |       console.error("ASOEE/JS: error in setHatShapePenalties - " + e);
+            |       throw e;
+            |     }
+            |   } else {
+            |     console.log("ASOEE/JS: plugin not available");
+            |   }
+            | })();
+            | """.trimMargin()
+
+        runtime.getExecutor(js)
+            .executeVoid()
+        eventLoop.await()
+    }
+
+    fun setEnabledHatColors(enabledHatColors: List<String>) {
+        val js = """
+            | (async () => {
+            |   const plugin = await globalThis.plugin;
+            |   if (plugin) {
+            |     try {
+            |       plugin.hats.setEnabledHatColors(${Json.encodeToString(enabledHatColors)});
+            |     } catch (e) {                      
+            |       console.error("ASOEE/JS: error in setEnabledHatColors - " + e);
+            |       throw e;
+            |     }
+            |   } else {
+            |     console.log("ASOEE/JS: plugin not available");
+            |   }
+            | })();
+            | """.trimMargin()
+
+        runtime.getExecutor(js)
+            .executeVoid()
+        eventLoop.await()
+    }
+
+    fun setHatColorPenalties(penalties: Map<String,Int>) {
+        val js = """
+            | (async () => {
+            |   const plugin = await globalThis.plugin;
+            |   if (plugin) {
+            |     try {
+            |       plugin.hats.setHatColorPenalties(${Json.encodeToString(penalties)});
+            |     } catch (e) {                      
+            |       console.error("ASOEE/JS: error in setHatColorPenalties - " + e);
             |       throw e;
             |     }
             |   } else {

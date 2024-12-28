@@ -3,6 +3,7 @@ package com.github.asoee.cursorlessjetbrains.services
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessEngine
 import com.github.asoee.cursorlessjetbrains.javet.JavetDriver
 import com.github.asoee.cursorlessjetbrains.listeners.*
+import com.github.asoee.cursorlessjetbrains.settings.TalonSettings
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Editor
@@ -46,13 +47,11 @@ class TalonApplicationService(cs: CoroutineScope) : Disposable {
             .eventMulticaster as EditorEventMulticasterEx
         m.addFocusChangeListener(this.focusChangeListener, this)
 
+        settingsUpdated(TalonSettings.instance.state)
+
         println("reloading all")
         this.editorManager.reloadAllEditors()
         println("reloaded all")
-    }
-
-    fun updateEnabledHatShapes(shapes: List<String>) {
-        cursorlessEngine.setEnableHatShapes(shapes)
     }
 
     fun editorCreated(e: Editor) {
@@ -108,5 +107,29 @@ class TalonApplicationService(cs: CoroutineScope) : Disposable {
 
         this.editorManager.editorClosed(editor)
     }
+
+    fun settingsUpdated(settings: TalonSettings.State) {
+        this.editorManager.settingsUpdated(settings)
+        updateCursorlessEngineSettings(settings)
+    }
+
+    private fun updateCursorlessEngineSettings(settings: TalonSettings.State) {
+        val enabledShapes = settings.hatShapeSettings
+            .filter { it.enabled }
+            .map { it.shapeName }
+        cursorlessEngine.setEnabledHatShapes(enabledShapes)
+
+        val shapePenalties = settings.hatShapeSettings
+            .associate { it.shapeName to it.penalty }
+        cursorlessEngine.setHatShapePenalties(shapePenalties)
+
+        val enabledColors = settings.hatColorSettings
+            .filter { it.enabled }
+            .map { it.colorName }
+        cursorlessEngine.setEnabledHatColors(enabledColors)
+
+        val colorPenalties = settings.hatColorSettings
+            .associate { it.colorName to it.penalty }
+        cursorlessEngine.setHatColorPenalties(colorPenalties)    }
 
 }

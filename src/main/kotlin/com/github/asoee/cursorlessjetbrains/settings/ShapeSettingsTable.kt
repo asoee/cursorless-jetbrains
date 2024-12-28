@@ -10,16 +10,24 @@ import javax.swing.JPanel
 
 class ShapeSettingsTable(private val tableModel: ShapesTableModel) : JPanel() {
 
+    companion object {
+        const val NAME_COLUMN = 0
+        const val ENABLED_COLUMN = 1
+        const val PENALTY_COLUMN = 2
+    }
+
     // Create a JBTable with the table model
     private val jbTable = JBTable(tableModel)
 
     init {
 
         // Set custom renderer and editor for the second column (checkbox)
-        jbTable.columnModel.getColumn(1).cellRenderer = CheckBoxCellRenderer()
+        jbTable.columnModel.getColumn(ENABLED_COLUMN).cellRenderer = CheckBoxCellRenderer()
         val editorCheckbox = JBCheckBox()
         editorCheckbox.horizontalAlignment = JBCheckBox.CENTER
-        jbTable.columnModel.getColumn(1).cellEditor = DefaultCellEditor(editorCheckbox)
+        jbTable.columnModel.getColumn(ENABLED_COLUMN).cellEditor = DefaultCellEditor(editorCheckbox)
+
+        jbTable.columnModel.getColumn(PENALTY_COLUMN).cellEditor = IntegerCellEditor()
 
         // Calculate the preferred height of the table
         val preferredHeight = jbTable.rowHeight * jbTable.rowCount

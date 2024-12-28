@@ -19,13 +19,13 @@ class ColorTableModel : DefaultTableModel(defaultDataModel(), columnNames) {
         private val columnNames = arrayOf("Color", "Enabled", "Dark", "Light", "Penalty")
 
         private fun defaultDataModel(): Array<Array<Any>> {
-            return ALL_COLORS.map {
+            return ALL_COLORS.map { colorName ->
                 arrayOf<Any>(
-                    it,  // name
-                    it == "default", // enabled
+                    colorName,  // name
+                    colorName == "default", // enabled
                     Color.decode(DEFAULT_COLORS["dark"]!!["default"]), // dark
                     Color.decode(DEFAULT_COLORS["light"]!!["default"]), // light
-                    0 // penalty
+                    if (colorName == "default") 0 else 1 // penalty
                 )
             }.toTypedArray()
         }

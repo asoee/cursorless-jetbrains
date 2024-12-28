@@ -1,19 +1,25 @@
 package com.github.asoee.cursorlessjetbrains.settings
 
 import com.github.asoee.cursorlessjetbrains.cursorless.ALL_SHAPES
+import com.github.asoee.cursorlessjetbrains.settings.ShapeSettingsTable.Companion.ENABLED_COLUMN
+import com.github.asoee.cursorlessjetbrains.settings.ShapeSettingsTable.Companion.NAME_COLUMN
+import com.github.asoee.cursorlessjetbrains.settings.ShapeSettingsTable.Companion.PENALTY_COLUMN
 import javax.swing.table.DefaultTableModel
 
-private const val NAME_COLUMN = 0
-private const val ENABLED_COLUMN = 1
+
 
 class ShapesTableModel : DefaultTableModel(defaultDataModel(), columnNames) {
 
     companion object {
-        private val columnNames = arrayOf("Shape", "Enabled")
+        private val columnNames = arrayOf("Shape", "Enabled", "Penalty")
 
         private fun defaultDataModel(): Array<Array<Any>> {
-            return ALL_SHAPES.map {
-                arrayOf<Any>(it, it == "default")
+            return ALL_SHAPES.map { snapeName ->
+                arrayOf<Any>(
+                    snapeName,  // name
+                    snapeName == "default", // enabled
+                    if (snapeName == "default") 0 else 1 // penalty
+                )
             }.toTypedArray()
         }
     }
@@ -25,6 +31,7 @@ class ShapesTableModel : DefaultTableModel(defaultDataModel(), columnNames) {
             setting?.let {
                 dataVector.find { it[NAME_COLUMN] == name }?.let { row ->
                     row[ENABLED_COLUMN] = setting.enabled
+                    row[PENALTY_COLUMN] = setting.penalty
                 }
             }
         }
@@ -37,7 +44,7 @@ class ShapesTableModel : DefaultTableModel(defaultDataModel(), columnNames) {
             dataVector.find { it[NAME_COLUMN] == name }?.let { row ->
                 val shapeName = row[NAME_COLUMN] as String
                 val shapeEnabled = row[ENABLED_COLUMN] as Boolean
-                val penalty: Int = if (shapeName == "default") 0 else 1
+                val penalty: Int = row[PENALTY_COLUMN] as Int
                 TalonSettings.ShapeSetting(
                     shapeName,
                     shapeEnabled,
@@ -50,6 +57,7 @@ class ShapesTableModel : DefaultTableModel(defaultDataModel(), columnNames) {
     override fun getColumnClass(columnIndex: Int): Class<*> {
         return when (columnIndex) {
             ENABLED_COLUMN -> Boolean::class.java
+            PENALTY_COLUMN -> Int::class.java
             else -> String::class.java
         }
     }
