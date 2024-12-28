@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Added
+
+- Add color settings for hats
+- Add shape penalty settings
+- Propagate hat settings to cursorless engine
+
+### Changed
+
+- Use anti-aliased hats on windows
+- Removed dependency on VS-Code settings
+- Improved settings page layout using DSL
+
 ## [0.0.7] - 2024-12-23
 
 ### Added
