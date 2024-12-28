@@ -24,6 +24,26 @@ val DEFAULT_COLORS = mapOf(
     )
 )
 
+val ALL_COLORS = listOf(
+    "default",
+    "blue",
+    "green",
+    "red",
+    "pink",
+    "yellow",
+    "userColor1",
+    "userColor2"
+)
+
+val DEFAULT_ENABLED_COLORS = listOf(
+    "default",
+    "blue",
+    "green",
+    "red",
+    "pink",
+    "yellow",
+)
+
 val ALL_SHAPES = listOf(
     "default",
     "bolt",

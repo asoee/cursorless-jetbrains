@@ -10821,20 +10821,15 @@ function zipStrict(list1, list2) {
 }
 
 // src/ide/JetbrainsHats.ts
-var HAT_COLORS = [
-  "default",
-  "blue",
-  "green",
-  "red",
-  "pink",
-  "yellow"
-];
 var JetbrainsHats = class {
   constructor(client) {
     this.isEnabledNotifier = new Notifier();
     this.hatStyleChangedNotifier = new Notifier();
     this.hatRanges = [];
     this.enabledHatShapes = ["default"];
+    this.hatShapePenalties = /* @__PURE__ */ new Map([["default", 0]]);
+    this.enabledHatColors = ["default"];
+    this.hatColorPenalties = /* @__PURE__ */ new Map([["default", 0]]);
     this.isEnabled = true;
     this.client = client;
     this.enabledHatStyles = this.generateHatStyles();
@@ -10852,6 +10847,25 @@ var JetbrainsHats = class {
     this.enabledHatStyles = this.generateHatStyles();
     this.hatStyleChangedNotifier.notifyListeners(this.enabledHatStyles);
   }
+  setHatShapePenalties(hatShapePenalties) {
+    this.hatShapePenalties = new Map(
+      Object.entries(hatShapePenalties)
+    );
+    this.enabledHatStyles = this.generateHatStyles();
+    this.hatStyleChangedNotifier.notifyListeners(this.enabledHatStyles);
+  }
+  setEnabledHatColors(enabledHatColors) {
+    this.enabledHatColors = enabledHatColors;
+    this.enabledHatStyles = this.generateHatStyles();
+    this.hatStyleChangedNotifier.notifyListeners(this.enabledHatStyles);
+  }
+  setHatColorPenalties(hatColorPenalties) {
+    this.hatColorPenalties = new Map(
+      Object.entries(hatColorPenalties)
+    );
+    this.enabledHatStyles = this.generateHatStyles();
+    this.hatStyleChangedNotifier.notifyListeners(this.enabledHatStyles);
+  }
   toJetbransHatRanges(hatRanges) {
     return hatRanges.map((range3) => {
       return {
@@ -10863,10 +10877,10 @@ var JetbrainsHats = class {
   }
   generateHatStyles() {
     const res = /* @__PURE__ */ new Map();
-    for (const color of HAT_COLORS) {
-      const colorPenalty = color === "default" ? 0 : 1;
+    for (const color of this.enabledHatColors) {
+      const colorPenalty = this.getColorPenalty(color);
       for (const shape of this.enabledHatShapes) {
-        const shapePenalty = shape === "default" ? 0 : 2;
+        const shapePenalty = this.getShapePenalty(shape);
         let styleName;
         if (shape === "default") {
           styleName = color;
@@ -10877,6 +10891,22 @@ var JetbrainsHats = class {
       }
     }
     return Object.fromEntries(res);
+  }
+  getShapePenalty(shape) {
+    let shapePenalty = this.hatShapePenalties.get(shape);
+    if (shapePenalty == null) {
+      shapePenalty = shape === "default" ? 0 : 2;
+    } else {
+      shapePenalty = shape === "default" ? shapePenalty : shapePenalty + 1;
+    }
+    return shapePenalty;
+  }
+  getColorPenalty(color) {
+    let colorPenalty = this.hatColorPenalties.get(color);
+    if (colorPenalty == null) {
+      colorPenalty = color === "default" ? 0 : 1;
+    }
+    return colorPenalty;
   }
   onDidChangeEnabledHatStyles(listener) {
     return this.hatStyleChangedNotifier.registerListener(listener);

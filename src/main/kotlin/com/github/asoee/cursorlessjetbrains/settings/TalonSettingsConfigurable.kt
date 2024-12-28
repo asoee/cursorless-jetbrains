@@ -17,55 +17,82 @@ private const val DISPLAY_NAME = "Talon / Cursorless"
 internal class TalonSettingsConfigurable : BoundConfigurable(DISPLAY_NAME, ID) {
 
     private val shapeSettingsModel = ShapesTableModel()
+    private val colorSettingsModel = ColorTableModel()
 
     override fun createPanel(): DialogPanel {
 
         val settings = TalonSettings.instance
 
         val shapeSettingsTable = ShapeSettingsTable(shapeSettingsModel)
+        val colorSettingsTable = ColorSettingsTable(colorSettingsModel)
 
         return panel {
-            row {
-                checkBox("Enable Cursorless hats")
-                    .bindSelected(settings.state::enableHats)
-            }
-            row {
-                label("Hats vertical offset")
-                intTextField((-100..100), 1)
-                    .bindIntText(settings.state::hatVerticalOffset)
-                @Suppress("DialogTitleCapitalization")
-                label("pixels")
-            }
-            row {
-                label("Hats scale factor")
-                intTextField((0..500), 5)
-                    .bindIntText(settings.state::hatScaleFactor)
-                @Suppress("DialogTitleCapitalization")
-                label("percent")
-            }
-            row {
-                label("Flash range duration")
-                    .gap(RightGap.SMALL)
-                intTextField((1..5000), 50)
-                    .bindIntText(settings.state::flashRangeDuration)
-                    .columns(4)
+            group("General") {
+                row {
+                    checkBox("Enable Cursorless hats")
+                        .bindSelected(settings.state::enableHats)
+                }
+                row {
+                    label("Hats vertical offset")
+                    intTextField((-100..100), 1)
+                        .bindIntText(settings.state::hatVerticalOffset)
+                        .columns(4)
+                        .gap(RightGap.SMALL)
+                    @Suppress("DialogTitleCapitalization")
+                    label("pixels")
+                }
+                row {
+                    label("Hats scale factor")
+                    intTextField((0..500), 5)
+                        .bindIntText(settings.state::hatScaleFactor)
+                        .columns(4)
+                        .gap(RightGap.SMALL)
+                    @Suppress("DialogTitleCapitalization")
+                    label("percent")
+                }
+                row {
+                    label("Flash range duration")
+                    intTextField((1..5000), 50)
+                        .bindIntText(settings.state::flashRangeDuration)
+                        .columns(4)
 //                    .enabledIf(model.enableHats)
-                    .gap(RightGap.SMALL)
-                @Suppress("DialogTitleCapitalization")
-                label(ApplicationBundle.message("editbox.ms"))
+                        .gap(RightGap.SMALL)
+                    @Suppress("DialogTitleCapitalization")
+                    label(ApplicationBundle.message("editbox.ms"))
 
+                }
             }
-            row {
-                label("Shape settings")
-                    .comment(
-                        "While you can enable or disable shapes here, it will only affect the drawing of the shapes." +
-                                "Until some changes are done to talon-cursorless, talon will only recognize commands with the shapes that are enabled in VS-Code."
-                    )
+            group("Colors") {
+                row {
+                    label("Color settings")
+                }
+                row {
+                    cell(colorSettingsTable)
+                        .align(Align.FILL)
+                        .bind(
+                            { table -> table.getValue() },
+                            { table, value -> table.setValue(value) },
+                            settings.state::hatColorSettings.toMutableProperty()
+                        )
+                }
             }
-            row {
-                cell(shapeSettingsTable)
-                    .align(Align.FILL)
-                    .bind(::getShapeSettings, ::setShapeSettings, settings.state::hatShapeSettings.toMutableProperty())
+            group("Shapes") {
+                row {
+                    label("Shape settings")
+                        .comment(
+                            "While you can enable or disable shapes here, it will only affect the drawing of the shapes." +
+                                    "Until some changes are done to talon-cursorless, talon will only recognize commands with the shapes that are enabled in VS-Code."
+                        )
+                }
+                row {
+                    cell(shapeSettingsTable)
+                        .align(Align.FILL)
+                        .bind(
+                            ::getShapeSettings,
+                            ::setShapeSettings,
+                            settings.state::hatShapeSettings.toMutableProperty()
+                        )
+                }
             }
         }
 

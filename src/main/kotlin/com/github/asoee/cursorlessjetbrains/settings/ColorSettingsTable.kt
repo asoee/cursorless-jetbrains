@@ -5,15 +5,16 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import java.awt.Dimension
 import javax.swing.BoxLayout
-import javax.swing.DefaultCellEditor
 import javax.swing.JPanel
 
-class ShapeSettingsTable(private val tableModel: ShapesTableModel) : JPanel() {
+class ColorSettingsTable(private val tableModel: ColorTableModel) : JPanel() {
 
     companion object {
         const val NAME_COLUMN = 0
         const val ENABLED_COLUMN = 1
-        const val PENALTY_COLUMN = 2
+        const val DARK_COLUMN = 2
+        const val LIGHT_COLUMN = 3
+        const val PENALTY_COLUMN = 4
     }
 
     // Create a JBTable with the table model
@@ -25,7 +26,15 @@ class ShapeSettingsTable(private val tableModel: ShapesTableModel) : JPanel() {
         jbTable.columnModel.getColumn(ENABLED_COLUMN).cellRenderer = CheckBoxCellRenderer()
         val editorCheckbox = JBCheckBox()
         editorCheckbox.horizontalAlignment = JBCheckBox.CENTER
-        jbTable.columnModel.getColumn(ENABLED_COLUMN).cellEditor = DefaultCellEditor(editorCheckbox)
+        JBTable.createBooleanEditor()
+        jbTable.columnModel.getColumn(ENABLED_COLUMN).cellEditor =  JBTable.createBooleanEditor()
+
+        jbTable.columnModel.getColumn(LIGHT_COLUMN).cellRenderer = ColorCellRenderer()
+        jbTable.columnModel.getColumn(DARK_COLUMN).cellRenderer = ColorCellRenderer()
+
+        jbTable.columnModel.getColumn(LIGHT_COLUMN).cellEditor = ColorCellEditor(jbTable)
+        jbTable.columnModel.getColumn(DARK_COLUMN).cellEditor = ColorCellEditor(jbTable)
+
 
         jbTable.columnModel.getColumn(PENALTY_COLUMN).cellEditor = IntegerCellEditor()
 
@@ -42,11 +51,11 @@ class ShapeSettingsTable(private val tableModel: ShapesTableModel) : JPanel() {
 
     }
 
-    fun setValue(settings: List<TalonSettings.ShapeSetting>) {
-        tableModel.setShapeSetting(settings)
+    fun setValue(settings: List<TalonSettings.ColorSetting>) {
+        tableModel.setColorSetting(settings)
     }
 
-    fun getValue(): List<TalonSettings.ShapeSetting> {
-        return tableModel.getShapeSettings()
+    fun getValue(): List<TalonSettings.ColorSetting> {
+        return tableModel.getColorSettings()
     }
 }
