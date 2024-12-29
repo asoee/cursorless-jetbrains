@@ -18,6 +18,7 @@ class IDEActionCommand(project: Project, private val actionId: String) : VcComma
         }
 
         val readonlyActions = listOf(IdeActions.ACTION_SHOW_INTENTION_ACTIONS)
+        val invokeOnlyActions = listOf(IdeActions.ACTION_EDITOR_PASTE_FROM_HISTORY)
         val writeActions = listOf<String>()
     }
 
@@ -25,6 +26,10 @@ class IDEActionCommand(project: Project, private val actionId: String) : VcComma
 
     init {
         action = ActionManager.getInstance().getAction(actionId)
+    }
+
+    override fun invokeOnly(): Boolean {
+        return invokeOnlyActions.contains(actionId)
     }
 
     override fun executionMode(): ExecutionMode {
