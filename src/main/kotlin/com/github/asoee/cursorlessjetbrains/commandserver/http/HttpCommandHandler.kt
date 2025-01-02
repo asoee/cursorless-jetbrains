@@ -32,7 +32,7 @@ class HttpCommandHandler : HttpHandler {
             val bodyStream = httpExchange.requestBody
             val s = Scanner(bodyStream).useDelimiter("\\A")
             val response: VoicePluginResponse = fromRequestUri(httpExchange.requestURI)
-                .map({ handleRquest(it) })
+                .map({ handleRequest(it) })
                 .map { resp -> VoicePluginResponse(200, resp) }
                 .orElse(VoicePluginResponse(502, "BAD"))
             LOG.info("Response: " + response)
@@ -56,7 +56,7 @@ class HttpCommandHandler : HttpHandler {
         }
     }
 
-    fun handleRquest(request: CommandRequest): String {
+    fun handleRequest(request: CommandRequest): String {
         val registryService = service<CommandRegistryService>()
         val command = registryService.getCommand(request)
 

@@ -19,6 +19,15 @@ class CommandExecutorService {
     private fun executeOnEDT(command: VcCommand): String {
         val result: ArrayList<String> = ArrayList()
 
+        if (command.invokeOnly()) {
+            ApplicationManager.getApplication().invokeLater {
+                val context = CommandContext(command.project)
+                command.execute(context)
+            }
+            return ""
+        }
+
+
         ApplicationManager.getApplication().invokeAndWait {
             val context = CommandContext(command.project)
             when (command.executionMode()) {
