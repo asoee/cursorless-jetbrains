@@ -11557,7 +11557,7 @@ var JetbrainsEditor = class {
       range3 ? [range3] : [],
       true,
       false,
-      "QuickImplementations"
+      "GotoDeclaration"
     );
     await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }

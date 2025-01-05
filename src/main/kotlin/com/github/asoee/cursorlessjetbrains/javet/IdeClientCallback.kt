@@ -43,6 +43,7 @@ class IdeClientCallback {
         override fun executeCommand(editorId: String, command: String, args: Array<String>) {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
+
         override fun executeRangeCommand(editorId: String, rangeCommand: CursorlessEditorCommand) {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }

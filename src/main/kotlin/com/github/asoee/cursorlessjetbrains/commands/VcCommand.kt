@@ -17,4 +17,8 @@ abstract class VcCommand(val project: Project) {
         return ExecutionMode.EDT
     }
 
+    open fun invokeOnly(): Boolean {
+        return false
+    }
+
 }
