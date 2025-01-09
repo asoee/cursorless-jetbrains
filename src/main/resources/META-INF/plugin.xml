@@ -42,6 +42,9 @@
                     first-keystroke="control shift F17"/>
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
+        <action id="ListAllActions" class="com.github.asoee.cursorlessjetbrains.action.ListAllActions"
+                text="List All Actions" />
+
     </actions>
 
     <applicationListeners>
