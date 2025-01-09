@@ -259,6 +259,9 @@ class TestCursorlessActions : BasePlatformTestCase() {
     }
 
     private fun awaitHats(fixture: MainJavaFixture, editor: Editor): HatsFormat {
+        runBlocking {
+            delay(150)
+        }
         var editorHats: HatsFormat? = null
         await.atMost(2, TimeUnit.SECONDS).until {
             editorHats = fixture.appService.editorManager.getEditorHats(editor)
