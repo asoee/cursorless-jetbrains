@@ -11437,6 +11437,7 @@ var JetbrainsEditor = class {
     };
     this.isActive = true;
     this.isVisible = true;
+    this.isEditable = true;
   }
   isEqual(other) {
     return this.id === other.id;
@@ -11683,18 +11684,23 @@ var JetbrainsIDE = class {
     throw new Error("workspaceFolders not get implemented.");
   }
   get activeTextEditor() {
-    return this.activeEditableTextEditor;
+    return this.activeEditor;
   }
   get activeEditableTextEditor() {
-    return this.activeEditor;
+    return this.activeEditor?.isEditable ? this.activeEditor : void 0;
   }
   get visibleTextEditors() {
     return [...this.editors.values()].filter((editor) => editor.isVisible);
   }
   getEditableTextEditor(editor) {
+    console.log("getEditableTextEditor");
     if (editor instanceof JetbrainsEditor) {
       console.log("getEditableTextEditor - return current");
-      return editor;
+      if (editor.isEditable) {
+        return editor;
+      } else {
+        throw Error(`Editor is not editable: ${editor}`);
+      }
     }
     throw Error(`Unsupported text editor type: ${editor}`);
   }
@@ -11799,6 +11805,7 @@ function updateEditor(editor, editorState) {
   );
   editor.isActive = editorState.active;
   editor.isVisible = editorState.visible;
+  editor.isEditable = editorState.editable;
 }
 function getLines(text, firstLine, lastLine) {
   const lines = text.split("\n");
