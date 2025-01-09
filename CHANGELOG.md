@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Fix hanging modal actions like "clippings" - use invokeLater
+- Make "define" command "go to definition" instead of quick popup
+- Add list all tasks command
+
 ## [0.0.8] - 2024-12-28
 
 ### Added
