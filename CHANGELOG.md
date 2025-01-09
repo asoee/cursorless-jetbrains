@@ -4,9 +4,18 @@
 
 ### Changed
 
-- Fix hanging modal actions like "clippings" - use invokeLater
 - Make "define" command "go to definition" instead of quick popup
+- Propagate file editable state to cursorless
+- Enable drawing on hats in readonly files
+
+### Added
+
 - Add list all tasks command
+
+### Fixed
+
+- Fix hanging modal actions like "clippings" - use invokeLater
+- Fix occasional NPE on startup due to editor without project
 
 ## [0.0.8] - 2024-12-28
 

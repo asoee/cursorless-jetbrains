@@ -69,6 +69,7 @@ class JavetDriverTest {
             listOf(cursorPos),
             listOf(Selection(start= cursorPos, end=cursorPos, cursorPosition = cursorPos, active = null, anchor = null)),
             true,
+            true,
         )
 
         driver.editorChanged(state)
