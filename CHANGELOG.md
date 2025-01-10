@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.0.9] - 2025-01-10
+
 ### Changed
 
 - Make "define" command "go to definition" instead of quick popup
@@ -111,7 +113,8 @@
 - Communication with talon using both HTTP and file based command server
 - Most voice-code commands added to the plugin
 
-[Unreleased]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.8...HEAD
+[Unreleased]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.9...HEAD
+[0.0.9]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.8...v0.0.9
 [0.0.8]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.5...v0.0.6
