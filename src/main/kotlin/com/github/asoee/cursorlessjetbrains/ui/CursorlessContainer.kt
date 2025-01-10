@@ -219,10 +219,10 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
     override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
 
-        if (isReadOnly()) {
+//        if (isReadOnly()) {
             // NOTE(pcohen): work round bad performance in read only library
-            return
-        }
+//            return
+//        }
 
         try {
             if (hatsEnabled) {

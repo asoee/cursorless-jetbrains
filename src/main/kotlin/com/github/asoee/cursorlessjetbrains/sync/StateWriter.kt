@@ -90,13 +90,9 @@ fun serializeEditor(editor: Editor, editorId: String): EditorState {
 
         val project = editor.project
         val document = editor.document
-        val visible = FileEditorManager.getInstance(project!!).selectedEditors.any {
-            if (it is TextEditor) {
-                it.editor == editor
-            } else {
-                false
-            }
-        }
+        val visible = isEditorVisible(project, editor)
+        val editable = isEditorEditable(project, editor)
+
         val active = isEditorFocused(editor)
         val currentFile =
             FileDocumentManager.getInstance().getFile(document)?.path
@@ -126,11 +122,47 @@ fun serializeEditor(editor: Editor, editorId: String): EditorState {
             endLine,
             cursors,
             selections,
-            visible
+            visible,
+            editable
         )
     }
     return edtState
 
+}
+
+private fun isEditorVisible(
+    project: Project?,
+    editor: Editor
+): Boolean {
+    if (project != null) {
+        return FileEditorManager.getInstance(project).selectedEditors.any {
+            if (it is TextEditor) {
+                it.editor == editor
+            } else {
+                false
+            }
+        }
+    }
+    return false
+}
+
+fun isEditorEditable(project: Project?, editor: Editor): Boolean {
+    return editor.document.isWritable
+//    if (project == null) {
+//        return false
+//    }
+//    val fileEditorManager = FileEditorManager.getInstance(project)
+//    val file = editor.document.let { FileDocumentManager.getInstance().getFile(it) }
+//
+//    if (file != null) {
+//        val fileEditors = fileEditorManager.getAllEditors(file)
+//        for (fileEditor in fileEditors) {
+//            if (fileEditor is TextEditor && fileEditor.editor == editor) {
+//                return file.isWritable
+//            }
+//        }
+//    }
+//    return false
 }
 
 fun isEditorFocused(editor: Editor): Boolean {
