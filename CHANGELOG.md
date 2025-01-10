@@ -7,6 +7,7 @@
 - Make "define" command "go to definition" instead of quick popup
 - Propagate file editable state to cursorless
 - Enable drawing on hats in readonly files
+- Remove localOffset handling for painting hats
 
 ### Added
 
