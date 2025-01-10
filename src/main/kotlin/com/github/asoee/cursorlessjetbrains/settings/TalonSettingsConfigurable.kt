@@ -1,7 +1,6 @@
 package com.github.asoee.cursorlessjetbrains.settings
 
 import com.intellij.openapi.application.ApplicationBundle
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.dsl.builder.*
@@ -109,7 +108,7 @@ internal class TalonSettingsConfigurable : BoundConfigurable(DISPLAY_NAME, ID) {
     override fun apply() {
         super.apply()
 
-        val messageBus = ApplicationManager.getApplication().messageBus
-        messageBus.syncPublisher(TalonSettingsListener.TOPIC).onSettingsChanged(TalonSettings.instance.state)
+        val settings = TalonSettings.instance
+        settings.fireSettingsChanged()
     }
 }
