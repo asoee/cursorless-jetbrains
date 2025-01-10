@@ -18,7 +18,6 @@ import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.concurrent.ConcurrentLinkedQueue
 import javax.swing.JComponent
 
 
@@ -32,13 +31,6 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
     private var scaleFactorPercent: Int = 100
     private var hatsEnabled: Boolean = true
     private val parent: JComponent = editor.contentComponent
-
-    /**
-     * When local changes are made (e.g., a keystroke is pushed) we record these offsets
-     * temporarily, so we can adjust hats later in the document before we get them back from
-     * the sidecar. This is purely a quality of life improvement.
-     */
-    private val localOffsets = ConcurrentLinkedQueue<Pair<Int, Int>>()
 
     private var colors: Map<String, JBColor> = toJbColorMap(DEFAULT_COLORS)
 
@@ -104,21 +96,6 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
             }
         }
         this.colors = colors
-    }
-
-    /**
-     * Records a "local offset" (a change to the document that's created before
-     * VS Code has had time to generate new hats from that edit).
-     *
-     * This is just to make hats a little look a bit less janky as the user performs edits. It's pretty fragile
-     * because we don't handle overlapping requests well (the hats file isn't associated with local serial,
-     * so we will load old hats if the user is making a large series of changes)
-     */
-    fun addLocalOffset(startOffset: Int, sizeDelta: Int) {
-        localOffsets += Pair(startOffset, sizeDelta)
-        log.info("localOffsets = $localOffsets")
-        this.invalidate()
-        this.repaint()
     }
 
     private fun editorPath(): String? {
@@ -241,7 +218,6 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
     fun updateHats(format: HatsFormat) {
         this.hats = format
         this.assignColors()
-        localOffsets.clear()
         this.invalidate()
         this.repaint()
     }
