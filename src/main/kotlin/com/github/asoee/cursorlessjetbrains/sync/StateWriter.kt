@@ -7,10 +7,8 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
-import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.IdeFocusManager
 import java.nio.file.Path
@@ -166,6 +164,9 @@ fun isEditorEditable(project: Project?, editor: Editor): Boolean {
 }
 
 fun isEditorFocused(editor: Editor): Boolean {
+    if (editor.project == null) {
+        return false
+    }
     FileEditorManager.getInstance(editor.project!!).selectedEditor.let { selectedEditor ->
         return selectedEditor is TextEditor && selectedEditor.editor == editor
     }
