@@ -64,9 +64,9 @@ class HttpCommandHandler : HttpHandler {
         if (command != null) {
             return executorService.execute(command)
         } else {
-            LOG.error("Command not found: " + request.command)
+            LOG.warn("Command not found: " + request.command + " " + request.args)
             val notification = Notification(
-                "vc-idea", "Talon jetbrains", "Command not found: " + request.command,
+                "vc-idea", "Talon jetbrains", "Command not found: " + request.command + " " + request.args,
                 NotificationType.WARNING
             )
             Notifications.Bus.notify(notification)

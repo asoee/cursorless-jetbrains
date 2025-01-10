@@ -156,7 +156,7 @@ class IdeClientCallback {
     @V8Function
     fun prePhraseVersion(): String? {
         val prePhraseVersion = cursorlessCallback.prePhraseVersion()
-        LOG.info("IdeClientCallback.prePhraseVersion: $prePhraseVersion")
+//        LOG.info("IdeClientCallback.prePhraseVersion: $prePhraseVersion")
         return prePhraseVersion
     }
 

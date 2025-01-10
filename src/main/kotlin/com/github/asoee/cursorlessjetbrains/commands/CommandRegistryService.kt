@@ -3,7 +3,7 @@ package com.github.asoee.cursorlessjetbrains.commands
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 
-typealias CommandFactoryFunction = (project: Project, List<String>) -> VcCommand
+typealias CommandFactoryFunction = (project: Project, List<String>) -> VcCommand?
 
 @Service
 class CommandRegistryService {

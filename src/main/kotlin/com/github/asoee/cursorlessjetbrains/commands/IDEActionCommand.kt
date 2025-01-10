@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.IdeActions
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import java.awt.Component
@@ -12,8 +13,13 @@ import java.awt.Component
 class IDEActionCommand(project: Project, private val actionId: String) : VcCommand(project) {
 
     companion object {
-        fun fromArgs(project: Project, args: List<String>): IDEActionCommand {
+        fun fromArgs(project: Project, args: List<String>): IDEActionCommand? {
             val actionId = args[0]
+            val action = ActionManager.getInstance().getAction(actionId)
+            if (action == null) {
+                thisLogger().warn("Action not found: $actionId")
+                return null
+            }
             return IDEActionCommand(project, actionId)
         }
 

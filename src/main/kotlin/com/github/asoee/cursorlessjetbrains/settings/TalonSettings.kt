@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.NotNull
 import java.awt.Color
 
+typealias SettingsUpdateFunction = (TalonSettings.State) -> Unit
 
 @State(
     name = "com.github.asoee.cursorlessjetbrains.settings.TalonSettings",
@@ -62,6 +63,17 @@ class TalonSettings
 
     override fun loadState(@NotNull state: State) {
         myState = state
+    }
+
+    fun fireSettingsChanged() {
+        val messageBus = ApplicationManager.getApplication().messageBus
+        messageBus.syncPublisher(TalonSettingsListener.TOPIC).onSettingsChanged(instance.state)
+    }
+
+
+    fun changeAndNotify(updater: SettingsUpdateFunction) {
+        updater(instance.state)
+        fireSettingsChanged()
     }
 
     companion object {

@@ -11,6 +11,7 @@
 ### Added
 
 - Add list all tasks command
+- Add CursorlessToggle command
 
 ### Fixed
 

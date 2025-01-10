@@ -1,6 +1,7 @@
 package com.github.asoee.cursorlessjetbrains.commands
 
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessRange
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -24,9 +25,14 @@ class RangedActionCommand(
             CaretState(endPos, startPos, endPos)
         }
         editor.caretModel.caretsAndSelections = carets
-        IDEActionCommand.fromArgs(project, listOf(ideCommandId)).execute(context)
-
-        return "OK"
+        val command = IDEActionCommand.fromArgs(project, listOf(ideCommandId))
+        if (command != null) {
+            command.execute(context)
+            return "OK"
+        } else {
+            thisLogger().warn("IDEActionCommand not found: $ideCommandId")
+            return "ERROR"
+        }
     }
 
 }

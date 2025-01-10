@@ -2,6 +2,7 @@ package com.github.asoee.cursorlessjetbrains.commands
 
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessRange
 import com.intellij.openapi.actionSystem.IdeActions
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -27,9 +28,14 @@ class RenameCommand(project: Project, val editor: Editor, val range: CursorlessR
             CaretState(endPos, startPos, endPos),
         )
 
-        IDEActionCommand.fromArgs(project, listOf(IdeActions.ACTION_RENAME)).execute(context)
-
-        return "OK"
+        val command = IDEActionCommand.fromArgs(project, listOf(IdeActions.ACTION_RENAME))
+        if (command != null) {
+            command.execute(context)
+            return "OK"
+        } else {
+            thisLogger().warn("IDEActionCommand not found: ${IdeActions.ACTION_RENAME}")
+            return "ERROR"
+        }
     }
 
 }

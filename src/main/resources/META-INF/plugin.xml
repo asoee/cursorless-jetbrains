@@ -45,6 +45,10 @@
         <action id="ListAllActions" class="com.github.asoee.cursorlessjetbrains.action.ListAllActions"
                 text="List All Actions" />
 
+        <action id="cursorlessjetbrains.CursorlessToggle"
+                class="com.github.asoee.cursorlessjetbrains.action.CursorlessToggleCommand"
+                text="Cursorless Toggle"
+                description="Toggle cursorless hats"/>
     </actions>
 
     <applicationListeners>
