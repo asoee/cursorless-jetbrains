@@ -24,12 +24,9 @@ import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.launch
 import java.awt.datatransfer.StringSelection
 import java.util.*
 import kotlin.time.Duration.Companion.milliseconds
@@ -48,6 +45,8 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     private val dispatchScope = cs
     private val emitScope = cs
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val emitDispatcher = Dispatchers.Default.limitedParallelism(1)
 
     init {
         Disposer.register(parentDisposable, this)
@@ -104,29 +103,31 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     }
 
     fun editorDidChange(editor: Editor) {
-        if (editor.isDisposed) {
-            println("Editor is disposed")
-            return
-        }
-
-        var edtState: EditorState? = null
-        ApplicationManager.getApplication().invokeAndWait {
-            edtState = ReadAction.compute<EditorState, Throwable> {
-                if (editor.isDisposed) {
-                    println("Editor is disposed")
-                    return@compute null
-                }
-                ensureEditorIdSet(editor)
-                val editorId = editorIds[editor]!!
-//                println("Editor did change " + editorId)
-                val editorState = serializeEditor(editor, editorId)
-//                println("Editor state " + editorState)
-                editorState
+        emitScope.launch(emitDispatcher) {
+            if (editor.isDisposed) {
+                println("Editor is disposed")
+                return@launch
             }
-        }
-        edtState?.let {
+
+            var edtState: EditorState? = null
+            ApplicationManager.getApplication().invokeAndWait {
+                edtState = ReadAction.compute<EditorState, Throwable> {
+                    if (editor.isDisposed) {
+                        println("Editor is disposed")
+                        return@compute null
+                    }
+                    ensureEditorIdSet(editor)
+                    val editorId = editorIds[editor]!!
+//                println("Editor did change " + editorId)
+                    val editorState = serializeEditor(editor, editorId)
+//                println("Editor state " + editorState)
+                    editorState
+                }
+            }
+            edtState?.let {
 //            println("trigger Editor state changed")
-            cursorlessEngine.editorChanged(it)
+                cursorlessEngine.editorChanged(it)
+            }
         }
     }
 
