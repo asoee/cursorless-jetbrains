@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix occasional NPE for language detection
+
 ## [0.0.9] - 2025-01-10
 
 ### Changed

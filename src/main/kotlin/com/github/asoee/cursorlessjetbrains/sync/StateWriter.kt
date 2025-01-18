@@ -1,6 +1,6 @@
 package com.github.asoee.cursorlessjetbrains.sync
 
-import com.github.asoee.cursorlessjetbrains.util.caretLanguage
+import com.github.asoee.cursorlessjetbrains.util.editorLanguage
 import com.intellij.ide.RecentProjectsManager
 import com.intellij.ide.RecentProjectsManagerBase
 import com.intellij.openapi.application.ReadAction
@@ -102,8 +102,7 @@ fun serializeEditor(editor: Editor, editorId: String): EditorState {
         val selections =
             editor.caretModel.caretsAndSelections.map { selectionFromCaretState(editor, it) }
 
-        val language = caretLanguage(editor) ?: "plaintext"
-//    val language = "plaintext"
+        val language = editorLanguage(editor) ?: "plaintext"
 
         val visibleRange = editor.calculateVisibleRange()
         val startLine = editor.offsetToLogicalPosition(visibleRange.startOffset).line
