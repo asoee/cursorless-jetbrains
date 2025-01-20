@@ -6,6 +6,7 @@ import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.project.Project
 import java.awt.Point
+import kotlin.math.max
 
 
 class RevealLineCommand(project: Project, val editor: Editor, val line: Int, val revealAt: String) :
@@ -31,7 +32,7 @@ class RevealLineCommand(project: Project, val editor: Editor, val line: Int, val
 
         return when (revealAt) {
             "center" -> {
-                LogicalPosition(Math.max(0, line - 1), 0)
+                LogicalPosition(max(0, line - 1), 0)
             }
 
             "top" -> {
@@ -39,7 +40,7 @@ class RevealLineCommand(project: Project, val editor: Editor, val line: Int, val
             }
 
             "bottom" -> {
-                LogicalPosition(Math.max(0, line - visibleLines), 0)
+                LogicalPosition(max(0, line - visibleLines), 0)
             }
 
             else -> {

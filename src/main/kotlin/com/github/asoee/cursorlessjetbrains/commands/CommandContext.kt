@@ -11,7 +11,7 @@ import com.intellij.psi.PsiFile
 
 class CommandContext(val project: Project) {
 
-    val LOG = thisLogger()
+    private val logger = thisLogger()
 
     var editor: Editor? = null
         get() {
@@ -20,7 +20,7 @@ class CommandContext(val project: Project) {
             }
             val e = FileEditorManager.getInstance(project).selectedTextEditor
             if (e == null) {
-                LOG.debug("No selected editor?")
+                logger.debug("No selected editor?")
             }
             field = e
             return e
@@ -31,7 +31,7 @@ class CommandContext(val project: Project) {
             val twm = ToolWindowManager.getInstance(project)
             val tw = twm.getToolWindow(twm.activeToolWindowId)
             if (tw == null) {
-                LOG.debug("No selected tool window?")
+                logger.debug("No selected tool window?")
             }
             return tw
         }

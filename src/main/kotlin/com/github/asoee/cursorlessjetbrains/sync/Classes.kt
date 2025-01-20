@@ -45,38 +45,6 @@ data class EditorState(
     val editable: Boolean,
     )
 
-/**
- * Represents the state of a "FileEditor". JetBrains treats non-focused tabs as these lesser
- * "FileEditor"s and provides less information about them compared to `Editor`s (for example,
- * we don't have cursor state).
- */
-@Serializable
-data class FileEditorState(
-    val path: String?,
-    val name: String?,
-    val isModified: Boolean,
-    val isValid: Boolean
-//    val project: ProjectState,
-)
-
-/**
- * Represents the state of the current project.
- */
-@Serializable
-data class ProjectState(
-    val name: String,
-    val basePath: String?,
-    val repos: List<RepoState>
-)
-
-/**
- * Represents the state of a VCS repository within a project (projects can have multiple VCS roots).
- */
-@Serializable
-data class RepoState(
-    val root: String,
-    val vcsType: String
-)
 
 /**
  * Represents a single cursor.
@@ -96,7 +64,7 @@ data class Selection(
     val start: Cursor?,
     val end: Cursor?,
 
-    // NOTE(pcohen): unlike VS Code, there's no requirement that the cursor position the either the
+    // NOTE(pcohen): unlike VS Code, there's no requirement that the cursor position is either the
     // start or end of the selection
     var cursorPosition: Cursor?,
 
@@ -112,7 +80,6 @@ data class HatRange (
     val range: CursorlessRange,
 )
 
-// TODO(pcohen): can we put these directly on the data classes?
 fun cursorFromLogicalPosition(editor: Editor, logicalPosition: LogicalPosition): Cursor {
     val positionOffset = editor.logicalPositionToOffset(logicalPosition)
     val lineStartOffset = editor.document.getLineStartOffset(logicalPosition.line)

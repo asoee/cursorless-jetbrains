@@ -18,7 +18,7 @@ internal class CustomColorsProcessor(private val customColor: DynamicSvgPaint) :
 
     private fun processImpl(element: ParsedElement) {
         // Obtain the id of the element
-        // Note: There that Element also has a node() method to obtain the SVGNode. However during the pre-processing
+        // Note: There that Element also has a node() method to obtain the SVGNode. However, during the pre-processing
         // phase the SVGNode is not yet fully parsed and doesn't contain any non-defaulted information.
         val nodeId = element.id()
 

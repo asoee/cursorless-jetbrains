@@ -9,10 +9,10 @@ import com.intellij.openapi.progress.runBackgroundableTask
 
 class FileCommandServerCheckAction : AnAction() {
 
-    val LOG = thisLogger()
+    private val logger = thisLogger()
 
     override fun actionPerformed(e: AnActionEvent) {
-        LOG.info("FileCommandServerCheckAction triggered")
+        logger.info("FileCommandServerCheckAction triggered")
         runBackgroundableTask("Talon command server", e.project) {
             service<FileCommandServerService>().commandServer.checkAndHandleFileRquest()
         }

@@ -23,25 +23,23 @@ import kotlin.text.toByteArray
 
 class HttpCommandHandler : HttpHandler {
 
-    private val LOG: Logger = logger<HttpCommandServer>()
+    private val logger: Logger = logger<HttpCommandHandler>()
 
     @Throws(IOException::class)
     override fun handle(httpExchange: HttpExchange) {
         try {
-            LOG.info("Handling " + httpExchange.requestMethod + " " + httpExchange.requestURI.toString())
-            val bodyStream = httpExchange.requestBody
-            val s = Scanner(bodyStream).useDelimiter("\\A")
+            logger.info("Handling " + httpExchange.requestMethod + " " + httpExchange.requestURI.toString())
             val response: VoicePluginResponse = fromRequestUri(httpExchange.requestURI)
                 .map({ handleRequest(it) })
                 .map { resp -> VoicePluginResponse(200, resp) }
                 .orElse(VoicePluginResponse(502, "BAD"))
-            LOG.info("Response: " + response)
+            logger.info("Response: $response")
             httpExchange.sendResponseHeaders(response.responseCode, response.response.length.toLong())
             val os = httpExchange.responseBody
             os.write(response.response.toByteArray(Charsets.UTF_8))
             os.close()
         } catch (e: Exception) {
-            LOG.error("Failed to process command... ", e)
+            logger.error("Failed to process command... ", e)
             val notification = Notification(
                 "vc-idea", "Talon jetbrains", "Failed to process command: " + e.message,
                 NotificationType.WARNING
@@ -56,7 +54,7 @@ class HttpCommandHandler : HttpHandler {
         }
     }
 
-    fun handleRequest(request: CommandRequest): String {
+    private fun handleRequest(request: CommandRequest): String {
         val registryService = service<CommandRegistryService>()
         val command = registryService.getCommand(request)
 
@@ -64,7 +62,7 @@ class HttpCommandHandler : HttpHandler {
         if (command != null) {
             return executorService.execute(command)
         } else {
-            LOG.warn("Command not found: " + request.command + " " + request.args)
+            logger.warn("Command not found: " + request.command + " " + request.args)
             val notification = Notification(
                 "vc-idea", "Talon jetbrains", "Command not found: " + request.command + " " + request.args,
                 NotificationType.WARNING
@@ -88,20 +86,20 @@ class HttpCommandHandler : HttpHandler {
             Notifications.Bus.notify(notification)
 
             split = split[1].split(" ")
-            val command: String = split.get(0)
+            val command: String = split[0]
             val args = split.subList(1, split.size)
             val focusedProject = getFocusedProject()
             if (focusedProject == null) {
-                LOG.error("No focused project")
+                logger.error("No focused project")
                 return Optional.empty()
             } else {
                 val commandRequest = CommandRequest(focusedProject, command, args)
-                LOG.info("Command request: " + commandRequest)
+                logger.info("Command request: " + commandRequest)
                 return Optional.of(commandRequest)
 
             }
         } catch (e: UnsupportedEncodingException) {
-            LOG.error("Failed to parse request URI", e)
+            logger.error("Failed to parse request URI", e)
             return Optional.empty()
 
         }
@@ -125,7 +123,7 @@ class HttpCommandHandler : HttpHandler {
     }
 
 
-    fun isProjectValid(project: Project?): Boolean {
+    private fun isProjectValid(project: Project?): Boolean {
         return project != null && !project.isDisposed && !project.isDefault && project.isOpen
     }
 

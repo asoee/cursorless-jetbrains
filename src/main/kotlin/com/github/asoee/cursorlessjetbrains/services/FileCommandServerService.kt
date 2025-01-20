@@ -7,9 +7,6 @@ class FileCommandServerService : Disposable {
 
     val commandServer = FileCommandServer()
 
-    init {
-    }
-
     override fun dispose() {
 //        fileCommandServer.stop()
     }

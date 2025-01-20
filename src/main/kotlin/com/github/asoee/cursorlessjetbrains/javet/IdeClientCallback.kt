@@ -8,7 +8,7 @@ import kotlinx.serialization.json.Json
 
 class IdeClientCallback {
 
-    val LOG = logger<IdeClientCallback>()
+    private val logger = logger<IdeClientCallback>()
 
     val unhandledRejections = mutableListOf<String>()
 
@@ -86,62 +86,62 @@ class IdeClientCallback {
 
     @V8Function
     fun documentUpdated(editorId: String, updateJson: String) {
-        LOG.info("DocumentUpdated: $updateJson")
+        logger.info("DocumentUpdated: $updateJson")
         val edit = Json { ignoreUnknownKeys = true }.decodeFromString<CursorlessEditorEdit>(updateJson)
         cursorlessCallback.documentUpdated(editorId, edit)
     }
 
     @V8Function
     fun setSelection(editorId: String, selectionsJson: String) {
-        LOG.info("IdeClientCallback.setSelection: $selectionsJson")
+        logger.info("IdeClientCallback.setSelection: $selectionsJson")
         val selections = Json { ignoreUnknownKeys = true }.decodeFromString<Array<CursorlessRange>>(selectionsJson)
         cursorlessCallback.setSelection(editorId, selections)
     }
 
     @V8Function
     fun clipboardCopy(editorId: String, rangesJson: String) {
-        LOG.info("IdeClientCallback.clipboardCopy: $rangesJson")
+        logger.info("IdeClientCallback.clipboardCopy: $rangesJson")
         val selections = Json { ignoreUnknownKeys = true }.decodeFromString<Array<CursorlessRange>>(rangesJson)
         cursorlessCallback.clipboardCopy(editorId, selections)
     }
 
     @V8Function
     fun clipboardPaste(editorId: String) {
-        LOG.info("IdeClientCallback.clipboardCopy")
+        logger.info("IdeClientCallback.clipboardCopy")
         cursorlessCallback.clipboardPaste(editorId)
     }
 
     @V8Function
     fun executeCommand(editorId: String, command: String, argsJson: String) {
-        LOG.info("IdeClientCallback.executeCommand: $command, $argsJson")
+        logger.info("IdeClientCallback.executeCommand: $command, $argsJson")
         val args = Json { ignoreUnknownKeys = true }.decodeFromString<Array<String>>(argsJson)
         cursorlessCallback.executeCommand(editorId, command, args)
     }
 
     @V8Function
     fun executeRangeCommand(editorId: String, commandJson: String) {
-        LOG.info("IdeClientCallback.executeCommand:  $commandJson")
+        logger.info("IdeClientCallback.executeCommand:  $commandJson")
         val rangeCommand = Json { ignoreUnknownKeys = true }.decodeFromString<CursorlessEditorCommand>(commandJson)
         cursorlessCallback.executeRangeCommand(editorId, rangeCommand)
     }
 
     @V8Function
     fun insertLineAfter(editorId: String, rangesJson: String) {
-        LOG.info("IdeClientCallback.insertLineAfter: $rangesJson")
+        logger.info("IdeClientCallback.insertLineAfter: $rangesJson")
         val ranges = Json { ignoreUnknownKeys = true }.decodeFromString<Array<CursorlessRange>>(rangesJson)
         cursorlessCallback.insertLineAfter(editorId, ranges)
     }
 
     @V8Function
     fun revealLine(editorId: String, line: Int, revealAt: String) {
-        LOG.info("IdeClientCallback.revealLine: $line")
+        logger.info("IdeClientCallback.revealLine: $line")
         cursorlessCallback.revealLine(editorId, line, revealAt)
     }
 
 
     @V8Function
     fun flashRanges(flashRangesJson: String) {
-        LOG.info("IdeClientCallback.flashRanges: $flashRangesJson")
+        logger.info("IdeClientCallback.flashRanges: $flashRangesJson")
         val ranges = jsonDecoder.decodeFromString<Array<CursorlessFlashRange>>(flashRangesJson)
         cursorlessCallback.flashRanges(ranges)
     }
@@ -149,7 +149,7 @@ class IdeClientCallback {
 
     @V8Function
     fun readQuery(filename: String): String? {
-        LOG.info("IdeClientCallback.readQuery: $filename")
+        logger.info("IdeClientCallback.readQuery: $filename")
         return treesitterCallback.readQuery(filename)
     }
 
@@ -162,7 +162,7 @@ class IdeClientCallback {
 
     @V8Function
     fun unhandledRejection(cause: String) {
-        LOG.info("IdeClientCallback.unhandledRejection: $cause")
+        logger.info("IdeClientCallback.unhandledRejection: $cause")
         unhandledRejections.add(cause)
     }
 

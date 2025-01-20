@@ -12,7 +12,10 @@ import java.io.InputStreamReader
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.*
+import kotlin.io.path.Path
+import kotlin.io.path.exists
+import kotlin.io.path.readText
+import kotlin.io.path.writeText
 
 
 class FileCommandServer {
@@ -22,12 +25,11 @@ class FileCommandServer {
         val LOG = logger<FileCommandServer>()
     }
 
-    var watcher: FileWatcher? = null
-    val commandServerDir: Path
-    val signalsDir: Path
+    private val commandServerDir: Path
+    private val signalsDir: Path
 
     init {
-        LOG.info("FileCommandServer: FilePlatform prefix: ${PREFIX}")
+        LOG.info("FileCommandServer: FilePlatform prefix: $PREFIX")
 
         val suffix = getUserIdSuffix()
 
@@ -40,13 +42,7 @@ class FileCommandServer {
         this.signalsDir.toFile().mkdirs()
     }
 
-
-    fun startWatcher() {
-        println("FileCommandServer: Starting File Watcher...")
-        watcher = FileWatcher(this.commandServerDir, ::handleFileChanged)
-    }
-
-    fun getUserIdSuffix(): String {
+    private fun getUserIdSuffix(): String {
         val selfPath = Paths.get(System.getProperty("user.home"))
         if (!selfPath.exists()) {
             return ""
@@ -65,7 +61,7 @@ class FileCommandServer {
                     Integer.parseInt(it)
                     return "-$it"
                 } catch (e: NumberFormatException) {
-                    LOG.warn("Error parsing uid from id command output " + it)
+                    LOG.warn("Error parsing uid from id command output $it")
                 }
 
             }
@@ -76,7 +72,7 @@ class FileCommandServer {
         return ""
     }
 
-    fun readProcessOutput(command: String): String {
+    private fun readProcessOutput(command: String): String {
         val process = Runtime.getRuntime().exec(command)
         val output = StringBuilder()
 
@@ -95,16 +91,6 @@ class FileCommandServer {
         if (requestPath.exists()) {
             readAndHandleFileRquest(requestPath)
         }
-    }
-
-    fun handleFileChanged(path: Path) {
-        println("File changed: $path")
-        if (path.name != "request.json") {
-            println("Ignoring file: $path")
-            return
-        }
-        val fullPath = commandServerDir.resolve(path)
-        readAndHandleFileRquest(fullPath)
     }
 
     fun prePhraseVersion(): String? {
@@ -143,14 +129,14 @@ class FileCommandServer {
         }
     }
 
-    fun writeResponse(response: CommandServerResponse) {
+    private fun writeResponse(response: CommandServerResponse) {
         val responsePath = commandServerDir.resolve("response.json")
         val responseJson = Json.encodeToString(response)
         responsePath.writeText(responseJson + "\n")
-        println("'Wrote response'..." + responseJson)
+        println("'Wrote response'...$responseJson")
     }
 
-    fun handleRequest(request: CommandServerRequest): ExecutionResult {
+    private fun handleRequest(request: CommandServerRequest): ExecutionResult {
         println("Handling request..." + request.commandId + " " + request.args + " " + request.uuid)
         val service = service<TalonApplicationService>()
         val executionResult = service.jsDriver.execute(request.args)

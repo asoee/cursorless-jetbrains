@@ -8,8 +8,7 @@ class CursorlessFlashRange(
     val editorId: String,
     val range: GeneralizedRange,
     val style: String,
-) {
-}
+)
 
 @Serializable
 sealed interface GeneralizedRange

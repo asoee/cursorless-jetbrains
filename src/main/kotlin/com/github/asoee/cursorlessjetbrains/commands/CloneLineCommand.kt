@@ -7,7 +7,7 @@ import com.intellij.openapi.util.TextRange
 
 class CloneLineCommand(project: Project, private val sourceLine: Int) : VcCommand(project) {
 
-    private val LOG = thisLogger()
+    private val logger = thisLogger()
 
     companion object {
         fun fromArgs(project: Project, args: List<String>): CloneLineCommand {
@@ -28,11 +28,11 @@ class CloneLineCommand(project: Project, private val sourceLine: Int) : VcComman
             cp.executeCommand(
                 context.project,
                 { document.insertString(endOffset, text) },
-                "clone",
+                "Clone",
                 "cloneGroup"
             )
         } catch (ex: Exception) {
-            LOG.error("Failed to run clone line command", ex)
+            logger.error("Failed to run clone line command", ex)
             return "" + ex.message
         }
         return "OK"
