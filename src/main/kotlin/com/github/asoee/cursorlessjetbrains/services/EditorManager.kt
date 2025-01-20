@@ -35,8 +35,8 @@ import kotlin.time.Duration.Companion.milliseconds
 class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDisposable: Disposable, cs: CoroutineScope) :
     Disposable {
 
-    private var hatsEnabled: Boolean = true
-    val LOG: Logger = Logger.getInstance(EditorManager::class.java)
+    private var hatsEnabled = true
+    private val logger: Logger = Logger.getInstance(EditorManager::class.java)
 
     private val editorIds = HashMap<Editor, String>()
     private val editorsById = HashMap<String, Editor>()
@@ -63,14 +63,12 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     fun debouncerById(editorId: String): MutableSharedFlow<EditorChange> {
         var debouncer = editorDebounce[editorId]
         if (debouncer == null) {
-//            thisLogger().info("Creating debouncer for $editorId")
-            debouncer = MutableSharedFlow<EditorChange>()
+            debouncer = MutableSharedFlow()
             editorDebounce[editorId] = debouncer
             dispatchScope.launch {
                 debouncer
                     .debounce(25.milliseconds)
                     .collect { change ->
-//                        println("collect... " + change.editorId)
                         val editor = editorsById[change.editorId]
                         if (editor != null) {
                             try {
@@ -90,19 +88,18 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
 
     fun editorChanged(editor: Editor) {
         if (editor.isDisposed) {
-            LOG.info("editorChanged : Editor is disposed")
+            logger.info("editorChanged : Editor is disposed")
             return
         }
         ensureEditorIdSet(editor)
         val editorId = editorIds[editor]!!
-//        println("Editor changed $editorId")
         val debouncer = debouncerById(editorId)
         emitScope.launch {
             debouncer.emit(EditorChange(editorId, System.currentTimeMillis()))
         }
     }
 
-    fun editorDidChange(editor: Editor) {
+    private fun editorDidChange(editor: Editor) {
         emitScope.launch(emitDispatcher) {
             if (editor.isDisposed) {
                 println("Editor is disposed")
@@ -135,7 +132,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     fun setSelection(editorId: String, selections: Array<CursorlessRange>) {
         val editor = editorsById[editorId]
         if (editor != null) {
-            if (selections.size > 0) {
+            if (selections.isNotEmpty()) {
 
                 ApplicationManager.getApplication().invokeAndWait {
                     ApplicationManager.getApplication().runWriteAction {
@@ -164,7 +161,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     fun clipboardCopy(editorId: String, selections: Array<CursorlessRange>) {
         val editor = editorsById[editorId]
         if (editor != null) {
-            if (selections.size > 0) {
+            if (selections.isNotEmpty()) {
                 ApplicationManager.getApplication().invokeAndWait {
                     ApplicationManager.getApplication().runReadAction {
                         val range = selections[0]
@@ -202,7 +199,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     }
 
     fun documentUpdated(editorId: String, edit: CursorlessEditorEdit) {
-        println("Document updated " + editorId)
+        println("Document updated $editorId")
         val editor = editorsById[editorId]
         if (editor != null) {
             if (edit.changes.isNotEmpty()) {
@@ -249,15 +246,11 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         }
     }
 
-    fun getEditorId(editor: Editor) {
-        editorIds[editor]
-    }
-
-    fun ensureEditorIdSet(editor: Editor) {
+    private fun ensureEditorIdSet(editor: Editor) {
         if (!editorIds.containsKey(editor)) {
             val editorId = UUID.randomUUID().toString()
-            editorIds.put(editor, editorId)
-            editorsById.put(editorId, editor)
+            editorIds[editor] = editorId
+            editorsById[editorId] = editor
         }
     }
 
@@ -266,11 +259,11 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     }
 
     fun documentChanged(document: Document) {
-        editorIds.keys.forEach({
+        editorIds.keys.forEach {
             if (it.document == document) {
                 editorChanged(it)
             }
-        })
+        }
     }
 
     private class CursorlessHandler(private val editorManager: EditorManager) : CursorlessCallback {
@@ -384,7 +377,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
             ranges.add(hatRange.range)
         }
 
-        getCursorlessContainers().forEach({
+        getCursorlessContainers().forEach {
             val editor = it.editor
             val editorId = editorIds[editor]
             if (editorId != null) {
@@ -393,7 +386,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
                     it.updateHats(format)
                 }
             }
-        })
+        }
     }
 
     fun getEditorHats(editor: Editor): HatsFormat? {
@@ -407,11 +400,9 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     }
 
     fun reloadAllEditors() {
-        this.editorsById.values.forEach(
-            { editor ->
-                editorCreated(editor)
-            }
-        )
+        this.editorsById.values.forEach { editor ->
+            editorCreated(editor)
+        }
     }
 
     fun settingsUpdated(settings: TalonSettings.State) {

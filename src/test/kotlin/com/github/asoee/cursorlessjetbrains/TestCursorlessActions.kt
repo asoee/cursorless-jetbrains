@@ -221,9 +221,9 @@ class TestCursorlessActions : BasePlatformTestCase() {
 //      target the Computer genre in line 6
         val targetRange = CursorlessRange.fromLogicalPositions(xmlEditor, 5, 15, 5, 23)
         println("target: $targetRange")
-        val editorHats: HatsFormat = awaitHats(fixture, xmlEditor)
-        val clTarget = findHatForRange(xmlEditor, editorHats, targetRange)
-        TestCase.assertNotNull(clTarget)
+
+        val clTarget = awaitTargetForRange(fixture, xmlEditor, targetRange)
+
         if (clTarget != null) {
 
             val commandV7 = CursorlessCommand.pour(clTarget)
@@ -306,6 +306,26 @@ class TestCursorlessActions : BasePlatformTestCase() {
     }
 
 
+    private fun awaitTargetForRange(
+        fixture: MainJavaFixture,
+        editor: Editor,
+        range: CursorlessRange
+    ): CursorlessTarget {
+        var target: CursorlessTarget? = null
+        await.atMost(2, TimeUnit.SECONDS).until {
+            var editorHats = fixture.appService.editorManager.getEditorHats(editor)
+            if (editorHats != null && editorHats!!.isNotEmpty()) {
+                target = findHatForRange(editor, editorHats, range)
+                target != null
+            } else {
+                false
+            }
+        }
+        return target!!
+
+    }
+
+
     private fun findHatForRange(editor: Editor, editorHats: HatsFormat, target: CursorlessRange): CursorlessTarget? {
         editorHats.entries.forEach { entry ->
 //            println("hat: ${entry.key}")
@@ -372,7 +392,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
     companion object {
         @JvmStatic
         @BeforeClass
-        fun beforeClass(): Unit {
+        fun beforeClass() {
             System.setProperty(
                 "java.util.logging.config.file",
                 ClassLoader.getSystemResource("logging.properties").path

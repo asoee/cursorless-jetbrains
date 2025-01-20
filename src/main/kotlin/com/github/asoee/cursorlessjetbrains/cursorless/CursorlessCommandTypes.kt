@@ -80,13 +80,12 @@ class MoveToTargetActionDescriptor(
 @Serializable
 sealed interface PartialTargetDescriptor
 
-@Serializable()
+@Serializable
 @SerialName("primitive")
 data class PartialPrimitiveTargetDescriptor(
     val mark: PartialMark,
     val modifiers: List<Modifier> = emptyList()
-) : PartialTargetDescriptor {
-}
+) : PartialTargetDescriptor
 
 @Serializable
 sealed interface PartialMark
@@ -107,17 +106,16 @@ data class ImplicitDestinationDescriptor(val implicit: Boolean = true) : Destina
 
 typealias InsertionMode = String
 
-val before: InsertionMode = "before"
-val after: InsertionMode = "after"
-val to: InsertionMode = "to"
+const val before: InsertionMode = "before"
+const val after: InsertionMode = "after"
+const val to: InsertionMode = "to"
 
 @Serializable
 @SerialName("primitive")
 data class PrimitiveDestinationDescriptor(
     val insertionMode: InsertionMode,
     val target: PartialTargetDescriptor
-) : DestinationDescriptor {
-}
+) : DestinationDescriptor
 
 @Serializable
 sealed interface Modifier

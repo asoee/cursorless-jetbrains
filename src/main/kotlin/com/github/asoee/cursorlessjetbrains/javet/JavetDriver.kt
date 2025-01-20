@@ -9,6 +9,7 @@ import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCallback
 import com.github.asoee.cursorlessjetbrains.cursorless.DEFAULT_CONFIGURATION
 import com.github.asoee.cursorlessjetbrains.cursorless.TreesitterCallback
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
+import com.intellij.openapi.diagnostic.logger
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -17,17 +18,17 @@ import java.io.File
 import java.nio.file.Files
 
 
-class JavetDriver {
+open class JavetDriver {
 
+    private val logger = logger<JavetDriver>()
     private val ideClientCallback = IdeClientCallback()
     val runtime: V8Runtime
     private val eventLoop: JNEventLoop
     private val wasmDir: File = Files.createTempDirectory("cursorless-treesitter-wasm").toFile()
 
     init {
-        println("ASOEE: JavetDriver create")
         val icuDataDir = Files.createTempDirectory("cursorless-icu").toFile()
-        println("icuDataDir: " + icuDataDir)
+        logger.debug("icuDataDir: $icuDataDir")
         icuDataDir.deleteOnExit()
         val outFile = File(icuDataDir, "icudtl.dat")
         outFile.outputStream().use { out ->
@@ -133,13 +134,13 @@ class JavetDriver {
                     "});"
         ).executeVoid()
 
-        val cursorlessJs = javaClass.getResource("/cursorless/cursorless.js").readText()
+        val cursorlessJs = javaClass.getResource("/cursorless/cursorless.js")?.readText()
         val module = runtime.getExecutor(cursorlessJs)
             .setResourceName("./cursorless.js")
             .compileV8Module()
         module.executeVoid()
         if (runtime.containsV8Module("./cursorless.js")) {
-            println("./cursorless.js is registered as a module.")
+            logger.debug("./cursorless.js is registered as a module.")
         }
 
         val importJs = """
@@ -162,20 +163,19 @@ class JavetDriver {
         val wasmPath = escapeString(wasmDir.absolutePath)
 
         val activateJs = """
-            | ideClient.log("ASOEE/JS: activating plugin 1 with wasm path : " + '$wasmPath');
+            | ideClient.log("Cursorless/JS: activating plugin 1 with wasm path : " + '$wasmPath');
             | (async () => {    
-            |   console.log("ASOEE/JS: activating plugin async");
+            |   console.log("Cursorless/JS: activating plugin async");
             |   globalThis.configuration = globalThis.createJetbrainsConfiguration($configurationJson);
             |   globalThis.ide = globalThis.createIDE(ideClient, globalThis.configuration);
-            |   console.log("ASOEE/JS: ide created");
+            |   console.log("Cursorless/JS: ide created");
             |   globalThis.plugin = createPlugin(ideClient, ide);
-            |   console.log("ASOEE/JS: plugin created");
+            |   console.log("Cursorless/JS: plugin created");
             |   globalThis.engine = await globalThis.activate(plugin, "$wasmPath");
-            |   console.log("ASOEE/JS: plugin activated");
+            |   console.log("Cursorless/JS: plugin activated");
             | })();
-            | ideClient.log("ASOEE/JS: after async");
             | """.trimMargin()
-        println(activateJs)
+        logger.debug(activateJs)
         runtime.getExecutor(activateJs)
             .executeVoid()
         eventLoop.await()
@@ -195,21 +195,17 @@ class JavetDriver {
     fun editorChanged(editorState: EditorState) {
         val json = Json.encodeToString(editorState)
         val js = """
-            | console.log("ASOEE/JS: call document changed");
             | (async () => {
-            |   console.log("ASOEE/JS: async document changed");
             |   const ide = await globalThis.ide;
             |   if (ide) {
-            |     console.log("ASOEE/JS: ide document changed");
             |     try {
             |       ide.documentChanged(${json});
-            |       console.log("ASOEE/JS: async document change completed");
             |     } catch (e) {                      
-            |       console.error("ASOEE/JS: error in document changed - " + e);
+            |       console.error("error in document changed - " + e);
             |       throw e;
             |     }
             |   } else {
-            |     console.log("ASOEE/JS: ide not available");
+            |     console.log("ide not available");
             |   }
             | })();
             | """.trimMargin()
@@ -229,30 +225,26 @@ class JavetDriver {
     fun execute(commands: List<JsonObject?>): ExecutionResult {
 
         try {
-
             val json = Json.encodeToString(commands[0])
-            println("command json $json")
+            logger.debug("command json $json")
             val js = """
-            | console.log("ASOEE/JS: call runCommand");
+            | console.log("Cursorless/JS: call runCommand");
             | try {
             | (async () => {
-            |   console.log("ASOEE/JS: async runCommand");
             |   const engine = await globalThis.engine;
             |   if (ide) {
-            |     console.log("ASOEE/JS: ide document changed");
             |     try {
             |       engine.commandApi.runCommand(${json});
-            |       console.log("ASOEE/JS: async runCommand completed");
             |     } catch (e) {                      
-            |       console.error("ASOEE/JS: error in runCommand - " + e);
+            |       console.error("error in runCommand - " + e);
             | //      throw e;
             |     }
             |   } else {
-            |     console.log("ASOEE/JS: engine not available");
+            |     console.log("cursorless engine not available");
             |   }
             | })();
             | } catch (e) {                      
-            |   console.error("ASOEE/JS: error in async runCommand - " + e);
+            |   console.error("error in async runCommand - " + e);
             | //      throw e;
             | }
             | """.trimMargin()
@@ -261,7 +253,7 @@ class JavetDriver {
                 .executeVoid()
             eventLoop.await()
         } catch (e: Throwable) {
-            println("ASOEE/JS: error in execute - " + e)
+            logger.debug("error in execute - $e")
             return ExecutionResult(false, null, e.toString())
         }
         if (ideClientCallback.unhandledRejections.isNotEmpty()) {
@@ -278,7 +270,7 @@ class JavetDriver {
         try {
             runtime.close(false)
         } catch (e: Throwable) {
-            println("ASOEE/JS: error in close - " + e)
+            logger.debug("error in close - $e")
         }
     }
 
@@ -288,16 +280,14 @@ class JavetDriver {
             | (async () => {
             |   const ide = await globalThis.ide;
             |   if (ide) {
-            |     console.log("ASOEE/JS: ide document closed");
             |     try {
             |       ide.documentClosed("$editorId");
-            |       console.log("ASOEE/JS: async document closed completed");
             |     } catch (e) {                      
-            |       console.error("ASOEE/JS: error in document closed - " + e);
+            |       console.error("error in document closed - " + e);
             |       throw e;
             |     }
             |   } else {
-            |     console.log("ASOEE/JS: ide not available");
+            |     console.log("ide not available");
             |   }
             | })();
             | """.trimMargin()
@@ -317,11 +307,11 @@ class JavetDriver {
             |     try {
             |       ide.documentCreated(${json});
             |     } catch (e) {                      
-            |       console.error("ASOEE/JS: error in document changed - " + e);
+            |       console.error("Cursorless/JS: error in document changed - " + e);
             |       throw e;
             |     }
             |   } else {
-            |     console.log("ASOEE/JS: ide not available");
+            |     console.log("Cursorless/JS: ide not available");
             |   }
             | })();
             | """.trimMargin()
@@ -340,11 +330,11 @@ class JavetDriver {
             |     try {
             |       plugin.hats.setEnabledHatShapes(${Json.encodeToString(enabledHatShapes)});
             |     } catch (e) {                      
-            |       console.error("ASOEE/JS: error in setEnabledHatShapes - " + e);
+            |       console.error("Cursorless/JS: error in setEnabledHatShapes - " + e);
             |       throw e;
             |     }
             |   } else {
-            |     console.log("ASOEE/JS: plugin not available");
+            |     console.log("Cursorless/JS: plugin not available");
             |   }
             | })();
             | """.trimMargin()
@@ -362,11 +352,11 @@ class JavetDriver {
             |     try {
             |       plugin.hats.setHatShapePenalties(${Json.encodeToString(penalties)});
             |     } catch (e) {                      
-            |       console.error("ASOEE/JS: error in setHatShapePenalties - " + e);
+            |       console.error("Cursorless/JS: error in setHatShapePenalties - " + e);
             |       throw e;
             |     }
             |   } else {
-            |     console.log("ASOEE/JS: plugin not available");
+            |     console.log("Cursorless/JS: plugin not available");
             |   }
             | })();
             | """.trimMargin()
@@ -384,11 +374,11 @@ class JavetDriver {
             |     try {
             |       plugin.hats.setEnabledHatColors(${Json.encodeToString(enabledHatColors)});
             |     } catch (e) {                      
-            |       console.error("ASOEE/JS: error in setEnabledHatColors - " + e);
+            |       console.error("Cursorless/JS: error in setEnabledHatColors - " + e);
             |       throw e;
             |     }
             |   } else {
-            |     console.log("ASOEE/JS: plugin not available");
+            |     console.log("Cursorless/JS: plugin not available");
             |   }
             | })();
             | """.trimMargin()
@@ -406,11 +396,11 @@ class JavetDriver {
             |     try {
             |       plugin.hats.setHatColorPenalties(${Json.encodeToString(penalties)});
             |     } catch (e) {                      
-            |       console.error("ASOEE/JS: error in setHatColorPenalties - " + e);
+            |       console.error("Cursorless/JS: error in setHatColorPenalties - " + e);
             |       throw e;
             |     }
             |   } else {
-            |     console.log("ASOEE/JS: plugin not available");
+            |     console.log("Cursorless/JS: plugin not available");
             |   }
             | })();
             | """.trimMargin()

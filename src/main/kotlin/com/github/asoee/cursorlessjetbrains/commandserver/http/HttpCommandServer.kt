@@ -16,40 +16,40 @@ import java.nio.file.Path
 import java.security.SecureRandom
 import java.util.*
 
+private const val DEFAULT_PORT: Int = 8652
+
 class HttpCommandServer {
 
-    private val DEFAULT_PORT: Int = 8652
-
-    private val PLATFORM_TO_PORT: MutableMap<String, Int> = HashMap()
-    private val LOG: Logger = logger<HttpCommandServer>()
+    private val platformToPort: MutableMap<String, Int> = HashMap()
+    private val logger: Logger = logger<HttpCommandServer>()
 
     private var pathToNonce: Path? = null
     private var server: HttpServer? = null
 
     init {
-        PLATFORM_TO_PORT[PlatformUtils.IDEA_PREFIX] = 8653
-        PLATFORM_TO_PORT[PlatformUtils.IDEA_CE_PREFIX] = 8654
-        PLATFORM_TO_PORT[PlatformUtils.APPCODE_PREFIX] = 8655
-        PLATFORM_TO_PORT[PlatformUtils.CLION_PREFIX] = 8657
-        PLATFORM_TO_PORT[PlatformUtils.PYCHARM_PREFIX] = 8658
-        PLATFORM_TO_PORT[PlatformUtils.PYCHARM_CE_PREFIX] = 8658
-        PLATFORM_TO_PORT[PlatformUtils.PYCHARM_EDU_PREFIX] = 8658
-        PLATFORM_TO_PORT[PlatformUtils.RUBY_PREFIX] = 8661
-        PLATFORM_TO_PORT[PlatformUtils.PHP_PREFIX] = 8662
-        PLATFORM_TO_PORT[PlatformUtils.WEB_PREFIX] = 8663
-        PLATFORM_TO_PORT[PlatformUtils.DBE_PREFIX] = 8664
-        PLATFORM_TO_PORT[PlatformUtils.RIDER_PREFIX] = 8660
-        PLATFORM_TO_PORT[PlatformUtils.GOIDE_PREFIX] = 8659
+        platformToPort[PlatformUtils.IDEA_PREFIX] = 8653
+        platformToPort[PlatformUtils.IDEA_CE_PREFIX] = 8654
+        platformToPort[PlatformUtils.APPCODE_PREFIX] = 8655
+        platformToPort[PlatformUtils.CLION_PREFIX] = 8657
+        platformToPort[PlatformUtils.PYCHARM_PREFIX] = 8658
+        platformToPort[PlatformUtils.PYCHARM_CE_PREFIX] = 8658
+        platformToPort[PlatformUtils.PYCHARM_EDU_PREFIX] = 8658
+        platformToPort[PlatformUtils.RUBY_PREFIX] = 8661
+        platformToPort[PlatformUtils.PHP_PREFIX] = 8662
+        platformToPort[PlatformUtils.WEB_PREFIX] = 8663
+        platformToPort[PlatformUtils.DBE_PREFIX] = 8664
+        platformToPort[PlatformUtils.RIDER_PREFIX] = 8660
+        platformToPort[PlatformUtils.GOIDE_PREFIX] = 8659
     }
 
     fun start() {
-        LOG.info("Starting Http Commandserver...")
+        logger.info("Starting Http Commandserver...")
         val random = SecureRandom()
         val bytes = ByteArray(20)
         random.nextBytes(bytes)
         val nonce = String(Base64.getUrlEncoder().encode(bytes))
         val portOverride = System.getProperty("talon.http.port")?.toIntOrNull()
-        val port: Int = portOverride ?: PLATFORM_TO_PORT.getOrDefault(
+        val port: Int = portOverride ?: platformToPort.getOrDefault(
             PlatformUtils.getPlatformPrefix(),
             DEFAULT_PORT
         )
@@ -60,9 +60,9 @@ class HttpCommandServer {
             )
             Files.write(pathToNonce, nonce.toByteArray())
         } catch (e: IOException) {
-            LOG.error("Failed to write nonce file", e)
+            logger.error("Failed to write nonce file", e)
         }
-        LOG.info("Http command server listening on http://localhost:$port/$nonce")
+        logger.info("Http command server listening on http://localhost:$port/$nonce")
         val notification = Notification(
             "vc-idea",
             "Voicecode plugin", "Listening on http://localhost:$port/$nonce",
@@ -78,7 +78,7 @@ class HttpCommandServer {
             server?.executor = null // creates a default executor
             server?.start()
         } catch (e: IOException) {
-            LOG.error("Failed to start server to listen for commands", e)
+            logger.error("Failed to start server to listen for commands", e)
             return
         }
     }
@@ -86,4 +86,5 @@ class HttpCommandServer {
     fun stop() {
         server?.stop(0)
     }
+
 }

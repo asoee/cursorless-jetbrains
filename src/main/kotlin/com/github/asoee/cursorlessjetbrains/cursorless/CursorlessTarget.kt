@@ -6,7 +6,9 @@ class CursorlessTarget(
     val letter: String
 ) {
 
-    val DEFAULT = "default"
+    companion object {
+        private const val DEFAULT = "default"
+    }
 
     override fun toString(): String {
         return "CursorlessTarget(color='$color', shape='$shape', letter='$letter')"

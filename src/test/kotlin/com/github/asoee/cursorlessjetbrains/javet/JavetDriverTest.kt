@@ -40,14 +40,14 @@ class JavetDriverTest {
         module.executeVoid()
 
         if (runtime.containsV8Module("./module.js")) {
-            System.out.println("./module.js is registered as a module.")
+            println("./module.js is registered as a module.")
         }
 
         runtime.getExecutor("import { activate } from './cursorless.js'; globalThis.activate = activate; console.log(activate)")
             .setModule(true).setResourceName("./import.js").executeVoid()
         eventLoop.await()
         // Step 5: Call test() in global context.
-        System.out.println("activate() -> " + runtime.getExecutor("activate(null)").executeVoid())
+        println("activate() -> " + runtime.getExecutor("activate(null)").executeVoid())
     }
 
 
@@ -59,17 +59,25 @@ class JavetDriverTest {
 
         val cursorPos = Cursor(0, 0)
         val state = EditorState(
-            "test",
-            "/test/foo",
-            "public static void main(String[] args) {\n\n}",
-            true,
-            "java",
-            0,
-            4,
-            listOf(cursorPos),
-            listOf(Selection(start= cursorPos, end=cursorPos, cursorPosition = cursorPos, active = null, anchor = null)),
-            true,
-            true,
+            id = "test",
+            path = "/test/foo",
+            text = "public static void main(String[] args) {\n\n}",
+            active = true,
+            languageId = "java",
+            firstVisibleLine = 0,
+            lastVisibleLine = 4,
+            cursors = listOf(cursorPos),
+            selections = listOf(
+                Selection(
+                    start = cursorPos,
+                    end = cursorPos,
+                    cursorPosition = cursorPos,
+                    active = null,
+                    anchor = null
+                )
+            ),
+            visible = true,
+            editable = true,
         )
 
         driver.editorChanged(state)

@@ -50,7 +50,7 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
         val result = fixture.commandExecutorService.execute(command)
         myFixture.checkResultByFile("org/example/Main.java")
         runInEdtAndWait {
-            val selectedText = fixture.editor.selectionModel.getSelectedText()
+            val selectedText = fixture.editor.selectionModel.selectedText
             assertEquals("print", selectedText)
             assertSelectedOffset(fixture, 106, 111)
         }
@@ -144,7 +144,7 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
         return MainJavaFixture(psiFile, commandExecutorService, psiFile.project, editor!!, appService)
     }
 
-    fun getEditorFromPsiFile(psiFile: PsiFile): Editor? {
+    private fun getEditorFromPsiFile(psiFile: PsiFile): Editor? {
         val project: Project = psiFile.project
         val virtualFile = psiFile.virtualFile
         val fileEditor = FileEditorManager.getInstance(project).getSelectedEditor(virtualFile)

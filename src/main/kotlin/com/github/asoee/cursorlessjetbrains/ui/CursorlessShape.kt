@@ -34,7 +34,7 @@ class CursorlessShape(
         return svgDocument
     }
 
-    class ColorParserProvider(val dynamicColor: DynamicSvgPaint) : DefaultParserProvider() {
+    class ColorParserProvider(private val dynamicColor: DynamicSvgPaint) : DefaultParserProvider() {
         override fun createPreProcessor(): DomProcessor {
             return CustomColorsProcessor(dynamicColor)
         }

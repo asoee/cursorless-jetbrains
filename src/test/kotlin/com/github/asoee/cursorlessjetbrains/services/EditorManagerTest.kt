@@ -1,11 +1,11 @@
 package com.github.asoee.cursorlessjetbrains.services
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
-
-import org.junit.Assert.*
 
 class EditorManagerTest {
 

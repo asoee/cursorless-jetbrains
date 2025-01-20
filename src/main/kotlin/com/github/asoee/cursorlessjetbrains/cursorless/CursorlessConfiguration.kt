@@ -4,9 +4,9 @@ import kotlinx.serialization.Serializable
 
 typealias HatStability = String
 
-val HAT_STABILITY_STABLE: HatStability = "stable"
-val HAT_STABILITY_GREEDY: HatStability = "greedy"
-val HAT_STABILITY_BALANCED: HatStability = "balanced"
+const val HAT_STABILITY_STABLE: HatStability = "stable"
+const val HAT_STABILITY_GREEDY: HatStability = "greedy"
+const val HAT_STABILITY_BALANCED: HatStability = "balanced"
 
 @Serializable
 data class CursorlessConfiguration(
