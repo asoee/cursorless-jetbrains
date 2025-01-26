@@ -10,12 +10,14 @@ import com.github.asoee.cursorlessjetbrains.cursorless.DEFAULT_CONFIGURATION
 import com.github.asoee.cursorlessjetbrains.cursorless.TreesitterCallback
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.diagnostic.thisLogger
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import java.io.File
 import java.nio.file.Files
+import kotlin.io.path.Path
 
 
 open class JavetDriver {
@@ -27,19 +29,25 @@ open class JavetDriver {
     private val wasmDir: File = Files.createTempDirectory("cursorless-treesitter-wasm").toFile()
 
     init {
-        val icuDataDir = Files.createTempDirectory("cursorless-icu").toFile()
-        logger.debug("icuDataDir: $icuDataDir")
-        icuDataDir.deleteOnExit()
-        val outFile = File(icuDataDir, "icudtl.dat")
-        outFile.outputStream().use { out ->
-            javaClass.getResourceAsStream("/icu/icudtl.dat")?.copyTo(out)
-                ?: throw IllegalArgumentException("Resource not found: /icu/icudtl.dat")
-        }
+        initIcuDataDir()
 
-        NodeRuntimeOptions.NODE_FLAGS.setIcuDataDir(icuDataDir.absolutePath)
         runtime = V8Host.getNodeI18nInstance()
             .createV8Runtime()
         eventLoop = JNEventLoop(runtime)
+    }
+
+    private fun initIcuDataDir() {
+        val pluginsPath = System.getProperty("idea.plugins.path")
+        thisLogger().info("idea.plugins.path: $pluginsPath")
+        val icuDataDir = Path(pluginsPath)
+            .resolve("cursorless-jetbrains")
+            .resolve("extra/icu")
+            .toFile()
+        logger.debug("icuDataDir: $icuDataDir")
+        if (!icuDataDir.exists()) {
+            logger.warn("icu data dir does not exist: $icuDataDir")
+        }
+        NodeRuntimeOptions.NODE_FLAGS.setIcuDataDir(icuDataDir.absolutePath)
     }
 
     private fun loadTreesitterLanguages(): File {

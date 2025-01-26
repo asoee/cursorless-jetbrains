@@ -1,7 +1,10 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
 
 plugins {
     id("java") // Java support
@@ -158,21 +161,39 @@ tasks {
         gradleVersion = providers.gradleProperty("gradleVersion").get()
     }
 
+    withType<PrepareSandboxTask> {
+        from(layout.projectDirectory.dir("extraFiles")) {
+            into(pluginName.map { "$it/extra" })
+        }
+    }
+
     test {
         systemProperty(
             "java.util.logging.config.file",
             project.file("src/test/resources/logging.properties").absolutePath
         )
-//        systemProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager")
-        systemProperty("idea.log.debug.categories", "com.github.asoee,com.caoccao.javet")
+        outputs.upToDateWhen { false }
+
         testLogging {
             events("passed", "skipped", "failed")
             showStandardStreams = true
+
             exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
             info {
                 events("passed", "skipped", "failed")
                 showStandardStreams = true
                 exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            }
+            debug {
+                events(
+                    TestLogEvent.STARTED,
+                    TestLogEvent.FAILED,
+                    TestLogEvent.PASSED,
+                    TestLogEvent.SKIPPED,
+                    TestLogEvent.STANDARD_ERROR,
+                    TestLogEvent.STANDARD_OUT
+                )
+                exceptionFormat = TestExceptionFormat.FULL
             }
         }
     }
