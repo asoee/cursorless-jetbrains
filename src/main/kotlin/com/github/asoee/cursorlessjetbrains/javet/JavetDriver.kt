@@ -38,7 +38,7 @@ open class JavetDriver {
 
     private fun initIcuDataDir() {
         val pluginsPath = System.getProperty("idea.plugins.path")
-        thisLogger().info("idea.plugins.path: $pluginsPath")
+        thisLogger().debug("idea.plugins.path: $pluginsPath")
         val icuDataDir = Path(pluginsPath)
             .resolve("cursorless-jetbrains")
             .resolve("extra/icu")
@@ -48,70 +48,6 @@ open class JavetDriver {
             logger.warn("icu data dir does not exist: $icuDataDir")
         }
         NodeRuntimeOptions.NODE_FLAGS.setIcuDataDir(icuDataDir.absolutePath)
-    }
-
-    private fun loadTreesitterLanguages(): File {
-
-        saveFileFromClasspath("/cursorless/wasm/tree-sitter.wasm", File(wasmDir, "tree-sitter.wasm"))
-
-        val languages =
-            listOf(
-                "agda",
-                "c",
-                "c-sharp",
-                "clojure",
-                "cpp",
-                "css",
-                "dart",
-                "elixir",
-                "elm",
-                "gleam",
-                "go",
-                "haskell",
-                "hcl",
-                "html",
-                "java",
-                "javascript",
-                "json",
-                "julia",
-                "kotlin",
-                "latex",
-                "lua",
-                "markdown",
-                "nix",
-                "perl",
-                "php",
-                "python",
-                "query",
-                "regex",
-                "ruby",
-                "rust",
-                "scala",
-                "scss",
-                "sparql",
-                "swift",
-                "talon",
-                "tsx",
-                "typescript",
-                "xml",
-                "yaml"
-            )
-        languages.forEach { language ->
-            saveFileFromClasspath(
-                "/cursorless/wasm/tree-sitter-$language.wasm",
-                File(wasmDir, "tree-sitter-$language.wasm")
-            )
-        }
-        return wasmDir
-    }
-
-    private fun saveFileFromClasspath(resourcePath: String, outputFile: File) {
-        val inputStream = javaClass.getResourceAsStream(resourcePath)
-            ?: throw IllegalArgumentException("Resource not found: $resourcePath")
-        inputStream.use { input ->
-            Files.copy(input, outputFile.toPath())
-        }
-        println("ASOEE: saved file: ${outputFile.absolutePath}")
     }
 
     private class ClassPathQueryLoader : TreesitterCallback {
@@ -125,7 +61,7 @@ open class JavetDriver {
     @Synchronized
     fun loadCursorless() {
 
-        val wasmDir = loadTreesitterLanguages()
+        val wasmDir = resolveWasmDir()
         this.ideClientCallback.treesitterCallback = ClassPathQueryLoader()
 
         runtime.createV8ValueObject().use { v8ValueObject ->
@@ -194,6 +130,20 @@ open class JavetDriver {
             .executeVoid()
         eventLoop.await()
 
+    }
+
+    private fun resolveWasmDir(): File {
+        val pluginsPath = System.getProperty("idea.plugins.path")
+        thisLogger().debug("idea.plugins.path: $pluginsPath")
+        val wasmDir = Path(pluginsPath)
+            .resolve("cursorless-jetbrains")
+            .resolve("extra/treesitter/wasm")
+            .toFile()
+        logger.debug("wasmDir: $wasmDir")
+        if (!wasmDir.exists()) {
+            logger.warn("wasmDir data dir does not exist: $wasmDir")
+        }
+        return wasmDir
     }
 
     private fun escapeString(rawString: String): String {

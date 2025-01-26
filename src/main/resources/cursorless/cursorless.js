@@ -11601,7 +11601,7 @@ function createPosition(jbPosition) {
 var JetbrainsIDE = class {
   constructor(client, configuration) {
     this.client = client;
-    this.runMode = "development";
+    this.runMode = "production";
     this.visibleNotebookEditors = [];
     this.disposables = [];
     this.quickPickReturnValue = void 0;
