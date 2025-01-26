@@ -5,6 +5,15 @@
 ### Fixed
 
 - Fix occasional NPE for language detection
+- Queue editor events and dispatch in single thread, to avoid threadpool exhaustion when many editors
+  are changed at the same time (e.g. branch change with many tabs open), which results in UI freeze
+- Avoid using setTimeout in JS, due to memory leak. Replace with shim with immediate callback.
+
+### Changed
+
+- Load ICU and WASM files from plugin dir, instead of extracting to temp dir.
+  This should reduce startup time, and give less clutter in temp dir.
+- Reduce logging from JS engine.
 
 ## [0.0.9] - 2025-01-10
 
