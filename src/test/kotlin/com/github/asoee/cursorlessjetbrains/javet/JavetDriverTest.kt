@@ -1,11 +1,16 @@
 package com.github.asoee.cursorlessjetbrains.javet
 
+import com.caoccao.javet.interop.V8Host
+import com.caoccao.javet.interop.V8Runtime
 import com.caoccao.javet.javenode.JNEventLoop
 import com.caoccao.javet.javenode.enums.JNModuleType
+import com.github.asoee.cursorlessjetbrains.cursorless.*
 import com.github.asoee.cursorlessjetbrains.sync.Cursor
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
+import com.github.asoee.cursorlessjetbrains.sync.HatRange
 import com.github.asoee.cursorlessjetbrains.sync.Selection
-import kotlinx.coroutines.runBlocking
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.lessThanOrEqualTo
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 
@@ -15,6 +20,7 @@ class JavetDriverTest {
     fun testLoadCursorless() {
         val driver = JavetDriver()
         driver.loadCursorless()
+        driver.close()
     }
 
     @Test
@@ -48,6 +54,8 @@ class JavetDriverTest {
         eventLoop.await()
         // Step 5: Call test() in global context.
         println("activate() -> " + runtime.getExecutor("activate(null)").executeVoid())
+
+        driver.close()
     }
 
 
@@ -56,14 +64,20 @@ class JavetDriverTest {
 
         val driver = JavetDriver()
         driver.loadCursorless()
+        driver.setCursorlessCallback(CountingCallback())
 
-        val cursorPos = Cursor(0, 0)
+        val cursorPos = Cursor(1, 1)
         val state = EditorState(
             id = "test",
             path = "/test/foo",
-            text = "public static void main(String[] args) {\n\n}",
+            text = """
+                package com.github.asoee.cursorlessjetbrains.javet
+                
+                public static void main(String[] args) {
+                    System.out.println("Hello, world!");
+                }""".trimMargin(),
             active = true,
-            languageId = "java",
+            languageId = "plaintext",
             firstVisibleLine = 0,
             lastVisibleLine = 4,
             cursors = listOf(cursorPos),
@@ -72,8 +86,8 @@ class JavetDriverTest {
                     start = cursorPos,
                     end = cursorPos,
                     cursorPosition = cursorPos,
-                    active = null,
-                    anchor = null
+                    active = cursorPos,
+                    anchor = cursorPos
                 )
             ),
             visible = true,
@@ -82,6 +96,14 @@ class JavetDriverTest {
 
         driver.editorChanged(state)
 
+        driver.dumpMemoryInfo()
+        for (i in 0..200) {
+            driver.editorChanged(state)
+        }
+        driver.gc()
+        driver.dumpMemoryInfo()
+        assertThat(driver.runtime.referenceCount, lessThanOrEqualTo(3))
+        driver.close()
     }
 
 
@@ -89,26 +111,130 @@ class JavetDriverTest {
     fun testSetTimeout() {
 
         val driver = JavetDriver()
+        driver.loadCursorless()
 
-        runBlocking {
-//            driver.loadTimeout()
+        val runtime = driver.runtime
+        val eventLoop = JNEventLoop(runtime)
 
-            driver.loadCursorless()
-            val js = """
+//            driver.loadCursorless()
+        val js = """
               | async function main( ms ) {
-              |   const noop = ( ) => { };
-              |   const sleep = new Promise( function( resolve ) { setTimeout( resolve, ms ); } );
-              |   console.log( 'Sleeping for 5 seconds...' );
+              |   const noop = ( ) => { console.log( 'noop' ); };
+              |   const sleep = new Promise( function( noop ) { setTimeout( noop, ms ); } );
+              |   console.log( 'Sleeping for 1 ms...' );
               |   await sleep.then( );
               |   console.log( 'Done sleeping' );
               |   console.log( 'Hello, world!' );
               | }
-              | main( 5000 );
+              | main( 1 );
             """.trimMargin()
-//            driver.evaluate(js)
 
+        val js1 = """
+              |   const noop = ( ) => { console.log( 'noop' ); };
+            """.trimMargin()
 
+        val js2 = """
+              | (async () => {
+              |   setTimeout( noop, 1 );
+              |   console.log( 'Sleeping for 1000 ms...' );
+              | })()
+            """.trimMargin()
+        runtime.getExecutor(js1).executeVoid()
+
+        driver.dumpMemoryInfo()
+        runtime.getExecutor(js2).executeVoid()
+        eventLoop.await()
+        driver.dumpMemoryInfo()
+        runtime.getExecutor(js2).executeVoid()
+        eventLoop.await()
+        driver.dumpMemoryInfo()
+        runtime.getExecutor(js2).executeVoid()
+        eventLoop.await()
+        driver.dumpMemoryInfo()
+
+        driver.close()
+    }
+
+    @Test
+    fun testSetTimeout2() {
+
+        val runtime: V8Runtime = V8Host.getV8Instance().createV8Runtime()
+        val eventLoop = JNEventLoop(runtime)
+
+        eventLoop.loadStaticModules(JNModuleType.Console, JNModuleType.Timers)
+//        eventLoop.loadStaticModules(JNModuleType.Console)
+
+        val js1 = """
+              |   const noop = ( ) => { console.log( 'noop' ); };
+            """.trimMargin()
+
+        val js2 = """
+              | (async () => {
+              |   setTimeout( noop, 1 );
+              |   console.log( 'Sleeping for 1 ms...' );
+              | })()
+            """.trimMargin()
+        runtime.getExecutor(js1).executeVoid()
+
+        for (i in 0..10) {
+            runtime.getExecutor(js2).executeVoid()
+            eventLoop.await()
         }
+        println("ref count: " + runtime.referenceCount)
+        System.gc()
+        runtime.lowMemoryNotification()
+        System.gc()
+        runtime.lowMemoryNotification()
+        println("ref count: " + runtime.referenceCount)
 
+        runtime.close()
+    }
+}
+
+class CountingCallback : CursorlessCallback {
+
+    override fun onHatUpdate(hatRanges: Array<HatRange>) {
+//        println("Not yet implemented")
+    }
+
+    override fun setSelection(editorId: String, selections: Array<CursorlessRange>) {
+//        println("Not yet implemented")
+    }
+
+    override fun documentUpdated(editorId: String, edit: CursorlessEditorEdit) {
+//        println("Not yet implemented")
+    }
+
+    override fun clipboardCopy(editorId: String, selections: Array<CursorlessRange>) {
+//        println("Not yet implemented")
+    }
+
+    override fun clipboardPaste(editorId: String) {
+//        println("Not yet implemented")
+    }
+
+    override fun executeCommand(editorId: String, command: String, args: Array<String>) {
+        println("Not yet implemented")
+    }
+
+    override fun insertLineAfter(editorId: String, ranges: Array<CursorlessRange>) {
+        println("Not yet implemented")
+    }
+
+    override fun executeRangeCommand(editorId: String, rangeCommand: CursorlessEditorCommand) {
+        println("Not yet implemented")
+    }
+
+    override fun revealLine(editorId: String, line: Int, revealAt: String) {
+        println("Not yet implemented")
+    }
+
+    override fun flashRanges(flashRanges: Array<CursorlessFlashRange>) {
+        println("Not yet implemented")
+    }
+
+    override fun prePhraseVersion(): String? {
+//        println("Not yet implemented")
+        return "asdf" + System.currentTimeMillis()
     }
 }

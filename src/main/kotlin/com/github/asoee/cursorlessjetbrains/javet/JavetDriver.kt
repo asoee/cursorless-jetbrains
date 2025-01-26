@@ -23,7 +23,7 @@ open class JavetDriver {
     private val logger = logger<JavetDriver>()
     private val ideClientCallback = IdeClientCallback()
     val runtime: V8Runtime
-    private val eventLoop: JNEventLoop
+    val eventLoop: JNEventLoop
     private val wasmDir: File = Files.createTempDirectory("cursorless-treesitter-wasm").toFile()
 
     init {
@@ -125,7 +125,13 @@ open class JavetDriver {
             v8ValueObject.bind(ideClientCallback)
         }
 
-        eventLoop.loadStaticModules(JNModuleType.Console, JNModuleType.Timers)
+        eventLoop.loadStaticModules(JNModuleType.Console)
+
+        runtime.getExecutor(
+            "globalThis.setTimeout = (callback, _delay) => {\n" +
+                    "  callback();\n" +
+                    "};"
+        ).executeVoid()
 
         runtime.getExecutor(
             "process.on('unhandledRejection', (reason, promise) => {\n" +
@@ -216,6 +222,18 @@ open class JavetDriver {
 
     }
 
+    public fun dumpMemoryInfo() {
+        val v8SharedMemoryStatistics = runtime.v8SharedMemoryStatistics
+        println("v8SharedMemoryStatistics: $v8SharedMemoryStatistics")
+
+        println("ref count: " + runtime.referenceCount)
+        val v8HeapStatisticsFuture =
+            runtime.getV8HeapStatistics()
+        val v8HeapStatistics = v8HeapStatisticsFuture.join()
+        val detailString = v8HeapStatistics.toString()
+        System.out.printf("%s: %s%n", "1", detailString);
+    }
+
     @Synchronized
     fun setCursorlessCallback(callback: CursorlessCallback) {
         ideClientCallback.cursorlessCallback = callback
@@ -268,14 +286,17 @@ open class JavetDriver {
     @Synchronized
     fun close() {
         try {
-            runtime.close(false)
+            runtime.close(true)
         } catch (e: Throwable) {
-            logger.debug("error in close - $e")
+            logger.info("error in close - $e")
         }
     }
 
     @Synchronized
     fun editorClosed(editorId: String) {
+        if (runtime.isClosed) {
+            return
+        }
         val js = """
             | (async () => {
             |   const ide = await globalThis.ide;
@@ -344,7 +365,7 @@ open class JavetDriver {
         eventLoop.await()
     }
 
-    fun setHatShapePenalties(penalties: Map<String,Int>) {
+    fun setHatShapePenalties(penalties: Map<String, Int>) {
         val js = """
             | (async () => {
             |   const plugin = await globalThis.plugin;
@@ -388,7 +409,7 @@ open class JavetDriver {
         eventLoop.await()
     }
 
-    fun setHatColorPenalties(penalties: Map<String,Int>) {
+    fun setHatColorPenalties(penalties: Map<String, Int>) {
         val js = """
             | (async () => {
             |   const plugin = await globalThis.plugin;
@@ -408,6 +429,10 @@ open class JavetDriver {
         runtime.getExecutor(js)
             .executeVoid()
         eventLoop.await()
+    }
+
+    fun gc() {
+        runtime.lowMemoryNotification()
     }
 
 }
