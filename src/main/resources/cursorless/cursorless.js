@@ -476,7 +476,7 @@ var require_moo = __commonJS({
       }
     })(exports2, function() {
       "use strict";
-      var hasOwnProperty13 = Object.prototype.hasOwnProperty;
+      var hasOwnProperty12 = Object.prototype.hasOwnProperty;
       var toString3 = Object.prototype.toString;
       var hasSticky = typeof new RegExp().sticky === "boolean";
       function isRegExp(o) {
@@ -607,7 +607,7 @@ var require_moo = __commonJS({
           shouldThrow: false
         };
         for (var key in obj) {
-          if (hasOwnProperty13.call(obj, key)) {
+          if (hasOwnProperty12.call(obj, key)) {
             options2[key] = obj[key];
           }
         }
@@ -1015,7 +1015,7 @@ var require_immutability_helper = __commonJS({
       }
     }
     exports2.invariant = invariant4;
-    var hasOwnProperty13 = Object.prototype.hasOwnProperty;
+    var hasOwnProperty12 = Object.prototype.hasOwnProperty;
     var splice3 = Array.prototype.splice;
     var toString3 = Object.prototype.toString;
     function type2(obj) {
@@ -1024,7 +1024,7 @@ var require_immutability_helper = __commonJS({
     var assign = Object.assign || /* istanbul ignore next */
     function(target, source) {
       getAllKeys2(source).forEach(function(key) {
-        if (hasOwnProperty13.call(source, key)) {
+        if (hasOwnProperty12.call(source, key)) {
           target[key] = source[key];
         }
       });
@@ -1078,7 +1078,7 @@ var require_immutability_helper = __commonJS({
           });
           var nextObject = object;
           getAllKeys2(spec).forEach(function(key) {
-            if (hasOwnProperty13.call(_this.commands, key)) {
+            if (hasOwnProperty12.call(_this.commands, key)) {
               var objectWasNextObject = object === nextObject;
               nextObject = _this.commands[key](spec[key], nextObject, spec, object);
               if (objectWasNextObject && _this.isEquals(nextObject, object)) {
@@ -1087,7 +1087,7 @@ var require_immutability_helper = __commonJS({
             } else {
               var nextValueForKey = type2(object) === "Map" ? _this.update(object.get(key), spec[key]) : _this.update(object[key], spec[key]);
               var nextObjectValue = type2(nextObject) === "Map" ? nextObject.get(key) : nextObject[key];
-              if (!_this.isEquals(nextValueForKey, nextObjectValue) || typeof nextValueForKey === "undefined" && !hasOwnProperty13.call(object, key)) {
+              if (!_this.isEquals(nextValueForKey, nextObjectValue) || typeof nextValueForKey === "undefined" && !hasOwnProperty12.call(object, key)) {
                 if (nextObject === object) {
                   nextObject = copy(object);
                 }
@@ -4181,6 +4181,9 @@ var cursorlessCommandDescriptions = {
     "Bulk save scope tests for the active document"
   ),
   ["cursorless.showDocumentation"]: new VisibleCommand("Show documentation"),
+  ["cursorless.showInstallationDependencies"]: new VisibleCommand(
+    "Show installation dependencies"
+  ),
   ["cursorless.showScopeVisualizer"]: new VisibleCommand(
     "Show the scope visualizer"
   ),
@@ -4833,21 +4836,6 @@ function isIndex(value, length) {
   return !!length && (type2 == "number" || type2 != "symbol" && reIsUint.test(value)) && (value > -1 && value % 1 == 0 && value < length);
 }
 var isIndex_default = isIndex;
-
-// ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/_baseAssignValue.js
-function baseAssignValue(object, key, value) {
-  if (key == "__proto__" && defineProperty_default) {
-    defineProperty_default(object, key, {
-      "configurable": true,
-      "enumerable": true,
-      "value": value,
-      "writable": true
-    });
-  } else {
-    object[key] = value;
-  }
-}
-var baseAssignValue_default = baseAssignValue;
 
 // ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/eq.js
 function eq(value, other) {
@@ -6280,17 +6268,6 @@ function baseIteratee(value) {
 }
 var baseIteratee_default = baseIteratee;
 
-// ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/_arrayAggregator.js
-function arrayAggregator(array, setter, iteratee, accumulator) {
-  var index = -1, length = array == null ? 0 : array.length;
-  while (++index < length) {
-    var value = array[index];
-    setter(accumulator, value, iteratee(value), array);
-  }
-  return accumulator;
-}
-var arrayAggregator_default = arrayAggregator;
-
 // ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/_createBaseFor.js
 function createBaseFor(fromRight) {
   return function(object, iteratee, keysFunc) {
@@ -6339,24 +6316,6 @@ var createBaseEach_default = createBaseEach;
 // ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/_baseEach.js
 var baseEach = createBaseEach_default(baseForOwn_default);
 var baseEach_default = baseEach;
-
-// ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/_baseAggregator.js
-function baseAggregator(collection, setter, iteratee, accumulator) {
-  baseEach_default(collection, function(value, key, collection2) {
-    setter(accumulator, value, iteratee(value), collection2);
-  });
-  return accumulator;
-}
-var baseAggregator_default = baseAggregator;
-
-// ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/_createAggregator.js
-function createAggregator(setter, initializer) {
-  return function(collection, iteratee) {
-    var func2 = isArray_default(collection) ? arrayAggregator_default : baseAggregator_default, accumulator = initializer ? initializer() : {};
-    return func2(collection, setter, baseIteratee_default(iteratee, 2), accumulator);
-  };
-}
-var createAggregator_default = createAggregator;
 
 // ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/isArrayLikeObject.js
 function isArrayLikeObject(value) {
@@ -6468,18 +6427,6 @@ var createFlow_default = createFlow;
 // ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/flow.js
 var flow = createFlow_default();
 var flow_default = flow;
-
-// ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/groupBy.js
-var objectProto15 = Object.prototype;
-var hasOwnProperty12 = objectProto15.hasOwnProperty;
-var groupBy = createAggregator_default(function(result, value, key) {
-  if (hasOwnProperty12.call(result, key)) {
-    result[key].push(value);
-  } else {
-    baseAssignValue_default(result, key, [value]);
-  }
-});
-var groupBy_default = groupBy;
 
 // ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/_baseGt.js
 function baseGt(value, other) {
@@ -7058,11 +7005,18 @@ var Position = class _Position {
     return new Range(this, this);
   }
   /**
-   * Return a concise string representation of the position.
+   * Return a concise string representation of the position. 0-based.
    * @returns concise representation
    **/
   concise() {
     return `${this.line}:${this.character}`;
+  }
+  /**
+   * Return a concise string representation of the position. 1-based.
+   * @returns concise representation
+   **/
+  conciseOneBased() {
+    return `${this.line + 1}:${this.character + 1}`;
   }
   toString() {
     return this.concise();
@@ -7168,14 +7122,21 @@ var Range = class _Range {
     return isReversed ? new Selection(this.end, this.start) : new Selection(this.start, this.end);
   }
   /**
-   * Return a concise string representation of the range
+   * Return a concise string representation of the range. 0-based.
    * @returns concise representation
    **/
   concise() {
     return `${this.start.concise()}-${this.end.concise()}`;
   }
+  /**
+   * Return a concise string representation of the range. 1-based.
+   * @returns concise representation
+   **/
+  conciseOneBased() {
+    return `${this.start.conciseOneBased()}-${this.end.conciseOneBased()}`;
+  }
   toString() {
-    return this.concise();
+    return `${this.start.concise()}-${this.end.concise()}`;
   }
 };
 
@@ -7202,9 +7163,12 @@ function makeCache(func2) {
 }
 var rightAnchored = makeCache(_rightAnchored);
 var leftAnchored = makeCache(_leftAnchored);
-function matchAll(text, regex, mapfn) {
+function matchAllIterator(text, regex) {
   regex.lastIndex = 0;
-  return Array.from(text.matchAll(regex), mapfn);
+  return text.matchAll(regex);
+}
+function matchAll(text, regex, mapfn) {
+  return Array.from(matchAllIterator(text, regex), mapfn);
 }
 function testRegex(regex, text) {
   regex.lastIndex = 0;
@@ -7604,101 +7568,109 @@ var javascriptScopeSupport = {
   command: notApplicable10
 };
 
+// ../common/src/scopeSupportFacets/javascriptreact.ts
+var { supported: supported11, unsupported: unsupported9, notApplicable: notApplicable11 } = ScopeSupportFacetLevel;
+var javascriptreactScopeSupport = {
+  ...javascriptScopeSupport,
+  "textFragment.element": supported11
+};
+
 // ../common/src/scopeSupportFacets/json.ts
-var { supported: supported11 } = ScopeSupportFacetLevel;
+var { supported: supported12 } = ScopeSupportFacetLevel;
 var jsonScopeSupport = {
-  "comment.line": supported11,
-  "comment.block": supported11,
-  map: supported11
+  "comment.line": supported12,
+  "comment.block": supported12,
+  map: supported12
 };
 
 // ../common/src/scopeSupportFacets/jsonc.ts
-var { supported: supported12, unsupported: unsupported9, notApplicable: notApplicable11 } = ScopeSupportFacetLevel;
+var { supported: supported13, unsupported: unsupported10, notApplicable: notApplicable12 } = ScopeSupportFacetLevel;
 var jsoncScopeSupport = {
   ...jsonScopeSupport
 };
 
 // ../common/src/scopeSupportFacets/jsonl.ts
-var { supported: supported13, unsupported: unsupported10, notApplicable: notApplicable12 } = ScopeSupportFacetLevel;
+var { supported: supported14, unsupported: unsupported11, notApplicable: notApplicable13 } = ScopeSupportFacetLevel;
 var jsonlScopeSupport = {
   ...jsonScopeSupport
 };
 
 // ../common/src/scopeSupportFacets/latex.ts
-var { supported: supported14, unsupported: unsupported11, notApplicable: notApplicable13 } = ScopeSupportFacetLevel;
+var { supported: supported15, unsupported: unsupported12, notApplicable: notApplicable14 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/lua.ts
-var { supported: supported15, notApplicable: notApplicable14 } = ScopeSupportFacetLevel;
+var { supported: supported16, notApplicable: notApplicable15 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/markdown.ts
-var { supported: supported16, unsupported: unsupported12, notApplicable: notApplicable15 } = ScopeSupportFacetLevel;
-
-// ../common/src/scopeSupportFacets/php.ts
 var { supported: supported17, unsupported: unsupported13, notApplicable: notApplicable16 } = ScopeSupportFacetLevel;
 
+// ../common/src/scopeSupportFacets/php.ts
+var { supported: supported18, unsupported: unsupported14, notApplicable: notApplicable17 } = ScopeSupportFacetLevel;
+
 // ../common/src/scopeSupportFacets/python.ts
-var { supported: supported18, notApplicable: notApplicable17 } = ScopeSupportFacetLevel;
+var { supported: supported19, notApplicable: notApplicable18 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/ruby.ts
-var { supported: supported19, unsupported: unsupported14, notApplicable: notApplicable18 } = ScopeSupportFacetLevel;
-
-// ../common/src/scopeSupportFacets/rust.ts
 var { supported: supported20, unsupported: unsupported15, notApplicable: notApplicable19 } = ScopeSupportFacetLevel;
 
-// ../common/src/scopeSupportFacets/scala.ts
+// ../common/src/scopeSupportFacets/rust.ts
 var { supported: supported21, unsupported: unsupported16, notApplicable: notApplicable20 } = ScopeSupportFacetLevel;
 
-// ../common/src/scopeSupportFacets/scm.ts
+// ../common/src/scopeSupportFacets/scala.ts
 var { supported: supported22, unsupported: unsupported17, notApplicable: notApplicable21 } = ScopeSupportFacetLevel;
 
-// ../common/src/scopeSupportFacets/scss.ts
+// ../common/src/scopeSupportFacets/scm.ts
 var { supported: supported23, unsupported: unsupported18, notApplicable: notApplicable22 } = ScopeSupportFacetLevel;
+
+// ../common/src/scopeSupportFacets/scss.ts
+var { supported: supported24, unsupported: unsupported19, notApplicable: notApplicable23 } = ScopeSupportFacetLevel;
 var scssScopeSupport = {
   ...cssScopeSupport,
-  "namedFunction.iteration": supported23,
-  "namedFunction.iteration.document": supported23,
-  "functionName.iteration": supported23,
-  "functionName.iteration.document": supported23,
-  "comment.line": supported23,
-  disqualifyDelimiter: supported23
+  "namedFunction.iteration": supported24,
+  "namedFunction.iteration.document": supported24,
+  "functionName.iteration": supported24,
+  "functionName.iteration.document": supported24,
+  "comment.line": supported24,
+  disqualifyDelimiter: supported24
 };
 
 // ../common/src/scopeSupportFacets/talon.ts
-var { supported: supported24 } = ScopeSupportFacetLevel;
+var { supported: supported25 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/typescript.ts
-var { supported: supported25 } = ScopeSupportFacetLevel;
+var { supported: supported26 } = ScopeSupportFacetLevel;
 var typescriptScopeSupport = {
   ...javascriptCoreScopeSupport,
-  "name.field": supported25,
-  "type.argument.formal": supported25,
-  "type.argument.formal.iteration": supported25,
-  "type.argument.formal.method": supported25,
-  "type.argument.formal.method.iteration": supported25,
-  "type.argument.formal.constructor": supported25,
-  "type.argument.formal.constructor.iteration": supported25,
-  "type.alias": supported25,
-  "type.cast": supported25,
-  "type.field": supported25,
-  "type.interface": supported25,
-  "type.return": supported25,
-  "type.variable": supported25,
-  "value.field": supported25,
-  "value.typeAlias": supported25
+  "name.field": supported26,
+  "type.argument.formal": supported26,
+  "type.argument.formal.iteration": supported26,
+  "type.argument.formal.method": supported26,
+  "type.argument.formal.method.iteration": supported26,
+  "type.argument.formal.constructor": supported26,
+  "type.argument.formal.constructor.iteration": supported26,
+  "type.alias": supported26,
+  "type.cast": supported26,
+  "type.field": supported26,
+  "type.interface": supported26,
+  "type.return": supported26,
+  "type.variable": supported26,
+  "value.field": supported26,
+  "value.typeAlias": supported26,
+  disqualifyDelimiter: supported26
 };
 
 // ../common/src/scopeSupportFacets/typescriptreact.ts
-var { supported: supported26, unsupported: unsupported19, notApplicable: notApplicable23 } = ScopeSupportFacetLevel;
+var { supported: supported27, unsupported: unsupported20, notApplicable: notApplicable24 } = ScopeSupportFacetLevel;
 var typescriptreactScopeSupport = {
   ...typescriptScopeSupport,
   ...javascriptJsxScopeSupport
 };
 
 // ../common/src/scopeSupportFacets/xml.ts
-var { supported: supported27, unsupported: unsupported20, notApplicable: notApplicable24 } = ScopeSupportFacetLevel;
+var { supported: supported28, unsupported: unsupported21, notApplicable: notApplicable25 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/yaml.ts
-var { supported: supported28, unsupported: unsupported21, notApplicable: notApplicable25 } = ScopeSupportFacetLevel;
+var { supported: supported29, unsupported: unsupported22, notApplicable: notApplicable26 } = ScopeSupportFacetLevel;
 
 // ../common/src/StoredTargetKey.ts
 var storedTargetKeys = [
@@ -7738,11 +7710,18 @@ var Selection = class extends Range {
     return this.anchor.isEqual(other.anchor) && this.active.isEqual(other.active);
   }
   /**
-   * Return a concise string representation of the selection
+   * Return a concise string representation of the selection. 0-based.
    * @returns concise representation
    **/
   concise() {
     return `${this.anchor.concise()}->${this.active.concise()}`;
+  }
+  /**
+   * Return a concise string representation of the selection. 1-based.
+   * @returns concise representation
+   **/
+  conciseOneBased() {
+    return `${this.start.conciseOneBased()}->${this.end.conciseOneBased()}`;
   }
   toString() {
     return this.concise();
@@ -10404,6 +10383,9 @@ function replacer(key, value) {
 
 // ../common/src/types/command/ActionDescriptor.ts
 var simpleActionNames = [
+  "addSelection",
+  "addSelectionAfter",
+  "addSelectionBefore",
   "breakLine",
   "clearAndSetSelection",
   "copyToClipboard",
@@ -10448,9 +10430,9 @@ var simpleActionNames = [
   "toggleLineBreakpoint",
   "toggleLineComment",
   "unfoldRegion",
+  "private.getTargets",
   "private.setKeyboardTarget",
-  "private.showParseTree",
-  "private.getTargets"
+  "private.showParseTree"
 ];
 var complexActionNames = [
   "callAsFunction",
@@ -10569,7 +10551,8 @@ var simpleScopeTypeTypes = [
   "command",
   // Private scope types
   "textFragment",
-  "disqualifyDelimiter"
+  "disqualifyDelimiter",
+  "pairDelimiter"
 ];
 function isSimpleScopeType(scopeType) {
   return simpleScopeTypeTypes.includes(scopeType.type);
@@ -10706,7 +10689,7 @@ function handleLegacyCommandShape(spokenFormOrCommand, rest) {
 }
 
 // ../common/src/util/itertools.ts
-function groupBy2(list, func2) {
+function groupBy(list, func2) {
   const map3 = /* @__PURE__ */ new Map();
   list.forEach((element) => {
     const key = func2(element);
@@ -10835,7 +10818,6 @@ var JetbrainsHats = class {
     this.enabledHatStyles = this.generateHatStyles();
   }
   setHatRanges(hatRanges) {
-    console.log("ASOEE/CL: JetbrainsHats.setHatRanges : " + hatRanges.length);
     this.hatRanges = hatRanges;
     const jbHatRanges = this.toJetbransHatRanges(hatRanges);
     const hatsJson = JSON.stringify(jbHatRanges);
@@ -10983,9 +10965,6 @@ var JetbrainsCapabilities = class {
 function fromJetbrainsContentChange(document2, firstLine, lastLine, linedata) {
   const result = [];
   const text = linedata.join("\n");
-  console.debug(
-    `fromJetbrainsContentChange(): document.getText(): '${document2.getText()}'`
-  );
   const range3 = new Range(
     new Position(firstLine, 0),
     new Position(lastLine - 1, document2.lineAt(lastLine - 1).text.length)
@@ -10998,9 +10977,6 @@ function fromJetbrainsContentChange(document2, firstLine, lastLine, linedata) {
     rangeLength,
     text
   });
-  console.debug(
-    `fromJetbrainsContentChange(): changes=${JSON.stringify(result)}`
-  );
   return result;
 }
 
@@ -11387,9 +11363,7 @@ var { URI, Utils } = LIB;
 
 // src/ide/setSelections.ts
 function setSelections(client, document2, editorId, selections) {
-  console.log("setSelections: " + selections);
   const selectionsJson = JSON.stringify(selections);
-  console.log("setSelections JSON: " + selectionsJson);
   client.setSelection(editorId, selectionsJson);
   return Promise.resolve();
 }
@@ -11443,14 +11417,12 @@ var JetbrainsEditor = class {
     return this.id === other.id;
   }
   async setSelections(selections, _opts) {
-    console.log("editor.setSelections");
     if (!selectionsEqual(this.selections, selections)) {
       await setSelections(this.client, this.document, this.id, selections);
       this.selections = selections;
     }
   }
   edit(edits) {
-    console.log("editor.edit");
     jetbrainsPerformEdits(this.client, this.ide, this.document, this.id, edits);
     return Promise.resolve(true);
   }
@@ -11596,7 +11568,6 @@ var JetbrainsEditor = class {
 
 // src/ide/createTextEditor.ts
 function createTextEditor(client, ide2, editorState) {
-  console.log("createTextEditor");
   const id2 = editorState.id;
   const uri = URI.parse(`talon-jetbrains://${id2}`);
   const languageId = editorState.languageId ?? "plaintext";
@@ -11617,7 +11588,6 @@ function createTextEditor(client, ide2, editorState) {
   );
 }
 function createSelection(document2, selection) {
-  console.log("createSelection " + JSON.stringify(selection));
   return new Selection(
     createPosition(selection.anchor),
     createPosition(selection.active)
@@ -11632,6 +11602,7 @@ var JetbrainsIDE = class {
   constructor(client, configuration) {
     this.client = client;
     this.runMode = "development";
+    this.visibleNotebookEditors = [];
     this.disposables = [];
     this.quickPickReturnValue = void 0;
     this.editors = /* @__PURE__ */ new Map();
@@ -11693,9 +11664,7 @@ var JetbrainsIDE = class {
     return [...this.editors.values()].filter((editor) => editor.isVisible);
   }
   getEditableTextEditor(editor) {
-    console.log("getEditableTextEditor");
     if (editor instanceof JetbrainsEditor) {
-      console.log("getEditableTextEditor - return current");
       if (editor.isEditable) {
         return editor;
       } else {
@@ -12753,6 +12722,7 @@ var defaultSpokenFormMapCore = {
     string: isPrivate("parse tree string"),
     textFragment: isPrivate("text fragment"),
     disqualifyDelimiter: isPrivate("disqualify delimiter"),
+    pairDelimiter: isPrivate("pair delimiter"),
     ["private.fieldAccess"]: isPrivate("access"),
     ["private.switchStatementSubject"]: isPrivate("subject")
   },
@@ -12790,6 +12760,9 @@ var defaultSpokenFormMapCore = {
   },
   customRegex: {},
   action: {
+    addSelection: "append",
+    addSelectionAfter: "append post",
+    addSelectionBefore: "append pre",
     breakLine: "break",
     scrollToBottom: "bottom",
     toggleLineBreakpoint: "break point",
@@ -16665,7 +16638,7 @@ var DisabledSnippets = class {
   getSnippetStrict(_snippetName) {
     throw new Error("Snippets are not implemented.");
   }
-  openNewSnippetFile(_snippetName) {
+  openNewSnippetFile(_snippetName, _directory) {
     throw new Error("Snippets are not implemented.");
   }
 };
@@ -18267,6 +18240,45 @@ var DocumentScopeHandler = class extends BaseScopeHandler {
   }
 };
 
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/TreeSitterScopeHandler/getQuerySearchRange.ts
+function getQuerySearchRange(document2, position, direction, {
+  containment,
+  distalPosition,
+  allowAdjacentScopes
+}) {
+  const { start: start2, end } = getQuerySearchRangeCore(
+    document2.offsetAt(position),
+    document2.offsetAt(distalPosition),
+    direction,
+    containment,
+    allowAdjacentScopes
+  );
+  return {
+    start: document2.positionAt(start2),
+    end: document2.positionAt(end)
+  };
+}
+function getQuerySearchRangeCore(offset, distalOffset, direction, containment, allowAdjacentScopes) {
+  const adjacentShift = allowAdjacentScopes ? 1 : 0;
+  if (containment === "required") {
+    return direction === "forward" ? {
+      start: offset - adjacentShift,
+      end: offset + 1
+    } : {
+      start: offset - 1,
+      end: offset + adjacentShift
+    };
+  }
+  const proximalShift = containment === "disallowed" ? 1 : -adjacentShift;
+  return direction === "forward" ? {
+    start: offset + proximalShift,
+    end: distalOffset + adjacentShift
+  } : {
+    start: distalOffset - adjacentShift,
+    end: offset - proximalShift
+  };
+}
+
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/TreeSitterScopeHandler/mergeAdjacentBy.ts
 function mergeAdjacentBy(input, isEqual2, merge2) {
   const result = [];
@@ -18291,9 +18303,15 @@ var BaseTreeSitterScopeHandler = class extends BaseScopeHandler {
     super();
     this.query = query;
   }
-  *generateScopeCandidates(editor, position, direction, _hints) {
+  *generateScopeCandidates(editor, position, direction, hints) {
     const { document: document2 } = editor;
-    const scopes = this.query.matches(document2).map((match) => this.matchToScope(editor, match)).filter((scope) => scope != null).sort((a, b) => compareTargetScopes(direction, position, a, b));
+    const { start: start2, end } = getQuerySearchRange(
+      document2,
+      position,
+      direction,
+      hints
+    );
+    const scopes = this.query.matches(document2, start2, end).map((match) => this.matchToScope(editor, match)).filter((scope) => scope != null).sort((a, b) => compareTargetScopes(direction, position, a, b));
     yield* mergeAdjacentBy(
       scopes,
       (a, b) => a.domain.isRangeEqual(b.domain),
@@ -18464,19 +18482,20 @@ var TreeSitterScopeHandler = class extends BaseTreeSitterScopeHandler {
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/IteratorInfo.ts
 function getInitialIteratorInfos(iterators) {
-  return iterators.flatMap((iterator) => {
+  return iterators.flatMap((iterator, i2) => {
     const { value, done } = iterator.next();
     return done ? [] : [
       {
         iterator,
-        value
+        value,
+        index: i2
       }
     ];
   });
 }
 function advanceIteratorsUntil(iteratorInfos, criterion) {
   return iteratorInfos.flatMap((iteratorInfo) => {
-    const { iterator } = iteratorInfo;
+    const { iterator, index } = iteratorInfo;
     let { value } = iteratorInfo;
     let done = false;
     while (!done && !criterion(value)) {
@@ -18485,50 +18504,65 @@ function advanceIteratorsUntil(iteratorInfos, criterion) {
     if (done) {
       return [];
     }
-    return [{ iterator, value }];
+    return [{ iterator, value, index }];
   });
 }
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/OneOfScopeHandler.ts
 var OneOfScopeHandler = class _OneOfScopeHandler extends BaseScopeHandler {
-  constructor(scopeType, scopeHandlers, getIterationScopeType) {
+  constructor(scopeType, scopeHandlers, getIterationScopeHandler) {
     super();
     this.scopeType = scopeType;
     this.scopeHandlers = scopeHandlers;
-    this.getIterationScopeType = getIterationScopeType;
+    this.getIterationScopeHandler = getIterationScopeHandler;
     this.isHierarchical = true;
   }
   static create(scopeHandlerFactory, scopeType, languageId) {
     const scopeHandlers = scopeType.scopeTypes.map(
-      (scopeType2) => {
-        const handler = scopeHandlerFactory.create(scopeType2, languageId);
-        if (handler == null) {
-          throw new Error(`No available scope handler for '${scopeType2.type}'`);
-        }
-        return handler;
+      (scopeType2) => scopeHandlerFactory.create(scopeType2, languageId)
+    );
+    return this.createFromScopeHandlers(
+      scopeHandlerFactory,
+      scopeType,
+      scopeHandlers,
+      languageId
+    );
+  }
+  static createFromScopeHandlers(scopeHandlerFactory, scopeType, scopeHandlers, languageId) {
+    const getIterationScopeHandler = () => new _OneOfScopeHandler(
+      void 0,
+      scopeHandlers.map(
+        (scopeHandler) => scopeHandlerFactory.create(
+          scopeHandler.iterationScopeType,
+          languageId
+        )
+      ),
+      () => {
+        throw new Error("Not implemented");
       }
     );
-    const iterationScopeType = () => ({
-      type: "custom",
-      scopeHandler: new _OneOfScopeHandler(
-        void 0,
-        scopeHandlers.map(
-          (scopeHandler) => scopeHandlerFactory.create(
-            scopeHandler.iterationScopeType,
-            languageId
-          )
-        ),
-        () => {
-          throw new Error("Not implemented");
-        }
-      )
-    });
-    return new _OneOfScopeHandler(scopeType, scopeHandlers, iterationScopeType);
+    return new _OneOfScopeHandler(
+      scopeType,
+      scopeHandlers,
+      getIterationScopeHandler
+    );
   }
   get iterationScopeType() {
-    return this.getIterationScopeType();
+    if (this.iterationScopeHandler == null) {
+      this.iterationScopeHandler = this.getIterationScopeHandler();
+    }
+    return {
+      type: "custom",
+      scopeHandler: this.iterationScopeHandler
+    };
   }
   *generateScopeCandidates(editor, position, direction, hints) {
+    if (this.iterationScopeHandler?.lastYieldedIndex != null) {
+      const handlerIndex = this.iterationScopeHandler.lastYieldedIndex;
+      const handler = this.scopeHandlers[handlerIndex];
+      yield* handler.generateScopes(editor, position, direction, hints);
+      return;
+    }
     const iterators = this.scopeHandlers.map(
       (scopeHandler) => scopeHandler.generateScopes(editor, position, direction, hints)[Symbol.iterator]()
     );
@@ -18537,7 +18571,9 @@ var OneOfScopeHandler = class _OneOfScopeHandler extends BaseScopeHandler {
       iteratorInfos.sort(
         (a, b) => compareTargetScopes(direction, position, a.value, b.value)
       );
-      const currentScope2 = iteratorInfos[0].value;
+      const iteratorInfo = iteratorInfos[0];
+      const currentScope2 = iteratorInfo.value;
+      this.lastYieldedIndex = iteratorInfo.index;
       yield currentScope2;
       iteratorInfos = advanceIteratorsUntil(
         iteratorInfos,
@@ -19114,10 +19150,13 @@ var BoundedBaseScopeHandler = class extends BaseScopeHandler {
     );
   }
   get iterationScopeType() {
-    if (this.targetScopeHandler.iterationScopeType.type === "custom") {
-      throw Error(
-        "Iteration scope type can't be custom for BoundedBaseScopeHandler"
-      );
+    switch (this.targetScopeHandler.iterationScopeType.type) {
+      case "custom":
+      case "fallback":
+      case "conditional":
+        throw Error(
+          `Iteration scope type can't be '${this.targetScopeHandler.iterationScopeType.type}' for BoundedBaseScopeHandler`
+        );
     }
     return {
       type: "oneOf",
@@ -19222,6 +19261,473 @@ var BoundedParagraphScopeHandler = class extends BoundedBaseScopeHandler {
   }
 };
 
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/util/OneWayRangeFinder.ts
+var OneWayRangeFinder = class {
+  /**
+   * @param items The items to search in. Must be sorted in document order.
+   */
+  constructor(items) {
+    this.items = items;
+    this.index = 0;
+  }
+  add(item) {
+    this.items.push(item);
+  }
+  contains(searchItem) {
+    return this.advance(searchItem);
+  }
+  getContaining(searchItem) {
+    if (this.advance(searchItem)) {
+      return this.items[this.index];
+    }
+    return void 0;
+  }
+  advance(searchItem) {
+    while (this.index < this.items.length) {
+      const range3 = this.items[this.index].range;
+      if (range3.contains(searchItem)) {
+        return true;
+      }
+      if (searchItem.end.isBeforeOrEqual(range3.start)) {
+        return false;
+      }
+      this.index++;
+    }
+    return false;
+  }
+};
+
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/util/OneWayNestedRangeFinder.ts
+var OneWayNestedRangeFinder = class {
+  /**
+   * @param items The items to search in. Must be sorted in document order.
+   */
+  constructor(items) {
+    this.children = createNodes(items);
+  }
+  getSmallestContaining(separator2) {
+    return this.children.getContaining(separator2)?.getSmallestContaining(separator2);
+  }
+};
+function createNodes(items) {
+  const results = [];
+  const parents = [];
+  for (const item of items) {
+    const node = new RangeLookupTreeNode(item);
+    while (parents.length > 0 && !parents[parents.length - 1].range.contains(item.range)) {
+      parents.pop();
+    }
+    const parent = parents[parents.length - 1];
+    if (parent != null) {
+      parent.children.add(node);
+    } else {
+      results.push(node);
+    }
+    parents.push(node);
+  }
+  return new OneWayRangeFinder(results);
+}
+var RangeLookupTreeNode = class {
+  constructor(item) {
+    this.item = item;
+    this.children = new OneWayRangeFinder([]);
+  }
+  get range() {
+    return this.item.range;
+  }
+  getSmallestContaining(range3) {
+    const child = this.children.getContaining(range3)?.getSmallestContaining(range3);
+    return child ?? this.item;
+  }
+};
+
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/CollectionItemScopeHandler/getSeparatorOccurrences.ts
+var separator = ",";
+var separatorRegex = new RegExp(separator, "g");
+function getSeparatorOccurrences(document2) {
+  const text = document2.getText();
+  return matchAll(text, separatorRegex, (match) => {
+    return new Range(
+      document2.positionAt(match.index),
+      document2.positionAt(match.index + match[0].length)
+    );
+  });
+}
+
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/CollectionItemScopeHandler/collectionItemTextualIterationScopeHandler.ts
+var collectionItemTextualIterationScopeHandler = {
+  type: "fallback",
+  scopeTypes: [
+    {
+      type: "surroundingPairInterior",
+      delimiter: "collectionBoundary"
+    },
+    {
+      type: "conditional",
+      scopeType: {
+        type: "line"
+      },
+      predicate: (scope) => {
+        const text = scope.editor.document.getText(scope.domain);
+        return testRegex(separatorRegex, text);
+      }
+    }
+  ]
+};
+
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/CollectionItemScopeHandler/createTargetScope.ts
+function createTargetScope(isEveryScope, editor, iterationRange, contentRange, previousRange, nextRange) {
+  const leadingDelimiterRange = previousRange != null ? new Range(previousRange.end, contentRange.start) : void 0;
+  const trailingDelimiterRange = nextRange != null ? new Range(contentRange.end, nextRange.start) : void 0;
+  const removalRange = !isEveryScope && leadingDelimiterRange != null && trailingDelimiterRange != null && getRangeLength(editor, leadingDelimiterRange) > getRangeLength(editor, trailingDelimiterRange) ? contentRange.union(leadingDelimiterRange) : void 0;
+  const insertionDelimiter = iterationRange.isSingleLine ? ", " : ",\n";
+  return {
+    editor,
+    domain: contentRange,
+    getTargets(isReversed) {
+      return [
+        new ScopeTypeTarget({
+          scopeTypeType: "collectionItem",
+          editor,
+          isReversed,
+          contentRange,
+          insertionDelimiter,
+          leadingDelimiterRange,
+          trailingDelimiterRange,
+          removalRange
+        })
+      ];
+    }
+  };
+}
+
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/CollectionItemScopeHandler/getInteriorRanges.ts
+function getInteriorRanges(scopeHandlerFactory, languageId, editor, delimiter) {
+  const scopeHandler = scopeHandlerFactory.create(
+    {
+      type: "surroundingPairInterior",
+      delimiter
+    },
+    languageId
+  );
+  return Array.from(
+    scopeHandler.generateScopes(editor, new Position(0, 0), "forward", {
+      containment: void 0,
+      skipAncestorScopes: false,
+      includeDescendantScopes: true
+    }),
+    (scope) => ({ range: scope.domain })
+  );
+}
+
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/CollectionItemScopeHandler/CollectionItemTextualScopeHandler.ts
+var CollectionItemTextualScopeHandler = class extends BaseScopeHandler {
+  constructor(scopeHandlerFactory, languageId) {
+    super();
+    this.scopeHandlerFactory = scopeHandlerFactory;
+    this.languageId = languageId;
+    this.scopeType = { type: "collectionItem" };
+    this.isHierarchical = true;
+  }
+  get iterationScopeType() {
+    return collectionItemTextualIterationScopeHandler;
+  }
+  *generateScopeCandidates(editor, position, direction, hints) {
+    const isEveryScope = hints.containment == null && hints.skipAncestorScopes;
+    const separatorRanges = getSeparatorOccurrences(editor.document);
+    const interiorRanges = getInteriorRanges(
+      this.scopeHandlerFactory,
+      this.languageId,
+      editor,
+      "collectionBoundary"
+    );
+    const interiorRangeFinder = new OneWayNestedRangeFinder(interiorRanges);
+    const stringRanges = getInteriorRanges(
+      this.scopeHandlerFactory,
+      this.languageId,
+      editor,
+      "string"
+    );
+    const stringRangeFinder = new OneWayRangeFinder(stringRanges);
+    const scopes = [];
+    const usedInteriors = /* @__PURE__ */ new Set();
+    const iterationStatesStack = [];
+    for (const separator2 of separatorRanges) {
+      if (stringRangeFinder.contains(separator2)) {
+        continue;
+      }
+      let currentIterationState;
+      while (iterationStatesStack.length > 0) {
+        const lastState = iterationStatesStack[iterationStatesStack.length - 1];
+        if (lastState.iterationRange.contains(separator2)) {
+          currentIterationState = lastState;
+          break;
+        }
+        this.addScopes(scopes, lastState);
+        iterationStatesStack.pop();
+      }
+      const containingInteriorRange = interiorRangeFinder.getSmallestContaining(separator2)?.range;
+      const containingIterationRange = containingInteriorRange ?? editor.document.lineAt(separator2.start.line).range;
+      if (currentIterationState != null && currentIterationState.iterationRange.isRangeEqual(
+        containingIterationRange
+      )) {
+        currentIterationState.delimiters.push(separator2);
+        continue;
+      }
+      if (containingInteriorRange != null) {
+        usedInteriors.add(containingInteriorRange);
+      }
+      iterationStatesStack.push({
+        editor,
+        isEveryScope,
+        iterationRange: containingIterationRange,
+        delimiters: [separator2]
+      });
+    }
+    for (const state of iterationStatesStack) {
+      this.addScopes(scopes, state);
+    }
+    for (const interior of interiorRanges) {
+      if (!usedInteriors.has(interior.range) && !interior.range.isEmpty) {
+        const range3 = shrinkRangeToFitContent(editor, interior.range);
+        if (!range3.isEmpty) {
+          scopes.push(
+            createTargetScope(isEveryScope, editor, interior.range, range3)
+          );
+        }
+      }
+    }
+    scopes.sort((a, b) => compareTargetScopes(direction, position, a, b));
+    yield* scopes;
+  }
+  addScopes(scopes, state) {
+    const { editor, iterationRange, isEveryScope, delimiters } = state;
+    if (delimiters.length === 0) {
+      return;
+    }
+    const itemRanges = [];
+    for (let i2 = 0; i2 < delimiters.length; ++i2) {
+      const current2 = delimiters[i2];
+      const previous = delimiters[i2 - 1]?.end ?? iterationRange.start;
+      itemRanges.push(new Range(previous, current2.start));
+    }
+    const lastDelimiter = delimiters[delimiters.length - 1];
+    itemRanges.push(new Range(lastDelimiter.end, iterationRange.end));
+    const trimmedRanges = itemRanges.map(
+      (range3) => shrinkRangeToFitContent(editor, range3)
+    );
+    for (let i2 = 0; i2 < trimmedRanges.length; ++i2) {
+      if (i2 === trimmedRanges.length - 1 && editor.document.getText(trimmedRanges[i2]).trim() === "") {
+        continue;
+      }
+      scopes.push(
+        createTargetScope(
+          isEveryScope,
+          editor,
+          iterationRange,
+          trimmedRanges[i2],
+          trimmedRanges[i2 - 1],
+          trimmedRanges[i2 + 1]
+        )
+      );
+    }
+  }
+};
+
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/CollectionItemScopeHandler/CollectionItemScopeHandler.ts
+var CollectionItemScopeHandler = class extends BaseScopeHandler {
+  constructor(scopeHandlerFactory, languageDefinitions, languageId) {
+    super();
+    this.scopeType = { type: "collectionItem" };
+    this.isHierarchical = true;
+    this.scopeHandler = (() => {
+      const textualScopeHandler = new CollectionItemTextualScopeHandler(
+        scopeHandlerFactory,
+        languageId
+      );
+      const languageScopeHandler = languageDefinitions.get(languageId)?.getScopeHandler(this.scopeType);
+      if (languageScopeHandler == null) {
+        return textualScopeHandler;
+      }
+      return OneOfScopeHandler.createFromScopeHandlers(
+        scopeHandlerFactory,
+        {
+          type: "oneOf",
+          scopeTypes: [
+            languageScopeHandler.scopeType,
+            textualScopeHandler.scopeType
+          ]
+        },
+        [languageScopeHandler, textualScopeHandler],
+        languageId
+      );
+    })();
+  }
+  get iterationScopeType() {
+    return this.scopeHandler.iterationScopeType;
+  }
+  generateScopeCandidates(editor, position, direction, hints) {
+    return this.scopeHandler.generateScopes(editor, position, direction, hints);
+  }
+};
+
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/ConditionalScopeHandler.ts
+var ConditionalScopeHandler = class extends BaseScopeHandler {
+  constructor(scopeHandlerFactory, conditionalScopeType, languageId) {
+    super();
+    this.scopeHandlerFactory = scopeHandlerFactory;
+    this.conditionalScopeType = conditionalScopeType;
+    this.languageId = languageId;
+    this.scopeType = void 0;
+    this.isHierarchical = true;
+  }
+  get iterationScopeType() {
+    throw new NoContainingScopeError(
+      "Iteration scope for ConditionalScopeHandler"
+    );
+  }
+  generateScopeCandidates(editor, position, direction, hints) {
+    const scopeHandler = this.scopeHandlerFactory.create(
+      this.conditionalScopeType.scopeType,
+      this.languageId
+    );
+    return ifilter(
+      scopeHandler.generateScopes(editor, position, direction, hints),
+      this.conditionalScopeType.predicate
+    );
+  }
+};
+
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/FallbackScopeHandler.ts
+var FallbackScopeHandler = class extends BaseScopeHandler {
+  constructor(scopeHandlerFactory, fallbackScopeType, languageId) {
+    super();
+    this.scopeHandlerFactory = scopeHandlerFactory;
+    this.fallbackScopeType = fallbackScopeType;
+    this.languageId = languageId;
+    this.scopeType = void 0;
+    this.isHierarchical = true;
+  }
+  get iterationScopeType() {
+    throw new NoContainingScopeError(
+      "Iteration scope for FallbackScopeHandler"
+    );
+  }
+  *generateScopeCandidates(editor, position, direction, hints) {
+    const scopeHandlers = this.fallbackScopeType.scopeTypes.map(
+      (scopeType) => this.scopeHandlerFactory.create(scopeType, this.languageId)
+    );
+    for (const scopeHandler of scopeHandlers) {
+      yield* scopeHandler.generateScopes(editor, position, direction, hints);
+    }
+  }
+};
+
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/NotebookCellApiScopeHandler.ts
+var NotebookCellApiScopeHandler = class extends BaseScopeHandler {
+  constructor() {
+    super();
+    this.scopeType = { type: "notebookCell" };
+    this.iterationScopeType = { type: "document" };
+    this.isHierarchical = false;
+  }
+  *generateScopeCandidates(editor, position, direction, hints) {
+    const cells = getNotebookCells(editor, position, direction, hints);
+    for (const cell of cells) {
+      yield createTargetScope2(cell);
+    }
+  }
+};
+function getNotebookCells(editor, position, direction, hints) {
+  const nb = getNotebook(editor);
+  if (nb == null) {
+    return [];
+  }
+  const { notebook, cell } = nb;
+  if (hints.containment === "required") {
+    return [cell];
+  }
+  if (hints.containment === "disallowed" || hints.containment === "disallowedIfStrict") {
+    return direction === "forward" ? notebook.cells.slice(cell.index + 1) : notebook.cells.slice(0, cell.index).reverse();
+  }
+  if (hints.distalPosition != null) {
+    const searchRange = new Range(position, hints.distalPosition);
+    if (searchRange.isRangeEqual(editor.document.range)) {
+      return notebook.cells;
+    }
+  }
+  return direction === "forward" ? notebook.cells.slice(cell.index) : notebook.cells.slice(0, cell.index + 1).reverse();
+}
+function getNotebook(editor) {
+  const uri = editor.document.uri.toString();
+  for (const notebook of ide().visibleNotebookEditors) {
+    for (const cell of notebook.cells) {
+      if (cell.document.uri.toString() === uri) {
+        return { notebook, cell };
+      }
+    }
+  }
+  return void 0;
+}
+function createTargetScope2(cell) {
+  const editor = getEditor(cell);
+  const contentRange = editor.document.range;
+  return {
+    editor,
+    domain: contentRange,
+    getTargets: (isReversed) => [
+      new NotebookCellTarget({
+        editor,
+        isReversed,
+        contentRange
+      })
+    ]
+  };
+}
+function getEditor(cell) {
+  const uri = cell.document.uri.toString();
+  for (const editor of ide().visibleTextEditors) {
+    if (editor.document.uri.toString() === uri) {
+      return editor;
+    }
+  }
+  throw new Error("Editor not found notebook cell");
+}
+
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/NotebookCellScopeHandler.ts
+var NotebookCellScopeHandler = class extends BaseScopeHandler {
+  constructor(scopeHandlerFactory, languageDefinitions, _scopeType, languageId) {
+    super();
+    this.scopeType = { type: "notebookCell" };
+    this.isHierarchical = false;
+    this.scopeHandler = (() => {
+      const apiScopeHandler = new NotebookCellApiScopeHandler();
+      const languageScopeHandler = languageDefinitions.get(languageId)?.getScopeHandler(this.scopeType);
+      if (languageScopeHandler == null) {
+        return apiScopeHandler;
+      }
+      return OneOfScopeHandler.createFromScopeHandlers(
+        scopeHandlerFactory,
+        {
+          type: "oneOf",
+          scopeTypes: [
+            languageScopeHandler.scopeType,
+            apiScopeHandler.scopeType
+          ]
+        },
+        [languageScopeHandler, apiScopeHandler],
+        languageId
+      );
+    })();
+  }
+  get iterationScopeType() {
+    return this.scopeHandler.iterationScopeType;
+  }
+  generateScopeCandidates(editor, position, direction, hints) {
+    return this.scopeHandler.generateScopes(editor, position, direction, hints);
+  }
+};
+
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/SurroundingPairScopeHandler/SurroundingPairInteriorScopeHandler.ts
 var SurroundingPairInteriorScopeHandler = class extends BaseScopeHandler {
   constructor(scopeHandlerFactory, scopeType, languageId) {
@@ -19265,7 +19771,7 @@ var SurroundingPairInteriorScopeHandler = class extends BaseScopeHandler {
 };
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/SurroundingPairScopeHandler/createTargetScope.ts
-function createTargetScope(editor, { openingDelimiterRange, closingDelimiterRange }, requireStrongContainment) {
+function createTargetScope3(editor, { openingDelimiterRange, closingDelimiterRange }, requireStrongContainment) {
   const fullRange = openingDelimiterRange.union(closingDelimiterRange);
   const interiorRange = new Range(
     openingDelimiterRange.end,
@@ -19299,35 +19805,56 @@ function getDelimiterOccurrences(languageDefinition, document2, individualDelimi
   if (individualDelimiters.length === 0) {
     return [];
   }
-  const delimiterRegex = getDelimiterRegex(individualDelimiters);
-  const disqualifyDelimiters = languageDefinition?.getCaptures(document2, "disqualifyDelimiter") ?? [];
-  const textFragments = languageDefinition?.getCaptures(document2, "textFragment") ?? [];
+  const capturesMap = languageDefinition?.getCapturesMap(document2) ?? {};
+  const disqualifyDelimiters = new OneWayRangeFinder(
+    getSortedCaptures(capturesMap.disqualifyDelimiter)
+  );
+  const pairDelimiters = new OneWayRangeFinder(
+    getSortedCaptures(capturesMap.pairDelimiter)
+  );
+  const textFragments = new OneWayNestedRangeFinder(
+    getSortedCaptures(capturesMap.textFragment)
+  );
   const delimiterTextToDelimiterInfoMap = Object.fromEntries(
     individualDelimiters.map((individualDelimiter) => [
       individualDelimiter.text,
       individualDelimiter
     ])
   );
-  const text = document2.getText();
-  return matchAll(text, delimiterRegex, (match) => {
-    const text2 = match[0];
-    const range3 = new Range(
+  const regexMatches = matchAllIterator(
+    document2.getText(),
+    getDelimiterRegex(individualDelimiters)
+  );
+  const results = [];
+  for (const match of regexMatches) {
+    const text = match[0];
+    const matchRange = new Range(
       document2.positionAt(match.index),
-      document2.positionAt(match.index + text2.length)
+      document2.positionAt(match.index + text.length)
     );
-    const isDisqualified = disqualifyDelimiters.some(
-      (c) => c.range.contains(range3) && !c.hasError()
+    const disqualifiedDelimiter = ifNoErrors(
+      disqualifyDelimiters.getContaining(matchRange)
     );
-    const textFragmentRange = textFragments.find(
-      (c) => c.range.contains(range3)
-    )?.range;
-    return {
-      delimiterInfo: delimiterTextToDelimiterInfoMap[text2],
-      isDisqualified,
-      textFragmentRange,
-      range: range3
-    };
-  });
+    if (disqualifiedDelimiter != null) {
+      continue;
+    }
+    results.push({
+      delimiterInfo: delimiterTextToDelimiterInfoMap[text],
+      textFragmentRange: textFragments.getSmallestContaining(matchRange)?.range,
+      range: ifNoErrors(pairDelimiters.getContaining(matchRange))?.range ?? matchRange
+    });
+  }
+  return results;
+}
+function ifNoErrors(capture) {
+  return capture != null && !capture.hasError() ? capture : void 0;
+}
+function getSortedCaptures(items) {
+  if (items == null) {
+    return [];
+  }
+  items.sort((a, b) => a.range.start.compareTo(b.range.start));
+  return items;
 }
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/SurroundingPairScopeHandler/delimiterMaps.ts
@@ -19349,36 +19876,6 @@ var delimiterToText = Object.freeze({
   singleQuotes: ["'", "'", { isSingleLine: true }],
   squareBrackets: ["[", "]"]
 });
-var pythonPrefixes = [
-  // Base case without a prefix
-  "",
-  // string prefixes
-  "r",
-  "u",
-  "R",
-  "U",
-  "f",
-  "F",
-  "fr",
-  "Fr",
-  "fR",
-  "FR",
-  "rf",
-  "rF",
-  "Rf",
-  "RF",
-  // byte prefixes
-  "b",
-  "B",
-  "br",
-  "Br",
-  "bR",
-  "BR",
-  "rb",
-  "rB",
-  "Rb",
-  "RB"
-];
 var delimiterToTextOverrides = {
   nix: {
     singleQuotes: ["''", "''"]
@@ -19393,26 +19890,8 @@ var delimiterToTextOverrides = {
     ]
   },
   python: {
-    singleQuotes: [
-      pythonPrefixes.map((prefix) => `${prefix}'`),
-      "'",
-      { isSingleLine: true, isUnknownSide: true }
-    ],
-    doubleQuotes: [
-      pythonPrefixes.map((prefix) => `${prefix}"`),
-      '"',
-      { isSingleLine: true, isUnknownSide: true }
-    ],
-    tripleSingleQuotes: [
-      pythonPrefixes.map((prefix) => `${prefix}'''`),
-      "'''",
-      { isUnknownSide: true }
-    ],
-    tripleDoubleQuotes: [
-      pythonPrefixes.map((prefix) => `${prefix}"""`),
-      '"""',
-      { isUnknownSide: true }
-    ]
+    tripleSingleQuotes: ["'''", "'''"],
+    tripleDoubleQuotes: ['"""', '"""']
   },
   ruby: {
     tripleDoubleQuotes: ["%Q(", ")"]
@@ -19456,7 +19935,7 @@ function getSimpleIndividualDelimiters(languageId, delimiters) {
   const delimiterToText2 = getSimpleDelimiterMap(languageId);
   return delimiters.flatMap((delimiterName) => {
     const [leftDelimiter, rightDelimiter, options2] = delimiterToText2[delimiterName];
-    const { isSingleLine = false, isUnknownSide = false } = options2 ?? {};
+    const { isSingleLine = false } = options2 ?? {};
     const leftDelimiters = isString(leftDelimiter) ? [leftDelimiter] : leftDelimiter;
     const rightDelimiters = isString(rightDelimiter) ? [rightDelimiter] : rightDelimiter;
     const allDelimiterTexts = uniq_default(concat_default(leftDelimiters, rightDelimiters));
@@ -19464,9 +19943,6 @@ function getSimpleIndividualDelimiters(languageId, delimiters) {
       const isLeft = leftDelimiters.includes(text);
       const isRight = rightDelimiters.includes(text);
       const side = (() => {
-        if (isUnknownSide) {
-          return "unknown";
-        }
         if (isLeft && !isRight) {
           return "left";
         }
@@ -19492,13 +19968,9 @@ function getSurroundingPairOccurrences(delimiterOccurrences) {
   for (const occurrence of delimiterOccurrences) {
     const {
       delimiterInfo: { delimiterName, side, isSingleLine },
-      isDisqualified,
       textFragmentRange,
       range: range3
     } = occurrence;
-    if (isDisqualified) {
-      continue;
-    }
     let openingDelimiters = openingDelimiterOccurrences.get(delimiterName);
     if (isSingleLine) {
       openingDelimiters = openingDelimiters.filter(
@@ -19562,7 +20034,7 @@ var SurroundingPairScopeHandler = class extends BaseScopeHandler {
       surroundingPairs
     );
     yield* surroundingPairs.map(
-      (pair) => createTargetScope(
+      (pair) => createTargetScope3(
         editor,
         pair,
         this.scopeType.requireStrongContainment ?? false
@@ -19583,9 +20055,10 @@ function maybeApplyEmptyTargetHack(direction, hints, position, surroundingPairs)
 var ScopeHandlerFactoryImpl = class {
   constructor(languageDefinitions) {
     this.languageDefinitions = languageDefinitions;
+    this.maybeCreate = this.maybeCreate.bind(this);
     this.create = this.create.bind(this);
   }
-  create(scopeType, languageId) {
+  maybeCreate(scopeType, languageId) {
     switch (scopeType.type) {
       case "character":
         return new CharacterScopeHandler(this, scopeType, languageId);
@@ -19605,8 +20078,6 @@ var ScopeHandlerFactoryImpl = class {
         return new BoundedParagraphScopeHandler(this, scopeType, languageId);
       case "document":
         return new DocumentScopeHandler(scopeType, languageId);
-      case "oneOf":
-        return OneOfScopeHandler.create(this, scopeType, languageId);
       case "nonWhitespaceSequence":
         return new NonWhitespaceSequenceScopeHandler(
           this,
@@ -19625,6 +20096,12 @@ var ScopeHandlerFactoryImpl = class {
         return new CustomRegexScopeHandler(this, scopeType, languageId);
       case "glyph":
         return new GlyphScopeHandler(this, scopeType, languageId);
+      case "collectionItem":
+        return new CollectionItemScopeHandler(
+          this,
+          this.languageDefinitions,
+          languageId
+        );
       case "surroundingPair":
         return new SurroundingPairScopeHandler(
           this.languageDefinitions,
@@ -19637,13 +20114,33 @@ var ScopeHandlerFactoryImpl = class {
           scopeType,
           languageId
         );
+      case "notebookCell":
+        return new NotebookCellScopeHandler(
+          this,
+          this.languageDefinitions,
+          scopeType,
+          languageId
+        );
       case "custom":
         return scopeType.scopeHandler;
+      case "oneOf":
+        return OneOfScopeHandler.create(this, scopeType, languageId);
+      case "fallback":
+        return new FallbackScopeHandler(this, scopeType, languageId);
+      case "conditional":
+        return new ConditionalScopeHandler(this, scopeType, languageId);
       case "instance":
         throw Error("Unexpected scope type 'instance'");
       default:
         return this.languageDefinitions.get(languageId)?.getScopeHandler(scopeType);
     }
+  }
+  create(scopeType, languageId) {
+    const handler = this.maybeCreate(scopeType, languageId);
+    if (handler == null) {
+      throw new Error(`Couldn't create scope handler for '${scopeType.type}'`);
+    }
+    return handler;
   }
 };
 
@@ -19938,6 +20435,11 @@ function isContainedInErrorNode(node) {
     currentNode = currentNode.parent;
   }
   return false;
+}
+
+// ../cursorless-engine/src/languages/TreeSitterQuery/normalizeCaptureName.ts
+function normalizeCaptureName(name2) {
+  return name2.replace(/(\.(start|end))?(\.(startOf|endOf))?$/, "");
 }
 
 // ../../node_modules/.pnpm/zod@3.23.8/node_modules/zod/lib/index.mjs
@@ -24044,6 +24546,19 @@ var HasMultipleChildrenOfType = class extends QueryPredicateOperator {
     return count2 > 1;
   }
 };
+var Match = class extends QueryPredicateOperator {
+  constructor() {
+    super(...arguments);
+    this.name = "match?";
+    this.schema = z.tuple([q.node, q.string]);
+  }
+  run(nodeInfo, pattern) {
+    const { document: document2, range: range3 } = nodeInfo;
+    const regex = new RegExp(pattern, "ds");
+    const text = document2.getText(range3);
+    return regex.test(text);
+  }
+};
 var ChildRange = class extends QueryPredicateOperator {
   constructor() {
     super(...arguments);
@@ -24188,7 +24703,8 @@ var queryPredicateOperators = [
   new AllowMultiple(),
   new InsertionDelimiter(),
   new SingleOrMultilineDelimiter(),
-  new HasMultipleChildrenOfType()
+  new HasMultipleChildrenOfType(),
+  new Match()
 ];
 
 // ../cursorless-engine/src/languages/TreeSitterQuery/parsePredicates.ts
@@ -24227,26 +24743,101 @@ function parsePredicates(predicateDescriptors) {
   return { errors: errors2, predicates };
 }
 
+// ../cursorless-engine/src/languages/TreeSitterQuery/parsePredicatesWithErrorHandling.ts
+function parsePredicatesWithErrorHandling(languageId, query) {
+  const { errors: errors2, predicates } = parsePredicates(query.predicates);
+  if (errors2.length > 0) {
+    for (const error of errors2) {
+      const context = [
+        `language ${languageId}`,
+        `pattern ${error.patternIdx}`,
+        `predicate \`${predicateToString(
+          query.predicates[error.patternIdx][error.predicateIdx]
+        )}\``
+      ].join(", ");
+      void showError(
+        ide().messages,
+        "TreeSitterQuery.parsePredicates",
+        `Error parsing predicate for ${context}: ${error.error}`
+      );
+    }
+    if (ide().runMode === "test") {
+      throw new Error("Invalid predicates");
+    }
+  }
+  return predicates;
+}
+
+// ../cursorless-engine/src/languages/TreeSitterQuery/positionToPoint.ts
+function positionToPoint(start2) {
+  return { row: start2.line, column: start2.character };
+}
+
 // ../cursorless-engine/src/languages/TreeSitterQuery/rewriteStartOfEndOf.ts
 function rewriteStartOfEndOf(captures) {
-  return captures.map((capture) => {
-    if (capture.name.endsWith(".startOf")) {
-      return {
-        ...capture,
-        name: capture.name.replace(/\.startOf$/, ""),
-        range: capture.range.start.toEmptyRange()
-      };
-    }
-    if (capture.name.endsWith(".endOf")) {
-      return {
-        ...capture,
-        name: capture.name.replace(/\.endOf$/, ""),
-        range: capture.range.end.toEmptyRange()
-      };
-    }
-    return capture;
-  });
+  return captures.map((capture) => ({
+    ...capture,
+    range: getStartOfEndOfRange(capture),
+    name: getStartOfEndOfName(capture)
+  }));
 }
+function getStartOfEndOfRange(capture) {
+  if (capture.name.endsWith(".startOf")) {
+    return capture.range.start.toEmptyRange();
+  }
+  if (capture.name.endsWith(".endOf")) {
+    return capture.range.end.toEmptyRange();
+  }
+  return capture.range;
+}
+function getStartOfEndOfName(capture) {
+  if (capture.name.endsWith(".startOf")) {
+    return capture.name.slice(0, -8);
+  }
+  if (capture.name.endsWith(".endOf")) {
+    return capture.name.slice(0, -6);
+  }
+  return capture.name;
+}
+
+// ../cursorless-engine/src/languages/TreeSitterQuery/treeSitterQueryCache.ts
+var Cache = class {
+  constructor() {
+    this.documentVersion = -1;
+    this.documentUri = "";
+    this.documentLanguageId = "";
+    this.matches = [];
+  }
+  clear() {
+    this.documentUri = "";
+    this.documentVersion = -1;
+    this.documentLanguageId = "";
+    this.startPosition = void 0;
+    this.endPosition = void 0;
+    this.matches = [];
+  }
+  isValid(document2, startPosition, endPosition) {
+    return this.documentVersion === document2.version && this.documentUri === document2.uri.toString() && this.documentLanguageId === document2.languageId && positionsEqual(this.startPosition, startPosition) && positionsEqual(this.endPosition, endPosition);
+  }
+  update(document2, startPosition, endPosition, matches) {
+    this.documentVersion = document2.version;
+    this.documentUri = document2.uri.toString();
+    this.documentLanguageId = document2.languageId;
+    this.startPosition = startPosition;
+    this.endPosition = endPosition;
+    this.matches = matches;
+  }
+  get() {
+    return this.matches;
+  }
+};
+function positionsEqual(a, b) {
+  if (a == null || b == null) {
+    return a === b;
+  }
+  return a.isEqual(b);
+}
+var treeSitterQueryCache = new Cache();
 
 // ../cursorless-engine/src/languages/TreeSitterQuery/TreeSitterQuery.ts
 var TreeSitterQuery = class _TreeSitterQuery {
@@ -24254,86 +24845,106 @@ var TreeSitterQuery = class _TreeSitterQuery {
     this.treeSitter = treeSitter;
     this.query = query;
     this.patternPredicates = patternPredicates;
+    this.shouldCheckCaptures = ide().runMode !== "production";
   }
   static create(languageId, treeSitter, query) {
-    const { errors: errors2, predicates } = parsePredicates(query.predicates);
-    if (errors2.length > 0) {
-      for (const error of errors2) {
-        const context = [
-          `language ${languageId}`,
-          `pattern ${error.patternIdx}`,
-          `predicate \`${predicateToString(
-            query.predicates[error.patternIdx][error.predicateIdx]
-          )}\``
-        ].join(", ");
-        void showError(
-          ide().messages,
-          "TreeSitterQuery.parsePredicates",
-          `Error parsing predicate for ${context}: ${error.error}`
-        );
-      }
-      if (ide().runMode === "test") {
-        throw new Error("Invalid predicates");
-      }
-    }
+    const predicates = parsePredicatesWithErrorHandling(languageId, query);
     return new _TreeSitterQuery(treeSitter, query, predicates);
   }
+  hasCapture(name2) {
+    return this.query.captureNames.some(
+      (n) => normalizeCaptureName(n) === name2
+    );
+  }
   matches(document2, start2, end) {
-    return this.query.matches(this.treeSitter.getTree(document2).rootNode, {
-      startPosition: start2 == null ? void 0 : positionToPoint(start2),
-      endPosition: end == null ? void 0 : positionToPoint(end)
-    }).map(
-      ({ pattern, captures }) => ({
-        patternIdx: pattern,
-        captures: captures.map(({ name: name2, node }) => ({
-          name: name2,
-          node,
-          document: document2,
-          range: getNodeRange(node),
-          insertionDelimiter: void 0,
-          allowMultiple: false,
-          hasError: () => isContainedInErrorNode(node)
-        }))
-      })
-    ).filter(
-      (match) => this.patternPredicates[match.patternIdx].every(
-        (predicate) => predicate(match)
-      )
-    ).map((match) => {
-      const captures = Object.entries(
-        groupBy_default(match.captures, ({ name: name2 }) => normalizeCaptureName(name2))
-      ).map(([name2, captures2]) => {
-        captures2 = rewriteStartOfEndOf(captures2);
-        const capturesAreValid = checkCaptureStartEnd(
-          captures2,
-          ide().messages
-        );
-        if (!capturesAreValid && ide().runMode === "test") {
-          throw new Error("Invalid captures");
-        }
-        return {
-          name: name2,
-          range: captures2.map(({ range: range3 }) => range3).reduce((accumulator, range3) => range3.union(accumulator)),
-          allowMultiple: captures2.some((capture) => capture.allowMultiple),
-          insertionDelimiter: captures2.find(
-            (capture) => capture.insertionDelimiter != null
-          )?.insertionDelimiter,
-          hasError: () => captures2.some((capture) => capture.hasError())
-        };
-      });
-      return { ...match, captures };
+    if (!treeSitterQueryCache.isValid(document2, start2, end)) {
+      const matches = this.getAllMatches(document2, start2, end);
+      treeSitterQueryCache.update(document2, start2, end, matches);
+    }
+    return treeSitterQueryCache.get();
+  }
+  getAllMatches(document2, start2, end) {
+    const matches = this.getTreeMatches(document2, start2, end);
+    const results = [];
+    for (const match of matches) {
+      const mutableMatch = this.createMutableQueryMatch(document2, match);
+      if (!this.runPredicates(mutableMatch)) {
+        continue;
+      }
+      results.push(this.createQueryMatch(mutableMatch));
+    }
+    return results;
+  }
+  getTreeMatches(document2, start2, end) {
+    const { rootNode } = this.treeSitter.getTree(document2);
+    return this.query.matches(rootNode, {
+      startPosition: start2 != null ? positionToPoint(start2) : void 0,
+      endPosition: end != null ? positionToPoint(end) : void 0
     });
   }
-  get captureNames() {
-    return uniq_default(this.query.captureNames.map(normalizeCaptureName));
+  createMutableQueryMatch(document2, match) {
+    return {
+      patternIdx: match.pattern,
+      captures: match.captures.map(({ name: name2, node }) => ({
+        name: name2,
+        node,
+        document: document2,
+        range: getNodeRange(node),
+        insertionDelimiter: void 0,
+        allowMultiple: false,
+        hasError: () => isContainedInErrorNode(node)
+      }))
+    };
+  }
+  runPredicates(match) {
+    for (const predicate of this.patternPredicates[match.patternIdx]) {
+      if (!predicate(match)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  createQueryMatch(match) {
+    const result = [];
+    const map3 = /* @__PURE__ */ new Map();
+    for (const capture of match.captures) {
+      const name2 = normalizeCaptureName(capture.name);
+      const range3 = getStartOfEndOfRange(capture);
+      const existing = map3.get(name2);
+      if (existing == null) {
+        const captures = [capture];
+        const acc = {
+          ...capture,
+          name: name2,
+          range: range3,
+          hasError: () => captures.some((c) => c.hasError())
+        };
+        result.push(acc);
+        map3.set(name2, { acc, captures });
+      } else {
+        existing.acc.range = existing.acc.range.union(range3);
+        existing.acc.allowMultiple = existing.acc.allowMultiple || capture.allowMultiple;
+        existing.acc.insertionDelimiter = existing.acc.insertionDelimiter ?? capture.insertionDelimiter;
+        existing.captures.push(capture);
+      }
+    }
+    if (this.shouldCheckCaptures) {
+      this.checkCaptures(Array.from(map3.values()));
+    }
+    return { captures: result };
+  }
+  checkCaptures(matches) {
+    for (const match of matches) {
+      const capturesAreValid = checkCaptureStartEnd(
+        rewriteStartOfEndOf(match.captures),
+        ide().messages
+      );
+      if (!capturesAreValid && ide().runMode === "test") {
+        throw new Error("Invalid captures");
+      }
+    }
   }
 };
-function normalizeCaptureName(name2) {
-  return name2.replace(/(\.(start|end))?(\.(startOf|endOf))?$/, "");
-}
-function positionToPoint(start2) {
-  return { row: start2.line, column: start2.character };
-}
 
 // ../cursorless-engine/src/languages/TreeSitterQuery/validateQueryCaptures.ts
 var wildcard = "_";
@@ -24441,21 +25052,32 @@ var LanguageDefinition = class _LanguageDefinition {
    * legacy pathways
    */
   getScopeHandler(scopeType) {
-    if (!this.query.captureNames.includes(scopeType.type)) {
+    if (!this.query.hasCapture(scopeType.type)) {
       return void 0;
     }
     return new TreeSitterScopeHandler(this.query, scopeType);
   }
   /**
-   * This is a low-level function that just returns a list of captures of the given
-   * capture name in the document. We use this in our surrounding pair code.
+   * This is a low-level function that just returns a map of all captures in the
+   * document. We use this in our surrounding pair code.
    *
    * @param document The document to search
    * @param captureName The name of a capture to search for
-   * @returns A list of captures of the given capture name in the document
+   * @returns A map of captures in the document
    */
-  getCaptures(document2, captureName) {
-    return this.query.matches(document2).map((match) => match.captures.find(({ name: name2 }) => name2 === captureName)).filter((capture) => capture != null);
+  getCapturesMap(document2) {
+    const matches = this.query.matches(document2);
+    const result = {};
+    for (const match of matches) {
+      for (const capture of match.captures) {
+        const name2 = capture.name;
+        if (result[name2] == null) {
+          result[name2] = [];
+        }
+        result[name2].push(capture);
+      }
+    }
+    return result;
   }
 };
 async function readQueryFileAndImports(ide2, provider, languageQueryName) {
@@ -24554,7 +25176,11 @@ var LanguageDefinitionsImpl = class _LanguageDefinitionsImpl {
     this.languageDefinitions = /* @__PURE__ */ new Map();
     this.disposables = [];
     this.onDidChangeDefinition = this.notifier.registerListener;
+    const isTesting = ide2.runMode === "test";
     ide2.onDidOpenTextDocument((document2) => {
+      if (isTesting) {
+        treeSitterQueryCache.clear();
+      }
       void this.loadLanguage(document2.languageId);
     });
     ide2.onDidChangeVisibleTextEditors((editors) => {
@@ -24607,6 +25233,7 @@ var LanguageDefinitionsImpl = class _LanguageDefinitionsImpl {
   async reloadLanguageDefinitions() {
     this.languageDefinitions.clear();
     await this.loadAllLanguages();
+    treeSitterQueryCache.clear();
     this.notifier.notifyListeners();
   }
   get(languageId) {
@@ -24720,6 +25347,9 @@ function isSameType(a, b) {
 
 // ../cursorless-engine/src/processTargets/createContinuousRangeTarget.ts
 function createContinuousRangeTarget(isReversed, startTarget, endTarget, includeStart, includeEnd) {
+  if (startTarget.editor !== endTarget.editor) {
+    throw Error("Continuous targets must be in the same editor");
+  }
   if (includeStart && includeEnd && isSameType(startTarget, endTarget)) {
     const richTarget = startTarget.maybeCreateRichRangeTarget(
       isReversed,
@@ -24883,7 +25513,7 @@ var ContainingScopeStage = class {
   }
   run(target) {
     const { scopeType, ancestorIndex = 0 } = this.modifier;
-    const scopeHandler = this.scopeHandlerFactory.create(
+    const scopeHandler = this.scopeHandlerFactory.maybeCreate(
       scopeType,
       target.editor.document.languageId
     );
@@ -24895,22 +25525,6 @@ var ContainingScopeStage = class {
       scopeHandler,
       ancestorIndex
     );
-    if (scopeType.type === "collectionItem") {
-      try {
-        const legacyScopes = this.modifierStageFactory.getLegacyScopeStage(this.modifier).run(target);
-        if (containingScopes == null) {
-          return legacyScopes;
-        }
-        if (containingScopes.length === 1 && legacyScopes.length === 1) {
-          const containingRange = containingScopes[0].contentRange;
-          const legacyRange = legacyScopes[0].contentRange;
-          if (containingRange.contains(legacyRange) && !containingRange.isRangeEqual(legacyRange)) {
-            return legacyScopes;
-          }
-        }
-      } catch (_ex) {
-      }
-    }
     if (containingScopes == null) {
       throw new NoContainingScopeError(this.modifier.scopeType.type);
     }
@@ -24928,7 +25542,7 @@ var EveryScopeStage = class {
   run(target) {
     const { scopeType } = this.modifier;
     const { editor, isReversed } = target;
-    const scopeHandler = this.scopeHandlerFactory.create(
+    const scopeHandler = this.scopeHandlerFactory.maybeCreate(
       scopeType,
       editor.document.languageId
     );
@@ -24947,31 +25561,21 @@ var EveryScopeStage = class {
       }
     }
     if (scopes == null) {
-      try {
-        scopes = this.getDefaultIterationRange(
-          scopeHandler,
-          this.scopeHandlerFactory,
-          target
-        ).flatMap(
-          (iterationRange) => getScopesOverlappingRange(scopeHandler, editor, iterationRange)
-        );
-      } catch (error) {
-        if (!(error instanceof NoContainingScopeError)) {
-          throw error;
-        }
-        scopes = [];
-      }
+      scopes = this.getDefaultIterationRange(
+        scopeHandler,
+        this.scopeHandlerFactory,
+        target
+      ).flatMap(
+        (iterationRange) => getScopesOverlappingRange(scopeHandler, editor, iterationRange)
+      );
     }
     if (scopes.length === 0) {
-      if (scopeType.type === "collectionItem") {
-        return this.modifierStageFactory.getLegacyScopeStage(this.modifier).run(target);
-      }
       throw new NoContainingScopeError(scopeType.type);
     }
     return scopes.flatMap((scope) => scope.getTargets(isReversed));
   }
   getDefaultIterationRange(scopeHandler, scopeHandlerFactory, target) {
-    const iterationScopeHandler = scopeHandlerFactory.create(
+    const iterationScopeHandler = scopeHandlerFactory.maybeCreate(
       scopeHandler.iterationScopeType,
       target.editor.document.languageId
     );
@@ -25516,6 +26120,443 @@ function getContainingSurroundingPairIfNoBoundaryStage(modifierStageFactory) {
   );
 }
 
+// ../cursorless-engine/src/processTargets/modifiers/commonContainingScopeIfUntypedModifiers.ts
+var containingLineIfUntypedModifier = {
+  type: "modifyIfUntyped",
+  modifier: {
+    type: "containingScope",
+    scopeType: { type: "line" }
+  }
+};
+var containingTokenIfUntypedModifier = {
+  type: "modifyIfUntyped",
+  modifier: {
+    type: "containingScope",
+    scopeType: { type: "token" }
+  }
+};
+
+// ../cursorless-engine/src/processTargets/modifiers/LeadingTrailingStages.ts
+var NoDelimiterError = class extends Error {
+  constructor(type2) {
+    super(`Target has no ${type2} delimiter.`);
+    this.name = "NoDelimiterError";
+  }
+};
+var LeadingStage = class {
+  constructor(modifierStageFactory, modifier) {
+    this.modifierStageFactory = modifierStageFactory;
+    this.modifier = modifier;
+  }
+  run(target) {
+    return this.modifierStageFactory.create(containingTokenIfUntypedModifier).run(target).map((target2) => {
+      const leading = target2.getLeadingDelimiterTarget();
+      if (leading == null) {
+        throw new NoDelimiterError("leading");
+      }
+      return leading;
+    });
+  }
+};
+var TrailingStage = class {
+  constructor(modifierStageFactory, modifier) {
+    this.modifierStageFactory = modifierStageFactory;
+    this.modifier = modifier;
+  }
+  run(target) {
+    return this.modifierStageFactory.create(containingTokenIfUntypedModifier).run(target).map((target2) => {
+      const trailing = target2.getTrailingDelimiterTarget();
+      if (trailing == null) {
+        throw new NoDelimiterError("trailing");
+      }
+      return trailing;
+    });
+  }
+};
+
+// ../cursorless-engine/src/processTargets/modifiers/targetSequenceUtils.ts
+function createRangeTargetFromIndices(isReversed, targets, startIndex, endIndex) {
+  assertIndices(targets, startIndex, endIndex);
+  if (startIndex === endIndex) {
+    return targets[startIndex];
+  }
+  return createContinuousRangeTarget(
+    isReversed,
+    targets[startIndex],
+    targets[endIndex],
+    true,
+    true
+  );
+}
+function getEveryScopeTargets(modifierStageFactory, target, scopeType) {
+  const containingStage = modifierStageFactory.create({
+    type: "everyScope",
+    scopeType
+  });
+  return containingStage.run(target);
+}
+
+// ../cursorless-engine/src/processTargets/modifiers/OrdinalScopeStage.ts
+var OrdinalScopeStage = class {
+  constructor(modifierStageFactory, modifier) {
+    this.modifierStageFactory = modifierStageFactory;
+    this.modifier = modifier;
+  }
+  run(target) {
+    const targets = getEveryScopeTargets(
+      this.modifierStageFactory,
+      target,
+      this.modifier.scopeType
+    );
+    const startIndex = this.modifier.start + (this.modifier.start < 0 ? targets.length : 0);
+    const endIndex = startIndex + this.modifier.length - 1;
+    if (this.modifier.isEvery) {
+      return sliceStrict(targets, startIndex, endIndex);
+    }
+    return [
+      createRangeTargetFromIndices(
+        target.isReversed,
+        targets,
+        startIndex,
+        endIndex
+      )
+    ];
+  }
+};
+
+// ../cursorless-engine/src/processTargets/modifiers/PositionStage.ts
+var PositionStage = class {
+  run(target) {
+    const parameters = {
+      editor: target.editor,
+      isReversed: target.isReversed,
+      contentRange: this.getContentRange(target.contentRange)
+    };
+    return [
+      target.isRaw ? new RawSelectionTarget(parameters) : new PlainTarget({ ...parameters, isToken: false })
+    ];
+  }
+};
+var StartOfStage = class extends PositionStage {
+  getContentRange(contentRange) {
+    return contentRange.start.toEmptyRange();
+  }
+};
+var EndOfStage = class extends PositionStage {
+  getContentRange(contentRange) {
+    return contentRange.end.toEmptyRange();
+  }
+};
+
+// ../cursorless-engine/src/processTargets/modifiers/PreferredScopeStage.ts
+var PreferredScopeStage = class {
+  constructor(modifierStageFactory, scopeHandlerFactory, modifier) {
+    this.modifierStageFactory = modifierStageFactory;
+    this.scopeHandlerFactory = scopeHandlerFactory;
+    this.modifier = modifier;
+  }
+  run(target) {
+    const { scopeType } = this.modifier;
+    const containingScopeStage = new ContainingScopeStage(
+      this.modifierStageFactory,
+      this.scopeHandlerFactory,
+      { type: "containingScope", scopeType }
+    );
+    try {
+      return containingScopeStage.run(target);
+    } catch (ex) {
+      if (!(ex instanceof NoContainingScopeError)) {
+        throw ex;
+      }
+    }
+    const scopeHandler = this.scopeHandlerFactory.create(
+      this.modifier.scopeType,
+      target.editor.document.languageId
+    );
+    const closestTargets = getClosestScopeTargets(target, scopeHandler);
+    if (closestTargets == null) {
+      throw Error(`No scopes found for scope type: ${scopeType.type}`);
+    }
+    return closestTargets;
+  }
+};
+function getClosestScopeTargets(target, scopeHandler) {
+  const previousScopes = scopeHandler.generateScopes(
+    target.editor,
+    target.contentRange.start,
+    "backward"
+  );
+  const nextScopes = scopeHandler.generateScopes(
+    target.editor,
+    target.contentRange.end,
+    "forward"
+  );
+  const { active } = target.contentSelection;
+  const previousScope = getClosestScope(previousScopes, active);
+  const nextScope = getClosestScope(nextScopes, active);
+  const preferredScope = previousScope.distance < nextScope.distance ? previousScope.scope : nextScope.scope;
+  return preferredScope != null ? preferredScope.getTargets(target.isReversed) : void 0;
+}
+function getClosestScope(scopes, position) {
+  let closestScope;
+  let closestDistance = Infinity;
+  for (const scope of scopes) {
+    const distance = Math.min(
+      distanceBetweenPositions(position, scope.domain.start),
+      distanceBetweenPositions(position, scope.domain.end)
+    );
+    if (distance < closestDistance) {
+      closestScope = scope;
+      closestDistance = distance;
+    } else {
+      break;
+    }
+  }
+  return { scope: closestScope, distance: closestDistance };
+}
+function distanceBetweenPositions(a, b) {
+  return (
+    // 10000 is arbitrary to always pick same-line occurrences first
+    Math.abs(a.line - b.line) * 1e4 + Math.abs(a.character - b.character)
+  );
+}
+
+// ../cursorless-engine/src/processTargets/modifiers/RangeModifierStage.ts
+var RangeModifierStage = class {
+  constructor(modifierStageFactory, modifier) {
+    this.modifierStageFactory = modifierStageFactory;
+    this.modifier = modifier;
+  }
+  run(target) {
+    const anchorStage = this.modifierStageFactory.create(this.modifier.anchor);
+    const activeStage = this.modifierStageFactory.create(this.modifier.active);
+    const anchorTargets = anchorStage.run(target);
+    const activeTargets = activeStage.run(target);
+    if (anchorTargets.length !== 1 || activeTargets.length !== 1) {
+      throw new Error("Expected single anchor and active target");
+    }
+    return [
+      targetsToContinuousTarget(
+        anchorTargets[0],
+        activeTargets[0],
+        this.modifier.excludeAnchor,
+        this.modifier.excludeActive
+      )
+    ];
+  }
+};
+
+// ../cursorless-engine/src/processTargets/modifiers/RawSelectionStage.ts
+var RawSelectionStage = class {
+  constructor(modifier) {
+    this.modifier = modifier;
+  }
+  run(target) {
+    return [
+      new RawSelectionTarget({
+        editor: target.editor,
+        contentRange: target.contentRange,
+        isReversed: target.isReversed
+      })
+    ];
+  }
+};
+
+// ../cursorless-engine/src/processTargets/modifiers/TooFewScopesError.ts
+var TooFewScopesError = class extends Error {
+  constructor(requestedLength, currentLength, scopeType) {
+    super(
+      `Requested ${requestedLength} ${scopeType}s, but ${currentLength} are already selected.`
+    );
+    this.name = "TooFewScopesError";
+  }
+};
+
+// ../cursorless-engine/src/processTargets/modifiers/relativeScopeLegacy.ts
+function runLegacy(modifierStageFactory, modifier, target) {
+  const targets = getEveryScopeTargets(
+    modifierStageFactory,
+    createTargetWithoutExplicitRange(target),
+    modifier.scopeType
+  );
+  const containingIndices = getContainingIndices(target.contentRange, targets);
+  return calculateIndicesAndCreateTarget(
+    modifier,
+    target,
+    targets,
+    containingIndices
+  );
+}
+function calculateIndicesAndCreateTarget(modifier, target, targets, containingIndices) {
+  const isForward = modifier.direction === "forward";
+  const proximalIndex = computeProximalIndex(
+    modifier,
+    target.contentRange,
+    targets,
+    isForward,
+    containingIndices
+  );
+  const distalIndex = isForward ? proximalIndex + modifier.length - 1 : proximalIndex - modifier.length + 1;
+  const startIndex = Math.min(proximalIndex, distalIndex);
+  const endIndex = Math.max(proximalIndex, distalIndex);
+  return [
+    createRangeTargetFromIndices(
+      target.isReversed,
+      targets,
+      startIndex,
+      endIndex
+    )
+  ];
+}
+function computeProximalIndex(modifier, inputTargetRange, targets, isForward, containingIndices) {
+  const includeIntersectingScopes = modifier.offset === 0;
+  if (containingIndices == null) {
+    const adjacentTargetIndex = isForward ? targets.findIndex(
+      (t) => t.contentRange.start.isAfter(inputTargetRange.start)
+    ) : findLastIndex_default(
+      targets,
+      (t) => t.contentRange.start.isBefore(inputTargetRange.start)
+    );
+    if (adjacentTargetIndex === -1) {
+      throw new OutOfRangeError();
+    }
+    if (includeIntersectingScopes) {
+      return adjacentTargetIndex;
+    }
+    return isForward ? adjacentTargetIndex + modifier.offset - 1 : adjacentTargetIndex - modifier.offset + 1;
+  }
+  const intersectingStartIndex = containingIndices.start;
+  const intersectingEndIndex = containingIndices.end;
+  if (includeIntersectingScopes) {
+    const intersectingLength = intersectingEndIndex - intersectingStartIndex + 1;
+    if (intersectingLength > modifier.length) {
+      throw new TooFewScopesError(
+        modifier.length,
+        intersectingLength,
+        modifier.scopeType.type
+      );
+    }
+    return isForward ? intersectingStartIndex : intersectingEndIndex;
+  }
+  return isForward ? intersectingEndIndex + modifier.offset : intersectingStartIndex - modifier.offset;
+}
+function getContainingIndices(inputTargetRange, targets) {
+  const targetsWithIntersection = targets.map((t, i2) => ({
+    index: i2,
+    intersection: t.contentRange.intersection(inputTargetRange)
+  })).filter((t) => t.intersection != null);
+  if (inputTargetRange.isEmpty) {
+    if (targetsWithIntersection.length === 0) {
+      return void 0;
+    }
+    const index = targetsWithIntersection.at(-1).index;
+    return { start: index, end: index };
+  }
+  const targetsWithNonEmptyIntersection = targetsWithIntersection.filter((t) => !t.intersection.isEmpty).map((t) => t.index);
+  if (targetsWithNonEmptyIntersection.length === 0) {
+    return void 0;
+  }
+  return {
+    start: targetsWithNonEmptyIntersection[0],
+    end: targetsWithNonEmptyIntersection.at(-1)
+  };
+}
+function createTargetWithoutExplicitRange(target) {
+  return new UntypedTarget({
+    editor: target.editor,
+    isReversed: target.isReversed,
+    contentRange: target.contentRange,
+    hasExplicitRange: false
+  });
+}
+
+// ../cursorless-engine/src/processTargets/modifiers/RelativeScopeStage.ts
+var RelativeScopeStage = class {
+  constructor(modifierStageFactory, scopeHandlerFactory, modifier) {
+    this.modifierStageFactory = modifierStageFactory;
+    this.scopeHandlerFactory = scopeHandlerFactory;
+    this.modifier = modifier;
+  }
+  run(target) {
+    const scopeHandler = this.scopeHandlerFactory.maybeCreate(
+      this.modifier.scopeType,
+      target.editor.document.languageId
+    );
+    if (scopeHandler == null) {
+      return runLegacy(this.modifierStageFactory, this.modifier, target);
+    }
+    const scopes = Array.from(
+      this.modifier.offset === 0 ? generateScopesInclusive(scopeHandler, target, this.modifier) : generateScopesExclusive(scopeHandler, target, this.modifier)
+    );
+    if (scopes.length < this.modifier.length) {
+      throw new OutOfRangeError();
+    }
+    const { isReversed } = target;
+    if (this.modifier.isEvery) {
+      return scopes.flatMap((scope) => scope.getTargets(isReversed));
+    }
+    return constructScopeRangeTarget(
+      isReversed,
+      scopes[0],
+      scopes[scopes.length - 1]
+    );
+  }
+};
+function generateScopesInclusive(scopeHandler, target, modifier) {
+  const { editor, contentRange } = target;
+  const { length: desiredScopeCount, direction } = modifier;
+  const initialRange = getPreferredScopeTouchingPosition(
+    scopeHandler,
+    editor,
+    direction === "forward" ? contentRange.start : contentRange.end,
+    direction
+  )?.domain;
+  if (initialRange == null) {
+    throw new NoContainingScopeError(modifier.scopeType.type);
+  }
+  return itake(
+    desiredScopeCount,
+    scopeHandler.generateScopes(
+      editor,
+      direction === "forward" ? initialRange.start : initialRange.end,
+      direction,
+      {
+        skipAncestorScopes: true
+      }
+    )
+  );
+}
+function generateScopesExclusive(scopeHandler, target, modifier) {
+  const { editor, contentRange: inputRange } = target;
+  const { length: desiredScopeCount, direction, offset } = modifier;
+  const initialPosition = direction === "forward" ? inputRange.end : inputRange.start;
+  const containment = inputRange.isEmpty ? "disallowed" : "disallowedIfStrict";
+  return islice(
+    scopeHandler.generateScopes(editor, initialPosition, direction, {
+      containment,
+      skipAncestorScopes: true
+    }),
+    offset - 1,
+    offset + desiredScopeCount - 1
+  );
+}
+
+// ../cursorless-engine/src/processTargets/modifiers/VisibleStage.ts
+var VisibleStage = class {
+  constructor(modifier) {
+    this.modifier = modifier;
+  }
+  run(target) {
+    return target.editor.visibleRanges.map(
+      (range3) => new PlainTarget({
+        editor: target.editor,
+        isReversed: target.isReversed,
+        contentRange: range3
+      })
+    );
+  }
+};
+
 // ../cursorless-engine/src/util/nodeFinders.ts
 function chainedNodeFinder(...nodeFinders) {
   return (node) => {
@@ -25833,12 +26874,6 @@ function indexNodeFinder(parentFinder, indexTransform) {
     return valueNodes[desiredIndex];
   };
 }
-function itemFinder() {
-  return indexNodeFinder(
-    (node) => node,
-    (nodeIndex) => nodeIndex
-  );
-}
 var getValueNodes = (node) => getChildNodesForFieldName(node, "value");
 var functionCallPattern = "~quoting_lit.list_lit!";
 var functionCallFinder = patternFinder(functionCallPattern);
@@ -25869,20 +26904,6 @@ var ifStatementFinder = functionNameBasedFinder(
 var ifStatementMatcher = matcher(ifStatementFinder);
 var nodeMatchers = {
   collectionKey: matcher(mapParityNodeFinder(0)),
-  collectionItem: cascadingMatcher(
-    // Treat each key value pair as a single item if we're in a map
-    matcher(
-      mapParityNodeFinder(0),
-      delimitedSelector(
-        (node) => node.type === "{" || node.type === "}",
-        ", ",
-        identity_default,
-        mapParityNodeFinder(1)
-      )
-    ),
-    // Otherwise just treat every item within a list as an item
-    matcher(itemFinder())
-  ),
   value: matcher(mapParityNodeFinder(1)),
   // FIXME: Handle formal parameters
   argumentOrParameter: matcher(
@@ -26005,30 +27026,6 @@ function extendToNamedSiblingIfExists(editor, node) {
     context: {}
   };
 }
-function extractItemContent(editor, node) {
-  let contentStartIndex = node.startIndex;
-  const label = node.childForFieldName("label");
-  if (label == null) {
-    const command = node.childForFieldName("command");
-    if (command != null) {
-      contentStartIndex = command.endIndex + 1;
-    }
-  } else {
-    contentStartIndex = label.endIndex + 1;
-  }
-  return {
-    selection: new Selection(
-      editor.document.positionAt(contentStartIndex),
-      editor.document.positionAt(node.endIndex)
-    ),
-    context: {
-      leadingDelimiterRange: new Range(
-        editor.document.positionAt(node.startIndex),
-        editor.document.positionAt(contentStartIndex - 1)
-      )
-    }
-  };
-}
 var nodeMatchers2 = {
   argumentOrParameter: cascadingMatcher(
     ancestorChainNodeMatcher(
@@ -26048,8 +27045,7 @@ var nodeMatchers2 = {
   name: cascadingMatcher(
     matcher(patternFinder(...sectioningText), unwrapGroupParens),
     patternMatcher("begin[name][text]", "end[name][text]")
-  ),
-  collectionItem: matcher(patternFinder("enum_item"), extractItemContent)
+  )
 };
 var latex_default = createPatternMatchers(nodeMatchers2);
 
@@ -26144,8 +27140,6 @@ var EXPRESSION_STATEMENT_PARENT_TYPES = [
   "singleton_method",
   "then"
 ];
-var mapTypes = ["hash"];
-var listTypes = ["array", "string_array", "symbol_array"];
 var assignmentOperators = [
   "=",
   "+=",
@@ -26206,8 +27200,7 @@ var nodeMatchers3 = {
       "return.argument_list!"
     ],
     assignmentOperators.concat(mapKeyValueSeparators)
-  ),
-  collectionItem: argumentMatcher(...mapTypes, ...listTypes)
+  )
 };
 var patternMatchers = createPatternMatchers(nodeMatchers3);
 
@@ -26335,11 +27328,6 @@ var nodeMatchers4 = {
       })
     ),
     leadingMatcher(["*.match_pattern![condition]"], ["if"])
-  ),
-  collectionItem: argumentMatcher(
-    "array_expression",
-    "tuple_expression",
-    "tuple_type"
   ),
   type: cascadingMatcher(
     leadingMatcher(
@@ -26709,787 +27697,6 @@ function findNearestContainingAncestorNode(startNode, nodeMatcher, selection) {
   return null;
 }
 
-// ../cursorless-engine/src/processTargets/modifiers/ItemStage/getIterationScope.ts
-function getIterationScope(modifierStageFactory, target) {
-  let surroundingTarget = getBoundarySurroundingPair(
-    modifierStageFactory,
-    target
-  );
-  while (surroundingTarget != null) {
-    if (useInteriorOfSurroundingTarget(
-      modifierStageFactory,
-      target,
-      surroundingTarget
-    )) {
-      return {
-        range: surroundingTarget.getInterior()[0].contentRange,
-        boundary: getBoundary(surroundingTarget)
-      };
-    }
-    surroundingTarget = getParentSurroundingPair(
-      modifierStageFactory,
-      target.editor,
-      surroundingTarget
-    );
-  }
-  return {
-    range: fitRangeToLineContent(target.editor, target.contentRange)
-  };
-}
-function useInteriorOfSurroundingTarget(modifierStageFactory, target, surroundingTarget) {
-  const { contentRange } = target;
-  if (contentRange.isEmpty) {
-    const [left, right] = getBoundary(surroundingTarget);
-    const pos = contentRange.start;
-    if (pos.isEqual(left.start) || pos.isEqual(right.end)) {
-      return false;
-    }
-    const line = target.editor.document.lineAt(pos);
-    if (pos.isEqual(left.end) && characterIsWhitespaceOrMissing(line, pos.character)) {
-      return false;
-    }
-    if (pos.isEqual(right.start) && characterIsWhitespaceOrMissing(line, pos.character - 1)) {
-      return false;
-    }
-  } else {
-    if (contentRange.isRangeEqual(surroundingTarget.contentRange)) {
-      return false;
-    }
-    const [left, right] = getBoundary(surroundingTarget);
-    if (contentRange.isRangeEqual(left) || contentRange.isRangeEqual(right)) {
-      return false;
-    }
-  }
-  const surroundingStringTarget = getStringSurroundingPair(
-    modifierStageFactory,
-    surroundingTarget
-  );
-  if (surroundingStringTarget != null && surroundingTarget.contentRange.start.isBeforeOrEqual(
-    surroundingStringTarget.contentRange.start
-  )) {
-    return false;
-  }
-  return true;
-}
-function getBoundary(surroundingTarget) {
-  return surroundingTarget.getBoundary().map((t) => t.contentRange);
-}
-function characterIsWhitespaceOrMissing(line, index) {
-  return index < line.range.start.character || index >= line.range.end.character || line.text[index].trim() === "";
-}
-function getParentSurroundingPair(modifierStageFactory, editor, target) {
-  const startOffset = editor.document.offsetAt(target.contentRange.start);
-  if (startOffset === 0) {
-    return void 0;
-  }
-  const position = editor.document.positionAt(startOffset - 1);
-  return getBoundarySurroundingPair(
-    modifierStageFactory,
-    new PlainTarget({
-      editor,
-      contentRange: new Range(position, position),
-      isReversed: false
-    })
-  );
-}
-function getBoundarySurroundingPair(modifierStageFactory, target) {
-  return getSurroundingPair(modifierStageFactory, target, {
-    type: "surroundingPair",
-    delimiter: "collectionBoundary",
-    requireStrongContainment: true
-  });
-}
-function getStringSurroundingPair(modifierStageFactory, target) {
-  return getSurroundingPair(modifierStageFactory, target, {
-    type: "surroundingPair",
-    delimiter: "string",
-    requireStrongContainment: true
-  });
-}
-function getSurroundingPair(modifierStageFactory, target, scopeType) {
-  const pairStage = modifierStageFactory.create({
-    type: "containingScope",
-    scopeType
-  });
-  const targets = (() => {
-    try {
-      return pairStage.run(target);
-    } catch (_error) {
-      return [];
-    }
-  })();
-  if (targets.length > 1) {
-    throw Error("Expected only one surrounding pair target");
-  }
-  return targets[0];
-}
-
-// ../cursorless-engine/src/processTargets/modifiers/ItemStage/tokenizeRange.ts
-function tokenizeRange(editor, interior, boundary) {
-  const { document: document2 } = editor;
-  const text = document2.getText(interior);
-  const lexemes = text.split(/([,(){}<>[\]"'`])|(?<!\\)(\\"|\\'|\\`)/g).filter((lexeme) => lexeme != null && lexeme.length > 0);
-  const joinedLexemes = joinLexemesBySkippingMatchingPairs(lexemes);
-  const tokens2 = [];
-  let offset = document2.offsetAt(interior.start);
-  joinedLexemes.forEach((lexeme) => {
-    if (lexeme.trim().length === 0) {
-      offset += lexeme.length;
-      return;
-    }
-    if (lexeme === separator) {
-      tokens2.push({
-        type: "separator",
-        range: new Range(
-          document2.positionAt(offset),
-          document2.positionAt(offset + lexeme.length)
-        )
-      });
-    } else {
-      const offsetStart = offset + (lexeme.length - lexeme.trimStart().length);
-      tokens2.push({
-        type: "item",
-        range: new Range(
-          document2.positionAt(offsetStart),
-          document2.positionAt(offsetStart + lexeme.trim().length)
-        )
-      });
-    }
-    offset += lexeme.length;
-  });
-  if (boundary != null) {
-    return [
-      { type: "boundary", range: boundary[0] },
-      ...tokens2,
-      { type: "boundary", range: boundary[1] }
-    ];
-  }
-  return tokens2;
-}
-function joinLexemesBySkippingMatchingPairs(lexemes) {
-  const result = [];
-  let delimiterBalance = 0;
-  let openingDelimiter = null;
-  let closingDelimiter = null;
-  let startIndex = -1;
-  lexemes.forEach((lexeme, index) => {
-    if (delimiterBalance > 0) {
-      if (lexeme === closingDelimiter) {
-        --delimiterBalance;
-      } else if (lexeme === openingDelimiter) {
-        ++delimiterBalance;
-      }
-    } else if (leftToRightMap2[lexeme] != null && lexemes.indexOf(leftToRightMap2[lexeme], index + 1) > -1) {
-      openingDelimiter = lexeme;
-      closingDelimiter = leftToRightMap2[lexeme];
-      delimiterBalance = 1;
-      if (startIndex < 0) {
-        startIndex = index;
-      }
-    } else if (startIndex < 0) {
-      startIndex = index;
-    }
-    const isSeparator = lexeme === separator && delimiterBalance === 0;
-    if (isSeparator || index === lexemes.length - 1) {
-      const endIndex = isSeparator ? index : index + 1;
-      result.push(lexemes.slice(startIndex, endIndex).join(""));
-      startIndex = -1;
-      if (isSeparator) {
-        result.push(lexeme);
-      }
-    }
-  });
-  return result;
-}
-var separator = ",";
-var leftToRightMap2 = {
-  "(": ")",
-  "{": "}",
-  "<": ">",
-  "[": "]",
-  '"': '"',
-  "'": "'",
-  "`": "`"
-};
-
-// ../cursorless-engine/src/processTargets/modifiers/ItemStage/ItemStage.ts
-var ItemStage = class {
-  constructor(languageDefinitions, modifierStageFactory, modifier) {
-    this.languageDefinitions = languageDefinitions;
-    this.modifierStageFactory = modifierStageFactory;
-    this.modifier = modifier;
-  }
-  run(target) {
-    try {
-      return new LegacyContainingSyntaxScopeStage(
-        this.languageDefinitions,
-        this.modifier
-      ).run(target);
-    } catch (_error) {
-    }
-    if (this.modifier.type === "everyScope") {
-      return this.getEveryTarget(this.modifierStageFactory, target);
-    }
-    return [this.getSingleTarget(this.modifierStageFactory, target)];
-  }
-  getEveryTarget(modifierStageFactory, target) {
-    const itemInfos = getItemInfosForIterationScope(
-      modifierStageFactory,
-      target
-    );
-    const filteredItemInfos = target.hasExplicitRange ? filterItemInfos(target, itemInfos) : itemInfos;
-    if (filteredItemInfos.length === 0) {
-      throw new NoContainingScopeError(this.modifier.scopeType.type);
-    }
-    return filteredItemInfos.map(
-      (itemInfo) => this.itemInfoToTarget(target, itemInfo)
-    );
-  }
-  getSingleTarget(modifierStageFactory, target) {
-    const itemInfos = getItemInfosForIterationScope(
-      modifierStageFactory,
-      target
-    );
-    const filteredItemInfos = filterItemInfos(target, itemInfos);
-    if (filteredItemInfos.length === 0) {
-      throw new NoContainingScopeError(this.modifier.scopeType.type);
-    }
-    const first = filteredItemInfos[0];
-    const last2 = filteredItemInfos[filteredItemInfos.length - 1];
-    const itemInfo = {
-      contentRange: first.contentRange.union(last2.contentRange),
-      domain: first.domain.union(last2.domain),
-      leadingDelimiterRange: first.leadingDelimiterRange,
-      trailingDelimiterRange: last2.trailingDelimiterRange
-    };
-    const removalRange = itemInfo.leadingDelimiterRange != null && itemInfo.trailingDelimiterRange != null && getRangeLength(target.editor, itemInfo.leadingDelimiterRange) > getRangeLength(target.editor, itemInfo.trailingDelimiterRange) ? itemInfo.contentRange.union(itemInfo.leadingDelimiterRange) : void 0;
-    return this.itemInfoToTarget(target, itemInfo, removalRange);
-  }
-  itemInfoToTarget(target, itemInfo, removalRange) {
-    const insertionDelimiter = getInsertionDelimiter3(
-      itemInfo.leadingDelimiterRange,
-      itemInfo.trailingDelimiterRange
-    );
-    return new ScopeTypeTarget({
-      scopeTypeType: this.modifier.scopeType.type,
-      editor: target.editor,
-      isReversed: target.isReversed,
-      contentRange: itemInfo.contentRange,
-      insertionDelimiter,
-      leadingDelimiterRange: itemInfo.leadingDelimiterRange,
-      trailingDelimiterRange: itemInfo.trailingDelimiterRange,
-      removalRange
-    });
-  }
-};
-function getInsertionDelimiter3(leadingDelimiterRange, trailingDelimiterRange) {
-  return leadingDelimiterRange != null && !leadingDelimiterRange.isSingleLine || trailingDelimiterRange != null && !trailingDelimiterRange.isSingleLine ? ",\n" : ", ";
-}
-function filterItemInfos(target, itemInfos) {
-  return itemInfos.filter(
-    (itemInfo) => itemInfo.domain.intersection(target.contentRange) != null
-  );
-}
-function getItemInfosForIterationScope(modifierStageFactory, target) {
-  const { range: range3, boundary } = getIterationScope(modifierStageFactory, target);
-  return getItemsInRange(target.editor, range3, boundary);
-}
-function getItemsInRange(editor, interior, boundary) {
-  const tokens2 = tokenizeRange(editor, interior, boundary);
-  const itemInfos = [];
-  tokens2.forEach((token, i2) => {
-    if (token.type === "separator" || token.type === "boundary") {
-      return;
-    }
-    const leadingDelimiterRange = (() => {
-      if (tokens2[i2 - 2]?.type === "item") {
-        return new Range(tokens2[i2 - 2].range.end, token.range.start);
-      }
-      if (tokens2[i2 - 1]?.type === "separator") {
-        return new Range(tokens2[i2 - 1].range.start, token.range.start);
-      }
-      return void 0;
-    })();
-    const trailingDelimiterRange = (() => {
-      if (tokens2[i2 + 2]?.type === "item") {
-        return new Range(token.range.end, tokens2[i2 + 2].range.start);
-      }
-      if (tokens2[i2 + 1]?.type === "separator") {
-        return new Range(token.range.end, tokens2[i2 + 1].range.end);
-      }
-      return void 0;
-    })();
-    const domainStart = tokens2[i2 - 1]?.type === "boundary" || tokens2[i2 - 1]?.type === "separator" ? tokens2[i2 - 1].range.end : token.range.start;
-    const domainEnd = tokens2[i2 + 1]?.type === "boundary" || tokens2[i2 + 1]?.type === "separator" ? tokens2[i2 + 1].range.start : token.range.end;
-    itemInfos.push({
-      contentRange: token.range,
-      leadingDelimiterRange,
-      trailingDelimiterRange,
-      domain: new Range(domainStart, domainEnd)
-    });
-  });
-  return itemInfos;
-}
-
-// ../cursorless-engine/src/processTargets/modifiers/commonContainingScopeIfUntypedModifiers.ts
-var containingLineIfUntypedModifier = {
-  type: "modifyIfUntyped",
-  modifier: {
-    type: "containingScope",
-    scopeType: { type: "line" }
-  }
-};
-var containingTokenIfUntypedModifier = {
-  type: "modifyIfUntyped",
-  modifier: {
-    type: "containingScope",
-    scopeType: { type: "token" }
-  }
-};
-
-// ../cursorless-engine/src/processTargets/modifiers/LeadingTrailingStages.ts
-var NoDelimiterError = class extends Error {
-  constructor(type2) {
-    super(`Target has no ${type2} delimiter.`);
-    this.name = "NoDelimiterError";
-  }
-};
-var LeadingStage = class {
-  constructor(modifierStageFactory, modifier) {
-    this.modifierStageFactory = modifierStageFactory;
-    this.modifier = modifier;
-  }
-  run(target) {
-    return this.modifierStageFactory.create(containingTokenIfUntypedModifier).run(target).map((target2) => {
-      const leading = target2.getLeadingDelimiterTarget();
-      if (leading == null) {
-        throw new NoDelimiterError("leading");
-      }
-      return leading;
-    });
-  }
-};
-var TrailingStage = class {
-  constructor(modifierStageFactory, modifier) {
-    this.modifierStageFactory = modifierStageFactory;
-    this.modifier = modifier;
-  }
-  run(target) {
-    return this.modifierStageFactory.create(containingTokenIfUntypedModifier).run(target).map((target2) => {
-      const trailing = target2.getTrailingDelimiterTarget();
-      if (trailing == null) {
-        throw new NoDelimiterError("trailing");
-      }
-      return trailing;
-    });
-  }
-};
-
-// ../cursorless-engine/src/processTargets/modifiers/targetSequenceUtils.ts
-function createRangeTargetFromIndices(isReversed, targets, startIndex, endIndex) {
-  assertIndices(targets, startIndex, endIndex);
-  if (startIndex === endIndex) {
-    return targets[startIndex];
-  }
-  return createContinuousRangeTarget(
-    isReversed,
-    targets[startIndex],
-    targets[endIndex],
-    true,
-    true
-  );
-}
-function getEveryScopeTargets(modifierStageFactory, target, scopeType) {
-  const containingStage = modifierStageFactory.create({
-    type: "everyScope",
-    scopeType
-  });
-  return containingStage.run(target);
-}
-
-// ../cursorless-engine/src/processTargets/modifiers/OrdinalScopeStage.ts
-var OrdinalScopeStage = class {
-  constructor(modifierStageFactory, modifier) {
-    this.modifierStageFactory = modifierStageFactory;
-    this.modifier = modifier;
-  }
-  run(target) {
-    const targets = getEveryScopeTargets(
-      this.modifierStageFactory,
-      target,
-      this.modifier.scopeType
-    );
-    const startIndex = this.modifier.start + (this.modifier.start < 0 ? targets.length : 0);
-    const endIndex = startIndex + this.modifier.length - 1;
-    if (this.modifier.isEvery) {
-      return sliceStrict(targets, startIndex, endIndex);
-    }
-    return [
-      createRangeTargetFromIndices(
-        target.isReversed,
-        targets,
-        startIndex,
-        endIndex
-      )
-    ];
-  }
-};
-
-// ../cursorless-engine/src/processTargets/modifiers/PositionStage.ts
-var PositionStage = class {
-  run(target) {
-    const parameters = {
-      editor: target.editor,
-      isReversed: target.isReversed,
-      contentRange: this.getContentRange(target.contentRange)
-    };
-    return [
-      target.isRaw ? new RawSelectionTarget(parameters) : new PlainTarget({ ...parameters, isToken: false })
-    ];
-  }
-};
-var StartOfStage = class extends PositionStage {
-  getContentRange(contentRange) {
-    return contentRange.start.toEmptyRange();
-  }
-};
-var EndOfStage = class extends PositionStage {
-  getContentRange(contentRange) {
-    return contentRange.end.toEmptyRange();
-  }
-};
-
-// ../cursorless-engine/src/processTargets/modifiers/PreferredScopeStage.ts
-var PreferredScopeStage = class {
-  constructor(modifierStageFactory, scopeHandlerFactory, modifier) {
-    this.modifierStageFactory = modifierStageFactory;
-    this.scopeHandlerFactory = scopeHandlerFactory;
-    this.modifier = modifier;
-  }
-  run(target) {
-    const { scopeType } = this.modifier;
-    const containingScopeStage = new ContainingScopeStage(
-      this.modifierStageFactory,
-      this.scopeHandlerFactory,
-      { type: "containingScope", scopeType }
-    );
-    try {
-      return containingScopeStage.run(target);
-    } catch (ex) {
-      if (!(ex instanceof NoContainingScopeError)) {
-        throw ex;
-      }
-    }
-    const scopeHandler = this.scopeHandlerFactory.create(
-      this.modifier.scopeType,
-      target.editor.document.languageId
-    );
-    if (scopeHandler == null) {
-      throw Error(`Couldn't create scope handler for: ${scopeType.type}`);
-    }
-    const closestTargets = getClosestScopeTargets(target, scopeHandler);
-    if (closestTargets == null) {
-      throw Error(`No scopes found for scope type: ${scopeType.type}`);
-    }
-    return closestTargets;
-  }
-};
-function getClosestScopeTargets(target, scopeHandler) {
-  const previousScopes = scopeHandler.generateScopes(
-    target.editor,
-    target.contentRange.start,
-    "backward"
-  );
-  const nextScopes = scopeHandler.generateScopes(
-    target.editor,
-    target.contentRange.end,
-    "forward"
-  );
-  const { active } = target.contentSelection;
-  const previousScope = getClosestScope(previousScopes, active);
-  const nextScope = getClosestScope(nextScopes, active);
-  const preferredScope = previousScope.distance < nextScope.distance ? previousScope.scope : nextScope.scope;
-  return preferredScope != null ? preferredScope.getTargets(target.isReversed) : void 0;
-}
-function getClosestScope(scopes, position) {
-  let closestScope;
-  let closestDistance = Infinity;
-  for (const scope of scopes) {
-    const distance = Math.min(
-      distanceBetweenPositions(position, scope.domain.start),
-      distanceBetweenPositions(position, scope.domain.end)
-    );
-    if (distance < closestDistance) {
-      closestScope = scope;
-      closestDistance = distance;
-    } else {
-      break;
-    }
-  }
-  return { scope: closestScope, distance: closestDistance };
-}
-function distanceBetweenPositions(a, b) {
-  return (
-    // 10000 is arbitrary to always pick same-line occurrences first
-    Math.abs(a.line - b.line) * 1e4 + Math.abs(a.character - b.character)
-  );
-}
-
-// ../cursorless-engine/src/processTargets/modifiers/RangeModifierStage.ts
-var RangeModifierStage = class {
-  constructor(modifierStageFactory, modifier) {
-    this.modifierStageFactory = modifierStageFactory;
-    this.modifier = modifier;
-  }
-  run(target) {
-    const anchorStage = this.modifierStageFactory.create(this.modifier.anchor);
-    const activeStage = this.modifierStageFactory.create(this.modifier.active);
-    const anchorTargets = anchorStage.run(target);
-    const activeTargets = activeStage.run(target);
-    if (anchorTargets.length !== 1 || activeTargets.length !== 1) {
-      throw new Error("Expected single anchor and active target");
-    }
-    return [
-      targetsToContinuousTarget(
-        anchorTargets[0],
-        activeTargets[0],
-        this.modifier.excludeAnchor,
-        this.modifier.excludeActive
-      )
-    ];
-  }
-};
-
-// ../cursorless-engine/src/processTargets/modifiers/RawSelectionStage.ts
-var RawSelectionStage = class {
-  constructor(modifier) {
-    this.modifier = modifier;
-  }
-  run(target) {
-    return [
-      new RawSelectionTarget({
-        editor: target.editor,
-        contentRange: target.contentRange,
-        isReversed: target.isReversed
-      })
-    ];
-  }
-};
-
-// ../cursorless-engine/src/processTargets/modifiers/TooFewScopesError.ts
-var TooFewScopesError = class extends Error {
-  constructor(requestedLength, currentLength, scopeType) {
-    super(
-      `Requested ${requestedLength} ${scopeType}s, but ${currentLength} are already selected.`
-    );
-    this.name = "TooFewScopesError";
-  }
-};
-
-// ../cursorless-engine/src/processTargets/modifiers/relativeScopeLegacy.ts
-function runLegacy(modifierStageFactory, modifier, target) {
-  const targets = getEveryScopeTargets(
-    modifierStageFactory,
-    createTargetWithoutExplicitRange(target),
-    modifier.scopeType
-  );
-  const containingIndices = getContainingIndices(target.contentRange, targets);
-  return calculateIndicesAndCreateTarget(
-    modifier,
-    target,
-    targets,
-    containingIndices
-  );
-}
-function calculateIndicesAndCreateTarget(modifier, target, targets, containingIndices) {
-  const isForward = modifier.direction === "forward";
-  const proximalIndex = computeProximalIndex(
-    modifier,
-    target.contentRange,
-    targets,
-    isForward,
-    containingIndices
-  );
-  const distalIndex = isForward ? proximalIndex + modifier.length - 1 : proximalIndex - modifier.length + 1;
-  const startIndex = Math.min(proximalIndex, distalIndex);
-  const endIndex = Math.max(proximalIndex, distalIndex);
-  return [
-    createRangeTargetFromIndices(
-      target.isReversed,
-      targets,
-      startIndex,
-      endIndex
-    )
-  ];
-}
-function computeProximalIndex(modifier, inputTargetRange, targets, isForward, containingIndices) {
-  const includeIntersectingScopes = modifier.offset === 0;
-  if (containingIndices == null) {
-    const adjacentTargetIndex = isForward ? targets.findIndex(
-      (t) => t.contentRange.start.isAfter(inputTargetRange.start)
-    ) : findLastIndex_default(
-      targets,
-      (t) => t.contentRange.start.isBefore(inputTargetRange.start)
-    );
-    if (adjacentTargetIndex === -1) {
-      throw new OutOfRangeError();
-    }
-    if (includeIntersectingScopes) {
-      return adjacentTargetIndex;
-    }
-    return isForward ? adjacentTargetIndex + modifier.offset - 1 : adjacentTargetIndex - modifier.offset + 1;
-  }
-  const intersectingStartIndex = containingIndices.start;
-  const intersectingEndIndex = containingIndices.end;
-  if (includeIntersectingScopes) {
-    const intersectingLength = intersectingEndIndex - intersectingStartIndex + 1;
-    if (intersectingLength > modifier.length) {
-      throw new TooFewScopesError(
-        modifier.length,
-        intersectingLength,
-        modifier.scopeType.type
-      );
-    }
-    return isForward ? intersectingStartIndex : intersectingEndIndex;
-  }
-  return isForward ? intersectingEndIndex + modifier.offset : intersectingStartIndex - modifier.offset;
-}
-function getContainingIndices(inputTargetRange, targets) {
-  const targetsWithIntersection = targets.map((t, i2) => ({
-    index: i2,
-    intersection: t.contentRange.intersection(inputTargetRange)
-  })).filter((t) => t.intersection != null);
-  if (inputTargetRange.isEmpty) {
-    if (targetsWithIntersection.length === 0) {
-      return void 0;
-    }
-    const index = targetsWithIntersection.at(-1).index;
-    return { start: index, end: index };
-  }
-  const targetsWithNonEmptyIntersection = targetsWithIntersection.filter((t) => !t.intersection.isEmpty).map((t) => t.index);
-  if (targetsWithNonEmptyIntersection.length === 0) {
-    return void 0;
-  }
-  return {
-    start: targetsWithNonEmptyIntersection[0],
-    end: targetsWithNonEmptyIntersection.at(-1)
-  };
-}
-function createTargetWithoutExplicitRange(target) {
-  return new UntypedTarget({
-    editor: target.editor,
-    isReversed: target.isReversed,
-    contentRange: target.contentRange,
-    hasExplicitRange: false
-  });
-}
-
-// ../cursorless-engine/src/processTargets/modifiers/RelativeScopeStage.ts
-var RelativeScopeStage = class {
-  constructor(modifierStageFactory, scopeHandlerFactory, modifier) {
-    this.modifierStageFactory = modifierStageFactory;
-    this.scopeHandlerFactory = scopeHandlerFactory;
-    this.modifier = modifier;
-  }
-  run(target) {
-    const scopeHandler = this.scopeHandlerFactory.create(
-      this.modifier.scopeType,
-      target.editor.document.languageId
-    );
-    if (scopeHandler == null) {
-      return runLegacy(this.modifierStageFactory, this.modifier, target);
-    }
-    const scopes = Array.from(
-      this.modifier.offset === 0 ? generateScopesInclusive(scopeHandler, target, this.modifier) : generateScopesExclusive(scopeHandler, target, this.modifier)
-    );
-    if (scopes.length < this.modifier.length) {
-      throw new OutOfRangeError();
-    }
-    const { isReversed } = target;
-    if (this.modifier.isEvery) {
-      return scopes.flatMap((scope) => scope.getTargets(isReversed));
-    }
-    return constructScopeRangeTarget(
-      isReversed,
-      scopes[0],
-      scopes[scopes.length - 1]
-    );
-  }
-};
-function generateScopesInclusive(scopeHandler, target, modifier) {
-  const { editor, contentRange } = target;
-  const { length: desiredScopeCount, direction } = modifier;
-  const initialRange = getPreferredScopeTouchingPosition(
-    scopeHandler,
-    editor,
-    direction === "forward" ? contentRange.start : contentRange.end,
-    direction
-  )?.domain;
-  if (initialRange == null) {
-    throw new NoContainingScopeError(modifier.scopeType.type);
-  }
-  return itake(
-    desiredScopeCount,
-    scopeHandler.generateScopes(
-      editor,
-      direction === "forward" ? initialRange.start : initialRange.end,
-      direction,
-      {
-        skipAncestorScopes: true
-      }
-    )
-  );
-}
-function generateScopesExclusive(scopeHandler, target, modifier) {
-  const { editor, contentRange: inputRange } = target;
-  const { length: desiredScopeCount, direction, offset } = modifier;
-  const initialPosition = direction === "forward" ? inputRange.end : inputRange.start;
-  const containment = inputRange.isEmpty ? "disallowed" : "disallowedIfStrict";
-  return islice(
-    scopeHandler.generateScopes(editor, initialPosition, direction, {
-      containment,
-      skipAncestorScopes: true
-    }),
-    offset - 1,
-    offset + desiredScopeCount - 1
-  );
-}
-
-// ../cursorless-engine/src/processTargets/modifiers/VisibleStage.ts
-var VisibleStage = class {
-  constructor(modifier) {
-    this.modifier = modifier;
-  }
-  run(target) {
-    return target.editor.visibleRanges.map(
-      (range3) => new PlainTarget({
-        editor: target.editor,
-        isReversed: target.isReversed,
-        contentRange: range3
-      })
-    );
-  }
-};
-
-// ../cursorless-engine/src/processTargets/modifiers/scopeTypeStages/NotebookCellStage.ts
-var NotebookCellStage = class {
-  constructor(modifier) {
-    this.modifier = modifier;
-  }
-  run(target) {
-    if (this.modifier.type === "everyScope") {
-      throw new Error(`Every ${this.modifier.type} not yet implemented`);
-    }
-    return [
-      new NotebookCellTarget({
-        editor: target.editor,
-        isReversed: target.isReversed,
-        contentRange: target.contentRange
-      })
-    ];
-  }
-};
-
 // ../cursorless-engine/src/processTargets/ModifierStageFactoryImpl.ts
 var ModifierStageFactoryImpl = class {
   constructor(languageDefinitions, storedTargets, scopeHandlerFactory) {
@@ -27560,6 +27767,11 @@ var ModifierStageFactoryImpl = class {
         throw Error(
           `Unexpected modifier '${modifier.type}'; it should have been removed during inference`
         );
+      default: {
+        const _exhaustiveCheck = modifier;
+        const { type: type2 } = modifier;
+        throw new Error(`Unknown modifier: ${type2}`);
+      }
     }
   }
   /**
@@ -27577,10 +27789,6 @@ var ModifierStageFactoryImpl = class {
    */
   getLegacyScopeStage(modifier) {
     switch (modifier.scopeType.type) {
-      case "notebookCell":
-        return new NotebookCellStage(modifier);
-      case "collectionItem":
-        return new ItemStage(this.languageDefinitions, this, modifier);
       default:
         return new LegacyContainingSyntaxScopeStage(
           this.languageDefinitions,
@@ -27742,9 +27950,9 @@ function ensureSingleTarget2(targets) {
   }
   return targets[0];
 }
-async function runForEachEditor(targets, getEditor, func2) {
+async function runForEachEditor(targets, getEditor2, func2) {
   return Promise.all(
-    groupForEachEditor(targets, getEditor).map(
+    groupForEachEditor(targets, getEditor2).map(
       ([editor, editorTargets]) => func2(editor, editorTargets)
     )
   );
@@ -27763,11 +27971,11 @@ async function runOnTargetsForEachEditorSequentially(targets, func2) {
 function groupTargetsForEachEditor(targets) {
   return groupForEachEditor(targets, (target) => target.editor);
 }
-function groupForEachEditor(targets, getEditor) {
-  const getDocumentUri = (target) => getEditor(target).document.uri;
-  const editorMap = groupBy2(targets, getDocumentUri);
+function groupForEachEditor(targets, getEditor2) {
+  const getDocumentUri = (target) => getEditor2(target).document.uri;
+  const editorMap = groupBy(targets, getDocumentUri);
   return Array.from(editorMap.values(), (editorTargets) => {
-    const editor = getEditor(editorTargets[0]);
+    const editor = getEditor2(editorTargets[0]);
     return [editor, editorTargets];
   });
 }
@@ -28675,14 +28883,12 @@ async function runEditNewNotebookCellTargets(actions, destinations) {
     );
   }
   await actions.setSelection.run([destination.target]);
-  let modifyThatMark = (selection) => selection;
   if (isAbove) {
-    modifyThatMark = await editor.editNewNotebookCellAbove();
+    await editor.editNewNotebookCellAbove();
   } else {
     await editor.editNewNotebookCellBelow();
   }
   const thatMark = createThatMark([destination.target.thatTarget]);
-  thatMark[0].selection = modifyThatMark(thatMark[0].selection);
   return { thatSelections: thatMark };
 }
 
@@ -28844,6 +29050,176 @@ var FollowLink = class {
   }
 };
 
+// ../../node_modules/.pnpm/talon-snippets@1.1.0/node_modules/talon-snippets/lib/esm/parser.js
+function parseSnippetFile(content) {
+  const documents = content.split(/^---$/m);
+  return documents.map(parseDocument).filter((d) => d != null);
+}
+function parseDocument(text) {
+  const match = text.match(/^-$/m);
+  const contextText = match != null ? text.slice(0, match.index) : text;
+  const bodyText = match != null ? text.slice(match.index + match[0].length) : null;
+  let document2 = parseContext(contextText);
+  if (bodyText != null) {
+    const body2 = parseBody(bodyText);
+    if (body2 != null) {
+      if (document2 == null) {
+        document2 = { variables: [] };
+      }
+      document2.body = body2;
+    }
+  }
+  return document2;
+}
+function parseContext(text) {
+  const document2 = { variables: [] };
+  const pairs2 = parseContextPairs(text);
+  if (Object.keys(pairs2).length === 0) {
+    return void 0;
+  }
+  const variables = {};
+  for (const [key, value] of Object.entries(pairs2)) {
+    switch (key) {
+      case "name":
+        document2.name = value;
+        break;
+      case "phrase":
+        document2.phrases = parseVectorValue(value);
+        break;
+      case "insertionScope":
+        document2.insertionScopes = parseVectorValue(value);
+        break;
+      case "language":
+        document2.languages = parseVectorValue(value);
+        break;
+      default:
+        if (!key.startsWith("$")) {
+          throw Error(`Invalid key '${key}'`);
+        }
+        variables[key] = value;
+    }
+  }
+  document2.variables = parseVariables(variables);
+  return document2;
+}
+function parseContextPairs(text) {
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const pairs2 = {};
+  for (const line of lines) {
+    const parts2 = line.split(":");
+    if (parts2.length !== 2) {
+      throw Error(`Invalid line '${line}'`);
+    }
+    const key = parts2[0].trim();
+    const value = parts2[1].trim();
+    if (key.length === 0 || value.length === 0) {
+      throw Error(`Invalid line '${line}'`);
+    }
+    if (pairs2[key] != null) {
+      throw Error(`Duplicate key '${key}' in '${text}'`);
+    }
+    pairs2[key] = value;
+  }
+  return pairs2;
+}
+function parseVariables(variables) {
+  const variablesMap = {};
+  const getVariable = (name2) => {
+    if (variablesMap[name2] == null) {
+      variablesMap[name2] = { name: name2 };
+    }
+    return variablesMap[name2];
+  };
+  for (const [key, value] of Object.entries(variables)) {
+    const parts2 = key.split(".");
+    if (parts2.length !== 2) {
+      throw Error(`Invalid variable key '${key}'`);
+    }
+    const name2 = parts2[0].slice(1);
+    const field = parts2[1];
+    switch (field) {
+      case "insertionFormatter":
+        getVariable(name2).insertionFormatters = parseVectorValue(value);
+        break;
+      case "wrapperPhrase":
+        getVariable(name2).wrapperPhrases = parseVectorValue(value);
+        break;
+      case "wrapperScope":
+        getVariable(name2).wrapperScope = value;
+        break;
+      default:
+        throw Error(`Invalid variable key '${key}'`);
+    }
+  }
+  return Object.values(variablesMap);
+}
+function parseBody(text) {
+  const matchLeading = text.match(/^[ \t]*\S/m);
+  if (matchLeading?.index == null) {
+    return void 0;
+  }
+  return text.slice(matchLeading.index).trimEnd().split(/\r?\n/).map((l) => l.trimEnd());
+}
+function parseVectorValue(value) {
+  return value.split("|").map((v) => v.trim());
+}
+
+// ../../node_modules/.pnpm/talon-snippets@1.1.0/node_modules/talon-snippets/lib/esm/serializer.js
+function serializeSnippetFile(snippetDocuments) {
+  const result = snippetDocuments.map((s) => getDocumentText(s)).filter(Boolean).join("\n---\n\n");
+  return result ? result + "\n---\n" : "";
+}
+function getDocumentText(document2) {
+  const parts2 = [
+    getOptionalPairString("name", document2.name),
+    getOptionalPairString("language", document2.languages),
+    getOptionalPairString("phrase", document2.phrases),
+    getOptionalPairString("insertionScope", document2.insertionScopes)
+  ].filter(Boolean);
+  if (document2.variables.length > 0) {
+    if (parts2.length > 0) {
+      parts2.push("");
+    }
+    parts2.push(...getSortedVariables(document2.variables));
+  }
+  if (document2.body != null) {
+    parts2.push("-", ...document2.body);
+  }
+  return parts2.join("\n");
+}
+function getSortedVariables(variables) {
+  const result = [...variables];
+  result.sort(compareVariables);
+  return result.flatMap((variable) => [
+    getOptionalPairString(`$${variable.name}.insertionFormatter`, variable.insertionFormatters),
+    getOptionalPairString(`$${variable.name}.wrapperPhrase`, variable.wrapperPhrases),
+    getOptionalPairString(`$${variable.name}.wrapperScope`, variable.wrapperScope)
+  ]).filter(Boolean);
+}
+function getOptionalPairString(key, value) {
+  if (value == null) {
+    return "";
+  }
+  if (Array.isArray(value)) {
+    return `${key}: ${value.join(" | ")}`;
+  }
+  return `${key}: ${value}`;
+}
+function compareVariables(a, b) {
+  if (a.name === "0") {
+    return 1;
+  }
+  if (b.name === "0") {
+    return -1;
+  }
+  return a.name.localeCompare(b.name);
+}
+
+// ../../node_modules/.pnpm/talon-snippets@1.1.0/node_modules/talon-snippets/lib/esm/utils.js
+function getHeaderSnippet(snippetDocuments) {
+  return snippetDocuments.length > 0 && snippetDocuments[0].body == null ? snippetDocuments[0] : void 0;
+}
+
 // ../cursorless-engine/src/actions/GenerateSnippet/constructSnippetBody.ts
 function constructSnippetBody(text, linePrefix) {
   const outputLines = [];
@@ -28891,6 +29267,116 @@ function editText(text, edits) {
   output += text.slice(currentOffset);
   return output;
 }
+
+// ../cursorless-engine/src/actions/GenerateSnippet/GenerateSnippetCommunity.ts
+var GenerateSnippetCommunity = class {
+  constructor(snippets) {
+    this.snippets = snippets;
+    this.run = this.run.bind(this);
+  }
+  async run(targets, directory, snippetName) {
+    const target = ensureSingleTarget2(targets);
+    const editor = target.editor;
+    void flashTargets(ide(), targets, "referenced" /* referenced */);
+    if (snippetName == null) {
+      snippetName = await ide().showInputBox({
+        prompt: "Name of snippet",
+        placeHolder: "helloWorld"
+      });
+      if (!snippetName) {
+        return {};
+      }
+    }
+    const baseOffset = editor.document.offsetAt(target.contentRange.start);
+    const selections = getsSnippetSelections(editor, target.contentRange);
+    const variables = selections.map(
+      (selection, index) => ({
+        offsets: {
+          start: editor.document.offsetAt(selection.start) - baseOffset,
+          end: editor.document.offsetAt(selection.end) - baseOffset
+        },
+        name: index === selections.length - 1 ? "0" : `${index + 1}`
+      })
+    );
+    const linePrefix = editor.document.getText(
+      new Range(
+        target.contentRange.start.with(void 0, 0),
+        target.contentRange.start
+      )
+    );
+    const originalText = editor.document.getText(target.contentRange);
+    const snippetBodyText = editText(originalText, [
+      ...matchAll(originalText, /\$|\\/g, (match) => ({
+        offsets: {
+          start: match.index,
+          end: match.index + match[0].length
+        },
+        text: `\\${match[0]}`
+      })),
+      ...variables.map(({ offsets, name: name2 }) => ({
+        offsets,
+        text: `$${name2}`
+      }))
+    ]);
+    const snippetLines = constructSnippetBody(snippetBodyText, linePrefix);
+    let editableEditor;
+    let snippetDocuments;
+    if (ide().runMode === "test") {
+      editableEditor = ide().getEditableTextEditor(editor);
+      snippetDocuments = [];
+    } else {
+      editableEditor = ide().getEditableTextEditor(
+        await this.snippets.openNewSnippetFile(snippetName, directory)
+      );
+      snippetDocuments = parseSnippetFile(editableEditor.document.getText());
+    }
+    await editableEditor.setSelections([
+      editableEditor.document.range.toSelection(false)
+    ]);
+    const headerSnippet = getHeaderSnippet(snippetDocuments);
+    let currentPlaceholderIndex = 1;
+    const phrases = headerSnippet?.phrases != null ? void 0 : [`${PLACEHOLDER}${currentPlaceholderIndex++}`];
+    const createVariable = (variable) => {
+      const hasPhrase = headerSnippet?.variables?.some(
+        (v) => v.name === variable.name && v.wrapperPhrases != null
+      );
+      return {
+        name: variable.name,
+        wrapperPhrases: hasPhrase ? void 0 : [`${PLACEHOLDER}${currentPlaceholderIndex++}`]
+      };
+    };
+    const snippet2 = {
+      name: headerSnippet?.name === snippetName ? void 0 : snippetName,
+      phrases,
+      languages: getSnippetLanguages(editor, headerSnippet),
+      body: snippetLines,
+      variables: variables.map(createVariable)
+    };
+    snippetDocuments.push(snippet2);
+    const metaSnippetText = serializeSnippetFile(snippetDocuments).replace(/\$/g, "\\$").replaceAll(PLACEHOLDER, "$");
+    await editableEditor.insertSnippet(metaSnippetText);
+    return {
+      thatSelections: targets.map(({ editor: editor2, contentSelection }) => ({
+        editor: editor2,
+        selection: contentSelection
+      }))
+    };
+  }
+};
+function getSnippetLanguages(editor, header) {
+  if (header?.languages?.includes(editor.document.languageId)) {
+    return void 0;
+  }
+  return [editor.document.languageId];
+}
+function getsSnippetSelections(editor, range3) {
+  const selections = editor.selections.filter(
+    (selection) => range3.contains(selection)
+  );
+  selections.sort((a, b) => a.start.compareTo(b.start));
+  return selections;
+}
+var PLACEHOLDER = "PLACEHOLDER_VFA77zcbLD6wXNmfMAay";
 
 // ../cursorless-engine/src/actions/GenerateSnippet/Substituter.ts
 var Substituter = class {
@@ -28942,8 +29428,8 @@ function makeid(length) {
   return result;
 }
 
-// ../cursorless-engine/src/actions/GenerateSnippet/GenerateSnippet.ts
-var GenerateSnippet = class {
+// ../cursorless-engine/src/actions/GenerateSnippet/GenerateSnippetLegacy.ts
+var GenerateSnippetLegacy = class {
   constructor(snippets) {
     this.snippets = snippets;
     this.run = this.run.bind(this);
@@ -29058,6 +29544,22 @@ var GenerateSnippet = class {
   }
 };
 
+// ../cursorless-engine/src/actions/GenerateSnippet/GenerateSnippet.ts
+var GenerateSnippet = class {
+  constructor(snippets) {
+    this.snippets = snippets;
+    this.run = this.run.bind(this);
+  }
+  async run(targets, directory, snippetName) {
+    if (directory == null) {
+      const action2 = new GenerateSnippetLegacy(this.snippets);
+      return action2.run(targets, snippetName);
+    }
+    const action = new GenerateSnippetCommunity(this.snippets);
+    return action.run(targets, directory, snippetName);
+  }
+};
+
 // ../cursorless-engine/src/actions/GetTargets.ts
 var GetTargets = class {
   constructor() {
@@ -29125,6 +29627,116 @@ var Highlight = class {
     };
   }
 };
+
+// ../cursorless-engine/src/actions/IndentLine.ts
+var IndentLineBase = class {
+  constructor(rangeUpdater, isIndent) {
+    this.rangeUpdater = rangeUpdater;
+    this.isIndent = isIndent;
+    this.run = this.run.bind(this);
+    this.runForEditor = this.runForEditor.bind(this);
+  }
+  async run(targets) {
+    if (this.hasCapability()) {
+      return this.runSimpleCommandAction(targets);
+    }
+    await flashTargets(ide(), targets, "pendingModification0" /* pendingModification0 */);
+    const thatTargets = flatten_default(
+      await runOnTargetsForEachEditor(targets, this.runForEditor)
+    );
+    return { thatTargets };
+  }
+  hasCapability() {
+    return this.isIndent ? ide().capabilities.commands.indentLine != null : ide().capabilities.commands.outdentLine != null;
+  }
+  runSimpleCommandAction(targets) {
+    const action = this.isIndent ? new IndentLineSimpleAction(this.rangeUpdater) : new OutdentLineSimpleAction(this.rangeUpdater);
+    return action.run(targets);
+  }
+  async runForEditor(editor, targets) {
+    const edits = this.isIndent ? getIndentEdits(editor, targets) : getOutdentEdits(editor, targets);
+    const { targetSelections: updatedTargetSelections } = await performEditsAndUpdateSelections({
+      rangeUpdater: this.rangeUpdater,
+      editor: ide().getEditableTextEditor(editor),
+      edits,
+      selections: {
+        targetSelections: targets.map(
+          ({ contentSelection }) => contentSelection
+        )
+      }
+    });
+    return zip_default(targets, updatedTargetSelections).map(
+      ([target, range3]) => selectionToStoredTarget({
+        editor,
+        selection: range3.toSelection(target.isReversed)
+      })
+    );
+  }
+};
+var IndentLine = class extends IndentLineBase {
+  constructor(rangeUpdater) {
+    super(rangeUpdater, true);
+  }
+};
+var OutdentLine = class extends IndentLineBase {
+  constructor(rangeUpdater) {
+    super(rangeUpdater, false);
+  }
+};
+function getIndentEdits(editor, targets) {
+  const { document: document2 } = editor;
+  const lineNumbers = getLineNumbers(targets);
+  const indent = getIndent(editor);
+  return lineNumbers.map((lineNumber) => {
+    const line = document2.lineAt(lineNumber);
+    return {
+      range: line.range.start.toEmptyRange(),
+      text: indent
+    };
+  });
+}
+function getOutdentEdits(editor, targets) {
+  const { document: document2 } = editor;
+  const lineNumbers = getLineNumbers(targets);
+  const regex = getRegex(editor);
+  return lineNumbers.map((lineNumber) => {
+    const line = document2.lineAt(lineNumber);
+    const match = line.text.match(regex);
+    const { start: start2 } = line.range;
+    const end = start2.translate(void 0, match?.[0].length);
+    return {
+      range: new Range(start2, end),
+      text: ""
+    };
+  });
+}
+function getLineNumbers(targets) {
+  const lineNumbers = /* @__PURE__ */ new Set();
+  for (const target of targets) {
+    const { start: start2, end } = target.contentRange;
+    for (let i2 = start2.line; i2 <= end.line; ++i2) {
+      lineNumbers.add(i2);
+    }
+  }
+  return [...lineNumbers];
+}
+function getIndent(editor) {
+  if (editor.options.insertSpaces) {
+    const tabSize = getTabSize(editor);
+    return " ".repeat(tabSize);
+  }
+  return "	";
+}
+function getRegex(editor) {
+  if (editor.options.insertSpaces) {
+    const tabSize = getTabSize(editor);
+    return new RegExp(`^[ ]{1,${tabSize}}`);
+  }
+  return /^\t/;
+}
+function getTabSize(editor) {
+  return typeof editor.options.tabSize === "number" ? editor.options.tabSize : 4;
+}
 
 // ../cursorless-engine/src/actions/InsertCopy.ts
 var InsertCopy = class {
@@ -30768,7 +31380,7 @@ var Scroll = class {
     this.run = this.run.bind(this);
   }
   async run(targets) {
-    const selectionGroups = groupBy2(targets, (t) => t.editor);
+    const selectionGroups = groupBy(targets, (t) => t.editor);
     const lines = Array.from(selectionGroups, ([editor, targets2]) => {
       return { lineNumber: getLineNumber(targets2, this.at), editor };
     });
@@ -30829,30 +31441,64 @@ function getLineNumber(targets, at) {
 }
 
 // ../cursorless-engine/src/actions/SetSelection.ts
-var SetSelection = class {
-  constructor() {
+var SetSelectionBase = class {
+  constructor(selectionMode, rangeMode) {
+    this.selectionMode = selectionMode;
+    this.rangeMode = rangeMode;
     this.run = this.run.bind(this);
-  }
-  getSelection(target) {
-    return target.contentSelection;
   }
   async run(targets) {
     const editor = ensureSingleEditor2(targets);
-    const selections = targets.map(this.getSelection);
+    const targetSelections = this.getSelections(targets);
+    const selections = this.selectionMode === "add" ? editor.selections.concat(targetSelections) : targetSelections;
     await ide().getEditableTextEditor(editor).setSelections(selections, { focusEditor: true });
     return {
       thatTargets: targets
     };
   }
-};
-var SetSelectionBefore = class extends SetSelection {
-  getSelection(target) {
-    return new Selection(target.contentRange.start, target.contentRange.start);
+  getSelections(targets) {
+    switch (this.rangeMode) {
+      case "content":
+        return targets.map((target) => target.contentSelection);
+      case "before":
+        return targets.map(
+          (target) => new Selection(target.contentRange.start, target.contentRange.start)
+        );
+      case "after":
+        return targets.map(
+          (target) => new Selection(target.contentRange.end, target.contentRange.end)
+        );
+    }
   }
 };
-var SetSelectionAfter = class extends SetSelection {
-  getSelection(target) {
-    return new Selection(target.contentRange.end, target.contentRange.end);
+var SetSelection = class extends SetSelectionBase {
+  constructor() {
+    super("set", "content");
+  }
+};
+var SetSelectionBefore = class extends SetSelectionBase {
+  constructor() {
+    super("set", "before");
+  }
+};
+var SetSelectionAfter = class extends SetSelectionBase {
+  constructor() {
+    super("set", "after");
+  }
+};
+var AddSelection = class extends SetSelectionBase {
+  constructor() {
+    super("add", "content");
+  }
+};
+var AddSelectionBefore = class extends SetSelectionBase {
+  constructor() {
+    super("add", "before");
+  }
+};
+var AddSelectionAfter = class extends SetSelectionBase {
+  constructor() {
+    super("add", "after");
   }
 };
 
@@ -30955,116 +31601,6 @@ function parseCursor(resultPlayground, resultQuery, contentRange, cursor, numInd
 function getFieldName(cursor) {
   const field = cursor.currentFieldName;
   return field != null ? `${field}: ` : "";
-}
-
-// ../cursorless-engine/src/actions/IndentLine.ts
-var IndentLineBase = class {
-  constructor(rangeUpdater, isIndent) {
-    this.rangeUpdater = rangeUpdater;
-    this.isIndent = isIndent;
-    this.run = this.run.bind(this);
-    this.runForEditor = this.runForEditor.bind(this);
-  }
-  async run(targets) {
-    if (this.hasCapability()) {
-      return this.runSimpleCommandAction(targets);
-    }
-    await flashTargets(ide(), targets, "pendingModification0" /* pendingModification0 */);
-    const thatTargets = flatten_default(
-      await runOnTargetsForEachEditor(targets, this.runForEditor)
-    );
-    return { thatTargets };
-  }
-  hasCapability() {
-    return this.isIndent ? ide().capabilities.commands.indentLine != null : ide().capabilities.commands.outdentLine != null;
-  }
-  runSimpleCommandAction(targets) {
-    const action = this.isIndent ? new IndentLineSimpleAction(this.rangeUpdater) : new OutdentLineSimpleAction(this.rangeUpdater);
-    return action.run(targets);
-  }
-  async runForEditor(editor, targets) {
-    const edits = this.isIndent ? getIndentEdits(editor, targets) : getOutdentEdits(editor, targets);
-    const { targetSelections: updatedTargetSelections } = await performEditsAndUpdateSelections({
-      rangeUpdater: this.rangeUpdater,
-      editor: ide().getEditableTextEditor(editor),
-      edits,
-      selections: {
-        targetSelections: targets.map(
-          ({ contentSelection }) => contentSelection
-        )
-      }
-    });
-    return zip_default(targets, updatedTargetSelections).map(
-      ([target, range3]) => selectionToStoredTarget({
-        editor,
-        selection: range3.toSelection(target.isReversed)
-      })
-    );
-  }
-};
-var IndentLine = class extends IndentLineBase {
-  constructor(rangeUpdater) {
-    super(rangeUpdater, true);
-  }
-};
-var OutdentLine = class extends IndentLineBase {
-  constructor(rangeUpdater) {
-    super(rangeUpdater, false);
-  }
-};
-function getIndentEdits(editor, targets) {
-  const { document: document2 } = editor;
-  const lineNumbers = getLineNumbers(targets);
-  const indent = getIndent(editor);
-  return lineNumbers.map((lineNumber) => {
-    const line = document2.lineAt(lineNumber);
-    return {
-      range: line.range.start.toEmptyRange(),
-      text: indent
-    };
-  });
-}
-function getOutdentEdits(editor, targets) {
-  const { document: document2 } = editor;
-  const lineNumbers = getLineNumbers(targets);
-  const regex = getRegex(editor);
-  return lineNumbers.map((lineNumber) => {
-    const line = document2.lineAt(lineNumber);
-    const match = line.text.match(regex);
-    const { start: start2 } = line.range;
-    const end = start2.translate(void 0, match?.[0].length);
-    return {
-      range: new Range(start2, end),
-      text: ""
-    };
-  });
-}
-function getLineNumbers(targets) {
-  const lineNumbers = /* @__PURE__ */ new Set();
-  for (const target of targets) {
-    const { start: start2, end } = target.contentRange;
-    for (let i2 = start2.line; i2 <= end.line; ++i2) {
-      lineNumbers.add(i2);
-    }
-  }
-  return [...lineNumbers];
-}
-function getIndent(editor) {
-  if (editor.options.insertSpaces) {
-    const tabSize = getTabSize(editor);
-    return " ".repeat(tabSize);
-  }
-  return "	";
-}
-function getRegex(editor) {
-  if (editor.options.insertSpaces) {
-    const tabSize = getTabSize(editor);
-    return new RegExp(`^[ ]{1,${tabSize}}`);
-  }
-  return /^\t/;
-}
-function getTabSize(editor) {
-  return typeof editor.options.tabSize === "number" ? editor.options.tabSize : 4;
 }
 
 // ../cursorless-engine/src/actions/Sort.ts
@@ -31402,6 +31938,9 @@ var Actions = class {
     this.snippets = snippets;
     this.rangeUpdater = rangeUpdater;
     this.modifierStageFactory = modifierStageFactory;
+    this.addSelection = new AddSelection();
+    this.addSelectionBefore = new AddSelectionBefore();
+    this.addSelectionAfter = new AddSelectionAfter();
     this.callAsFunction = new Call(this);
     this.clearAndSetSelection = new Clear(this);
     this.copyToClipboard = new CopyToClipboard(this, this.rangeUpdater);
@@ -31976,6 +32515,7 @@ var CommandRunnerImpl = class {
       case "generateSnippet":
         return this.actions.generateSnippet.run(
           this.getTargets(actionDescriptor.target),
+          actionDescriptor.directory,
           actionDescriptor.snippetName
         );
       case "insertSnippet":
@@ -32012,6 +32552,9 @@ var CommandRunnerImpl = class {
         );
       default: {
         const action = this.actions[actionDescriptor.name];
+        if (action == null) {
+          throw new Error(`Unknown action: ${actionDescriptor.name}`);
+        }
         this.finalStages = action.getFinalStages?.() ?? [];
         this.noAutomaticTokenExpansion = action.noAutomaticTokenExpansion ?? false;
         return action.run(this.getTargets(actionDescriptor.target));
@@ -32284,6 +32827,11 @@ var MarkStageFactoryImpl = class {
         return new TargetMarkStage(this.targetPipelineRunner, mark);
       case "explicit":
         return new ExplicitMarkStage(mark);
+      default: {
+        const _exhaustiveCheck = mark;
+        const { type: type2 } = mark;
+        throw new Error(`Unknown mark: ${type2}`);
+      }
     }
   }
 };
@@ -32514,6 +33062,7 @@ function isLanguageSpecific(scopeType) {
     case "environment":
     case "textFragment":
     case "disqualifyDelimiter":
+    case "pairDelimiter":
       return true;
     case "character":
     case "word":
@@ -32649,7 +33198,7 @@ var ScopeRangeProvider = class {
     this.provideIterationScopeRanges = this.provideIterationScopeRanges.bind(this);
   }
   provideScopeRanges(editor, { scopeType, visibleOnly }) {
-    const scopeHandler = this.scopeHandlerFactory.create(
+    const scopeHandler = this.scopeHandlerFactory.maybeCreate(
       scopeType,
       editor.document.languageId
     );
@@ -32664,11 +33213,14 @@ var ScopeRangeProvider = class {
   }
   provideIterationScopeRanges(editor, { scopeType, visibleOnly, includeNestedTargets }) {
     const { languageId } = editor.document;
-    const scopeHandler = this.scopeHandlerFactory.create(scopeType, languageId);
+    const scopeHandler = this.scopeHandlerFactory.maybeCreate(
+      scopeType,
+      languageId
+    );
     if (scopeHandler == null) {
       return [];
     }
-    const iterationScopeHandler = this.scopeHandlerFactory.create(
+    const iterationScopeHandler = this.scopeHandlerFactory.maybeCreate(
       scopeHandler.iterationScopeType,
       languageId
     );
@@ -32810,7 +33362,10 @@ var ScopeSupportChecker = class {
    */
   getScopeSupport(editor, scopeType) {
     const { languageId } = editor.document;
-    const scopeHandler = this.scopeHandlerFactory.create(scopeType, languageId);
+    const scopeHandler = this.scopeHandlerFactory.maybeCreate(
+      scopeType,
+      languageId
+    );
     if (scopeHandler == null) {
       return getLegacyScopeSupport(languageId, scopeType);
     }
@@ -32826,11 +33381,14 @@ var ScopeSupportChecker = class {
    */
   getIterationScopeSupport(editor, scopeType) {
     const { languageId } = editor.document;
-    const scopeHandler = this.scopeHandlerFactory.create(scopeType, languageId);
+    const scopeHandler = this.scopeHandlerFactory.maybeCreate(
+      scopeType,
+      languageId
+    );
     if (scopeHandler == null) {
       return getLegacyScopeSupport(languageId, scopeType);
     }
-    const iterationScopeHandler = this.scopeHandlerFactory.create(
+    const iterationScopeHandler = this.scopeHandlerFactory.maybeCreate(
       scopeHandler.iterationScopeType,
       languageId
     );
@@ -32847,9 +33405,6 @@ function editorContainsScope(editor, scopeHandler) {
 }
 function getLegacyScopeSupport(languageId, scopeType) {
   switch (scopeType.type) {
-    case "boundedNonWhitespaceSequence":
-    case "surroundingPair":
-      return 2 /* supportedLegacy */;
     case "notebookCell":
       return 3 /* unsupported */;
     default:
@@ -33100,7 +33655,6 @@ var JetbrainsTreeSitter = class {
     throw new Error("Language not supported");
   }
   async loadLanguage(languageId) {
-    console.log(`Loading language ${languageId}`);
     const parser = new import_web_tree_sitter.default();
     const filePath = pathJoin(
       this.wasmDirectory,
@@ -33139,7 +33693,6 @@ var JetbrainsTreeSitterQueryProvider = class {
     this.onChanges = this.notifier.registerListener;
   }
   async readQuery(filename) {
-    console.log("readQuery", filename);
     const queryContents = await this.ide.readQuery(filename);
     return queryContents;
   }
