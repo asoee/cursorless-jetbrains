@@ -9,16 +9,18 @@ import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCallback
 import com.github.asoee.cursorlessjetbrains.cursorless.DEFAULT_CONFIGURATION
 import com.github.asoee.cursorlessjetbrains.cursorless.TreesitterCallback
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
+import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.diagnostic.thisLogger
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import java.io.File
 import java.nio.file.Files
-import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
 
+
+private const val PLUGIN_ID = "cursorless-jetbrains"
 
 open class JavetDriver {
 
@@ -37,10 +39,10 @@ open class JavetDriver {
     }
 
     private fun initIcuDataDir() {
-        val pluginsPath = System.getProperty("idea.plugins.path")
-        thisLogger().debug("idea.plugins.path: $pluginsPath")
-        val icuDataDir = Path(pluginsPath)
-            .resolve("cursorless-jetbrains")
+        val pluginsDir = PathManager.getPluginsDir()
+        logger.debug("idea.plugins.path: ${pluginsDir.absolutePathString()}")
+        val icuDataDir = pluginsDir
+            .resolve(PLUGIN_ID)
             .resolve("extra/icu")
             .toFile()
         logger.debug("icuDataDir: $icuDataDir")
@@ -133,10 +135,10 @@ open class JavetDriver {
     }
 
     private fun resolveWasmDir(): File {
-        val pluginsPath = System.getProperty("idea.plugins.path")
-        thisLogger().debug("idea.plugins.path: $pluginsPath")
-        val wasmDir = Path(pluginsPath)
-            .resolve("cursorless-jetbrains")
+        val pluginsDir = PathManager.getPluginsDir()
+        logger.debug("idea.plugins.path: ${pluginsDir.absolutePathString()}")
+        val wasmDir = pluginsDir
+            .resolve(PLUGIN_ID)
             .resolve("extra/treesitter/wasm")
             .toFile()
         logger.debug("wasmDir: $wasmDir")
