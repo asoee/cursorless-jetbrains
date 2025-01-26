@@ -11,7 +11,6 @@ import com.github.asoee.cursorlessjetbrains.sync.HatRange
 import com.github.asoee.cursorlessjetbrains.sync.Selection
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.lessThanOrEqualTo
-import org.junit.Assert.assertNotNull
 import org.junit.Test
 
 class JavetDriverTest {
@@ -22,42 +21,6 @@ class JavetDriverTest {
         driver.loadCursorless()
         driver.close()
     }
-
-    @Test
-    fun testInit() {
-        val driver = JavetDriver()
-        assertNotNull(driver)
-
-        val runtime = driver.runtime
-        val eventLoop = JNEventLoop(runtime)
-        eventLoop.loadStaticModules(JNModuleType.Console, JNModuleType.Timers)
-        runtime.getExecutor(
-            "const a = [];\n" +
-                    "setTimeout(() => a.push('Hello Javenode'), 10);"
-        ).executeVoid()
-        eventLoop.await()
-        runtime.getExecutor("console.log(a[0]);").executeVoid()
-
-        val cursorlessJs = javaClass.getResource("/cursorless/cursorless.js").readText()
-
-        val module = runtime.getExecutor(cursorlessJs)
-            .setResourceName("./cursorless.js")
-            .compileV8Module()
-        module.executeVoid()
-
-        if (runtime.containsV8Module("./module.js")) {
-            println("./module.js is registered as a module.")
-        }
-
-        runtime.getExecutor("import { activate } from './cursorless.js'; globalThis.activate = activate; console.log(activate)")
-            .setModule(true).setResourceName("./import.js").executeVoid()
-        eventLoop.await()
-        // Step 5: Call test() in global context.
-        println("activate() -> " + runtime.getExecutor("activate(null)").executeVoid())
-
-        driver.close()
-    }
-
 
     @Test
     fun testDocumentChanged() {
@@ -158,7 +121,7 @@ class JavetDriverTest {
     @Test
     fun testSetTimeout2() {
 
-        val runtime: V8Runtime = V8Host.getV8Instance().createV8Runtime()
+        val runtime: V8Runtime = V8Host.getNodeI18nInstance().createV8Runtime()
         val eventLoop = JNEventLoop(runtime)
 
         eventLoop.loadStaticModules(JNModuleType.Console, JNModuleType.Timers)
