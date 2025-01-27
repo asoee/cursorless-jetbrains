@@ -20,6 +20,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.testFramework.EditorTestUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.runInEdtAndWait
+import junit.framework.TestCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonArray
@@ -72,9 +73,15 @@ class TestCursorlessActions : BasePlatformTestCase() {
         if (clTarget != null) {
             val clCommand = "take " + clTarget.spokenForm()
             println("command: $clCommand")
+            val refCountBefore = fixture.appService.jsDriver.runtime.referenceCount
 
-            fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand.takeSingle(clTarget))
+            val res = fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand.takeSingle(clTarget))
             println("command executed")
+            assertNull(res.error)
+            assertNull(res.returnValue)
+
+            val refCountAfter = fixture.appService.jsDriver.runtime.referenceCount
+            TestCase.assertEquals(refCountBefore, refCountAfter)
 
             runBlocking {
                 delay(50)
@@ -319,6 +326,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
         if (clTarget != null) {
             val clCommand = "take " + clTarget.spokenForm()
             println("command: $clCommand")
+            val refCountBefore = fixture.appService.jsDriver.runtime.referenceCount
 
             val res = fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand.getText(clTarget))
             println("command executed")
@@ -331,6 +339,10 @@ class TestCursorlessActions : BasePlatformTestCase() {
             } else {
                 fail("Expected JsonArray")
             }
+
+            val refCountAfter = fixture.appService.jsDriver.runtime.referenceCount
+            TestCase.assertEquals(refCountBefore, refCountAfter)
+
         }
     }
 

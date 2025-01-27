@@ -242,8 +242,13 @@ open class JavetDriver {
                     eventLoop.await()
                     if (promise.isFulfilled) {
                         val v8String = promise.getResult<V8ValueString>()
-                        val jsonElem = Json.decodeFromString<JsonElement>(v8String.value)
-                        returnValue = jsonElem
+                        logger.info("v8String: $v8String")
+                        if (v8String.value.isEmpty()) {
+                            returnValue = null
+                        } else {
+                            val jsonElem = Json.decodeFromString<JsonElement>(v8String.value)
+                            returnValue = jsonElem
+                        }
                     }
                 }
         } catch (e: Throwable) {

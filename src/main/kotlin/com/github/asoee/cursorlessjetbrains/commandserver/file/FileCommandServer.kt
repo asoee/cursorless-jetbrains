@@ -22,20 +22,20 @@ class FileCommandServer {
 
     companion object {
         private const val PREFIX = "jetbrains"
-        val LOG = logger<FileCommandServer>()
+        val logger = logger<FileCommandServer>()
     }
 
     private val commandServerDir: Path
     private val signalsDir: Path
 
     init {
-        LOG.info("FileCommandServer: FilePlatform prefix: $PREFIX")
+        logger.info("FileCommandServer: FilePlatform prefix: $PREFIX")
 
         val suffix = getUserIdSuffix()
 
         val commandServerDir = Path(System.getProperty("java.io.tmpdir"))
             .resolve("${PREFIX}-command-server$suffix")
-        LOG.info("FileCommandServer: dir: $commandServerDir")
+        logger.info("FileCommandServer: dir: $commandServerDir")
         commandServerDir.toFile().mkdirs()
         this.commandServerDir = commandServerDir
         this.signalsDir = commandServerDir.resolve("signals")
@@ -51,7 +51,7 @@ class FileCommandServer {
             val uid = Files.getAttribute(selfPath, "unix:uid")
             return "-$uid"
         } catch (e: UnsupportedOperationException) {
-            LOG.warn("Error getting home uid attribute (not supported on this platform) " + e.message)
+            logger.warn("Error getting home uid attribute (not supported on this platform) " + e.message)
         }
         try {
             val userName = System.getProperty("user.name")
@@ -61,14 +61,14 @@ class FileCommandServer {
                     Integer.parseInt(it)
                     return "-$it"
                 } catch (e: NumberFormatException) {
-                    LOG.warn("Error parsing uid from id command output $it")
+                    logger.warn("Error parsing uid from id command output $it")
                 }
 
             }
         } catch (e: IOException) {
-            LOG.warn("Error getting uid from id command " + e.message)
+            logger.warn("Error getting uid from id command " + e.message)
         }
-        LOG.warn("Fallback to no uid suffix")
+        logger.warn("Fallback to no uid suffix")
         return ""
     }
 
@@ -105,7 +105,7 @@ class FileCommandServer {
 
     private fun readAndHandleFileRquest(fullPath: Path?) {
         fullPath?.readText().let {
-            println("File content: $it")
+            logger.debug("File content: $it")
             val request = Json.decodeFromString<CommandServerRequest>(it!!)
             val result = handleRequest(request)
             if (result.success) {
@@ -133,11 +133,11 @@ class FileCommandServer {
         val responsePath = commandServerDir.resolve("response.json")
         val responseJson = Json.encodeToString(response)
         responsePath.writeText(responseJson + "\n")
-        println("'Wrote response'...$responseJson")
+        logger.info("'Wrote response'...$responseJson")
     }
 
     private fun handleRequest(request: CommandServerRequest): ExecutionResult {
-        println("Handling request..." + request.commandId + " " + request.args + " " + request.uuid)
+        logger.info("Handling request..." + request.commandId + " " + request.args + " " + request.uuid)
         val service = service<TalonApplicationService>()
         val executionResult = service.jsDriver.execute(request.args)
         return executionResult
