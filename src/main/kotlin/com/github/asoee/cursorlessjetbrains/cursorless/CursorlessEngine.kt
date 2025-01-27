@@ -1,5 +1,6 @@
 package com.github.asoee.cursorlessjetbrains.cursorless
 
+import com.github.asoee.cursorlessjetbrains.javet.ExecutionResult
 import com.github.asoee.cursorlessjetbrains.javet.JavetDriver
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
 import kotlinx.serialization.json.Json
@@ -24,9 +25,9 @@ class CursorlessEngine(private val driver: JavetDriver) {
         driver.editorCreated(editorState)
     }
 
-    fun executeCommand(command: CommandV7) {
+    fun executeCommand(command: CommandV7): ExecutionResult {
         val jsonCmd = serialize(command)
-        driver.execute(jsonCmd)
+        return driver.execute(jsonCmd)
     }
 
     fun serialize(cmd: CommandV7): List<JsonObject> {

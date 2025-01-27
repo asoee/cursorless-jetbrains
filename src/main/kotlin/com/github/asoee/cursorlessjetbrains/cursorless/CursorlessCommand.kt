@@ -28,6 +28,25 @@ class CursorlessCommand(val command: String, val target: CursorlessTarget) {
                 )
             )
         }
+        fun getText(source: CursorlessTarget): CommandV7 {
+            return CommandV7(
+                version = 7,
+                spokenFormat = "format title at " + source.spokenForm(),
+                usePrePhraseSnapshot = false,
+                action = GetTextActionDescriptor(
+                    target = PartialPrimitiveTargetDescriptor(
+                        mark = DecoratedSymbolMark(
+                            symbolColor = source.color,
+                            character = source.letter
+                        )
+                    ),
+                    options = GetTextActionOptions(
+                        showDecorations = false,
+                        ensureSingleTarget = null
+                    )
+                )
+            )
+        }
 
         fun typeDeaf(source: CursorlessTarget): CommandV7 {
             return CommandV7(

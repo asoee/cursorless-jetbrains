@@ -5,6 +5,8 @@ import com.caoccao.javet.interop.V8Runtime
 import com.caoccao.javet.interop.options.NodeRuntimeOptions
 import com.caoccao.javet.javenode.JNEventLoop
 import com.caoccao.javet.javenode.enums.JNModuleType
+import com.caoccao.javet.values.primitive.V8ValueString
+import com.caoccao.javet.values.reference.V8ValuePromise
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCallback
 import com.github.asoee.cursorlessjetbrains.cursorless.DEFAULT_CONFIGURATION
 import com.github.asoee.cursorlessjetbrains.cursorless.TreesitterCallback
@@ -14,6 +16,7 @@ import com.intellij.openapi.diagnostic.logger
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import java.io.File
 import java.nio.file.Files
@@ -201,7 +204,7 @@ open class JavetDriver {
 
     @Synchronized
     fun execute(commands: List<JsonObject?>): ExecutionResult {
-
+        var returnValue: JsonElement? = null
         try {
             val json = Json.encodeToString(commands[0])
             logger.debug("command json $json")
@@ -212,7 +215,14 @@ open class JavetDriver {
             |   const engine = await globalThis.engine;
             |   if (ide) {
             |     try {
-            |       engine.commandApi.runCommand(${json});
+            |       const response = await engine.commandApi.runCommand(${json});
+            |       if (response.returnValue) {
+            |         const respJson = JSON.stringify(response.returnValue);
+            |         console.log("Cursorless/JS: response: " + respJson);
+            |         return respJson;
+            |       } else {
+            |         return "";
+            |       }
             |     } catch (e) {                      
             |       console.error("error in runCommand - " + e);
             | //      throw e;
@@ -228,8 +238,14 @@ open class JavetDriver {
             | """.trimMargin()
 
             runtime.getExecutor(js)
-                .executeVoid()
-            eventLoop.await()
+                .execute<V8ValuePromise>().use { promise ->
+                    eventLoop.await()
+                    if (promise.isFulfilled) {
+                        val v8String = promise.getResult<V8ValueString>()
+                        val jsonElem = Json.decodeFromString<JsonElement>(v8String.value)
+                        returnValue = jsonElem
+                    }
+                }
         } catch (e: Throwable) {
             logger.debug("error in execute - $e")
             return ExecutionResult(false, null, e.toString())
@@ -239,7 +255,8 @@ open class JavetDriver {
             ideClientCallback.unhandledRejections.clear()
             return ExecutionResult(false, null, joinedCause)
         }
-        return ExecutionResult(true, null, null)
+        logger.debug("returnValue: $returnValue")
+        return ExecutionResult(true, returnValue, null)
 
     }
 
@@ -400,6 +417,11 @@ open class JavetDriver {
 @Serializable
 data class ExecutionResult(
     val success: Boolean,
-    val returnValue: String?,
+    val returnValue: JsonElement?,
     val error: String?
+)
+
+@Serializable
+data class ActionResponse(
+    val returnValue: String?,
 )
