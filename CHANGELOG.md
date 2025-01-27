@@ -7,7 +7,8 @@
 - Fix occasional NPE for language detection
 - Queue editor events and dispatch in single thread, to avoid threadpool exhaustion when many editors
   are changed at the same time (e.g. branch change with many tabs open), which results in UI freeze
-- Avoid using setTimeout in JS, due to memory leak. Replace with shim with immediate callback.
+- Avoid using setTimeout in JS, due to memory leak causing JVM crash. Replace with shim with immediate callback.
+- Fix return values from cursorless not being returned to talon, causing commands like `format at` and `phones` to fail.
 
 ### Changed
 
