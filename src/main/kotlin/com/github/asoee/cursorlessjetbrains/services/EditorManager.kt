@@ -16,6 +16,7 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Document
@@ -36,7 +37,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     Disposable {
 
     private var hatsEnabled = true
-    private val logger: Logger = Logger.getInstance(EditorManager::class.java)
+    private val logger: Logger = logger<EditorManager>()
 
     private val editorIds = HashMap<Editor, String>()
     private val editorsById = HashMap<String, Editor>()
@@ -74,11 +75,11 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
                             try {
                                 editorDidChange(editor)
                             } catch (e: Exception) {
-                                println("Error in editorDidChange")
+                                logger.warn("Error in editorDidChange")
                                 e.printStackTrace()
                             }
                         } else {
-                            println("Editor not found (closed?)")
+                            logger.info("Editor not found (closed?)")
                         }
                     }
             }
@@ -102,7 +103,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     private fun editorDidChange(editor: Editor) {
         emitScope.launch(emitDispatcher) {
             if (editor.isDisposed) {
-                println("Editor is disposed")
+                logger.info("Editor is disposed")
                 return@launch
             }
 
@@ -110,19 +111,19 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
             ApplicationManager.getApplication().invokeAndWait {
                 edtState = ReadAction.compute<EditorState, Throwable> {
                     if (editor.isDisposed) {
-                        println("Editor is disposed")
+                        logger.info("Editor is disposed")
                         return@compute null
                     }
                     ensureEditorIdSet(editor)
                     val editorId = editorIds[editor]!!
-//                println("Editor did change " + editorId)
+//                logger.debug("Editor did change " + editorId)
                     val editorState = serializeEditor(editor, editorId)
-//                println("Editor state " + editorState)
+//                logger.debug("Editor state " + editorState)
                     editorState
                 }
             }
             edtState?.let {
-//            println("trigger Editor state changed")
+//            logger.debug("trigger Editor state changed")
                 cursorlessEngine.editorChanged(it)
             }
         }
@@ -140,7 +141,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
                             editor.project,
                             {
                                 val carets = selections.map {
-                                    println("Setting selection to $it")
+                                    logger.debug("Setting selection to $it")
                                     val startPos = it.logicalStartPosition(editor)
                                     val endPos = it.logicalEndPosition(editor)
                                     CaretState(endPos, startPos, endPos)
@@ -167,7 +168,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
                         val range = selections[0]
                         val startPos = range.logicalStartPosition(editor)
                         val endPos = range.logicalEndPosition(editor)
-                        println("launch action : clipboardCopy to $startPos - $endPos")
+                        logger.debug("launch action : clipboardCopy to $startPos - $endPos")
 
                         val startOffset = editor.logicalPositionToOffset(startPos)
                         val endOffset = editor.logicalPositionToOffset(endPos)
@@ -182,7 +183,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     fun clipboardPaste(editorId: String) {
         val editor = editorsById[editorId]
         if (editor != null) {
-            println("launch action : clipboardPaste")
+            logger.debug("launch action : clipboardPaste")
             ApplicationManager.getApplication().invokeAndWait {
                 val actionManager = ActionManager.getInstance()
 
@@ -199,7 +200,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     }
 
     fun documentUpdated(editorId: String, edit: CursorlessEditorEdit) {
-        println("Document updated $editorId")
+        logger.debug("Document updated $editorId")
         val editor = editorsById[editorId]
         if (editor != null) {
             if (edit.changes.isNotEmpty()) {
@@ -209,7 +210,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
                             editor.project,
                             {
                                 for (change in edit.changes) {
-                                    println("Setting range to " + change.rangeOffset.toString() + " - " + change.rangeOffset.toString() + " : " + change.text)
+                                    logger.debug("Setting range to " + change.rangeOffset.toString() + " - " + change.rangeOffset.toString() + " : " + change.text)
                                     editor.document.replaceString(
                                         change.rangeOffset,
                                         change.rangeOffset + change.rangeLength,
@@ -267,6 +268,9 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     }
 
     private class CursorlessHandler(private val editorManager: EditorManager) : CursorlessCallback {
+
+        private val logger: Logger = logger<CursorlessHandler>()
+
         override fun onHatUpdate(hatRanges: Array<HatRange>) {
             editorManager.hatsUpdated(hatRanges)
         }
@@ -335,7 +339,7 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         }
 
         override fun flashRanges(flashRanges: Array<CursorlessFlashRange>) {
-            thisLogger().info("Executing flashRanges $flashRanges")
+            logger.debug("Executing flashRanges $flashRanges")
             val flashRangesByEditor = flashRanges
                 .groupBy { editorManager.editorsById[it.editorId] }
                 .filter { it.key != null }

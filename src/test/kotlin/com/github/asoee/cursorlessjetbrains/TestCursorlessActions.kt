@@ -23,6 +23,8 @@ import com.intellij.testFramework.runInEdtAndWait
 import junit.framework.TestCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.jsonPrimitive
 import org.awaitility.kotlin.await
 import org.junit.BeforeClass
 import org.junit.Test
@@ -44,18 +46,18 @@ class TestCursorlessActions : BasePlatformTestCase() {
     fun testHatsAllocated() {
         val fixture = mainJavaFixture()
         val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
-        TestCase.assertNotNull(editorHats)
+        assertNotNull(editorHats)
         assertNotEmpty(editorHats.values)
 
 //      target the main method, expect a default hat over 'm'
         val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 3, 23, 3, 27)
         println("target: $targetRange")
         val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
-        TestCase.assertNotNull(clTarget)
+        assertNotNull(clTarget)
         clTarget?.let {
-            TestCase.assertEquals("default", clTarget.color)
-            TestCase.assertEquals("default", clTarget.shape)
-            TestCase.assertEquals("m", clTarget.letter)
+            assertEquals("default", clTarget.color)
+            assertEquals("default", clTarget.shape)
+            assertEquals("m", clTarget.letter)
         }
     }
 
@@ -67,13 +69,19 @@ class TestCursorlessActions : BasePlatformTestCase() {
         println("target: $targetRange")
         val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
         val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
-        TestCase.assertNotNull(clTarget)
+        assertNotNull(clTarget)
         if (clTarget != null) {
             val clCommand = "take " + clTarget.spokenForm()
             println("command: $clCommand")
+            val refCountBefore = fixture.appService.jsDriver.runtime.referenceCount
 
-            fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand.takeSingle(clTarget))
+            val res = fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand.takeSingle(clTarget))
             println("command executed")
+            assertNull(res.error)
+            assertNull(res.returnValue)
+
+            val refCountAfter = fixture.appService.jsDriver.runtime.referenceCount
+            TestCase.assertEquals(refCountBefore, refCountAfter)
 
             runBlocking {
                 delay(50)
@@ -82,12 +90,12 @@ class TestCursorlessActions : BasePlatformTestCase() {
             println("queue assert")
             runInEdtAndWait {
                 println("Asserting in EDT...")
-                TestCase.assertEquals("main", fixture.editor.selectionModel.selectedText)
-                TestCase.assertEquals(
+                assertEquals("main", fixture.editor.selectionModel.selectedText)
+                assertEquals(
                     targetRange.startOffset(fixture.editor),
                     fixture.editor.selectionModel.selectionStart
                 )
-                TestCase.assertEquals(
+                assertEquals(
                     targetRange.endOffset(fixture.editor),
                     fixture.editor.selectionModel.selectionEnd
                 )
@@ -103,7 +111,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
         println("target: $targetRange")
         val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
         val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
-        TestCase.assertNotNull(clTarget)
+        assertNotNull(clTarget)
         if (clTarget != null) {
             //place cursor after the curly in the for loop
             moveCursorTo(fixture.editor, 7, 9)
@@ -140,7 +148,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
         println("target: $targetRange")
         val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
         val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
-        TestCase.assertNotNull(clTarget)
+        assertNotNull(clTarget)
         if (clTarget != null) {
 
             val commandV7 = CursorlessCommand.changeEveryInstance(clTarget)
@@ -184,7 +192,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
         println("target: $targetRange")
         val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
         val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
-        TestCase.assertNotNull(clTarget)
+        assertNotNull(clTarget)
         if (clTarget != null) {
 
             val commandV7 = CursorlessCommand.drink(clTarget)
@@ -280,7 +288,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
         val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 4, 19, 4, 26)
         println("target: $targetRange")
         val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
-        TestCase.assertNotNull(clTarget)
+        assertNotNull(clTarget)
         if (clTarget != null) {
             fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand.typeDeaf(clTarget))
             println("command executed")
@@ -292,16 +300,49 @@ class TestCursorlessActions : BasePlatformTestCase() {
             println("queue assert")
             runInEdtAndWait {
                 println("Asserting in EDT...")
-                TestCase.assertEquals("println", fixture.editor.selectionModel.selectedText)
-                TestCase.assertEquals(
+                assertEquals("println", fixture.editor.selectionModel.selectedText)
+                assertEquals(
                     targetRange.startOffset(fixture.editor),
                     fixture.editor.selectionModel.selectionStart
                 )
-                TestCase.assertEquals(
+                assertEquals(
                     targetRange.endOffset(fixture.editor),
                     fixture.editor.selectionModel.selectionEnd
                 )
             }
+        }
+    }
+
+
+    @Test
+    fun testGetText() {
+        val fixture = mainJavaFixture()
+//      target the main method, expect a default hat over 'm'
+        val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 3, 23, 3, 27)
+        println("target: $targetRange")
+        val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
+        val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
+        assertNotNull(clTarget)
+        if (clTarget != null) {
+            val clCommand = "take " + clTarget.spokenForm()
+            println("command: $clCommand")
+            val refCountBefore = fixture.appService.jsDriver.runtime.referenceCount
+
+            val res = fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand.getText(clTarget))
+            println("command executed")
+            assertNull(res.error)
+            assertNotNull(res.returnValue)
+            if (res.returnValue is JsonArray) {
+                val returnValue = res.returnValue as JsonArray
+                assertEquals(1, returnValue.size)
+                assertEquals("main", returnValue[0].jsonPrimitive.content)
+            } else {
+                fail("Expected JsonArray")
+            }
+
+            val refCountAfter = fixture.appService.jsDriver.runtime.referenceCount
+            TestCase.assertEquals(refCountBefore, refCountAfter)
+
         }
     }
 

@@ -1,6 +1,7 @@
 package com.github.asoee.cursorlessjetbrains.commandserver.file
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class CommandServerResponse(
@@ -13,5 +14,5 @@ data class CommandServerResponse(
 
 @Serializable
 data class TalonCommandReponse(
-    val returnValue: String?,
+    val returnValue: JsonElement?,
 )

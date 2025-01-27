@@ -56,6 +56,20 @@ class EditNewLineAfterActionDescriptor(
     override val target: PartialTargetDescriptor,
 ) : SimpleActionDescriptor()
 
+@Serializable
+@SerialName("getText")
+class GetTextActionDescriptor(
+    val target: PartialTargetDescriptor,
+    val options: GetTextActionOptions?,
+) : ActionDescriptor
+
+@Serializable
+@SerialName("GetTextActionOptions")
+class GetTextActionOptions(
+    val showDecorations: Boolean?,
+    val ensureSingleTarget: Boolean?,
+)
+
 
 @Serializable
 sealed class BringMoveActionDescriptor : ActionDescriptor {
