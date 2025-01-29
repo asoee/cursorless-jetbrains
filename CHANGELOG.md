@@ -15,6 +15,8 @@
 - Load ICU and WASM files from plugin dir, instead of extracting to temp dir.
   This should reduce startup time, and give less clutter in temp dir.
 - Reduce logging from JS engine.
+- Re-enable cursorless actions on readonly files, to enable selection.
+  Commands that changes the file will still fail.
 
 ## [0.0.9] - 2025-01-10
 

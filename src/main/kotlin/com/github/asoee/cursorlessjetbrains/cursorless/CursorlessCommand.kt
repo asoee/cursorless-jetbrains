@@ -104,6 +104,23 @@ class CursorlessCommand(val command: String, val target: CursorlessTarget) {
 
         }
 
+        fun change(source: CursorlessTarget): CommandV7 {
+            return CommandV7(
+                version = 7,
+                spokenFormat = "change " + source.spokenForm(),
+                usePrePhraseSnapshot = false,
+                action = ClearAndSetSelectionActionDescriptor(
+                    target = PartialPrimitiveTargetDescriptor(
+                        mark = DecoratedSymbolMark(
+                            symbolColor = source.color,
+                            character = source.letter,
+                        ),
+                        modifiers = emptyList()
+                    )
+                )
+            )
+        }
+
         fun drink(source: CursorlessTarget): CommandV7 {
             return CommandV7(
                 version = 7,

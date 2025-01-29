@@ -7,6 +7,7 @@ import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessRange
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessTarget
 import com.github.asoee.cursorlessjetbrains.cursorless.HatsFormat
 import com.github.asoee.cursorlessjetbrains.services.TalonApplicationService
+import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Editor
@@ -310,6 +311,76 @@ class TestCursorlessActions : BasePlatformTestCase() {
                     fixture.editor.selectionModel.selectionEnd
                 )
             }
+        }
+    }
+
+    @Test
+    fun testTakeReadonly() {
+        val fixture = mainJavaFixture()
+        runInEdtAndWait {
+            WriteAction.runAndWait<Throwable> {
+                fixture.psiFile.virtualFile.isWritable = false
+            }
+        }
+
+        val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
+        assertNotEmpty(editorHats.values)
+
+//      target the println call in visual line 5
+        val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 4, 19, 4, 26)
+        println("target: $targetRange")
+        val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
+        assertNotNull(clTarget)
+        if (clTarget != null) {
+            val res = fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand.takeSingle(clTarget))
+            println("command executed")
+
+            assertNull(res.error)
+            assertNull(res.returnValue)
+
+            runBlocking {
+                delay(150)
+            }
+
+            println("queue assert")
+            runInEdtAndWait {
+                println("Asserting in EDT...")
+                assertEquals("println", fixture.editor.selectionModel.selectedText)
+                assertEquals(
+                    targetRange.startOffset(fixture.editor),
+                    fixture.editor.selectionModel.selectionStart
+                )
+                assertEquals(
+                    targetRange.endOffset(fixture.editor),
+                    fixture.editor.selectionModel.selectionEnd
+                )
+            }
+        }
+    }
+
+    @Test
+    fun testChangeReadonly() {
+        val fixture = mainJavaFixture()
+        runInEdtAndWait {
+            WriteAction.runAndWait<Throwable> {
+                fixture.psiFile.virtualFile.isWritable = false
+            }
+        }
+
+        val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
+        assertNotEmpty(editorHats.values)
+
+//      target the println call in visual line 5
+        val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 4, 19, 4, 26)
+        println("target: $targetRange")
+        val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
+        assertNotNull(clTarget)
+        if (clTarget != null) {
+            val res = fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand.change(clTarget))
+
+            TestCase.assertFalse(res.success)
+            assertNotNull(res.error)
+            assertNull(res.returnValue)
         }
     }
 

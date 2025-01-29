@@ -200,7 +200,10 @@ tasks {
 
     runIde {
         jvmArgumentProviders += CommandLineArgumentProvider {
-            listOf("-Dtalon.http.port=8666")
+            listOf(
+                "-Dtalon.http.port=8666",
+//                "-XX:StartFlightRecording:filename=recording.jfr,duration=30s"
+            )
         }
     }
 

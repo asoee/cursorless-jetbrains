@@ -5,7 +5,10 @@ import com.caoccao.javet.interop.V8Runtime
 import com.caoccao.javet.interop.options.NodeRuntimeOptions
 import com.caoccao.javet.javenode.JNEventLoop
 import com.caoccao.javet.javenode.enums.JNModuleType
+import com.caoccao.javet.values.V8Value
 import com.caoccao.javet.values.primitive.V8ValueString
+import com.caoccao.javet.values.reference.IV8ValuePromise
+import com.caoccao.javet.values.reference.V8ValueError
 import com.caoccao.javet.values.reference.V8ValuePromise
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCallback
 import com.github.asoee.cursorlessjetbrains.cursorless.DEFAULT_CONFIGURATION
@@ -186,8 +189,8 @@ open class JavetDriver {
     }
 
     public fun dumpMemoryInfo() {
-        val v8SharedMemoryStatistics = runtime.v8SharedMemoryStatistics
-        println("v8SharedMemoryStatistics: $v8SharedMemoryStatistics")
+//        val v8SharedMemoryStatistics = runtime.v8SharedMemoryStatistics
+//        println("v8SharedMemoryStatistics: $v8SharedMemoryStatistics")
 
         println("ref count: " + runtime.referenceCount)
         val v8HeapStatisticsFuture =
@@ -205,6 +208,9 @@ open class JavetDriver {
     @Synchronized
     fun execute(commands: List<JsonObject?>): ExecutionResult {
         var returnValue: JsonElement? = null
+        var success = false
+        var error: String? = null
+
         try {
             val json = Json.encodeToString(commands[0])
             logger.debug("command json $json")
@@ -225,7 +231,7 @@ open class JavetDriver {
             |       }
             |     } catch (e) {                      
             |       console.error("error in runCommand - " + e);
-            | //      throw e;
+            |       throw e;
             |     }
             |   } else {
             |     console.log("cursorless engine not available");
@@ -237,19 +243,14 @@ open class JavetDriver {
             | }
             | """.trimMargin()
 
+            val callback = PromiseCallback()
             runtime.getExecutor(js)
                 .execute<V8ValuePromise>().use { promise ->
+                    promise.register(callback)
                     eventLoop.await()
-                    if (promise.isFulfilled) {
-                        val v8String = promise.getResult<V8ValueString>()
-                        logger.info("v8String: $v8String")
-                        if (v8String.value.isEmpty()) {
-                            returnValue = null
-                        } else {
-                            val jsonElem = Json.decodeFromString<JsonElement>(v8String.value)
-                            returnValue = jsonElem
-                        }
-                    }
+                    success = callback.success
+                    returnValue = callback.result
+                    error = callback.error
                 }
         } catch (e: Throwable) {
             logger.debug("error in execute - $e")
@@ -261,8 +262,9 @@ open class JavetDriver {
             return ExecutionResult(false, null, joinedCause)
         }
         logger.debug("returnValue: $returnValue")
-        return ExecutionResult(true, returnValue, null)
-
+        gc()
+        dumpMemoryInfo()
+        return ExecutionResult(success, returnValue, error)
     }
 
     @Synchronized
@@ -430,3 +432,52 @@ data class ExecutionResult(
 data class ActionResponse(
     val returnValue: String?,
 )
+
+class PromiseCallback : IV8ValuePromise.IListener {
+
+    var logger = logger<PromiseCallback>()
+
+    var success: Boolean = false
+    var result: JsonElement? = null
+    var error: String? = null
+
+    override fun onCatch(v8Value: V8Value?) {
+        success = false
+        if (v8Value is V8ValueError) {
+            val v8ValueError = v8Value as V8ValueError
+            logger.warn("error in execute - $v8ValueError")
+        }
+    }
+
+    override fun onFulfilled(v8Value: V8Value?) {
+        success = true
+        if (v8Value == null) {
+            return
+        } else
+            if (v8Value.isNullOrUndefined) {
+                result = null
+            } else if (v8Value is V8ValueString) {
+                val v8String = v8Value as V8ValueString
+                logger.debug("v8String: $v8String")
+                if (v8String.value.isEmpty()) {
+                    result = null
+                } else {
+                    val jsonElem = Json.decodeFromString<JsonElement>(v8String.value)
+                    result = jsonElem
+                }
+            }
+    }
+
+    override fun onRejected(v8Value: V8Value?) {
+        success = false
+        if (v8Value is V8ValueError) {
+            val v8ValueError = v8Value as V8ValueError
+            logger.warn("error in execute - $v8ValueError")
+            error = v8ValueError.message
+        } else if (v8Value is V8ValueString) {
+            val v8ValueString = v8Value as V8ValueString
+            logger.warn("error in execute - $v8ValueString")
+            error = v8ValueString.value
+        }
+    }
+}
