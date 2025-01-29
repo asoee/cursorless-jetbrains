@@ -11423,6 +11423,10 @@ var JetbrainsEditor = class {
     }
   }
   edit(edits) {
+    if (!this.isEditable) {
+      console.log("Editor is not editable.");
+      return Promise.reject("Editor is not editable");
+    }
     jetbrainsPerformEdits(this.client, this.ide, this.document, this.id, edits);
     return Promise.resolve(true);
   }
@@ -11665,11 +11669,7 @@ var JetbrainsIDE = class {
   }
   getEditableTextEditor(editor) {
     if (editor instanceof JetbrainsEditor) {
-      if (editor.isEditable) {
-        return editor;
-      } else {
-        throw Error(`Editor is not editable: ${editor}`);
-      }
+      return editor;
     }
     throw Error(`Unsupported text editor type: ${editor}`);
   }
