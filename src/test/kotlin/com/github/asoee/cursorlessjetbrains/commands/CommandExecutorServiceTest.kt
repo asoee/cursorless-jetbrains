@@ -1,6 +1,6 @@
 package com.github.asoee.cursorlessjetbrains.commands
 
-import com.github.asoee.cursorlessjetbrains.services.TalonApplicationService
+import com.github.asoee.cursorlessjetbrains.services.TalonProjectService
 import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Editor
@@ -132,16 +132,17 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
         val commandExecutorService: CommandExecutorService,
         val project: Project,
         val editor: Editor,
-        val appService: TalonApplicationService
+        val projectService: TalonProjectService
     )
 
     private fun mainJavaFixture(): MainJavaFixture {
         val psiFile = myFixture.configureByFile("org/example/Main.java")
+        val project = psiFile.project
         val commandExecutorService = CommandExecutorService()
-        val appService = service<TalonApplicationService>()
+        val appService = project.service<TalonProjectService>()
         val editor = getEditorFromPsiFile(psiFile)
         assertNotNull(editor)
-        return MainJavaFixture(psiFile, commandExecutorService, psiFile.project, editor!!, appService)
+        return MainJavaFixture(psiFile, commandExecutorService, project, editor!!, appService)
     }
 
     private fun getEditorFromPsiFile(psiFile: PsiFile): Editor? {

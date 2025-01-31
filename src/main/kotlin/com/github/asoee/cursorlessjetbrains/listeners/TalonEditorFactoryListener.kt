@@ -1,6 +1,6 @@
 package com.github.asoee.cursorlessjetbrains.listeners
 
-import com.github.asoee.cursorlessjetbrains.services.TalonApplicationService
+import com.github.asoee.cursorlessjetbrains.services.TalonProjectService
 import com.github.asoee.cursorlessjetbrains.settings.TalonSettings
 import com.github.asoee.cursorlessjetbrains.ui.CursorlessContainer
 import com.intellij.openapi.components.service
@@ -14,19 +14,22 @@ class TalonEditorFactoryListener : EditorFactoryListener {
 
     override fun editorCreated(event: EditorFactoryEvent) {
 
-        val applicationService = service<TalonApplicationService>()
-        applicationService.editorCreated(event.editor)
-
-        addCursorlessContainerToEditor(event.editor)
+        event.editor.project?.let { project ->
+            val projectService = project.service<TalonProjectService>()
+            projectService.editorCreated(event.editor)
+            addCursorlessContainerToEditor(event.editor)
+        }
     }
 
     override fun editorReleased(event: EditorFactoryEvent) {
         super.editorReleased(event)
 
-        removeCursorlessContainerFromEditor(event.editor)
+        event.editor.project?.let { project ->
+            removeCursorlessContainerFromEditor(event.editor)
 
-        val applicationService = service<TalonApplicationService>()
-        applicationService.editorReleased(event.editor)
+            val applicationService = project.service<TalonProjectService>()
+            applicationService.editorReleased(event.editor)
+        }
     }
 }
 

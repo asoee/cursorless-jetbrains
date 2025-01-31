@@ -5,13 +5,17 @@ import com.github.asoee.cursorlessjetbrains.javet.JavetDriver
 import com.github.asoee.cursorlessjetbrains.listeners.*
 import com.github.asoee.cursorlessjetbrains.settings.TalonSettings
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.ex.EditorEventMulticasterEx
+import com.intellij.openapi.project.Project
 import kotlinx.coroutines.CoroutineScope
 
-class TalonApplicationService(cs: CoroutineScope) : Disposable {
+@Service(Service.Level.PROJECT)
+class TalonProjectService(private val project: Project, cs: CoroutineScope) : Disposable {
 
     var cursorlessEngine: CursorlessEngine
         get() {
@@ -24,6 +28,7 @@ class TalonApplicationService(cs: CoroutineScope) : Disposable {
         mutableMapOf<Editor, TalonVisibleAreaListener>()
     private val documentListeners =
         mutableMapOf<Editor, TalonDocumentListener>()
+    private val logger = logger<TalonProjectService>()
 
     val editorManager: EditorManager
     var jsDriver: JavetDriver
@@ -33,14 +38,14 @@ class TalonApplicationService(cs: CoroutineScope) : Disposable {
 
 
     init {
-        println("application service init")
+        logger.info("TalonProjectService service init")
 
         val driver = JavetDriver()
         driver.loadCursorless()
         this.jsDriver = driver
         this.cursorlessEngine = CursorlessEngine(driver)
         this.editorManager = EditorManager(cursorlessEngine, this, cs)
-        this.focusChangeListener = TalonFocusChangeListener(editorManager)
+        this.focusChangeListener = TalonFocusChangeListener(editorManager, project)
 
         // https://intellij-support.jetbrains.com/hc/en-us/community/posts/4578776718354-How-do-I-listen-for-editor-focus-events-
         val m = EditorFactory.getInstance()
@@ -49,13 +54,17 @@ class TalonApplicationService(cs: CoroutineScope) : Disposable {
 
         settingsUpdated(TalonSettings.instance.state)
 
-        println("reloading all")
+        logger.info("reloading all")
         this.editorManager.reloadAllEditors()
-        println("reloaded all")
+        logger.info("reloaded all")
+    }
+
+    fun onProjectOpened() {
+        logger.info("TalonProjectService project opened")
     }
 
     fun editorCreated(e: Editor) {
-        println("editor created...")
+        logger.info("editor created...")
 
         editorManager.editorCreated(e)
 
@@ -78,7 +87,7 @@ class TalonApplicationService(cs: CoroutineScope) : Disposable {
 
 
     override fun dispose() {
-        thisLogger().info("Disposing TalonApplicationService")
+        logger.info("Disposing TalonProjectService")
         jsDriver.close()
 
     }
@@ -130,6 +139,7 @@ class TalonApplicationService(cs: CoroutineScope) : Disposable {
 
         val colorPenalties = settings.hatColorSettings
             .associate { it.colorName to it.penalty }
-        cursorlessEngine.setHatColorPenalties(colorPenalties)    }
+        cursorlessEngine.setHatColorPenalties(colorPenalties)
+    }
 
 }

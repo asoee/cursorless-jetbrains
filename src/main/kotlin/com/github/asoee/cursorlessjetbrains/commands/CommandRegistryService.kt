@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project
 
 typealias CommandFactoryFunction = (project: Project, List<String>) -> VcCommand?
 
-@Service
+@Service(Service.Level.PROJECT)
 class CommandRegistryService {
 
     private val commands = mutableMapOf<String, CommandFactoryFunction>()

@@ -22,7 +22,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import java.io.File
-import java.nio.file.Files
 import kotlin.io.path.absolutePathString
 
 
@@ -34,7 +33,6 @@ open class JavetDriver {
     private val ideClientCallback = IdeClientCallback()
     val runtime: V8Runtime
     val eventLoop: JNEventLoop
-    private val wasmDir: File = Files.createTempDirectory("cursorless-treesitter-wasm").toFile()
 
     init {
         initIcuDataDir()

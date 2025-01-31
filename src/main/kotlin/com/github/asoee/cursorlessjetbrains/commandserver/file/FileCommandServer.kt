@@ -1,9 +1,10 @@
 package com.github.asoee.cursorlessjetbrains.commandserver.file
 
 import com.github.asoee.cursorlessjetbrains.javet.ExecutionResult
-import com.github.asoee.cursorlessjetbrains.services.TalonApplicationService
+import com.github.asoee.cursorlessjetbrains.services.TalonProjectService
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.BufferedReader
@@ -86,10 +87,10 @@ class FileCommandServer {
         return output.toString()
     }
 
-    fun checkAndHandleFileRquest() {
+    fun checkAndHandleFileRquest(project: Project) {
         val requestPath = commandServerDir.resolve("request.json")
         if (requestPath.exists()) {
-            readAndHandleFileRquest(requestPath)
+            readAndHandleFileRquest(requestPath, project)
         }
     }
 
@@ -103,11 +104,11 @@ class FileCommandServer {
         }
     }
 
-    private fun readAndHandleFileRquest(fullPath: Path?) {
+    private fun readAndHandleFileRquest(fullPath: Path?, project: Project) {
         fullPath?.readText().let {
             logger.debug("File content: $it")
             val request = Json.decodeFromString<CommandServerRequest>(it!!)
-            val result = handleRequest(request)
+            val result = handleRequest(request, project)
             if (result.success) {
                 val response = CommandServerResponse(
                     request.uuid,
@@ -136,9 +137,9 @@ class FileCommandServer {
         logger.info("'Wrote response'...$responseJson")
     }
 
-    private fun handleRequest(request: CommandServerRequest): ExecutionResult {
+    private fun handleRequest(request: CommandServerRequest, project: Project): ExecutionResult {
         logger.info("Handling request..." + request.commandId + " " + request.args + " " + request.uuid)
-        val service = service<TalonApplicationService>()
+        val service = project.service<TalonProjectService>()
         val executionResult = service.jsDriver.execute(request.args)
         return executionResult
     }

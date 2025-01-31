@@ -9,19 +9,17 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService
-                serviceImplementation="com.github.asoee.cursorlessjetbrains.services.TalonApplicationService"/>
-        <applicationService
-                serviceImplementation="com.github.asoee.cursorlessjetbrains.services.FileCommandServerService"/>
 
         <editorFactoryListener
                 implementation="com.github.asoee.cursorlessjetbrains.listeners.TalonEditorFactoryListener"/>
 
         <notificationGroup id="vc-idea" displayType="BALLOON"/>
 
-
         <applicationService
                 serviceImplementation="com.github.asoee.cursorlessjetbrains.settings.TalonSettings"/>
+
+        <postStartupActivity
+                implementation="com.github.asoee.cursorlessjetbrains.listeners.TalonProjectActivity"/>
 
         <applicationConfigurable
                 parentId="tools"
@@ -51,17 +49,11 @@
                 description="Toggle cursorless hats"/>
     </actions>
 
-    <applicationListeners>
-        <listener class="com.github.asoee.cursorlessjetbrains.listeners.MyApplicationActivationListener"
-                  topic="com.intellij.openapi.application.ApplicationActivationListener"/>
-        <listener
-                class="com.github.asoee.cursorlessjetbrains.listeners.TalonAppLifecycleListener"
-                topic="com.intellij.ide.AppLifecycleListener"/>
+    <projectListeners>
         <listener
                 class="com.github.asoee.cursorlessjetbrains.settings.TalonSettingsChangeListener"
                 topic="com.github.asoee.cursorlessjetbrains.settings.TalonSettingsListener"/>
-
-    </applicationListeners>
+    </projectListeners>
 
 
 </idea-plugin>
