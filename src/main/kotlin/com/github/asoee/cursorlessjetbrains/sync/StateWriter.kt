@@ -1,6 +1,5 @@
 package com.github.asoee.cursorlessjetbrains.sync
 
-import com.github.asoee.cursorlessjetbrains.util.editorLanguage
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -8,6 +7,8 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.IdeFocusManager
+import com.intellij.psi.PsiFile
+import com.github.asoee.cursorlessjetbrains.util.editorLanguage as editorLanguage1
 
 fun getProject(): Project? {
     return IdeFocusManager.findInstance().lastFocusedFrame?.project
@@ -21,7 +22,7 @@ fun getFileEditorManager(): FileEditorManager? {
     return getProject()?.let { FileEditorManager.getInstance(it) }
 }
 
-fun serializeEditor(editor: Editor, editorId: String): EditorState {
+fun serializeEditor(editor: Editor, editorId: String, psiFile: PsiFile): EditorState {
 
     val edtState = ReadAction.compute<EditorState, Throwable> {
 
@@ -41,7 +42,7 @@ fun serializeEditor(editor: Editor, editorId: String): EditorState {
         val selections =
             editor.caretModel.caretsAndSelections.map { selectionFromCaretState(editor, it) }
 
-        val language = editorLanguage(editor) ?: "plaintext"
+        val language = editorLanguage1(psiFile) ?: "plaintext"
 
         val visibleRange = editor.calculateVisibleRange()
         val startLine = editor.offsetToLogicalPosition(visibleRange.startOffset).line

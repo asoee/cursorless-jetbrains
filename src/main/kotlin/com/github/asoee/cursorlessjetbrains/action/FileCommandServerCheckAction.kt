@@ -13,8 +13,12 @@ class FileCommandServerCheckAction : AnAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
         logger.info("FileCommandServerCheckAction triggered")
+        if (e.project == null) {
+            logger.info("No project found command server check action")
+            return
+        }
         runBackgroundableTask("Talon command server", e.project) {
-            service<FileCommandServerService>().commandServer.checkAndHandleFileRquest()
+            service<FileCommandServerService>().commandServer.checkAndHandleFileRquest(e.project!!)
         }
     }
 }

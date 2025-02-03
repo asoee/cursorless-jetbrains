@@ -4,6 +4,7 @@ import com.intellij.lang.Language
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.util.elementType
 
 val methodTypes = listOf(
@@ -63,5 +64,9 @@ fun editorLanguage(editor: Editor): String? {
     val psiFile =
         PsiDocumentManager.getInstance(editor.project!!)
             .getPsiFile(editor.document)
+    return editorLanguage(psiFile)
+}
+
+fun editorLanguage(psiFile: PsiFile?): String? {
     return psiFile?.language?.id?.lowercase()
 }

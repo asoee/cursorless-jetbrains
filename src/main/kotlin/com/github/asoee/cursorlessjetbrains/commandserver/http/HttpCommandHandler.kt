@@ -55,10 +55,11 @@ class HttpCommandHandler : HttpHandler {
     }
 
     private fun handleRequest(request: CommandRequest): String {
-        val registryService = service<CommandRegistryService>()
+        val project = request.project
+        val registryService = project.service<CommandRegistryService>()
         val command = registryService.getCommand(request)
 
-        val executorService = service<CommandExecutorService>()
+        val executorService = project.service<CommandExecutorService>()
         if (command != null) {
             return executorService.execute(command)
         } else {

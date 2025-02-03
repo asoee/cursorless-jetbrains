@@ -6,7 +6,7 @@ import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCommand
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessRange
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessTarget
 import com.github.asoee.cursorlessjetbrains.cursorless.HatsFormat
-import com.github.asoee.cursorlessjetbrains.services.TalonApplicationService
+import com.github.asoee.cursorlessjetbrains.services.TalonProjectService
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.CaretState
@@ -74,14 +74,14 @@ class TestCursorlessActions : BasePlatformTestCase() {
         if (clTarget != null) {
             val clCommand = "take " + clTarget.spokenForm()
             println("command: $clCommand")
-            val refCountBefore = fixture.appService.jsDriver.runtime.referenceCount
+            val refCountBefore = fixture.projectService.jsDriver.runtime.referenceCount
 
-            val res = fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand.takeSingle(clTarget))
+            val res = fixture.projectService.cursorlessEngine.executeCommand(CursorlessCommand.takeSingle(clTarget))
             println("command executed")
             assertNull(res.error)
             assertNull(res.returnValue)
 
-            val refCountAfter = fixture.appService.jsDriver.runtime.referenceCount
+            val refCountAfter = fixture.projectService.jsDriver.runtime.referenceCount
             TestCase.assertEquals(refCountBefore, refCountAfter)
 
             runBlocking {
@@ -125,7 +125,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
             val commandV7 = CursorlessCommand.bringImplicit(clTarget)
             println("clTarget: $clTarget")
 
-            fixture.appService.cursorlessEngine.executeCommand(commandV7)
+            fixture.projectService.cursorlessEngine.executeCommand(commandV7)
 
             runBlocking {
                 delay(100)
@@ -155,7 +155,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
             val commandV7 = CursorlessCommand.changeEveryInstance(clTarget)
             println("clTarget: $clTarget")
 
-            fixture.appService.cursorlessEngine.executeCommand(commandV7)
+            fixture.projectService.cursorlessEngine.executeCommand(commandV7)
 
             runBlocking {
                 delay(50)
@@ -199,7 +199,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
             val commandV7 = CursorlessCommand.drink(clTarget)
             println("clTarget: $clTarget")
 
-            fixture.appService.cursorlessEngine.executeCommand(commandV7)
+            fixture.projectService.cursorlessEngine.executeCommand(commandV7)
 
             runBlocking {
                 delay(50)
@@ -238,7 +238,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
             val commandV7 = CursorlessCommand.pour(clTarget)
             println("clTarget: $clTarget")
 
-            fixture.appService.cursorlessEngine.executeCommand(commandV7)
+            fixture.projectService.cursorlessEngine.executeCommand(commandV7)
 
             runBlocking {
                 delay(150)
@@ -273,7 +273,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
         }
         var editorHats: HatsFormat? = null
         await.atMost(2, TimeUnit.SECONDS).until {
-            editorHats = fixture.appService.editorManager.getEditorHats(editor)
+            editorHats = fixture.projectService.editorManager.getEditorHats(editor)
             editorHats != null && editorHats!!.isNotEmpty()
         }
         return editorHats!!
@@ -291,7 +291,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
         val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
         assertNotNull(clTarget)
         if (clTarget != null) {
-            fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand.typeDeaf(clTarget))
+            fixture.projectService.cursorlessEngine.executeCommand(CursorlessCommand.typeDeaf(clTarget))
             println("command executed")
 
             runBlocking {
@@ -332,7 +332,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
         val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
         assertNotNull(clTarget)
         if (clTarget != null) {
-            val res = fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand.takeSingle(clTarget))
+            val res = fixture.projectService.cursorlessEngine.executeCommand(CursorlessCommand.takeSingle(clTarget))
             println("command executed")
 
             assertNull(res.error)
@@ -376,7 +376,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
         val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
         assertNotNull(clTarget)
         if (clTarget != null) {
-            val res = fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand.change(clTarget))
+            val res = fixture.projectService.cursorlessEngine.executeCommand(CursorlessCommand.change(clTarget))
 
             TestCase.assertFalse(res.success)
             assertNotNull(res.error)
@@ -397,9 +397,9 @@ class TestCursorlessActions : BasePlatformTestCase() {
         if (clTarget != null) {
             val clCommand = "take " + clTarget.spokenForm()
             println("command: $clCommand")
-            val refCountBefore = fixture.appService.jsDriver.runtime.referenceCount
+            val refCountBefore = fixture.projectService.jsDriver.runtime.referenceCount
 
-            val res = fixture.appService.cursorlessEngine.executeCommand(CursorlessCommand.getText(clTarget))
+            val res = fixture.projectService.cursorlessEngine.executeCommand(CursorlessCommand.getText(clTarget))
             println("command executed")
             assertNull(res.error)
             assertNotNull(res.returnValue)
@@ -411,7 +411,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
                 fail("Expected JsonArray")
             }
 
-            val refCountAfter = fixture.appService.jsDriver.runtime.referenceCount
+            val refCountAfter = fixture.projectService.jsDriver.runtime.referenceCount
             TestCase.assertEquals(refCountBefore, refCountAfter)
 
         }
@@ -425,7 +425,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
     ): CursorlessTarget {
         var target: CursorlessTarget? = null
         await.atMost(2, TimeUnit.SECONDS).until {
-            var editorHats = fixture.appService.editorManager.getEditorHats(editor)
+            var editorHats = fixture.projectService.editorManager.getEditorHats(editor)
             if (editorHats != null && editorHats!!.isNotEmpty()) {
                 target = findHatForRange(editor, editorHats, range)
                 target != null
@@ -469,7 +469,8 @@ class TestCursorlessActions : BasePlatformTestCase() {
     private fun mainJavaFixture(): MainJavaFixture {
         val psiFile = myFixture.configureByFile("org/example/Main.java")
         val commandExecutorService = CommandExecutorService()
-        val appService = service<TalonApplicationService>()
+        val project = psiFile.project
+        val appService = project.service<TalonProjectService>()
         val editor = getEditorFromPsiFile(psiFile)
         assertNotNull(editor)
         runInEdtAndWait {
@@ -477,7 +478,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
             appService.editorManager.reloadAllEditors()
         }
 
-        return MainJavaFixture(psiFile, commandExecutorService, psiFile.project, editor!!, appService)
+        return MainJavaFixture(psiFile, commandExecutorService, project, editor!!, appService)
     }
 
     private fun getEditorFromPsiFile(psiFile: PsiFile): Editor? {

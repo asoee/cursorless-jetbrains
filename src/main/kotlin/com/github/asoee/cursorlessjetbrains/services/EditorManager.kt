@@ -25,6 +25,8 @@ import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiFile
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.debounce
@@ -92,6 +94,10 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
             logger.info("editorChanged : Editor is disposed")
             return
         }
+        if (editor.project == null) {
+            logger.info("editorChanged : Editor project is null")
+            return
+        }
         ensureEditorIdSet(editor)
         val editorId = editorIds[editor]!!
         val debouncer = debouncerById(editorId)
@@ -102,30 +108,41 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
 
     private fun editorDidChange(editor: Editor) {
         emitScope.launch(emitDispatcher) {
+            callEngineWithEditorState(editor) { editorState -> cursorlessEngine.editorChanged(editorState) }
+            return@launch
+        }
+    }
+
+    private fun callEngineWithEditorState(editor: Editor, engineCall: (EditorState) -> Unit) {
+        if (editor.isDisposed) {
+            logger.info("Editor is disposed")
+            return
+        }
+
+        val psiFile = ReadAction.compute<PsiFile, Throwable> {
             if (editor.isDisposed) {
                 logger.info("Editor is disposed")
-                return@launch
+                return@compute null
             }
+            PsiDocumentManager.getInstance(editor.project!!)
+                .getPsiFile(editor.document)
+        }
 
-            var edtState: EditorState? = null
-            ApplicationManager.getApplication().invokeAndWait {
-                edtState = ReadAction.compute<EditorState, Throwable> {
-                    if (editor.isDisposed) {
-                        logger.info("Editor is disposed")
-                        return@compute null
-                    }
-                    ensureEditorIdSet(editor)
-                    val editorId = editorIds[editor]!!
-//                logger.debug("Editor did change " + editorId)
-                    val editorState = serializeEditor(editor, editorId)
-//                logger.debug("Editor state " + editorState)
-                    editorState
+        var edtState: EditorState? = null
+        ApplicationManager.getApplication().invokeAndWait {
+            edtState = ReadAction.compute<EditorState, Throwable> {
+                if (editor.isDisposed) {
+                    logger.info("Editor is disposed")
+                    return@compute null
                 }
+                ensureEditorIdSet(editor)
+                val editorId = editorIds[editor]!!
+                val editorState = serializeEditor(editor, editorId, psiFile)
+                editorState
             }
-            edtState?.let {
-//            logger.debug("trigger Editor state changed")
-                cursorlessEngine.editorChanged(it)
-            }
+        }
+        edtState?.let {
+            engineCall(it)
         }
     }
 
@@ -228,11 +245,9 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
     }
 
     fun editorCreated(editor: Editor) {
-        ensureEditorIdSet(editor)
-        val editorId = editorIds[editor]!!
-        val editorState = serializeEditor(editor, editorId)
-        dispatchScope.launch {
-            cursorlessEngine.editorCreated(editorState)
+        emitScope.launch(emitDispatcher) {
+            callEngineWithEditorState(editor) { editorState -> cursorlessEngine.editorCreated(editorState) }
+            return@launch
         }
     }
 
