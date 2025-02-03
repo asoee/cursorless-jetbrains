@@ -17,6 +17,8 @@
 - Reduce logging from JS engine.
 - Re-enable cursorless actions on readonly files, to enable selection.
   Commands that changes the file will still fail.
+- Use one cursorless engine per project, instead of a global one. This avoids unintended edits in background
+  projects, and give more stable hats when multiple projects are open. At the cost of extra memory usage.
 
 ## [0.0.9] - 2025-01-10
 
