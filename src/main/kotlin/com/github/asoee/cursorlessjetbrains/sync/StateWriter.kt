@@ -22,7 +22,7 @@ fun getFileEditorManager(): FileEditorManager? {
     return getProject()?.let { FileEditorManager.getInstance(it) }
 }
 
-fun serializeEditor(editor: Editor, editorId: String, psiFile: PsiFile): EditorState {
+fun serializeEditor(editor: Editor, editorId: String, psiFile: PsiFile?): EditorState {
 
     val edtState = ReadAction.compute<EditorState, Throwable> {
 
