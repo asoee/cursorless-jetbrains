@@ -119,13 +119,17 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
             return
         }
 
-        val psiFile = ReadAction.compute<PsiFile, Throwable> {
+        val psiFile: PsiFile? = ReadAction.compute<PsiFile?, Throwable> {
             if (editor.isDisposed) {
                 logger.info("Editor is disposed")
                 return@compute null
             }
             PsiDocumentManager.getInstance(editor.project!!)
                 .getPsiFile(editor.document)
+        }
+
+        if (psiFile == null) {
+            logger.info("PsiFile is null")
         }
 
         var edtState: EditorState? = null
