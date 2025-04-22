@@ -42,21 +42,7 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
-    implementation("com.caoccao.javet:javet:4.1.1") // Core (Must-have)
-//    implementation("com.caoccao.javet:javet-node-linux-arm64:4.1.1")
-//    implementation("com.caoccao.javet:javet-node-linux-x86_64:4.1.1")
-//    implementation("com.caoccao.javet:javet-node-macos-arm64:4.1.1")
-//    implementation("com.caoccao.javet:javet-node-macos-x86_64:4.1.1")
-    implementation("com.caoccao.javet:javet-node-windows-x86_64-i18n:4.1.1")
-//    implementation("com.caoccao.javet:javet-v8-linux-arm64:4.1.1")
-    implementation("com.caoccao.javet:javet-node-linux-x86_64-i18n:4.1.1")
-//    implementation("com.caoccao.javet:javet-v8-macos-arm64:4.1.1")
-//    implementation("com.caoccao.javet:javet-v8-macos-x86_64:4.1.1")
-//    implementation("com.caoccao.javet:javet-v8-windows-x86_64:4.1.1")
-
-    implementation("com.caoccao.javet:javet-node-macos-x86_64-i18n:4.1.1")
-    implementation("com.caoccao.javet:javet-node-macos-arm64-i18n:4.1.1")
-
+    implementation(libs.bundles.javet)
 
     implementation("com.caoccao.javet:javenode:0.8.0")
 
@@ -112,7 +98,8 @@ intellijPlatform {
 
         ideaVersion {
             sinceBuild = providers.gradleProperty("pluginSinceBuild")
-            untilBuild = providers.gradleProperty("pluginUntilBuild")
+//            untilBuild = providers.gradleProperty("pluginUntilBuild")
+            untilBuild = provider { null }
         }
     }
 

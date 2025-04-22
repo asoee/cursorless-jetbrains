@@ -1,16 +1,25 @@
 [versions]
 # libraries
 junit = "4.13.2"
+javet = "4.1.1"
 
 # plugins
 changelog = "2.2.1"
-intelliJPlatform = "2.1.0"
-kotlin = "1.9.25"
+intelliJPlatform = "2.5.0"
+kotlin = "2.1.20"
 kover = "0.8.3"
 qodana = "2024.2.3"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+javet = { group = "com.caoccao.javet", name = "javet", version.ref = "javet" }
+javet-node-windows-x86_64-i18n = { group = "com.caoccao.javet", name = "javet-node-windows-x86_64-i18n", version.ref = "javet" }
+javet-node-linux-x86_64-i18n = { group = "com.caoccao.javet", name = "javet-node-linux-x86_64-i18n", version.ref = "javet" }
+javet-node-macos-x86_64-i18n = { group = "com.caoccao.javet", name = "javet-node-macos-x86_64-i18n", version.ref = "javet" }
+javet-node-macos-arm64-i18n = { group = "com.caoccao.javet", name = "javet-node-macos-arm64-i18n", version.ref = "javet" }
+
+[bundles]
+javet = ["javet", "javet-node-windows-x86_64-i18n", "javet-node-linux-x86_64-i18n", "javet-node-macos-x86_64-i18n", "javet-node-macos-arm64-i18n"]
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
