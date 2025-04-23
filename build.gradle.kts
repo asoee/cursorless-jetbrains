@@ -38,29 +38,11 @@ repositories {
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
     testImplementation(libs.junit)
-    testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
+    testImplementation(libs.awaitility)
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-
-    implementation("com.caoccao.javet:javet:4.1.1") // Core (Must-have)
-//    implementation("com.caoccao.javet:javet-node-linux-arm64:4.1.1")
-//    implementation("com.caoccao.javet:javet-node-linux-x86_64:4.1.1")
-//    implementation("com.caoccao.javet:javet-node-macos-arm64:4.1.1")
-//    implementation("com.caoccao.javet:javet-node-macos-x86_64:4.1.1")
-    implementation("com.caoccao.javet:javet-node-windows-x86_64-i18n:4.1.1")
-//    implementation("com.caoccao.javet:javet-v8-linux-arm64:4.1.1")
-    implementation("com.caoccao.javet:javet-node-linux-x86_64-i18n:4.1.1")
-//    implementation("com.caoccao.javet:javet-v8-macos-arm64:4.1.1")
-//    implementation("com.caoccao.javet:javet-v8-macos-x86_64:4.1.1")
-//    implementation("com.caoccao.javet:javet-v8-windows-x86_64:4.1.1")
-
-    implementation("com.caoccao.javet:javet-node-macos-x86_64-i18n:4.1.1")
-    implementation("com.caoccao.javet:javet-node-macos-arm64-i18n:4.1.1")
-
-
-    implementation("com.caoccao.javet:javenode:0.8.0")
-
-    implementation("com.github.weisj:jsvg:1.6.0")
+    implementation(libs.kotlinSerializationJson)
+    implementation(libs.bundles.javet)
+    implementation(libs.jsvg)
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
@@ -112,7 +94,8 @@ intellijPlatform {
 
         ideaVersion {
             sinceBuild = providers.gradleProperty("pluginSinceBuild")
-            untilBuild = providers.gradleProperty("pluginUntilBuild")
+//            untilBuild = providers.gradleProperty("pluginUntilBuild")
+            untilBuild = provider { null }
         }
     }
 
