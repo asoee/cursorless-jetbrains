@@ -6,7 +6,7 @@ javenode = "0.8.0"
 kotlin = "2.1.20"
 kover = "0.8.3"
 qodana = "2024.2.3"
-jsvg = "1.6.0"
+jsvg = "1.7.2"
 kotlin-serialization = "1.8.1"
 awaitility = "4.2.0"
 
