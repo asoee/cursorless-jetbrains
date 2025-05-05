@@ -233,26 +233,23 @@ class TestCursorlessActions : BasePlatformTestCase() {
 
         val clTarget = awaitTargetForRange(fixture, xmlEditor, targetRange)
 
-        if (clTarget != null) {
+        val commandV7 = CursorlessCommand.pour(clTarget)
+        println("clTarget: $clTarget")
 
-            val commandV7 = CursorlessCommand.pour(clTarget)
-            println("clTarget: $clTarget")
+        fixture.projectService.cursorlessEngine.executeCommand(commandV7)
 
-            fixture.projectService.cursorlessEngine.executeCommand(commandV7)
+        runBlocking {
+            delay(150)
+        }
 
-            runBlocking {
-                delay(150)
-            }
+        runInEdtAndWait {
+            val expectedFirst = "        "
+            assertEquals(expectedFirst, getTextFromLine(xmlEditor, 6))
 
-            runInEdtAndWait {
-                val expectedFirst = "        "
-                assertEquals(expectedFirst, getTextFromLine(xmlEditor, 6))
+            val carets = xmlEditor.caretModel.caretsAndSelections
+            assertEquals(1, carets.size)
 
-                val carets = xmlEditor.caretModel.caretsAndSelections
-                assertEquals(1, carets.size)
-
-                assertEquals(carets[0].caretPosition, LogicalPosition(6, 8))
-            }
+            assertEquals(carets[0].caretPosition, LogicalPosition(6, 8))
         }
     }
 
@@ -288,29 +285,29 @@ class TestCursorlessActions : BasePlatformTestCase() {
 //      target the println call in visual line 5
         val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 4, 19, 4, 26)
         println("target: $targetRange")
-        val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
+        val clTarget = awaitTargetForRange(fixture, fixture.editor, targetRange)
+
+
         assertNotNull(clTarget)
-        if (clTarget != null) {
-            fixture.projectService.cursorlessEngine.executeCommand(CursorlessCommand.typeDeaf(clTarget))
-            println("command executed")
+        fixture.projectService.cursorlessEngine.executeCommand(CursorlessCommand.typeDeaf(clTarget))
+        println("command executed")
 
-            runBlocking {
-                delay(150)
-            }
+        runBlocking {
+            delay(150)
+        }
 
-            println("queue assert")
-            runInEdtAndWait {
-                println("Asserting in EDT...")
-                assertEquals("println", fixture.editor.selectionModel.selectedText)
-                assertEquals(
-                    targetRange.startOffset(fixture.editor),
-                    fixture.editor.selectionModel.selectionStart
-                )
-                assertEquals(
-                    targetRange.endOffset(fixture.editor),
-                    fixture.editor.selectionModel.selectionEnd
-                )
-            }
+        println("queue assert")
+        runInEdtAndWait {
+            println("Asserting in EDT...")
+            assertEquals("println", fixture.editor.selectionModel.selectedText)
+            assertEquals(
+                targetRange.startOffset(fixture.editor),
+                fixture.editor.selectionModel.selectionStart
+            )
+            assertEquals(
+                targetRange.endOffset(fixture.editor),
+                fixture.editor.selectionModel.selectionEnd
+            )
         }
     }
 
