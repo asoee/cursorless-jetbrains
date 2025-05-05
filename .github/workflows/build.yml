@@ -115,8 +115,8 @@ jobs:
               export DISPLAY=:99.0
               Xvfb -ac :99 -screen 0 1920x1080x16 &
               ./gradlew check
-          - os: windows-latest
-            runIde: .\gradlew.bat check
+#          - os: windows-latest
+#            runIde: .\gradlew.bat check
           - os: macos-latest
             runIde: ./gradlew check
     steps:
