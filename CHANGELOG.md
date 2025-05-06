@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Intellij 2025 support.
+- updated dependencies
+
 ## [0.0.10] - 2025-02-03
 
 ### Fixed
