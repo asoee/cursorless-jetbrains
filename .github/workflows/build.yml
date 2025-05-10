@@ -150,7 +150,7 @@ jobs:
 
       # Upload the Kover report to CodeCov
       - name: Upload Code Coverage Report
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           name: codecov-${{ matrix.os }}.xml
           files: ${{ github.workspace }}/build/reports/kover/report.xml
