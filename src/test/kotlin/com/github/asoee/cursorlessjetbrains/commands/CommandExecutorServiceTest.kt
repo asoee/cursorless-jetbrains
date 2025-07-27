@@ -9,6 +9,8 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VfsUtil
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.runInEdtAndWait
@@ -18,6 +20,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.awt.datatransfer.StringSelection
+import java.nio.file.Paths
 
 //@TestDataPath("\$CONTENT_ROOT/src/test/testData")
 @RunWith(JUnit4::class)
@@ -25,6 +28,13 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
 
     override fun runInDispatchThread(): Boolean {
         return false
+    }
+
+    override fun setUp() {
+        super.setUp()
+        // Allow access to test data directory
+        val testDataPath = Paths.get(System.getProperty("user.dir"), "src", "test", "testData").toAbsolutePath().toString()
+        VfsRootAccess.allowRootAccess(myFixture.testRootDisposable, testDataPath)
     }
 
     @Test

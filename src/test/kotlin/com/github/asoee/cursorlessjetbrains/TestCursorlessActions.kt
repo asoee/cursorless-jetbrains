@@ -16,6 +16,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.EditorTestUtil
@@ -31,6 +32,7 @@ import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 
 
@@ -41,6 +43,13 @@ class TestCursorlessActions : BasePlatformTestCase() {
 
     override fun runInDispatchThread(): Boolean {
         return false
+    }
+
+    override fun setUp() {
+        super.setUp()
+        // Allow access to test data directory
+        val testDataPath = Paths.get(System.getProperty("user.dir"), "src", "test", "testData").toAbsolutePath().toString()
+        VfsRootAccess.allowRootAccess(myFixture.testRootDisposable, testDataPath)
     }
 
     @Test
@@ -265,12 +274,20 @@ class TestCursorlessActions : BasePlatformTestCase() {
     }
 
     private fun awaitHats(fixture: MainJavaFixture, editor: Editor): HatsFormat {
+        // Wait for the Cursorless system to initialize
         runBlocking {
-            delay(150)
+            delay(500)
         }
+        
+        // Ensure the editor is properly loaded and hats are generated
+        runInEdtAndWait {
+            fixture.projectService.editorManager.reloadAllEditors()
+        }
+        
         var editorHats: HatsFormat? = null
         await.atMost(2, TimeUnit.SECONDS).until {
             editorHats = fixture.projectService.editorManager.getEditorHats(editor)
+            println("Checking hats: ${editorHats?.size ?: "null"}")
             editorHats != null && editorHats!!.isNotEmpty()
         }
         return editorHats!!
@@ -473,6 +490,11 @@ class TestCursorlessActions : BasePlatformTestCase() {
         runInEdtAndWait {
             EditorTestUtil.setEditorVisibleSize(editor, 80, 20)
             appService.editorManager.reloadAllEditors()
+        }
+
+        // Give the Cursorless system time to initialize
+        runBlocking {
+            delay(100)
         }
 
         return MainJavaFixture(psiFile, commandExecutorService, project, editor!!, appService)

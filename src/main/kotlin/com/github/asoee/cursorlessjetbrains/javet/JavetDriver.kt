@@ -37,8 +37,11 @@ open class JavetDriver {
     init {
         initIcuDataDir()
 
+        val nodeOptions = NodeRuntimeOptions().apply {
+            setConsoleArguments(arrayOf("--experimental-vm-modules"))
+        }
         runtime = V8Host.getNodeI18nInstance()
-            .createV8Runtime()
+            .createV8Runtime(nodeOptions)
         eventLoop = JNEventLoop(runtime)
     }
 
@@ -95,6 +98,12 @@ open class JavetDriver {
             .setResourceName("./cursorless.js")
             .compileV8Module()
         module.executeVoid()
+        if (ideClientCallback.unhandledRejections.isNotEmpty()) {
+            val joinedCause = ideClientCallback.unhandledRejections.joinToString(",")
+            ideClientCallback.unhandledRejections.clear()
+            throw RuntimeException(joinedCause)
+        }
+
         if (runtime.containsV8Module("./cursorless.js")) {
             logger.debug("./cursorless.js is registered as a module.")
         }
@@ -113,6 +122,11 @@ open class JavetDriver {
             .setResourceName("./import.js")
             .executeVoid()
         eventLoop.await()
+        if (ideClientCallback.unhandledRejections.isNotEmpty()) {
+            val joinedCause = ideClientCallback.unhandledRejections.joinToString(",")
+            ideClientCallback.unhandledRejections.clear()
+            throw RuntimeException(joinedCause)
+        }
 
         val configuration = DEFAULT_CONFIGURATION
         val configurationJson = Json.encodeToString(configuration)
@@ -123,6 +137,7 @@ open class JavetDriver {
             | (async () => {    
             |   console.log("Cursorless/JS: activating plugin async");
             |   globalThis.configuration = globalThis.createJetbrainsConfiguration($configurationJson);
+            |   console.log("Cursorless/JS: configuration created");
             |   globalThis.ide = globalThis.createIDE(ideClient, globalThis.configuration);
             |   console.log("Cursorless/JS: ide created");
             |   globalThis.plugin = createPlugin(ideClient, ide);
@@ -135,6 +150,11 @@ open class JavetDriver {
         runtime.getExecutor(activateJs)
             .executeVoid()
         eventLoop.await()
+        if (ideClientCallback.unhandledRejections.isNotEmpty()) {
+            val joinedCause = ideClientCallback.unhandledRejections.joinToString(",")
+            ideClientCallback.unhandledRejections.clear()
+            throw RuntimeException(joinedCause)
+        }
 
     }
 
