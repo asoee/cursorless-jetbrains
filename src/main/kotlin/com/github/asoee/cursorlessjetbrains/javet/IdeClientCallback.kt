@@ -5,6 +5,8 @@ import com.github.asoee.cursorlessjetbrains.cursorless.*
 import com.github.asoee.cursorlessjetbrains.sync.HatRange
 import com.intellij.openapi.diagnostic.logger
 import kotlinx.serialization.json.Json
+import java.io.File
+import java.nio.file.Files
 
 class IdeClientCallback {
 
@@ -164,6 +166,21 @@ class IdeClientCallback {
     fun unhandledRejection(cause: String) {
         logger.info("IdeClientCallback.unhandledRejection: $cause")
         unhandledRejections.add(cause)
+    }
+
+    @V8Function
+    fun readWasmFile(url: String): ByteArray {
+        logger.info("IdeClientCallback.readWasmFile: $url")
+        try {
+            val file = File(url)
+            if (!file.exists()) {
+                throw RuntimeException("WASM file not found: $url")
+            }
+            return Files.readAllBytes(file.toPath())
+        } catch (e: Exception) {
+            logger.error("Failed to read WASM file: $url", e)
+            throw RuntimeException("Failed to read WASM file: $url", e)
+        }
     }
 
 

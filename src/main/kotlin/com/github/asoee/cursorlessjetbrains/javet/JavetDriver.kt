@@ -37,8 +37,11 @@ open class JavetDriver {
     init {
         initIcuDataDir()
 
+        val nodeOptions = NodeRuntimeOptions().apply {
+            setConsoleArguments(arrayOf("--experimental-vm-modules"))
+        }
         runtime = V8Host.getNodeI18nInstance()
-            .createV8Runtime()
+            .createV8Runtime(nodeOptions)
         eventLoop = JNEventLoop(runtime)
     }
 
@@ -83,6 +86,76 @@ open class JavetDriver {
                     "};"
         ).executeVoid()
 
+        // Override WASM loading to use direct ByteArray approach
+        runtime.getExecutor(
+            "globalThis.readFileSync = function(filePath) {\n" +
+                    "  console.log('readFileSync called for:', filePath);\n" +
+                    "  return ideClient.readWasmFile(filePath);\n" +
+                    "};\n" +
+                    "// Override WebAssembly methods to use direct byte loading\n" +
+                    "const originalInstantiateStreaming = globalThis.WebAssembly.instantiateStreaming;\n" +
+                    "const originalCompileStreaming = globalThis.WebAssembly.compileStreaming; const originalInstantiate = globalThis.WebAssembly.instantiate; globalThis.WebAssembly.instantiate = function(module, imports) { const wasmImports = { env: { emscripten_get_now: globalThis.emscripten_get_now, ...((imports && imports.env) || {}) }, ...(imports || {}) }; return originalInstantiate(module, wasmImports); };\n" +
+                    "globalThis.WebAssembly.instantiateStreaming = async function(source, imports) {\n" +
+                    "  console.log('WebAssembly.instantiateStreaming called');\n" +
+                    "  if (typeof source === 'string' && source.includes('.wasm')) {\n" +
+                    "    const data = ideClient.readWasmFile(source);\n" +
+                    "    const wasmImports = { env: { emscripten_get_now: globalThis.emscripten_get_now, ...((imports && imports.env) || {}) }, ...(imports || {}) }; return globalThis.WebAssembly.instantiate(data, wasmImports);\n" +
+                    "  } else if (source && typeof source.then === 'function') {\n" +
+                    "    const response = await source;\n" +
+                    "    if (response && response.arrayBuffer) {\n" +
+                    "      const buffer = await response.arrayBuffer();\n" +
+                    "      const wasmImports2 = { env: { emscripten_get_now: globalThis.emscripten_get_now, ...((imports && imports.env) || {}) }, ...(imports || {}) }; return globalThis.WebAssembly.instantiate(buffer, wasmImports2);\n" +
+                    "    }\n" +
+                    "  }\n" +
+                    "  return originalInstantiateStreaming(source, imports);\n" +
+                    "};\n" +
+                    "globalThis.WebAssembly.compileStreaming = async function(source) {\n" +
+                    "  console.log('WebAssembly.compileStreaming called');\n" +
+                    "  if (typeof source === 'string' && source.includes('.wasm')) {\n" +
+                    "    const data = ideClient.readWasmFile(source);\n" +
+                    "    return globalThis.WebAssembly.compile(data);\n" +
+                    "  } else if (source && typeof source.then === 'function') {\n" +
+                    "    const response = await source;\n" +
+                    "    if (response && response.arrayBuffer) {\n" +
+                    "      const buffer = await response.arrayBuffer();\n" +
+                    "      return globalThis.WebAssembly.compile(buffer);\n" +
+                    "    }\n" +
+                    "  }\n" +
+                    "  return originalCompileStreaming(source);\n" +
+                    "};\n" +
+                    "globalThis.fetch = async function(url) {\n" +
+                    "  console.log('fetch called for:', url);\n" +
+                    "  if (url.includes('.wasm')) {\n" +
+                    "    const data = ideClient.readWasmFile(url);\n" +
+                    "    return {\n" +
+                    "      ok: true,\n" +
+                    "      arrayBuffer: () => Promise.resolve(data)\n" +
+                    "    };\n" +
+                    "  }\n" +
+                    "  throw new Error('fetch not implemented for non-WASM files');\n" +
+                    "};"
+        ).executeVoid()
+
+
+
+        // Setup minimal process object for compatibility
+        runtime.getExecutor(
+            "globalThis.process = { \n" +
+                    "  on: function() {}, \n" +
+                    "  versions: undefined,\n" +
+                    "  env: { NODE_ENV: 'production' }\n" +
+                    "};\n" +
+                    "globalThis.ENVIRONMENT_IS_NODE = false;\n" +
+                    "// Provide Emscripten runtime functions\n" +
+                    "globalThis.emscripten_get_now = function() {\n" +
+                    "  return performance.now ? performance.now() : Date.now();\n" +
+                    "};\n" +
+                    "// Ensure performance.now exists\n" +
+                    "if (!globalThis.performance) {\n" +
+                    "  globalThis.performance = { now: () => Date.now() };\n" +
+                    "};"
+        ).executeVoid()
+
         runtime.getExecutor(
             "process.on('unhandledRejection', (reason, promise) => {\n" +
                     "    console.error('Unhandled Rejection at:'+ promise+ 'reason:'+ reason);\n" +
@@ -114,6 +187,7 @@ open class JavetDriver {
             .executeVoid()
         eventLoop.await()
 
+
         val configuration = DEFAULT_CONFIGURATION
         val configurationJson = Json.encodeToString(configuration)
         val wasmPath = escapeString(wasmDir.absolutePath)
@@ -123,12 +197,20 @@ open class JavetDriver {
             | (async () => {    
             |   console.log("Cursorless/JS: activating plugin async");
             |   globalThis.configuration = globalThis.createJetbrainsConfiguration($configurationJson);
+            |   console.log("Cursorless/JS: configuration created");
             |   globalThis.ide = globalThis.createIDE(ideClient, globalThis.configuration);
             |   console.log("Cursorless/JS: ide created");
             |   globalThis.plugin = createPlugin(ideClient, ide);
             |   console.log("Cursorless/JS: plugin created");
+            |   // Provide WASM binary directly to avoid file loading issues
+            |   const wasmBinary = ideClient.readWasmFile("$wasmPath/tree-sitter.wasm");
+            |   console.log("Cursorless/JS: loaded WASM binary, size:", wasmBinary.length);
+            |   if (typeof Parser !== 'undefined' && Parser.init) {
+            |     await Parser.init({ wasmBinary: wasmBinary });
+            |     console.log("Cursorless/JS: Parser initialized with direct WASM binary");
+            |   }
             |   globalThis.engine = await globalThis.activate(plugin, "$wasmPath");
-            |   console.log("Cursorless/JS: plugin activated");
+            |   console.log("Cursorless/JS: engine activated with WASM");
             | })();
             | """.trimMargin()
         logger.debug(activateJs)
