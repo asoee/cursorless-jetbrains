@@ -44,6 +44,29 @@ open class JavetDriver {
         runtime = V8Host.getNodeI18nInstance()
             .createV8Runtime(nodeOptions)
         runtime.setV8ModuleResolver(JavetBuiltInModuleResolver())
+
+        // Set up a proper module environment with require and imports
+        runtime.getExecutor(
+            """
+            // Set up module environment - make standard Node.js globals available
+            const path = require('path');
+            const url = require('url');
+            const { createRequire } = require('module');
+            
+            // Set up ES module globals that aren't available by default in Node.js
+            globalThis.__dirname = process.cwd();
+            globalThis.__filename = path.join(process.cwd(), 'cursorless.js');
+            
+            // Make Node.js modules available globally for the patched module
+            globalThis.__nodeModules = {
+                'fs/promises': require('fs/promises'),
+                'module': require('module'),
+                'path': path,
+                'url': url
+            };
+        """.trimIndent()
+        ).executeVoid()
+
         eventLoop = JNEventLoop(runtime)
 
     }
@@ -75,7 +98,6 @@ open class JavetDriver {
 
         val wasmDir = resolveWasmDir()
         this.ideClientCallback.treesitterCallback = ClassPathQueryLoader()
-        this.ideClientCallback.wasmDir = wasmDir
 
         runtime.createV8ValueObject().use { v8ValueObject ->
             runtime.globalObject.set("ideClient", v8ValueObject)
@@ -87,6 +109,7 @@ open class JavetDriver {
         runtime.getExecutor(
             "process.on('unhandledRejection', (reason, promise) => {\n" +
                     "    console.error('Unhandled Rejection at:'+ promise+ 'reason:'+ reason);\n" +
+                    "    console.error('Stack trace:', reason.stack);\n" +
                     "    ideClient.unhandledRejection('' + reason + '/' + promise);\n" +
                     "});"
         ).executeVoid()
@@ -98,7 +121,21 @@ open class JavetDriver {
         ).executeVoid()
 
         val cursorlessJs = javaClass.getResource("/cursorless/cursorless.js")?.readText()
-        val module = runtime.getExecutor(cursorlessJs)
+
+        // Replace dynamic imports with references to pre-loaded global modules
+        // Also replace import.meta.url with a suitable file URL
+        val patchedCursorlessJs = cursorlessJs
+            ?.replace(
+                "const fs2 = await import(\"fs/promises\");",
+                "const fs2 = globalThis.__nodeModules['fs/promises'];"
+            )
+            ?.replace(
+                "const { createRequire } = await import(\"module\");",
+                "const { createRequire } = globalThis.__nodeModules['module'];"
+            )
+            ?.replace("import.meta.url", "'file://' + globalThis.__filename")
+
+        val module = runtime.getExecutor(patchedCursorlessJs)
             .setResourceName("./cursorless.js")
             .compileV8Module()
         module.executeVoid()
@@ -280,7 +317,7 @@ open class JavetDriver {
                     error = callback.error
                 }
         } catch (e: Throwable) {
-            logger.debug("error in execute - $e")
+            logger.warn("error in execute - $e")
             return ExecutionResult(false, null, e.toString())
         }
         if (ideClientCallback.unhandledRejections.isNotEmpty()) {

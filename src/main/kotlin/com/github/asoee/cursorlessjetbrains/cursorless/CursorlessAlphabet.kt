@@ -29,7 +29,9 @@ class CursorlessAlphabet {
             'w' to "whale",
             'x' to "plex",
             'y' to "yank",
-            'z' to "zip"
+            'z' to "zip",
+            '{' to "brace",
+            '}' to "right brace",
         )
 
         fun spokenForm(letter: String): String {

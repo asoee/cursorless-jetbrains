@@ -28,6 +28,7 @@ class CursorlessCommand(val command: String, val target: CursorlessTarget) {
                 )
             )
         }
+
         fun getText(source: CursorlessTarget): CommandV7 {
             return CommandV7(
                 version = 7,
@@ -79,7 +80,43 @@ class CursorlessCommand(val command: String, val target: CursorlessTarget) {
                     destination = ImplicitDestinationDescriptor()
                 )
             )
+        }
 
+        fun sourceTarget(source: CursorlessTarget): PartialPrimitiveTargetDescriptor {
+            return PartialPrimitiveTargetDescriptor(
+                mark = DecoratedSymbolMark(
+                    symbolColor = source.color,
+                    character = source.letter
+                )
+            )
+        }
+
+        fun destTarget(mode: InsertionMode, target: CursorlessTarget): DestinationDescriptor {
+            return PrimitiveDestinationDescriptor(
+                insertionMode = mode,
+                target = PartialPrimitiveTargetDescriptor(
+                    mark = DecoratedSymbolMark(
+                        symbolColor = target.color,
+                        character = target.letter
+                    )
+                )
+            )
+        }
+
+        fun bring(
+            source: PartialPrimitiveTargetDescriptor,
+            destination: DestinationDescriptor,
+            spokenform: String
+        ): CommandV7 {
+            return CommandV7(
+                version = 7,
+                spokenFormat = "bring " + spokenform,
+                usePrePhraseSnapshot = false,
+                action = ReplaceWithTargetActionDescriptor(
+                    source = source,
+                    destination = destination
+                )
+            )
         }
 
         fun changeEveryInstance(source: CursorlessTarget): CommandV7 {

@@ -34602,6 +34602,7 @@ var JetbrainsTreeSitter = class {
     throw new Error("Language not supported");
   }
   async loadLanguage(languageId) {
+    console.log(`Loading language ${languageId}`);
     const parser = new Parser2();
     const filePath = pathJoin(
       this.wasmDirectory,
