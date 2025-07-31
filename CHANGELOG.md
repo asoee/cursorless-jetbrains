@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Update to newest cursorless engine, including new version of treesitter.
+
+### Fixed
+
+- Allow selection (take) in readonly files.
+
 ## [0.0.11] - 2025-05-06
 
 ### Changed
