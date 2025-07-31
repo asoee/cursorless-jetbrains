@@ -43,6 +43,7 @@ data class EditorState(
     val selections: List<Selection>,
     val visible: Boolean,
     val editable: Boolean,
+    val writable: Boolean,
     )
 
 

@@ -9213,6 +9213,7 @@ var JetbrainsEditor = class {
     this.isActive = true;
     this.isVisible = true;
     this.isEditable = true;
+    this.isWritable = true;
   }
   isEqual(other) {
     return this.id === other.id;
@@ -9224,9 +9225,8 @@ var JetbrainsEditor = class {
     }
   }
   edit(edits) {
-    if (!this.isEditable) {
-      console.log("Editor is not editable.");
-      return Promise.reject("Editor is not editable");
+    if (!this.isWritable) {
+      return Promise.resolve(false);
     }
     jetbrainsPerformEdits(this.client, this.ide, this.document, this.id, edits);
     return Promise.resolve(true);
@@ -9401,7 +9401,7 @@ function createTextEditor(client, ide2, editorState) {
   const selections = editorState.selections.map(
     (selection) => createSelection(document2, selection)
   );
-  return new JetbrainsEditor(
+  const editor = new JetbrainsEditor(
     client,
     ide2,
     id2,
@@ -9409,6 +9409,11 @@ function createTextEditor(client, ide2, editorState) {
     visibleRanges,
     selections
   );
+  editor.isActive = editorState.active;
+  editor.isVisible = editorState.visible;
+  editor.isEditable = editorState.editable;
+  editor.isWritable = editorState.writable;
+  return editor;
 }
 function createSelection(document2, selection) {
   return new Selection(
@@ -9488,7 +9493,11 @@ var JetbrainsIDE = class {
   }
   getEditableTextEditor(editor) {
     if (editor instanceof JetbrainsEditor) {
-      return editor;
+      if (editor.isEditable) {
+        return editor;
+      } else {
+        throw Error(`Editor is not editable: ${editor}`);
+      }
     }
     throw Error(`Unsupported text editor type: ${editor}`);
   }
@@ -9594,6 +9603,7 @@ function updateEditor(editor, editorState) {
   editor.isActive = editorState.active;
   editor.isVisible = editorState.visible;
   editor.isEditable = editorState.editable;
+  editor.isWritable = editorState.writable;
 }
 function getLines(text, firstLine, lastLine) {
   const lines = text.split("\n");
@@ -34602,7 +34612,6 @@ var JetbrainsTreeSitter = class {
     throw new Error("Language not supported");
   }
   async loadLanguage(languageId) {
-    console.log(`Loading language ${languageId}`);
     const parser = new Parser2();
     const filePath = pathJoin(
       this.wasmDirectory,

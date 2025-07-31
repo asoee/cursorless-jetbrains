@@ -55,6 +55,7 @@ class JavetDriverTest {
             ),
             visible = true,
             editable = true,
+            writable = true,
         )
 
         driver.editorChanged(state)
