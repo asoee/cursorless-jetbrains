@@ -34649,7 +34649,7 @@ var JetbrainsTreeSitter = class {
       return void 0;
     }
     try {
-      return language.query(source);
+      return new Query(language, source);
     } catch (error) {
       console.error(`Failed to create query for language ${languageId}:`, error);
       return void 0;
