@@ -2,6 +2,7 @@ package com.github.asoee.cursorlessjetbrains.javet
 
 import com.caoccao.javet.interop.V8Host
 import com.caoccao.javet.interop.V8Runtime
+import com.caoccao.javet.interop.callback.JavetBuiltInModuleResolver
 import com.caoccao.javet.interop.options.NodeRuntimeOptions
 import com.caoccao.javet.javenode.JNEventLoop
 import com.caoccao.javet.javenode.enums.JNModuleType
@@ -37,9 +38,37 @@ open class JavetDriver {
     init {
         initIcuDataDir()
 
+        val nodeOptions = NodeRuntimeOptions().apply {
+            setConsoleArguments(arrayOf("--experimental-vm-modules"))
+        }
         runtime = V8Host.getNodeI18nInstance()
-            .createV8Runtime()
+            .createV8Runtime(nodeOptions)
+        runtime.setV8ModuleResolver(JavetBuiltInModuleResolver())
+
+        // Set up a proper module environment with require and imports
+        runtime.getExecutor(
+            """
+            // Set up module environment - make standard Node.js globals available
+            const path = require('path');
+            const url = require('url');
+            const { createRequire } = require('module');
+            
+            // Set up ES module globals that aren't available by default in Node.js
+            globalThis.__dirname = process.cwd();
+            globalThis.__filename = path.join(process.cwd(), 'cursorless.js');
+            
+            // Make Node.js modules available globally for the patched module
+            globalThis.__nodeModules = {
+                'fs/promises': require('fs/promises'),
+                'module': require('module'),
+                'path': path,
+                'url': url
+            };
+        """.trimIndent()
+        ).executeVoid()
+
         eventLoop = JNEventLoop(runtime)
+
     }
 
     private fun initIcuDataDir() {
@@ -78,23 +107,41 @@ open class JavetDriver {
         eventLoop.loadStaticModules(JNModuleType.Console)
 
         runtime.getExecutor(
+            "process.on('unhandledRejection', (reason, promise) => {\n" +
+                    "    console.error('Unhandled Rejection at:'+ promise+ 'reason:'+ reason);\n" +
+                    "    console.error('Stack trace:', reason.stack);\n" +
+                    "    ideClient.unhandledRejection('' + reason + '/' + promise);\n" +
+                    "});"
+        ).executeVoid()
+
+        runtime.getExecutor(
             "globalThis.setTimeout = (callback, _delay) => {\n" +
                     "  callback();\n" +
                     "};"
         ).executeVoid()
 
-        runtime.getExecutor(
-            "process.on('unhandledRejection', (reason, promise) => {\n" +
-                    "    console.error('Unhandled Rejection at:'+ promise+ 'reason:'+ reason);\n" +
-                    "    ideClient.unhandledRejection('' + reason);\n" +
-                    "});"
-        ).executeVoid()
-
         val cursorlessJs = javaClass.getResource("/cursorless/cursorless.js")?.readText()
-        val module = runtime.getExecutor(cursorlessJs)
+
+        // Replace dynamic imports with references to pre-loaded global modules
+        // Also replace import.meta.url with a suitable file URL
+        val patchedCursorlessJs = cursorlessJs
+            ?.replace(
+                "const fs2 = await import(\"fs/promises\");",
+                "const fs2 = globalThis.__nodeModules['fs/promises'];"
+            )
+            ?.replace(
+                "const { createRequire } = await import(\"module\");",
+                "const { createRequire } = globalThis.__nodeModules['module'];"
+            )
+            ?.replace("import.meta.url", "'file://' + globalThis.__filename")
+
+        val module = runtime.getExecutor(patchedCursorlessJs)
             .setResourceName("./cursorless.js")
             .compileV8Module()
         module.executeVoid()
+        eventLoop.await()
+        checkUnhandledExceptions()
+
         if (runtime.containsV8Module("./cursorless.js")) {
             logger.debug("./cursorless.js is registered as a module.")
         }
@@ -113,6 +160,7 @@ open class JavetDriver {
             .setResourceName("./import.js")
             .executeVoid()
         eventLoop.await()
+        checkUnhandledExceptions()
 
         val configuration = DEFAULT_CONFIGURATION
         val configurationJson = Json.encodeToString(configuration)
@@ -123,19 +171,37 @@ open class JavetDriver {
             | (async () => {    
             |   console.log("Cursorless/JS: activating plugin async");
             |   globalThis.configuration = globalThis.createJetbrainsConfiguration($configurationJson);
+            |   console.log("Cursorless/JS: configuration created");
             |   globalThis.ide = globalThis.createIDE(ideClient, globalThis.configuration);
             |   console.log("Cursorless/JS: ide created");
             |   globalThis.plugin = createPlugin(ideClient, ide);
             |   console.log("Cursorless/JS: plugin created");
-            |   globalThis.engine = await globalThis.activate(plugin, "$wasmPath");
-            |   console.log("Cursorless/JS: plugin activated");
+            |   
+            |   // Add debugging around the activate call
+            |   console.log("About to call activate with wasmPath:", "$wasmPath");
+            |   try {
+            |     globalThis.engine = await globalThis.activate(plugin, "$wasmPath");
+            |     console.log("Cursorless/JS: plugin activated successfully");
+            |   } catch (error) {
+            |     console.error("Cursorless/JS: activation failed:", error);
+            |     throw error;
+            |   }
             | })();
             | """.trimMargin()
         logger.debug(activateJs)
         runtime.getExecutor(activateJs)
             .executeVoid()
         eventLoop.await()
+        checkUnhandledExceptions()
 
+    }
+
+    private fun checkUnhandledExceptions() {
+        if (ideClientCallback.unhandledRejections.isNotEmpty()) {
+            val joinedCause = ideClientCallback.unhandledRejections.joinToString(",")
+            ideClientCallback.unhandledRejections.clear()
+            throw RuntimeException("Unhandled rejection during loadCursorless: $joinedCause")
+        }
     }
 
     private fun resolveWasmDir(): File {
@@ -251,7 +317,7 @@ open class JavetDriver {
                     error = callback.error
                 }
         } catch (e: Throwable) {
-            logger.debug("error in execute - $e")
+            logger.warn("error in execute - $e")
             return ExecutionResult(false, null, e.toString())
         }
         if (ideClientCallback.unhandledRejections.isNotEmpty()) {

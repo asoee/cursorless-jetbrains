@@ -109,7 +109,15 @@ sealed interface PartialMark
 data class DecoratedSymbolMark(
     val symbolColor: String,
     val character: String,
-) : PartialMark
+) : PartialMark {
+    override fun toString(): String {
+        return "$symbolColor $character"
+    }
+}
+
+@Serializable
+@SerialName("that")
+class ThatMark() : PartialMark
 
 @Serializable
 sealed interface DestinationDescriptor

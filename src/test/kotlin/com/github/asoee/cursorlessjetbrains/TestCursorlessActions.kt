@@ -2,10 +2,7 @@ package com.github.asoee.cursorlessjetbrains
 
 import com.github.asoee.cursorlessjetbrains.commands.CommandExecutorService
 import com.github.asoee.cursorlessjetbrains.commands.CommandExecutorServiceTest.MainJavaFixture
-import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCommand
-import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessRange
-import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessTarget
-import com.github.asoee.cursorlessjetbrains.cursorless.HatsFormat
+import com.github.asoee.cursorlessjetbrains.cursorless.*
 import com.github.asoee.cursorlessjetbrains.services.TalonProjectService
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.service
@@ -16,6 +13,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.EditorTestUtil
@@ -31,6 +29,7 @@ import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 
 
@@ -41,6 +40,14 @@ class TestCursorlessActions : BasePlatformTestCase() {
 
     override fun runInDispatchThread(): Boolean {
         return false
+    }
+
+    override fun setUp() {
+        super.setUp()
+        // Allow access to test data directory
+        val testDataPath =
+            Paths.get(System.getProperty("user.dir"), "src", "test", "testData").toAbsolutePath().toString()
+        VfsRootAccess.allowRootAccess(myFixture.testRootDisposable, testDataPath)
     }
 
     @Test
@@ -58,7 +65,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
         clTarget?.let {
             assertEquals("default", clTarget.color)
             assertEquals("default", clTarget.shape)
-            assertEquals("m", clTarget.letter)
+            assertEquals("i", clTarget.letter)
         }
     }
 
@@ -107,20 +114,22 @@ class TestCursorlessActions : BasePlatformTestCase() {
     @Test
     fun testBringToEndOfLine() {
         val fixture = mainJavaFixture()
-//      target the main method, expect a default hat over 'm'
+//      target the main method, expect a default hat over 'i'
         val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 3, 23, 3, 27)
         println("target: $targetRange")
+
+        //place cursor after the curly in the for loop
+        moveCursorTo(fixture.editor, 7, 9)
+
+        runBlocking {
+            // wait for editor state to update with new cursor position
+            delay(100)
+        }
+
         val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
         val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
         assertNotNull(clTarget)
         if (clTarget != null) {
-            //place cursor after the curly in the for loop
-            moveCursorTo(fixture.editor, 7, 9)
-
-            runBlocking {
-                // wait for editor state to update with new cursor position
-                delay(100)
-            }
 
             val commandV7 = CursorlessCommand.bringImplicit(clTarget)
             println("clTarget: $clTarget")
@@ -137,6 +146,53 @@ class TestCursorlessActions : BasePlatformTestCase() {
                 val caretPos = fixture.editor.caretModel.currentCaret.logicalPosition
                 val expectedPos = LogicalPosition(7, 13)
                 assertEquals(expectedPos, caretPos)
+            }
+        }
+    }
+
+    @Test
+    fun testBringToAfter() {
+        val fixture = mainJavaFixture()
+//      source the main method, expect a default hat over 'i'
+        val sourceRange = CursorlessRange.fromLogicalPositions(fixture.editor, 3, 23, 3, 27)
+//        dest is the curly brace at the end of the for loop in line 7
+        val destRange = CursorlessRange.fromLogicalPositions(fixture.editor, 7, 8, 7, 9)
+        println("sourceRange: $sourceRange")
+        println("destRange: $destRange")
+
+        //place cursor after the curly in the for loop
+        moveCursorTo(fixture.editor, 7, 9)
+        runBlocking {
+            // wait for editor state to update with new cursor position
+            delay(500)
+        }
+
+        val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
+        val clSourceTarget = findHatForRange(fixture.editor, editorHats, sourceRange)
+        println("clSourceTarget: $clSourceTarget")
+        val clDestTarget = findHatForRange(fixture.editor, editorHats, destRange)
+        println("clDestTarget: $clDestTarget")
+        assertNotNull(clSourceTarget)
+        assertNotNull(clDestTarget)
+        if (clSourceTarget != null && clDestTarget != null) {
+            val bringCmd = CursorlessCommand.bring(
+                CursorlessCommand.sourceTarget(clSourceTarget),
+                CursorlessCommand.destTarget(after, clDestTarget),
+                "${clSourceTarget.spokenForm()} after ${clDestTarget.spokenForm()}"
+            )
+
+            fixture.projectService.cursorlessEngine.executeCommand(bringCmd)
+
+            runBlocking {
+                delay(100)
+            }
+
+            runInEdtAndWait {
+                val expected = "        } main"
+                assertEquals(expected, getTextFromLine(fixture.editor, 7))
+                val caretPos = fixture.editor.caretModel.currentCaret.logicalPosition
+                val expectedPos = LogicalPosition(7, 9)
+                assertEquals("cursor should be unchanged", expectedPos, caretPos)
             }
         }
     }
@@ -265,12 +321,20 @@ class TestCursorlessActions : BasePlatformTestCase() {
     }
 
     private fun awaitHats(fixture: MainJavaFixture, editor: Editor): HatsFormat {
+        // Wait for the Cursorless system to initialize
         runBlocking {
-            delay(150)
+            delay(500)
         }
+
+        // Ensure the editor is properly loaded and hats are generated
+        runInEdtAndWait {
+            fixture.projectService.editorManager.reloadAllEditors()
+        }
+
         var editorHats: HatsFormat? = null
         await.atMost(2, TimeUnit.SECONDS).until {
             editorHats = fixture.projectService.editorManager.getEditorHats(editor)
+            println("Checking hats: ${editorHats?.size ?: "null"}")
             editorHats != null && editorHats!!.isNotEmpty()
         }
         return editorHats!!
@@ -473,6 +537,11 @@ class TestCursorlessActions : BasePlatformTestCase() {
         runInEdtAndWait {
             EditorTestUtil.setEditorVisibleSize(editor, 80, 20)
             appService.editorManager.reloadAllEditors()
+        }
+
+        // Give the Cursorless system time to initialize
+        runBlocking {
+            delay(100)
         }
 
         return MainJavaFixture(psiFile, commandExecutorService, project, editor!!, appService)

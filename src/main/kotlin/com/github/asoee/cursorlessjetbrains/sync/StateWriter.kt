@@ -29,7 +29,8 @@ fun serializeEditor(editor: Editor, editorId: String, psiFile: PsiFile?): Editor
         val project = editor.project
         val document = editor.document
         val visible = isEditorVisible(project, editor)
-        val editable = isEditorEditable(editor)
+        val editable = true // Editor is always editable for cursor positioning and selection
+        val writable = isDocumentWritable(editor)
 
         val active = isEditorFocused(editor)
         val currentFile =
@@ -60,7 +61,8 @@ fun serializeEditor(editor: Editor, editorId: String, psiFile: PsiFile?): Editor
             cursors,
             selections,
             visible,
-            editable
+            editable,
+            writable
         )
     }
     return edtState
@@ -83,7 +85,7 @@ private fun isEditorVisible(
     return false
 }
 
-fun isEditorEditable(editor: Editor): Boolean {
+fun isDocumentWritable(editor: Editor): Boolean {
     return editor.document.isWritable
 }
 
