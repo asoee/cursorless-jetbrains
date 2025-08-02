@@ -9,6 +9,7 @@ class CursorlessCommand(val command: String, val target: CursorlessTarget) {
             return when {
                 spokenform.startsWith("take") -> "setSelection"
                 spokenform.startsWith("type deaf") -> "revealTypeDefinition"
+                spokenform.startsWith("follow") -> "followLink"
                 else -> "unknown"
             }
         }
@@ -55,6 +56,22 @@ class CursorlessCommand(val command: String, val target: CursorlessTarget) {
                 spokenFormat = "type deaf " + source.spokenForm(),
                 usePrePhraseSnapshot = false,
                 action = RevealTypeDefinitionActionDescriptor(
+                    target = PartialPrimitiveTargetDescriptor(
+                        mark = DecoratedSymbolMark(
+                            symbolColor = source.color,
+                            character = source.letter
+                        )
+                    )
+                )
+            )
+        }
+
+        fun follow(source: CursorlessTarget): CommandV7 {
+            return CommandV7(
+                version = 7,
+                spokenFormat = "follow " + source.spokenForm(),
+                usePrePhraseSnapshot = false,
+                action = FollowLinkActionDescriptor(
                     target = PartialPrimitiveTargetDescriptor(
                         mark = DecoratedSymbolMark(
                             symbolColor = source.color,

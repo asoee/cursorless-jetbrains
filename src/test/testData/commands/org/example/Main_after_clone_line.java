@@ -6,6 +6,7 @@ public class Main {
         for (int i = 1; i <= 5; i++) {
             doSomethingElse(i);
             doSomethingElse(i);
+            int x = Tool.add(i, 2);
         }
     }
     private static void doSomethingElse(int i) {

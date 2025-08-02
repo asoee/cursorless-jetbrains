@@ -1,5 +1,4 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
@@ -35,10 +34,36 @@ repositories {
     }
 }
 
+// Create integrationTest source set (following official JetBrains guide)
+sourceSets {
+    create("integrationTest") {
+        compileClasspath += sourceSets.main.get().output
+        runtimeClasspath += sourceSets.main.get().output
+    }
+}
+
+// Create configuration for integrationTest source set
+val integrationTestImplementation by configurations.getting {
+    extendsFrom(configurations.testImplementation.get())
+}
+
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
+    // Test dependencies
     testImplementation(libs.junit)
     testImplementation(libs.awaitility)
+    // Adding JUnit 5 support
+//    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+//    testImplementation("org.junit.vintage:junit-vintage-engine:5.10.2") // For JUnit 4 compatibility
+
+//    testImplementation("com.jetbrains.intellij.platform:test-framework")
+
+    // Integration test specific dependencies (for UI tests only)
+    integrationTestImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    integrationTestImplementation("org.kodein.di:kodein-di-jvm:7.20.2")
+    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.1")
+
+    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.1")
 
     implementation(libs.kotlinSerializationJson)
     implementation(libs.bundles.javet)
@@ -58,6 +83,10 @@ dependencies {
         pluginVerifier()
         zipSigner()
         testFramework(TestFrameworkType.Platform)
+        testFramework(
+            TestFrameworkType.Starter,
+            configurationName = "integrationTestImplementation"
+        ) // UI testing framework for integration tests
     }
 }
 
@@ -151,6 +180,9 @@ tasks {
     }
 
     test {
+        description = "Runs unit and platform tests (requires IntelliJ framework)"
+        group = "verification"
+
         systemProperty(
             "java.util.logging.config.file",
             project.file("src/test/resources/logging.properties").absolutePath
@@ -159,25 +191,33 @@ tasks {
 
         testLogging {
             events("passed", "skipped", "failed")
-            showStandardStreams = true
-
+            showStandardStreams = false
             exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-            info {
-                events("passed", "skipped", "failed")
-                showStandardStreams = true
-                exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-            }
-            debug {
-                events(
-                    TestLogEvent.STARTED,
-                    TestLogEvent.FAILED,
-                    TestLogEvent.PASSED,
-                    TestLogEvent.SKIPPED,
-                    TestLogEvent.STANDARD_ERROR,
-                    TestLogEvent.STANDARD_OUT
-                )
-                exceptionFormat = TestExceptionFormat.FULL
-            }
+        }
+    }
+
+    // Integration test task (following official JetBrains guide)
+    register<Test>("integrationTest") {
+        description = "Runs integration tests using IntelliJ Starter framework"
+        group = "verification"
+
+        val integrationTestSourceSet = sourceSets.getByName("integrationTest")
+        testClassesDirs = integrationTestSourceSet.output.classesDirs
+        classpath = integrationTestSourceSet.runtimeClasspath
+
+        // Use prepareSandbox output directory as recommended by JetBrains
+        systemProperty("path.to.build.plugin", prepareSandbox.get().pluginDirectory.get().asFile)
+        useJUnitPlatform()
+        dependsOn(prepareSandbox, buildPlugin)
+
+        // Integration tests typically need more time and memory
+//        maxHeapSize = "4g"
+//        jvmArgs("-XX:MaxMetaspaceSize=512m")
+
+        testLogging {
+            events("passed", "skipped", "failed")
+            showStandardStreams = true
+            exceptionFormat = TestExceptionFormat.FULL
         }
     }
 
