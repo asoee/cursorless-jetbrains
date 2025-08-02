@@ -68,5 +68,45 @@ fun editorLanguage(editor: Editor): String? {
 }
 
 fun editorLanguage(psiFile: PsiFile?): String? {
-    return psiFile?.language?.id?.lowercase()
+    val psiLanguage = psiFile?.language?.id?.lowercase()
+
+    // If PSI gives us a real language (not generic text/plaintext), use it
+    if (psiLanguage != null && psiLanguage != "text" && psiLanguage != "plaintext") {
+        return psiLanguage
+    }
+
+    // Fall back to file extension mapping for non-PSI languages
+    val fileName = psiFile?.virtualFile?.name ?: return psiLanguage
+    val extension = fileName.substringAfterLast('.', "").lowercase()
+
+    // Map file extensions to language IDs that Cursorless supports
+    // This list should match the tree-sitter WASM parsers in extraFiles/treesitter/wasm/
+    // When updating, check the upstream Cursorless project for new language support:
+    // - WASM files: packages/cursorless-engine/src/languages/TreeSitterWasmLanguages.ts
+    // - Language queries: packages/cursorless-engine/src/languages/LanguageDefinitions.ts
+    return when (extension) {
+        "talon" -> "talon"
+        "scm" -> "query"  // tree-sitter query files
+        "nix" -> "nix"
+        "gleam" -> "gleam"
+        "gdscript", "gd" -> "gdscript"
+        "hcl", "tf" -> "hcl"
+        "jl" -> "julia"
+        "tex" -> "latex"
+        "pl" -> "perl"
+        "r" -> "r"
+        "scala", "sc" -> "scala"
+        "sparql" -> "sparql"
+        "swift" -> "swift"
+        "yaml", "yml" -> "yaml"
+        "agda" -> "agda"
+        "clj", "cljs", "cljc" -> "clojure"
+        "dart" -> "dart"
+        "dtd" -> "dtd"
+        "ex", "exs" -> "elixir"
+        "elm" -> "elm"
+        "hs" -> "haskell"
+        "lua" -> "lua"
+        else -> psiLanguage ?: "plaintext"
+    }
 }
