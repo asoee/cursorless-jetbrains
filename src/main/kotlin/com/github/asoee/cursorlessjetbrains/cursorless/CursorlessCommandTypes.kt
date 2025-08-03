@@ -38,6 +38,12 @@ class RevealTypeDefinitionActionDescriptor(
 ) : SimpleActionDescriptor()
 
 @Serializable
+@SerialName("followLink")
+class FollowLinkActionDescriptor(
+    override val target: PartialTargetDescriptor,
+) : SimpleActionDescriptor()
+
+@Serializable
 @SerialName("clearAndSetSelection")
 class ClearAndSetSelectionActionDescriptor(
     override val target: PartialTargetDescriptor,

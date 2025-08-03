@@ -3,11 +3,18 @@
 ## Build/Test Commands
 
 - **Build**: `./gradlew build` - Full build with all checks
-- **Test**: `./gradlew test` - Run all tests with verbose output
+- **Unit Tests**: `./gradlew test` - Run unit tests (excludes UI tests)
+- **Integration/UI Tests**: `./gradlew integrationTest` - Run UI tests with full IDE framework
+- **All Tests**: `./gradlew test integrationTest` - Run both unit and integration tests
 - **Single Test**: `./gradlew test --tests "*TestClassName*"` - Run specific test class
 - **Run IDE**: `./gradlew runIde` - Launch IntelliJ with plugin for testing
 - **Coverage**: `./gradlew koverHtmlReport` - Generate HTML coverage report
 - **Quality**: `./gradlew qodana` - Static code analysis
+
+### Test Structure
+
+- **Unit Tests**: Fast tests that don't require full IDE (JUnit 4/5 compatibility via vintage engine)
+- **Integration Tests**: UI tests requiring full IDE framework (files ending with `*UI*`)
 
 ## Architecture Overview
 

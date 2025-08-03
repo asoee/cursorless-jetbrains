@@ -5,6 +5,7 @@ public class Main {
         System.out.println("Hello IDEA welcome!");
         for (int i = 1; i <= 5; i++) {
             doSomethingElse(i); // My comment here
+            int x = Tool.add(i, 2);
         }
     }
     private static void doSomethingElse(int i) {

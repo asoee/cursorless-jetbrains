@@ -35,4 +35,8 @@ class RangedActionCommand(
         }
     }
 
+    override fun toString(): String {
+        return "RangedActionCommand(ranges=${ranges.contentToString()}, ideCommandId='$ideCommandId')"
+    }
+
 }
