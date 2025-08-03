@@ -2,9 +2,15 @@
 
 ## [Unreleased]
 
+### Added
+
+- Add file-extension to tree-sitter language mapping, to avoid relying on know PSI languages.'
+- Add support for `follow` command.
+
 ### Changed
 
 - Update to newest cursorless engine, including new version of treesitter.
+- Update various dependencies, including jetbrains-platform.
 
 ### Fixed
 
