@@ -252,7 +252,7 @@ open class JavetDriver {
 
     }
 
-    public fun dumpMemoryInfo() {
+    fun dumpMemoryInfo() {
 //        val v8SharedMemoryStatistics = runtime.v8SharedMemoryStatistics
 //        println("v8SharedMemoryStatistics: $v8SharedMemoryStatistics")
 
