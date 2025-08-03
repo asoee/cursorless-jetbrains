@@ -4,7 +4,9 @@ import com.github.asoee.cursorlessjetbrains.commands.CommandExecutorService
 import com.github.asoee.cursorlessjetbrains.commands.CommandRegistryService
 import com.github.asoee.cursorlessjetbrains.commands.CommandRequest
 import com.intellij.ide.impl.ProjectUtil
-import com.intellij.notification.*
+import com.intellij.notification.Notification
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notifications
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
@@ -13,13 +15,11 @@ import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.wm.IdeFocusManager
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpHandler
-import io.ktor.utils.io.core.*
 import java.io.IOException
 import java.io.UnsupportedEncodingException
 import java.net.URI
 import java.net.URLDecoder
 import java.util.*
-import kotlin.text.toByteArray
 
 class HttpCommandHandler : HttpHandler {
 
