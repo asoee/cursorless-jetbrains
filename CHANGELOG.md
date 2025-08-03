@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.0.12] - 2025-08-03
+
 ### Added
 
 - Add file-extension to tree-sitter language mapping, to avoid relying on know PSI languages.'
@@ -154,7 +156,8 @@
 - Communication with talon using both HTTP and file based command server
 - Most voice-code commands added to the plugin
 
-[Unreleased]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.11...HEAD
+[Unreleased]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.12...HEAD
+[0.0.12]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.11...v0.0.12
 [0.0.11]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.10...v0.0.11
 [0.0.10]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.9...v0.0.10
 [0.0.9]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.8...v0.0.9
