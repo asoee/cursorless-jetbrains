@@ -42,7 +42,7 @@ sourceSets {
 }
 
 // Create configuration for integrationTest source set
-val integrationTestImplementation: Configuration? by configurations.getting {
+val integrationTestImplementation: Configuration by configurations.getting {
     extendsFrom(configurations.testImplementation.get())
 }
 
