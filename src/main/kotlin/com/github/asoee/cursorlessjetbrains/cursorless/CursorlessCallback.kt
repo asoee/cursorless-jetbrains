@@ -14,5 +14,6 @@ interface CursorlessCallback {
     fun executeRangeCommand(editorId: String, rangeCommand: CursorlessEditorCommand)
     fun revealLine(editorId: String, line: Int, revealAt: String)
     fun flashRanges(flashRanges: Array<CursorlessFlashRange>)
+    fun setHighlightRanges(highlightId: String?, editorId: String, ranges: Array<CursorlessGeneralizedRange>)
     fun prePhraseVersion(): String?
 }

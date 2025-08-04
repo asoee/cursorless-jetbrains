@@ -373,6 +373,16 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
             }
         }
 
+        override fun setHighlightRanges(highlightId: String?, editorId: String, ranges: Array<CursorlessGeneralizedRange>) {
+            logger.debug("Executing setHighlightRanges highlightId=$highlightId, editorId=$editorId, ranges=${ranges.size}")
+            editorManager.editorsById[editorId]?.let { editor ->
+                editor.project?.let { project ->
+                    val command = SetHighlightRangesCommand(project, editor, highlightId, ranges.toList())
+                    service<CommandExecutorService>().execute(command)
+                }
+            }
+        }
+
         override fun prePhraseVersion(): String? {
             return service<FileCommandServerService>().commandServer.prePhraseVersion()
         }
