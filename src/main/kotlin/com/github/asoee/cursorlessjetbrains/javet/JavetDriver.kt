@@ -252,7 +252,7 @@ open class JavetDriver {
 
     }
 
-    public fun dumpMemoryInfo() {
+    fun dumpMemoryInfo() {
 //        val v8SharedMemoryStatistics = runtime.v8SharedMemoryStatistics
 //        println("v8SharedMemoryStatistics: $v8SharedMemoryStatistics")
 
@@ -261,7 +261,7 @@ open class JavetDriver {
             runtime.getV8HeapStatistics()
         val v8HeapStatistics = v8HeapStatisticsFuture.join()
         val detailString = v8HeapStatistics.toString()
-        System.out.printf("%s: %s%n", "1", detailString);
+        System.out.printf("%s: %s%n", "1", detailString)
     }
 
     @Synchronized

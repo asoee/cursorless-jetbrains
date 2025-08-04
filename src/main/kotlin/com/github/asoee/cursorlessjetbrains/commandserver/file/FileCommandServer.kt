@@ -56,8 +56,7 @@ class FileCommandServer {
         }
         try {
             val userName = System.getProperty("user.name")
-            val command = "id -u $userName"
-            readProcessOutput(command).let {
+            readProcessOutput(arrayOf("id", "-u", userName)).let {
                 try {
                     Integer.parseInt(it)
                     return "-$it"
@@ -73,8 +72,10 @@ class FileCommandServer {
         return ""
     }
 
-    private fun readProcessOutput(command: String): String {
-        val process = Runtime.getRuntime().exec(command)
+    private fun readProcessOutput(command: Array<String>): String {
+        val process = ProcessBuilder(*command)
+            .redirectErrorStream(true)
+            .start()
         val output = StringBuilder()
 
         BufferedReader(InputStreamReader(process.inputStream)).use { reader ->

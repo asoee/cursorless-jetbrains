@@ -15,7 +15,7 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.CoroutineScope
 
 @Service(Service.Level.PROJECT)
-class TalonProjectService(private val project: Project, cs: CoroutineScope) : Disposable {
+class TalonProjectService(project: Project, cs: CoroutineScope) : Disposable {
 
     var cursorlessEngine: CursorlessEngine
         get() {

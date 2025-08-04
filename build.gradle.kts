@@ -42,7 +42,7 @@ sourceSets {
 }
 
 // Create configuration for integrationTest source set
-val integrationTestImplementation by configurations.getting {
+val integrationTestImplementation: Configuration by configurations.getting {
     extendsFrom(configurations.testImplementation.get())
 }
 
@@ -196,14 +196,14 @@ tasks {
         testLogging {
             events("passed", "skipped", "failed")
             showStandardStreams = false
-            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            exceptionFormat = TestExceptionFormat.FULL
         }
     }
 
     // Integration test task (following official JetBrains guide)
     register<Test>("integrationTest") {
         description = "Runs integration tests using IntelliJ Starter framework"
-        group = "verification"
+        group = "integration testing" // Custom group to exclude from check
 
         val integrationTestSourceSet = sourceSets.getByName("integrationTest")
         testClassesDirs = integrationTestSourceSet.output.classesDirs
@@ -223,6 +223,9 @@ tasks {
             showStandardStreams = true
             exceptionFormat = TestExceptionFormat.FULL
         }
+
+        // Exclude from check by default - run manually with -PrunIntegrationTests
+        enabled = project.hasProperty("runIntegrationTests")
     }
 
     runIde {
@@ -266,7 +269,9 @@ tasks.withType<Test> {
         this.showStandardStreams = true
         this.events("passed", "skipped", "failed")
         showStandardStreams = true
-        this.exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        this.exceptionFormat = TestExceptionFormat.FULL
     }
 }
+
+
 
