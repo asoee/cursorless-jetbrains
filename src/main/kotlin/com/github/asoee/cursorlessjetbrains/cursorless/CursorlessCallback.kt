@@ -11,6 +11,7 @@ interface CursorlessCallback {
     fun clipboardPaste(editorId: String)
     fun executeCommand(editorId: String, command: String, args: Array<String>)
     fun insertLineAfter(editorId: String, ranges: Array<CursorlessRange>)
+    fun insertSnippet(editorId: String, snippet: String)
     fun executeRangeCommand(editorId: String, rangeCommand: CursorlessEditorCommand)
     fun revealLine(editorId: String, line: Int, revealAt: String)
     fun flashRanges(flashRanges: Array<CursorlessFlashRange>)

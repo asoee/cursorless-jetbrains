@@ -28,7 +28,7 @@ class CursorlessEngine(private val driver: JavetDriver) {
 
     fun executeCommand(command: CommandV7): ExecutionResult {
         val jsonCmd = serialize(command)
-        thisLogger().debug("Executing command: ${jsonCmd}")
+        thisLogger().info("Executing command: ${jsonCmd}")
         val res = driver.execute(jsonCmd)
         return res
     }

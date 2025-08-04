@@ -206,6 +206,90 @@ class CursorlessCommand(val command: String, val target: CursorlessTarget) {
                 )
             )
         }
+
+        fun wrapWithSnippet(source: CursorlessTarget, spokenForm: String = "if wrap"): CommandV7 {
+            return CommandV7(
+                version = 7,
+                spokenFormat = "$spokenForm ${source.spokenForm()}",
+                usePrePhraseSnapshot = false,
+                action = WrapWithSnippetActionDescriptor(
+                    target = PartialPrimitiveTargetDescriptor(
+                        mark = DecoratedSymbolMark(
+                            symbolColor = source.color,
+                            character = source.letter,
+                        ),
+                    ),
+                    snippetDescription = SnippetDescription(
+                        type = "list",
+                        fallbackLanguage = "java",
+                        snippets = listOf(
+                            CustomSnippet(
+                                type = "custom",
+                                body = "if (\$1) {\n\t\$0\n}",
+                                variableName = "0",
+                                scopeType = SnippetScopeType(type = "statement"),
+                                languages = listOf(
+                                    "c",
+                                    "cpp",
+                                    "csharp",
+                                    "java",
+                                    "javascript",
+                                    "typescript",
+                                    "javascriptreact",
+                                    "typescriptreact",
+                                    "php",
+                                    "scala",
+                                    "kotlin",
+                                    "r"
+                                )
+                            ),
+                            CustomSnippet(
+                                type = "custom",
+                                body = "if \$1:\n\t\$0",
+                                variableName = "0",
+                                scopeType = SnippetScopeType(type = "statement"),
+                                languages = listOf("python")
+                            ),
+                            CustomSnippet(
+                                type = "custom",
+                                body = "if \$1 then\n\t\$0\nend",
+                                variableName = "0",
+                                scopeType = SnippetScopeType(type = "statement"),
+                                languages = listOf("lua")
+                            ),
+                            CustomSnippet(
+                                type = "custom",
+                                body = "if \$1\n\t\$0\nend",
+                                variableName = "0",
+                                scopeType = SnippetScopeType(type = "statement"),
+                                languages = listOf("ruby")
+                            ),
+                            CustomSnippet(
+                                type = "custom",
+                                body = "if \$1\n\t\$0\nendif",
+                                variableName = "0",
+                                scopeType = SnippetScopeType(type = "statement"),
+                                languages = listOf("vimscript")
+                            ),
+                            CustomSnippet(
+                                type = "custom",
+                                body = "if \$1 {\n\t\$0\n}",
+                                variableName = "0",
+                                scopeType = SnippetScopeType(type = "statement"),
+                                languages = listOf("rust", "stata", "go")
+                            ),
+                            CustomSnippet(
+                                type = "custom",
+                                body = "if \$1 do\n\t\$0\nend",
+                                variableName = "0",
+                                scopeType = SnippetScopeType(type = "statement"),
+                                languages = listOf("elixir")
+                            )
+                        )
+                    )
+                )
+            )
+        }
     }
 
     fun actionName(): String {

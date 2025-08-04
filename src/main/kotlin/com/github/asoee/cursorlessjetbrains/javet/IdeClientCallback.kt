@@ -52,6 +52,10 @@ class IdeClientCallback {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
 
+        override fun insertSnippet(editorId: String, snippet: String) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
         override fun revealLine(editorId: String, line: Int, revealAt: String) {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
@@ -130,6 +134,12 @@ class IdeClientCallback {
         logger.info("IdeClientCallback.insertLineAfter: $rangesJson")
         val ranges = Json { ignoreUnknownKeys = true }.decodeFromString<Array<CursorlessRange>>(rangesJson)
         cursorlessCallback.insertLineAfter(editorId, ranges)
+    }
+
+    @V8Function
+    fun insertSnippet(editorId: String, snippet: String) {
+        logger.info("IdeClientCallback.insertSnippet: $snippet")
+        cursorlessCallback.insertSnippet(editorId, snippet)
     }
 
     @V8Function

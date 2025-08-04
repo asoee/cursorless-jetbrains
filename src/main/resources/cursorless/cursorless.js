@@ -9306,8 +9306,11 @@ var JetbrainsEditor = class {
     );
     await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
-  insertSnippet(_snippet, _ranges) {
-    throw new Error("insertSnippet not implemented.");
+  async insertSnippet(snippet2, ranges) {
+    if (ranges != null) {
+      await this.setSelections(ranges.map((range3) => range3.toSelection(false)));
+    }
+    await this.client.insertSnippet(this.id, snippet2);
   }
   async rename(range3) {
     const command = new JetbrainsEditorCommand(
