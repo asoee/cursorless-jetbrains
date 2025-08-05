@@ -9460,7 +9460,9 @@ var JetbrainsIDE = class {
     throw Error("showQuickPick Not implemented");
   }
   async setHighlightRanges(highlightId, editor, ranges) {
-    this.client.setHighlightRanges(highlightId, editor.id, JSON.stringify(ranges));
+    const editorId = editor.id;
+    const rangesJson = JSON.stringify(ranges);
+    this.client.setHighlightRanges(highlightId, editorId, rangesJson);
   }
   async flashRanges(flashDescriptors) {
     console.log("flashRangeses");
@@ -26916,9 +26918,7 @@ var Text2 = class _Text extends Marker {
     this.value = value;
   }
   static escape(value) {
-    var es = value.replace(/\$|}|\\/g, "\\$&");
-    console.log("escape '" + value + " -> " + es + "'");
-    return es;
+    return value.replace(/\$|}|\\/g, "\\$&");
   }
   toString() {
     return this.value;
@@ -28906,12 +28906,9 @@ var WrapWithSnippet = class {
       snippetDescription,
       editor.document.languageId
     );
-    console.log("snippet body: " + snippet2.body);
     const parsedSnippet = this.snippetParser.parse(snippet2.body);
-    console.log("parsed snippet: " + parsedSnippet);
     transformSnippetVariables(parsedSnippet, snippet2.variableName);
     const snippetString = parsedSnippet.toTextmateString();
-    console.log("snippetString snippet: " + snippetString);
     await flashTargets(ide(), targets, "pendingModification0" /* pendingModification0 */);
     const targetSelections = targets.map((target) => target.contentSelection);
     const { targetSelections: updatedTargetSelections } = await performEditsAndUpdateSelections({
