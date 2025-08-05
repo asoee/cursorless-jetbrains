@@ -11,13 +11,24 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
+import com.intellij.openapi.module.Module
+import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.openapi.roots.ContentEntry
+import com.intellij.openapi.roots.ModifiableRootModel
+import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.EditorTestUtil
+import com.intellij.testFramework.IdeaTestUtil
+import com.intellij.testFramework.LightProjectDescriptor
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor
 import com.intellij.testFramework.runInEdtAndWait
 import junit.framework.TestCase
 import kotlinx.coroutines.delay
@@ -32,11 +43,35 @@ import org.junit.runners.JUnit4
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 
+class CursorlessJavaProjectDescriptor : DefaultLightProjectDescriptor() {
+    override fun getModuleTypeId(): String {
+        return StdModuleTypes.JAVA.id
+    }
+
+    override fun getSdk(): Sdk? {
+        return IdeaTestUtil.getMockJdk17()
+    }
+
+    override fun configureModule(module: Module, model: ModifiableRootModel, contentEntry: ContentEntry) {
+        super.configureModule(module, model, contentEntry)
+
+        // Add src/main/java as the Java source root (following Maven/Gradle convention)
+        val sourceRootUrl = contentEntry.url!! + "/src/main/java"
+        contentEntry.addSourceFolder(sourceRootUrl, false)
+    }
+}
+
+val cursorlessJavaProjectDescriptor = CursorlessJavaProjectDescriptor()
 
 @RunWith(JUnit4::class)
 class TestCursorlessActions : BasePlatformTestCase() {
 
     override fun getTestDataPath() = "src/test/testData/commands"
+
+    override fun getProjectDescriptor(): LightProjectDescriptor? {
+        return cursorlessJavaProjectDescriptor
+    }
+    
 
     override fun runInDispatchThread(): Boolean {
         return false
@@ -44,10 +79,16 @@ class TestCursorlessActions : BasePlatformTestCase() {
 
     override fun setUp() {
         super.setUp()
-        // Allow access to test data directory
+        // Allow access to test data directory structure
         val testDataPath =
             Paths.get(System.getProperty("user.dir"), "src", "test", "testData").toAbsolutePath().toString()
         VfsRootAccess.allowRootAccess(myFixture.testRootDisposable, testDataPath)
+
+        // Also allow access to the Java source directory within test data
+        val javaSourcePath =
+            Paths.get(System.getProperty("user.dir"), "src", "test", "testData", "commands", "src", "main", "java")
+                .toAbsolutePath().toString()
+        VfsRootAccess.allowRootAccess(myFixture.testRootDisposable, javaSourcePath)
     }
 
     @Test
@@ -67,6 +108,36 @@ class TestCursorlessActions : BasePlatformTestCase() {
             assertEquals("default", clTarget.shape)
             assertEquals("i", clTarget.letter)
         }
+    }
+
+    @Test
+    fun testProjectDescriptorConfiguration() {
+        val fixture = mainJavaFixture()
+
+        // Verify that the module is properly configured as a Java module
+        val modules = ModuleManager.getInstance(fixture.psiFile.project).modules
+        val module = modules.first()
+
+        // Check that the module has the correct type
+        val moduleTypeId = module.moduleTypeName
+        println("Module type: $moduleTypeId")
+
+        // Check that there are source roots configured
+        val rootManager = ModuleRootManager.getInstance(module)
+        val sourceRoots: Array<VirtualFile> = rootManager.sourceRoots
+        println("Source roots count: ${sourceRoots.size}")
+
+        sourceRoots.forEachIndexed { index, root ->
+            println("Source root $index: ${root.path}")
+        }
+
+        // Verify that Java files are properly recognized
+        assertTrue("Module should be configured as Java module", moduleTypeId == "JAVA_MODULE")
+        assertTrue("Should have at least one source root", sourceRoots.isNotEmpty())
+
+        // Check that the Java file is properly indexed and recognized
+        assertNotNull("Main.java should be accessible as PSI file", fixture.psiFile)
+        assertEquals("Main", fixture.psiFile.name.substringBeforeLast("."))
     }
 
     @Test
@@ -277,7 +348,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
     fun testPour() {
         val fixture = mainJavaFixture()
         // auto-indent does not work for java files in BasePlatformTestCase, so use xml instead
-        val xmlFile = myFixture.configureByFile("org/example/book-catalog.xml")
+        val xmlFile = myFixture.configureByFile("references/book-catalog.xml")
         val xmlEditor = getEditorFromPsiFile(xmlFile)!!
         runInEdtAndWait {
             EditorTestUtil.setEditorVisibleSize(xmlEditor, 80, 20)
@@ -318,6 +389,13 @@ class TestCursorlessActions : BasePlatformTestCase() {
         } else {
             null
         }
+    }
+
+    private fun getTextFromRange(editor: Editor, range: CursorlessRange): String {
+        val document = editor.document
+        val startOffset = range.startOffset(editor)
+        val endOffset = range.endOffset(editor)
+        return document.getText(TextRange(startOffset, endOffset))
     }
 
     private fun awaitHats(fixture: MainJavaFixture, editor: Editor): HatsFormat {
@@ -442,6 +520,54 @@ class TestCursorlessActions : BasePlatformTestCase() {
             val refCountAfter = fixture.projectService.jsDriver.runtime.referenceCount
             TestCase.assertEquals(refCountBefore, refCountAfter)
 
+        }
+    }
+
+    @Test
+    fun testSnippetIfWrap() {
+        val fixture = mainJavaFixture()
+
+        // Target the doSomethingElse function call in line 7 (0-indexed line 6)
+        // "doSomethingElse(i);" is at line 7 in the file
+        // Let's target just the function name to match the hat system
+        val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 6, 12, 6, 27)
+        println("Targeting range: $targetRange")
+
+        // Print the text we're targeting to verify it's correct
+        val targetText = getTextFromRange(fixture.editor, targetRange)
+        println("Target text: '$targetText'")
+
+        val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
+
+        val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
+        assertNotNull("Should find a target for doSomethingElse function call", clTarget)
+
+        if (clTarget != null) {
+            println("Found target: $clTarget")
+
+            runBlocking {
+                delay(200) // Wait for command execution
+            }
+
+            // Create the wrapWithSnippet command to wrap the function call with an if statement
+            val wrapCommand = CursorlessCommand.wrapWithSnippet(clTarget, "if wrap")
+            println("Executing command: $wrapCommand")
+
+            val result = fixture.projectService.cursorlessEngine.executeCommand(wrapCommand)
+            println("Command result: success=${result.success}, error=${result.error}")
+
+            runBlocking {
+                delay(200) // Wait for command execution
+            }
+
+            runInEdtAndWait {
+                // Verify the command succeeded
+                assertNull("Command should not have error: ${result.error}", result.error)
+                assertTrue("Command should succeed", result.success)
+
+                myFixture.checkResultByFile("references/Main_after_snippet_if_wrap.java")
+
+            }
         }
     }
 
@@ -579,9 +705,10 @@ class TestCursorlessActions : BasePlatformTestCase() {
 
 
     private fun mainJavaFixture(): MainJavaFixture {
-        val psiFile = myFixture.configureByFile("org/example/Main.java")
+        val psiFile = myFixture.configureByFile("src/main/java/org/example/Main.java")
         // Also add Tool.java to the project to enable cross-file navigation
-        myFixture.copyFileToProject("org/example/Tool.java", "org/example/Tool.java")
+        myFixture.copyFileToProject("src/main/java/org/example/Tool.java", "src/main/java/org/example/Tool.java")
+
         val commandExecutorService = CommandExecutorService()
         val project = psiFile.project
         val appService = project.service<TalonProjectService>()
@@ -630,6 +757,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
                 ClassLoader.getSystemResource("logging.properties").path
             )
         }
+
     }
 
 }

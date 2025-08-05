@@ -185,6 +185,10 @@ class CountingCallback : CursorlessCallback {
         println("Not yet implemented")
     }
 
+    override fun insertSnippet(editorId: String, snippet: String) {
+//        println("Not yet implemented")
+    }
+
     override fun executeRangeCommand(editorId: String, rangeCommand: CursorlessEditorCommand) {
         println("Not yet implemented")
     }

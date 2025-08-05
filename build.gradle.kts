@@ -82,6 +82,8 @@ dependencies {
         pluginVerifier()
         zipSigner()
         testFramework(TestFrameworkType.Platform)
+        // Add fixtures explicitly for DefaultLightProjectDescriptor
+        testFramework(TestFrameworkType.Plugin.Java)
         testFramework(
             TestFrameworkType.Starter,
             configurationName = "integrationTestImplementation"
@@ -190,6 +192,9 @@ tasks {
         systemProperty(
             "java.util.logging.config.file",
             project.file("src/test/resources/logging.properties").absolutePath
+        )
+        systemProperty(
+            "talon.http.port", "0" // Use random port for unit tests
         )
         outputs.upToDateWhen { false }
 

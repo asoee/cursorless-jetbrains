@@ -9306,8 +9306,12 @@ var JetbrainsEditor = class {
     );
     await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
-  insertSnippet(_snippet, _ranges) {
-    throw new Error("insertSnippet not implemented.");
+  async insertSnippet(snippet2, ranges) {
+    console.log("insertSnippet" + snippet2);
+    if (ranges != null) {
+      await this.setSelections(ranges.map((range3) => range3.toSelection(false)));
+    }
+    await this.client.insertSnippet(this.id, snippet2);
   }
   async rename(range3) {
     const command = new JetbrainsEditorCommand(
@@ -26912,7 +26916,9 @@ var Text2 = class _Text extends Marker {
     this.value = value;
   }
   static escape(value) {
-    return value.replace(/\$|}|\\/g, "\\$&");
+    var es = value.replace(/\$|}|\\/g, "\\$&");
+    console.log("escape '" + value + " -> " + es + "'");
+    return es;
   }
   toString() {
     return this.value;
@@ -28900,9 +28906,12 @@ var WrapWithSnippet = class {
       snippetDescription,
       editor.document.languageId
     );
+    console.log("snippet body: " + snippet2.body);
     const parsedSnippet = this.snippetParser.parse(snippet2.body);
+    console.log("parsed snippet: " + parsedSnippet);
     transformSnippetVariables(parsedSnippet, snippet2.variableName);
     const snippetString = parsedSnippet.toTextmateString();
+    console.log("snippetString snippet: " + snippetString);
     await flashTargets(ide(), targets, "pendingModification0" /* pendingModification0 */);
     const targetSelections = targets.map((target) => target.contentSelection);
     const { targetSelections: updatedTargetSelections } = await performEditsAndUpdateSelections({

@@ -63,6 +63,35 @@ class EditNewLineAfterActionDescriptor(
 ) : SimpleActionDescriptor()
 
 @Serializable
+@SerialName("wrapWithSnippet")
+class WrapWithSnippetActionDescriptor(
+    val target: PartialTargetDescriptor,
+    val snippetDescription: SnippetDescription,
+) : ActionDescriptor
+
+@Serializable
+data class SnippetDescription(
+    val type: String,
+    val fallbackLanguage: String? = null,
+    val body: String? = null,
+    val snippets: List<CustomSnippet>? = null
+)
+
+@Serializable
+data class CustomSnippet(
+    val type: String,
+    val body: String,
+    val variableName: String? = null,
+    val scopeType: SnippetScopeType? = null,
+    val languages: List<String>? = null
+)
+
+@Serializable
+data class SnippetScopeType(
+    val type: String
+)
+
+@Serializable
 @SerialName("getText")
 class GetTextActionDescriptor(
     val target: PartialTargetDescriptor,

@@ -347,6 +347,16 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
             }
         }
 
+        override fun insertSnippet(editorId: String, snippet: String) {
+            thisLogger().info("Executing insertSnippet $snippet")
+            editorManager.editorsById[editorId]?.let { editor ->
+                editor.project?.let { project ->
+                    val command = InsertSnippetCommand(project, editor, snippet)
+                    service<CommandExecutorService>().execute(command)
+                }
+            }
+        }
+
         override fun revealLine(editorId: String, line: Int, revealAt: String) {
             thisLogger().info("Executing insertLineAfter $line, $revealAt")
             editorManager.editorsById[editorId]?.let { editor ->
