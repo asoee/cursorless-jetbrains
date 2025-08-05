@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### New
+
+- Highlight support
+- Snipped support
+
+### Changed
+
+- Inspection fixes
+
 ## [0.0.12] - 2025-08-03
 
 ### Added
