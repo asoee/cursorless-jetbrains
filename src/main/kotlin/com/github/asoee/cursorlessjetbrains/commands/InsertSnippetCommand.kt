@@ -96,6 +96,11 @@ class InsertSnippetCommand(project: Project, private val editor: Editor, private
                 "\$$variableName\$"
             }
         }
+        
+        // Convert escaped dollar signs (\$) to literal dollar signs ($)
+        converted = converted.replace("\\$", "$")
+        // Convert escaped right braces (\}) to literal right braces (})
+        converted = converted.replace("\\}", "}")
 
         return Pair(converted, variables)
     }

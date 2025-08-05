@@ -31,7 +31,7 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
 
     override fun setUp() {
         super.setUp()
-        // Allow access to test data directory
+        // Allow access to test data directory structure
         val testDataPath = Paths.get(System.getProperty("user.dir"), "src", "test", "testData").toAbsolutePath().toString()
         VfsRootAccess.allowRootAccess(myFixture.testRootDisposable, testDataPath)
     }
@@ -41,7 +41,7 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
         val fixture = mainJavaFixture()
         val command = InsertLineAfterCommand(fixture.project, fixture.editor, listOf(LineRange(3, 3)).toTypedArray())
         val result = fixture.commandExecutorService.execute(command)
-        myFixture.checkResultByFile("org/example/Main_after_insert_lines.java")
+        myFixture.checkResultByFile("references/Main_after_insert_lines.java")
     }
 
     @Test
@@ -49,7 +49,7 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
         val fixture = mainJavaFixture()
         val command = CloneLineCommand(fixture.project, 7)
         val result = fixture.commandExecutorService.execute(command)
-        myFixture.checkResultByFile("org/example/Main_after_clone_line.java")
+        myFixture.checkResultByFile("references/Main_after_clone_line.java")
     }
 
     @Test
@@ -57,7 +57,7 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
         val fixture = mainJavaFixture()
         val command = FindCommand(fixture.project, "next", "print")
         val result = fixture.commandExecutorService.execute(command)
-        myFixture.checkResultByFile("org/example/Main.java")
+        myFixture.checkResultByFile("src/main/java/org/example/Main.java")
         runInEdtAndWait {
             val selectedText = fixture.editor.selectionModel.selectedText
             assertEquals("print", selectedText)
@@ -70,7 +70,7 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
         val fixture = mainJavaFixture()
         val command = GotoCommand(fixture.project, 5, 20)
         val result = fixture.commandExecutorService.execute(command)
-        myFixture.checkResultByFile("org/example/Main.java")
+        myFixture.checkResultByFile("src/main/java/org/example/Main.java")
         assertSelectedOffset(fixture, 106, 106)
 
     }
@@ -93,7 +93,7 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
         }
         val command = IDEActionCommand(fixture.project, "IntroduceVariable")
         val result = fixture.commandExecutorService.execute(command)
-        myFixture.checkResultByFile("org/example/Main_after_introduce_variable.java")
+        myFixture.checkResultByFile("references/Main_after_introduce_variable.java")
 
     }
 
@@ -115,7 +115,7 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
         }
         runInEdtAndWait {
             println("check")
-            myFixture.checkResultByFile("org/example/Main_after_editor_paste.java")
+            myFixture.checkResultByFile("references/Main_after_editor_paste.java")
         }
         println("bg done")
 
@@ -205,7 +205,7 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
     )
 
     private fun mainJavaFixture(): MainJavaFixture {
-        val psiFile = myFixture.configureByFile("org/example/Main.java")
+        val psiFile = myFixture.configureByFile("src/main/java/org/example/Main.java")
         val project = psiFile.project
         val commandExecutorService = CommandExecutorService()
         val appService = project.service<TalonProjectService>()

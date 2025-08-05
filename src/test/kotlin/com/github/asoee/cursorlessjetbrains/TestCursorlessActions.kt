@@ -55,8 +55,9 @@ class CursorlessJavaProjectDescriptor : DefaultLightProjectDescriptor() {
     override fun configureModule(module: Module, model: ModifiableRootModel, contentEntry: ContentEntry) {
         super.configureModule(module, model, contentEntry)
 
-        // Mark the content root as a source folder for Java files
-        contentEntry.addSourceFolder(contentEntry.url!!, false)
+        // Add src/main/java as the Java source root (following Maven/Gradle convention)
+        val sourceRootUrl = contentEntry.url!! + "/src/main/java"
+        contentEntry.addSourceFolder(sourceRootUrl, false)
     }
 }
 
@@ -78,10 +79,16 @@ class TestCursorlessActions : BasePlatformTestCase() {
 
     override fun setUp() {
         super.setUp()
-        // Allow access to test data directory
+        // Allow access to test data directory structure
         val testDataPath =
             Paths.get(System.getProperty("user.dir"), "src", "test", "testData").toAbsolutePath().toString()
         VfsRootAccess.allowRootAccess(myFixture.testRootDisposable, testDataPath)
+
+        // Also allow access to the Java source directory within test data
+        val javaSourcePath =
+            Paths.get(System.getProperty("user.dir"), "src", "test", "testData", "commands", "src", "main", "java")
+                .toAbsolutePath().toString()
+        VfsRootAccess.allowRootAccess(myFixture.testRootDisposable, javaSourcePath)
     }
 
     @Test
@@ -341,7 +348,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
     fun testPour() {
         val fixture = mainJavaFixture()
         // auto-indent does not work for java files in BasePlatformTestCase, so use xml instead
-        val xmlFile = myFixture.configureByFile("org/example/book-catalog.xml")
+        val xmlFile = myFixture.configureByFile("references/book-catalog.xml")
         val xmlEditor = getEditorFromPsiFile(xmlFile)!!
         runInEdtAndWait {
             EditorTestUtil.setEditorVisibleSize(xmlEditor, 80, 20)
@@ -517,7 +524,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
     }
 
     @Test
-    fun testWrapWithSnippet() {
+    fun testSnippetIfWrap() {
         val fixture = mainJavaFixture()
 
         // Target the doSomethingElse function call in line 7 (0-indexed line 6)
@@ -558,62 +565,8 @@ class TestCursorlessActions : BasePlatformTestCase() {
                 assertNull("Command should not have error: ${result.error}", result.error)
                 assertTrue("Command should succeed", result.success)
 
-                // Expected transformation: the original line should be replaced with an if statement
-                // Original line 7: "            doSomethingElse(i);"
-                // Should become:
-                // Line 7: "            if () {"
-                // Line 8: "                doSomethingElse(i);"
-                // Line 9: "            }"
+                myFixture.checkResultByFile("references/Main_after_snippet_if_wrap.java")
 
-                val ifLine = getTextFromLine(fixture.editor, 6) ?: ""
-                val bodyLine = getTextFromLine(fixture.editor, 7) ?: ""
-                val closeLine = getTextFromLine(fixture.editor, 8) ?: ""
-
-                println("Content after command execution:")
-                println("Line 7: '$ifLine'")
-                println("Line 8: '$bodyLine'")
-                println("Line 9: '$closeLine'")
-
-                // Print the entire file content for debugging
-                println("\nEntire file content after command:")
-                val totalLines = fixture.editor.document.lineCount
-                for (i in 0 until totalLines) {
-                    val lineText = getTextFromLine(fixture.editor, i) ?: ""
-                    println("Line ${i + 1}: '$lineText'")
-                }
-
-                // Check if the transformation happened as expected
-                if (ifLine.contains("if () {", false)) {
-                    // Success case - verify the full structure
-                    println("✅ Successfully wrapped with if statement")
-                    assertTrue(
-                        "Line 8 should contain the original doSomethingElse call",
-                        bodyLine.contains("doSomethingElse(i)")
-                    )
-                    assertTrue("Line 9 should contain closing brace", closeLine.contains("}"))
-
-                    // Verify proper indentation (the if should have same indentation as original line)
-                    assertTrue("If statement should be properly indented", ifLine.startsWith("            if"))
-                    assertTrue(
-                        "Body should be indented more than if statement",
-                        bodyLine.startsWith("                ")
-                    )
-                    assertTrue(
-                        "Closing brace should match if statement indentation",
-                        closeLine.startsWith("            }")
-                    )
-                } else {
-                    // Log what actually happened instead of failing
-                    println("⚠️  wrapWithSnippet command executed but didn't transform as expected")
-                    println("This might indicate the action isn't fully implemented in the JavaScript engine")
-                    println("Command executed successfully without error, which means:")
-                    println("  1. The Kotlin → JavaScript communication is working")
-                    println("  2. The insertSnippet callback is being called")
-                    println("  3. The template conversion and insertion logic is functional")
-
-                    // For now, consider this a partial success since the infrastructure is working
-                    assertTrue("Command should execute without error", result.success && result.error == null)
-                }
             }
         }
     }
@@ -752,9 +705,9 @@ class TestCursorlessActions : BasePlatformTestCase() {
 
 
     private fun mainJavaFixture(): MainJavaFixture {
-        val psiFile = myFixture.configureByFile("org/example/Main.java")
+        val psiFile = myFixture.configureByFile("src/main/java/org/example/Main.java")
         // Also add Tool.java to the project to enable cross-file navigation
-        myFixture.copyFileToProject("org/example/Tool.java", "org/example/Tool.java")
+        myFixture.copyFileToProject("src/main/java/org/example/Tool.java", "src/main/java/org/example/Tool.java")
 
         val commandExecutorService = CommandExecutorService()
         val project = psiFile.project
