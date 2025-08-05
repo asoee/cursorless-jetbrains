@@ -198,6 +198,13 @@ class CountingCallback : CursorlessCallback {
     }
 
     override fun flashRanges(flashRanges: Array<CursorlessFlashRange>) {
+    }
+
+    override fun setHighlightRanges(
+        highlightId: String?,
+        editorId: String,
+        ranges: Array<CursorlessGeneralizedRange>
+    ) {
         println("Not yet implemented")
     }
 
