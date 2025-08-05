@@ -9459,8 +9459,8 @@ var JetbrainsIDE = class {
   async showQuickPick(_items, _options) {
     throw Error("showQuickPick Not implemented");
   }
-  async setHighlightRanges(_highlightId, _editor, _ranges) {
-    throw Error("setHighlightRanges Not implemented");
+  async setHighlightRanges(highlightId, editor, ranges) {
+    this.client.setHighlightRanges(highlightId, editor.id, JSON.stringify(ranges));
   }
   async flashRanges(flashDescriptors) {
     console.log("flashRangeses");

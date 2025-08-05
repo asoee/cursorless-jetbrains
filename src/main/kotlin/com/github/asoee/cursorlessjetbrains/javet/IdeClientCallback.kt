@@ -64,6 +64,10 @@ class IdeClientCallback {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
 
+        override fun setHighlightRanges(highlightId: String?, editorId: String, ranges: Array<CursorlessGeneralizedRange>) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
         override fun prePhraseVersion(): String? {
             println("ASOEE/PLUGIN: prePhraseVersion/CursorlessCallback not set")
             return null
@@ -156,6 +160,12 @@ class IdeClientCallback {
         cursorlessCallback.flashRanges(ranges)
     }
 
+    @V8Function
+    fun setHighlightRanges(highlightId: String?, editorId: String, rangesJson: String) {
+        logger.info("IdeClientCallback.setHighlightRanges: highlightId=$highlightId, editorId=$editorId, ranges=$rangesJson")
+        val ranges = jsonDecoder.decodeFromString<Array<CursorlessGeneralizedRange>>(rangesJson)
+        cursorlessCallback.setHighlightRanges(highlightId, editorId, ranges)
+    }
 
     @V8Function
     fun readQuery(filename: String): String? {
