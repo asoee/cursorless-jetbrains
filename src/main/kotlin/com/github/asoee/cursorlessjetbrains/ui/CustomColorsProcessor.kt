@@ -1,40 +1,38 @@
 package com.github.asoee.cursorlessjetbrains.ui
 
-import com.github.weisj.jsvg.attributes.paint.SimplePaintSVGPaint
+import com.github.weisj.jsvg.paint.SimplePaintSVGPaint
+import com.github.weisj.jsvg.parser.DomElement
 import com.github.weisj.jsvg.parser.DomProcessor
-import com.github.weisj.jsvg.parser.ParsedElement
 import java.awt.Color
-import java.awt.Paint
 import java.util.*
-import java.util.function.Consumer
-
 
 internal class CustomColorsProcessor(private val customColor: DynamicSvgPaint) : DomProcessor {
 
-    override fun process(root: ParsedElement) {
+    override fun process(root: DomElement) {
         processImpl(root)
-        root.children().forEach(Consumer { root: ParsedElement -> this.process(root) })
+        // Process children recursively
+        root.children().forEach { child -> process(child) }
     }
 
-    private fun processImpl(element: ParsedElement) {
-        // Obtain the id of the element
-        // Note: There that Element also has a node() method to obtain the SVGNode. However, during the pre-processing
-        // phase the SVGNode is not yet fully parsed and doesn't contain any non-defaulted information.
-        val nodeId = element.id()
+    private fun processImpl(element: DomElement) {
+        // Check if element has fill attribute and it's not "none"
+        val fillAttribute = element.attribute("fill", "gray")
+        if (fillAttribute != null && fillAttribute != "none") {
+            // Use JSVG's proper color parsing
+            val paintParser = element.document().loaderContext().paintParser()
+            val currentColor = paintParser.parseColor(fillAttribute) ?: Color.GRAY
 
-        if (element.attributeNode().hasAttribute("fill")
-            && element.attributeNode().attributes()["fill"] != "none"
-        ) {
-            // use the current fill color as the initial color
-            val color: Color = element.attributeNode().getColor("fill")
-            customColor.setColor(color)
+            // Set the initial color for our dynamic paint
+            customColor.setColor(currentColor)
 
-            // This can be anything as long as it's unique
-            val uniqueIdForDynamicColor: String = UUID.randomUUID().toString()
-            // Register the dynamic color as a custom element
-            element.registerNamedElement(uniqueIdForDynamicColor, customColor)
-            element.attributeNode().attributes()["fill"] = uniqueIdForDynamicColor
-            // Refer to the custom element as the fill attribute
+            // Create a unique ID for this dynamic color
+            val uniqueIdForDynamicColor = "dynamic-color-${UUID.randomUUID()}"
+
+            // Register the dynamic color as a named element
+            element.document().registerNamedElement(uniqueIdForDynamicColor, customColor)
+
+            // Update the fill attribute to reference our dynamic color
+            element.setAttribute("fill", "url(#$uniqueIdForDynamicColor)")
         }
     }
 }
@@ -51,13 +49,11 @@ class DynamicSvgPaint(color: Color) : SimplePaintSVGPaint {
         this.color = color
     }
 
-
     fun color(): Color {
         return color
     }
 
-
-    override fun paint(): Paint {
+    override fun paint(): java.awt.Paint {
         return color
     }
 }
