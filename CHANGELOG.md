@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### New
+
+- `Cursorless settings` support
+
 ## [0.0.13] - 2025-08-05
 
 ### New
