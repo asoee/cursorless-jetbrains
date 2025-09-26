@@ -27,6 +27,8 @@ class CommandRegistryService {
         registerCommand("extend", ExtendCommand::fromArgs)
         registerCommand("location", LocationCommand::fromArgs)
         registerCommand("find", FindCommand::fromArgs)
+        registerCommand("jetbrains.action.openSettings", OpenSettingsCommand::fromArgs)
+        registerCommand("cursorless.command", CursorlessExecuteCommand::fromArgs)
     }
 
 }

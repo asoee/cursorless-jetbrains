@@ -124,7 +124,7 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         val svgIcon = shapes[shapeName ?: "default"]
 
         mapping[fullKeyName]?.forEach { range: CursorlessRange ->
-            if (range.end.line > lineCount) {
+            if (range.end.line >= lineCount) {
                 return@forEach
             }
             val offset = range.startOffset(editor)
