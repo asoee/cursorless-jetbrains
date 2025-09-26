@@ -56,10 +56,11 @@ class TestCursorlessActionsUI {
                 LocalProjectInfo(
                     projectDir = Path(System.getProperty("user.dir") + "/src/test/testData/commands")
                 )
-            ).withVersion("2025.1")
+            )
         ).apply {
             // Install the Cursorless plugin
-            PluginConfigurator(this).installPluginFromFolder(File(pathToPlugin))
+            val pluginPath = File(pathToPlugin).toPath()
+            PluginConfigurator(this).installPluginFromPath(pluginPath)
         }.runIdeWithDriver().useDriverAndCloseIde {
 
             waitForIndicators(1.minutes)

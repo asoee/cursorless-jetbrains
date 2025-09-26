@@ -146,13 +146,7 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-//            recommended()
-            val productReleases = ProductReleasesValueSource().get()
-            val reducedProductReleases =
-                if (productReleases.size > 2) listOf(productReleases.first())
-//                if (productReleases.size > 2) listOf(productReleases.first(), productReleases.last())
-                else productReleases
-            ides(reducedProductReleases)
+            create("IC", "2025.1.6")
         }
     }
 }

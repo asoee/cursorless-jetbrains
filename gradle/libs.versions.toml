@@ -11,8 +11,8 @@ kotlin-serialization = "1.9.0"
 awaitility = "4.2.0"
 
 # plugins
-changelog = "2.3.0"
-intelliJPlatform = "2.7.0"
+changelog = "2.4.0"
+intelliJPlatform = "2.8.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
