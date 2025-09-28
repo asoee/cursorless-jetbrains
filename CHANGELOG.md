@@ -7,6 +7,7 @@
 ### Added
 
 - Added file-extension to treesitter language mapping for remaining languages
+- `Cursorless settings` support
 
 ## [0.0.13] - 2025-08-05
 
