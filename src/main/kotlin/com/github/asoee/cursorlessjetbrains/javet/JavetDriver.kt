@@ -34,6 +34,7 @@ open class JavetDriver {
     private val ideClientCallback = IdeClientCallback()
     val runtime: V8Runtime
     val eventLoop: JNEventLoop
+    private var cursorlessModule: com.caoccao.javet.values.reference.V8Module? = null
 
     init {
         initIcuDataDir()
@@ -99,9 +100,10 @@ open class JavetDriver {
         val wasmDir = resolveWasmDir()
         this.ideClientCallback.treesitterCallback = ClassPathQueryLoader()
 
+        // Bind ideClient to global scope
         runtime.createV8ValueObject().use { v8ValueObject ->
-            runtime.globalObject.set("ideClient", v8ValueObject)
             v8ValueObject.bind(ideClientCallback)
+            runtime.globalObject.set("ideClient", v8ValueObject)
         }
 
         eventLoop.loadStaticModules(JNModuleType.Console)
@@ -135,10 +137,11 @@ open class JavetDriver {
             )
             ?.replace("import.meta.url", "'file://' + globalThis.__filename")
 
-        val module = runtime.getExecutor(patchedCursorlessJs)
+        // Store module reference so we can close it later
+        cursorlessModule = runtime.getExecutor(patchedCursorlessJs)
             .setResourceName("./cursorless.js")
             .compileV8Module()
-        module.executeVoid()
+        cursorlessModule?.executeVoid()
         eventLoop.await()
         checkUnhandledExceptions()
 
@@ -316,6 +319,8 @@ open class JavetDriver {
                     returnValue = callback.result
                     error = callback.error
                 }
+            // Clear callback references to prevent memory leak
+            callback.clear()
         } catch (e: Throwable) {
             logger.warn("error in execute - $e")
             return ExecutionResult(false, null, e.toString())
@@ -334,7 +339,51 @@ open class JavetDriver {
     @Synchronized
     fun close() {
         try {
+            // Clear all global references before closing runtime
+            val cleanupJs = """
+                | try {
+                |   if (globalThis.engine) {
+                |     globalThis.engine = null;
+                |   }
+                |   if (globalThis.plugin) {
+                |     globalThis.plugin = null;
+                |   }
+                |   if (globalThis.ide) {
+                |     globalThis.ide = null;
+                |   }
+                |   if (globalThis.configuration) {
+                |     globalThis.configuration = null;
+                |   }
+                |   globalThis.activate = null;
+                |   globalThis.createPlugin = null;
+                |   globalThis.createIDE = null;
+                |   globalThis.createJetbrainsConfiguration = null;
+                |   console.log("Cursorless/JS: globals cleared");
+                | } catch (e) {
+                |   console.error("Cursorless/JS: error clearing globals - " + e);
+                | }
+                | """.trimMargin()
+
+            if (!runtime.isClosed) {
+                runtime.getExecutor(cleanupJs).executeVoid()
+
+                // Clear ideClient from global object
+                try {
+                    runtime.globalObject.delete("ideClient")
+                } catch (e: Throwable) {
+                    logger.warn("Failed to delete ideClient from global object: $e")
+                }
+
+                // Close the cursorless module
+                cursorlessModule?.close()
+                cursorlessModule = null
+
+                // Force garbage collection before closing
+                runtime.lowMemoryNotification()
+            }
+
             runtime.close(true)
+            logger.info("JavetDriver closed successfully")
         } catch (e: Throwable) {
             logger.info("error in close - $e")
         }
@@ -543,5 +592,10 @@ class PromiseCallback : IV8ValuePromise.IListener {
             logger.warn("error in execute - $v8ValueString")
             error = v8ValueString.value
         }
+    }
+
+    fun clear() {
+        result = null
+        error = null
     }
 }

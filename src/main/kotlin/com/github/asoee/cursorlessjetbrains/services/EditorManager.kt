@@ -260,6 +260,8 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         editorIds.remove(editor)
         if (id != null) {
             editorsById.remove(id)
+            // Clean up the debounce flow to prevent memory leak
+            editorDebounce.remove(id)
             dispatchScope.launch {
                 cursorlessEngine.editorClosed(id)
             }
