@@ -2,6 +2,7 @@ package com.github.asoee.cursorlessjetbrains.javet
 
 import com.caoccao.javet.interop.V8Host
 import com.caoccao.javet.interop.V8Runtime
+import com.caoccao.javet.interop.callback.IJavetNearHeapLimitCallback
 import com.caoccao.javet.interop.callback.JavetBuiltInModuleResolver
 import com.caoccao.javet.interop.options.NodeRuntimeOptions
 import com.caoccao.javet.javenode.JNEventLoop
@@ -28,12 +29,21 @@ import kotlin.io.path.absolutePathString
 
 private const val PLUGIN_ID = "cursorless-jetbrains"
 
+interface JavetDriverRestartListener {
+    fun onRestartRequested(reason: String)
+}
+
 open class JavetDriver {
 
     private val logger = logger<JavetDriver>()
     private val ideClientCallback = IdeClientCallback()
     val runtime: V8Runtime
     val eventLoop: JNEventLoop
+    private var cursorlessModule: com.caoccao.javet.values.reference.V8Module? = null
+    private var restartListener: JavetDriverRestartListener? = null
+
+    @Volatile
+    private var isNearOOM = false
 
     init {
         initIcuDataDir()
@@ -44,6 +54,9 @@ open class JavetDriver {
         runtime = V8Host.getNodeI18nInstance()
             .createV8Runtime(nodeOptions)
         runtime.setV8ModuleResolver(JavetBuiltInModuleResolver())
+
+        // Set up near heap limit callback to detect and handle OOM situations
+        setupNearHeapLimitCallback()
 
         // Set up a proper module environment with require and imports
         runtime.getExecutor(
@@ -85,6 +98,83 @@ open class JavetDriver {
         NodeRuntimeOptions.NODE_FLAGS.setIcuDataDir(icuDataDir.absolutePath)
     }
 
+    private fun setupNearHeapLimitCallback() {
+        val callback = NearHeapLimitCallback()
+        runtime.setNearHeapLimitCallback(callback)
+        logger.info("Near heap limit callback configured")
+    }
+
+    private inner class NearHeapLimitCallback : IJavetNearHeapLimitCallback {
+        override fun callback(currentHeapLimit: Long, initialHeapLimit: Long): Long {
+            logger.warn("V8 near heap limit reached! Current: $currentHeapLimit, Initial: $initialHeapLimit")
+            isNearOOM = true
+
+            // Try to save memory statistics for debugging
+            try {
+                dumpMemoryStatistics()
+            } catch (e: Exception) {
+                logger.error("Failed to dump memory statistics: ${e.message}", e)
+            }
+
+            // Attempt aggressive garbage collection
+            try {
+                logger.info("Attempting aggressive GC to avoid OOM...")
+                runtime.lowMemoryNotification()
+
+                // Check if we recovered enough memory
+                val stats = runtime.getV8HeapStatistics().join()
+                val usedHeap = stats.usedHeapSize
+                val totalHeap = stats.heapSizeLimit
+                val percentUsed = (usedHeap.toDouble() / totalHeap * 100).toInt()
+
+                logger.info("After GC: Used ${usedHeap / 1024 / 1024}MB of ${totalHeap / 1024 / 1024}MB ($percentUsed%)")
+
+                // If still using > 90% after GC, request restart
+                if (percentUsed > 90) {
+                    logger.error("Memory usage still critical after GC, requesting engine restart...")
+                    restartListener?.onRestartRequested("Near heap limit: $percentUsed% memory used")
+                    // Return increased limit to give time for graceful restart
+                    return currentHeapLimit + (50 * 1024 * 1024) // +50MB
+                }
+            } catch (e: Exception) {
+                logger.error("Error during OOM recovery: ${e.message}", e)
+            }
+
+            // Return current limit to let V8 continue if GC helped
+            return currentHeapLimit
+        }
+    }
+
+    private fun dumpMemoryStatistics() {
+        try {
+            val stats = runtime.getV8HeapStatistics().join()
+            val memoryUsage = (stats.usedHeapSize.toDouble() / stats.heapSizeLimit * 100).toInt()
+
+            logger.warn(
+                "V8 Memory Statistics: " +
+                        "Total Heap: ${stats.totalHeapSize / 1024 / 1024}MB, " +
+                        "Used Heap: ${stats.usedHeapSize / 1024 / 1024}MB, " +
+                        "Heap Limit: ${stats.heapSizeLimit / 1024 / 1024}MB, " +
+                        "Usage: $memoryUsage%, " +
+                        "External: ${stats.externalMemory / 1024 / 1024}MB, " +
+                        "Malloced: ${stats.mallocedMemory / 1024 / 1024}MB, " +
+                        "Peak Malloced: ${stats.peakMallocedMemory / 1024 / 1024}MB, " +
+                        "Native Contexts: ${stats.numberOfNativeContexts}, " +
+                        "Detached Contexts: ${stats.numberOfDetachedContexts}, " +
+                        "Reference Count: ${runtime.referenceCount}"
+            )
+        } catch (e: Exception) {
+            logger.error("Failed to dump memory statistics: ${e.message}", e)
+            throw e
+        }
+    }
+
+    fun setRestartListener(listener: JavetDriverRestartListener) {
+        this.restartListener = listener
+    }
+
+    fun isNearingOOM(): Boolean = isNearOOM
+
     private class ClassPathQueryLoader : TreesitterCallback {
         val queryPrefix = "/cursorless/queries/"
         override fun readQuery(fileName: String): String? {
@@ -99,9 +189,10 @@ open class JavetDriver {
         val wasmDir = resolveWasmDir()
         this.ideClientCallback.treesitterCallback = ClassPathQueryLoader()
 
+        // Bind ideClient to global scope
         runtime.createV8ValueObject().use { v8ValueObject ->
-            runtime.globalObject.set("ideClient", v8ValueObject)
             v8ValueObject.bind(ideClientCallback)
+            runtime.globalObject.set("ideClient", v8ValueObject)
         }
 
         eventLoop.loadStaticModules(JNModuleType.Console)
@@ -135,10 +226,11 @@ open class JavetDriver {
             )
             ?.replace("import.meta.url", "'file://' + globalThis.__filename")
 
-        val module = runtime.getExecutor(patchedCursorlessJs)
+        // Store module reference so we can close it later
+        cursorlessModule = runtime.getExecutor(patchedCursorlessJs)
             .setResourceName("./cursorless.js")
             .compileV8Module()
-        module.executeVoid()
+        cursorlessModule?.executeVoid()
         eventLoop.await()
         checkUnhandledExceptions()
 
@@ -316,6 +408,8 @@ open class JavetDriver {
                     returnValue = callback.result
                     error = callback.error
                 }
+            // Clear callback references to prevent memory leak
+            callback.clear()
         } catch (e: Throwable) {
             logger.warn("error in execute - $e")
             return ExecutionResult(false, null, e.toString())
@@ -334,7 +428,51 @@ open class JavetDriver {
     @Synchronized
     fun close() {
         try {
+            // Clear all global references before closing runtime
+            val cleanupJs = """
+                | try {
+                |   if (globalThis.engine) {
+                |     globalThis.engine = null;
+                |   }
+                |   if (globalThis.plugin) {
+                |     globalThis.plugin = null;
+                |   }
+                |   if (globalThis.ide) {
+                |     globalThis.ide = null;
+                |   }
+                |   if (globalThis.configuration) {
+                |     globalThis.configuration = null;
+                |   }
+                |   globalThis.activate = null;
+                |   globalThis.createPlugin = null;
+                |   globalThis.createIDE = null;
+                |   globalThis.createJetbrainsConfiguration = null;
+                |   console.log("Cursorless/JS: globals cleared");
+                | } catch (e) {
+                |   console.error("Cursorless/JS: error clearing globals - " + e);
+                | }
+                | """.trimMargin()
+
+            if (!runtime.isClosed) {
+                runtime.getExecutor(cleanupJs).executeVoid()
+
+                // Clear ideClient from global object
+                try {
+                    runtime.globalObject.delete("ideClient")
+                } catch (e: Throwable) {
+                    logger.warn("Failed to delete ideClient from global object: $e")
+                }
+
+                // Close the cursorless module
+                cursorlessModule?.close()
+                cursorlessModule = null
+
+                // Force garbage collection before closing
+                runtime.lowMemoryNotification()
+            }
+
             runtime.close(true)
+            logger.info("JavetDriver closed successfully")
         } catch (e: Throwable) {
             logger.info("error in close - $e")
         }
@@ -543,5 +681,10 @@ class PromiseCallback : IV8ValuePromise.IListener {
             logger.warn("error in execute - $v8ValueString")
             error = v8ValueString.value
         }
+    }
+
+    fun clear() {
+        result = null
+        error = null
     }
 }

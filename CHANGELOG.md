@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Tighten up javet javascript handling to prevent memory leaks
+
 ## [0.0.14] - 2025-09-26
 
 ### Added
