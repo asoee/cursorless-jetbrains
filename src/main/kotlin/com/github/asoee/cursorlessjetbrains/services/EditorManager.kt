@@ -35,7 +35,7 @@ import java.util.*
 import kotlin.time.Duration.Companion.milliseconds
 
 
-class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDisposable: Disposable, cs: CoroutineScope) :
+class EditorManager(private var cursorlessEngine: CursorlessEngine, parentDisposable: Disposable, cs: CoroutineScope) :
     Disposable {
 
     private var hatsEnabled = true
@@ -448,6 +448,14 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         this.editorsById.values.forEach { editor ->
             editorCreated(editor)
         }
+    }
+
+    @Synchronized
+    fun updateEngine(newEngine: CursorlessEngine) {
+        logger.info("Updating CursorlessEngine reference")
+        this.cursorlessEngine = newEngine
+        // Update the callback handler with the new engine's callback
+        newEngine.setCursorlessCallback(CursorlessHandler(this))
     }
 
     fun settingsUpdated(settings: TalonSettings.State) {

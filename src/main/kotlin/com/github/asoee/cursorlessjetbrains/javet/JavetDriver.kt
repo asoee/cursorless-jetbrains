@@ -2,6 +2,7 @@ package com.github.asoee.cursorlessjetbrains.javet
 
 import com.caoccao.javet.interop.V8Host
 import com.caoccao.javet.interop.V8Runtime
+import com.caoccao.javet.interop.callback.IJavetNearHeapLimitCallback
 import com.caoccao.javet.interop.callback.JavetBuiltInModuleResolver
 import com.caoccao.javet.interop.options.NodeRuntimeOptions
 import com.caoccao.javet.javenode.JNEventLoop
@@ -28,6 +29,10 @@ import kotlin.io.path.absolutePathString
 
 private const val PLUGIN_ID = "cursorless-jetbrains"
 
+interface JavetDriverRestartListener {
+    fun onRestartRequested(reason: String)
+}
+
 open class JavetDriver {
 
     private val logger = logger<JavetDriver>()
@@ -35,6 +40,10 @@ open class JavetDriver {
     val runtime: V8Runtime
     val eventLoop: JNEventLoop
     private var cursorlessModule: com.caoccao.javet.values.reference.V8Module? = null
+    private var restartListener: JavetDriverRestartListener? = null
+
+    @Volatile
+    private var isNearOOM = false
 
     init {
         initIcuDataDir()
@@ -45,6 +54,9 @@ open class JavetDriver {
         runtime = V8Host.getNodeI18nInstance()
             .createV8Runtime(nodeOptions)
         runtime.setV8ModuleResolver(JavetBuiltInModuleResolver())
+
+        // Set up near heap limit callback to detect and handle OOM situations
+        setupNearHeapLimitCallback()
 
         // Set up a proper module environment with require and imports
         runtime.getExecutor(
@@ -85,6 +97,83 @@ open class JavetDriver {
         }
         NodeRuntimeOptions.NODE_FLAGS.setIcuDataDir(icuDataDir.absolutePath)
     }
+
+    private fun setupNearHeapLimitCallback() {
+        val callback = NearHeapLimitCallback()
+        runtime.setNearHeapLimitCallback(callback)
+        logger.info("Near heap limit callback configured")
+    }
+
+    private inner class NearHeapLimitCallback : IJavetNearHeapLimitCallback {
+        override fun callback(currentHeapLimit: Long, initialHeapLimit: Long): Long {
+            logger.warn("V8 near heap limit reached! Current: $currentHeapLimit, Initial: $initialHeapLimit")
+            isNearOOM = true
+
+            // Try to save memory statistics for debugging
+            try {
+                dumpMemoryStatistics()
+            } catch (e: Exception) {
+                logger.error("Failed to dump memory statistics: ${e.message}", e)
+            }
+
+            // Attempt aggressive garbage collection
+            try {
+                logger.info("Attempting aggressive GC to avoid OOM...")
+                runtime.lowMemoryNotification()
+
+                // Check if we recovered enough memory
+                val stats = runtime.getV8HeapStatistics().join()
+                val usedHeap = stats.usedHeapSize
+                val totalHeap = stats.heapSizeLimit
+                val percentUsed = (usedHeap.toDouble() / totalHeap * 100).toInt()
+
+                logger.info("After GC: Used ${usedHeap / 1024 / 1024}MB of ${totalHeap / 1024 / 1024}MB ($percentUsed%)")
+
+                // If still using > 90% after GC, request restart
+                if (percentUsed > 90) {
+                    logger.error("Memory usage still critical after GC, requesting engine restart...")
+                    restartListener?.onRestartRequested("Near heap limit: $percentUsed% memory used")
+                    // Return increased limit to give time for graceful restart
+                    return currentHeapLimit + (50 * 1024 * 1024) // +50MB
+                }
+            } catch (e: Exception) {
+                logger.error("Error during OOM recovery: ${e.message}", e)
+            }
+
+            // Return current limit to let V8 continue if GC helped
+            return currentHeapLimit
+        }
+    }
+
+    private fun dumpMemoryStatistics() {
+        try {
+            val stats = runtime.getV8HeapStatistics().join()
+            val memoryUsage = (stats.usedHeapSize.toDouble() / stats.heapSizeLimit * 100).toInt()
+
+            logger.warn(
+                "V8 Memory Statistics: " +
+                        "Total Heap: ${stats.totalHeapSize / 1024 / 1024}MB, " +
+                        "Used Heap: ${stats.usedHeapSize / 1024 / 1024}MB, " +
+                        "Heap Limit: ${stats.heapSizeLimit / 1024 / 1024}MB, " +
+                        "Usage: $memoryUsage%, " +
+                        "External: ${stats.externalMemory / 1024 / 1024}MB, " +
+                        "Malloced: ${stats.mallocedMemory / 1024 / 1024}MB, " +
+                        "Peak Malloced: ${stats.peakMallocedMemory / 1024 / 1024}MB, " +
+                        "Native Contexts: ${stats.numberOfNativeContexts}, " +
+                        "Detached Contexts: ${stats.numberOfDetachedContexts}, " +
+                        "Reference Count: ${runtime.referenceCount}"
+            )
+        } catch (e: Exception) {
+            logger.error("Failed to dump memory statistics: ${e.message}", e)
+            throw e
+        }
+    }
+
+    fun setRestartListener(listener: JavetDriverRestartListener) {
+        this.restartListener = listener
+    }
+
+    fun isNearingOOM(): Boolean = isNearOOM
 
     private class ClassPathQueryLoader : TreesitterCallback {
         val queryPrefix = "/cursorless/queries/"
