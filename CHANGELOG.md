@@ -5,6 +5,8 @@
 ### Fixed
 
 - Tighten up javet javascript handling to prevent memory leaks
+- Restart JS engine when close to limit, if GC does not help
+- Limit file size sent to cursorless. Default to 1 Mb, but adjustable from settings.
 
 ## [0.0.14] - 2025-09-26
 
