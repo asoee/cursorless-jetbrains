@@ -60,6 +60,16 @@ internal class TalonSettingsConfigurable : BoundConfigurable(DISPLAY_NAME, ID) {
                     label(ApplicationBundle.message("editbox.ms"))
 
                 }
+                row {
+                    label("Maximum file size")
+                    intTextField((64..10240), 64)
+                        .bindIntText(settings.state::maxFileSizeKb)
+                        .columns(6)
+                        .gap(RightGap.SMALL)
+                    @Suppress("DialogTitleCapitalization")
+                    label("KB")
+                        .comment("Files larger than this will not be sent to Cursorless to prevent engine overload")
+                }
             }
             group("Colors") {
                 row {
