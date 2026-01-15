@@ -2,10 +2,7 @@ package com.github.asoee.cursorlessjetbrains
 
 import com.github.asoee.cursorlessjetbrains.commands.CommandExecutorService
 import com.github.asoee.cursorlessjetbrains.commands.CommandExecutorServiceTest.MainJavaFixture
-import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCommand
-import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessRange
-import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessTarget
-import com.github.asoee.cursorlessjetbrains.cursorless.HatsFormat
+import com.github.asoee.cursorlessjetbrains.cursorless.*
 import com.github.asoee.cursorlessjetbrains.services.TalonProjectService
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.service
@@ -14,12 +11,24 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
+import com.intellij.openapi.module.Module
+import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.openapi.roots.ContentEntry
+import com.intellij.openapi.roots.ModifiableRootModel
+import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.EditorTestUtil
+import com.intellij.testFramework.IdeaTestUtil
+import com.intellij.testFramework.LightProjectDescriptor
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor
 import com.intellij.testFramework.runInEdtAndWait
 import junit.framework.TestCase
 import kotlinx.coroutines.delay
@@ -31,16 +40,55 @@ import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 
+class CursorlessJavaProjectDescriptor : DefaultLightProjectDescriptor() {
+    override fun getModuleTypeId(): String {
+        return StdModuleTypes.JAVA.id
+    }
+
+    override fun getSdk(): Sdk? {
+        return IdeaTestUtil.getMockJdk17()
+    }
+
+    override fun configureModule(module: Module, model: ModifiableRootModel, contentEntry: ContentEntry) {
+        super.configureModule(module, model, contentEntry)
+
+        // Add src/main/java as the Java source root (following Maven/Gradle convention)
+        val sourceRootUrl = contentEntry.url!! + "/src/main/java"
+        contentEntry.addSourceFolder(sourceRootUrl, false)
+    }
+}
+
+val cursorlessJavaProjectDescriptor = CursorlessJavaProjectDescriptor()
 
 @RunWith(JUnit4::class)
 class TestCursorlessActions : BasePlatformTestCase() {
 
     override fun getTestDataPath() = "src/test/testData/commands"
 
+    override fun getProjectDescriptor(): LightProjectDescriptor? {
+        return cursorlessJavaProjectDescriptor
+    }
+    
+
     override fun runInDispatchThread(): Boolean {
         return false
+    }
+
+    override fun setUp() {
+        super.setUp()
+        // Allow access to test data directory structure
+        val testDataPath =
+            Paths.get(System.getProperty("user.dir"), "src", "test", "testData").toAbsolutePath().toString()
+        VfsRootAccess.allowRootAccess(myFixture.testRootDisposable, testDataPath)
+
+        // Also allow access to the Java source directory within test data
+        val javaSourcePath =
+            Paths.get(System.getProperty("user.dir"), "src", "test", "testData", "commands", "src", "main", "java")
+                .toAbsolutePath().toString()
+        VfsRootAccess.allowRootAccess(myFixture.testRootDisposable, javaSourcePath)
     }
 
     @Test
@@ -58,8 +106,38 @@ class TestCursorlessActions : BasePlatformTestCase() {
         clTarget?.let {
             assertEquals("default", clTarget.color)
             assertEquals("default", clTarget.shape)
-            assertEquals("m", clTarget.letter)
+            assertEquals("i", clTarget.letter)
         }
+    }
+
+    @Test
+    fun testProjectDescriptorConfiguration() {
+        val fixture = mainJavaFixture()
+
+        // Verify that the module is properly configured as a Java module
+        val modules = ModuleManager.getInstance(fixture.psiFile.project).modules
+        val module = modules.first()
+
+        // Check that the module has the correct type
+        val moduleTypeId = module.moduleTypeName
+        println("Module type: $moduleTypeId")
+
+        // Check that there are source roots configured
+        val rootManager = ModuleRootManager.getInstance(module)
+        val sourceRoots: Array<VirtualFile> = rootManager.sourceRoots
+        println("Source roots count: ${sourceRoots.size}")
+
+        sourceRoots.forEachIndexed { index, root ->
+            println("Source root $index: ${root.path}")
+        }
+
+        // Verify that Java files are properly recognized
+        assertTrue("Module should be configured as Java module", moduleTypeId == "JAVA_MODULE")
+        assertTrue("Should have at least one source root", sourceRoots.isNotEmpty())
+
+        // Check that the Java file is properly indexed and recognized
+        assertNotNull("Main.java should be accessible as PSI file", fixture.psiFile)
+        assertEquals("Main", fixture.psiFile.name.substringBeforeLast("."))
     }
 
     @Test
@@ -107,20 +185,22 @@ class TestCursorlessActions : BasePlatformTestCase() {
     @Test
     fun testBringToEndOfLine() {
         val fixture = mainJavaFixture()
-//      target the main method, expect a default hat over 'm'
+//      target the main method, expect a default hat over 'i'
         val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 3, 23, 3, 27)
         println("target: $targetRange")
+
+        //place cursor after the curly in the for loop
+        moveCursorTo(fixture.editor, 8, 9)
+
+        runBlocking {
+            // wait for editor state to update with new cursor position
+            delay(100)
+        }
+
         val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
         val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
         assertNotNull(clTarget)
         if (clTarget != null) {
-            //place cursor after the curly in the for loop
-            moveCursorTo(fixture.editor, 7, 9)
-
-            runBlocking {
-                // wait for editor state to update with new cursor position
-                delay(100)
-            }
 
             val commandV7 = CursorlessCommand.bringImplicit(clTarget)
             println("clTarget: $clTarget")
@@ -133,10 +213,57 @@ class TestCursorlessActions : BasePlatformTestCase() {
 
             runInEdtAndWait {
                 val expected = "        }main"
-                assertEquals(expected, getTextFromLine(fixture.editor, 7))
+                assertEquals(expected, getTextFromLine(fixture.editor, 8))
                 val caretPos = fixture.editor.caretModel.currentCaret.logicalPosition
-                val expectedPos = LogicalPosition(7, 13)
+                val expectedPos = LogicalPosition(8, 13)
                 assertEquals(expectedPos, caretPos)
+            }
+        }
+    }
+
+    @Test
+    fun testBringToAfter() {
+        val fixture = mainJavaFixture()
+//      source the main method, expect a default hat over 'i'
+        val sourceRange = CursorlessRange.fromLogicalPositions(fixture.editor, 3, 23, 3, 27)
+//        dest is the curly brace at the end of the for loop in line 7
+        val destRange = CursorlessRange.fromLogicalPositions(fixture.editor, 8, 8, 8, 9)
+        println("sourceRange: $sourceRange")
+        println("destRange: $destRange")
+
+        //place cursor after the curly in the for loop
+        moveCursorTo(fixture.editor, 8, 9)
+        runBlocking {
+            // wait for editor state to update with new cursor position
+            delay(500)
+        }
+
+        val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
+        val clSourceTarget = findHatForRange(fixture.editor, editorHats, sourceRange)
+        println("clSourceTarget: $clSourceTarget")
+        val clDestTarget = findHatForRange(fixture.editor, editorHats, destRange)
+        println("clDestTarget: $clDestTarget")
+        assertNotNull(clSourceTarget)
+        assertNotNull(clDestTarget)
+        if (clSourceTarget != null && clDestTarget != null) {
+            val bringCmd = CursorlessCommand.bring(
+                CursorlessCommand.sourceTarget(clSourceTarget),
+                CursorlessCommand.destTarget(after, clDestTarget),
+                "${clSourceTarget.spokenForm()} after ${clDestTarget.spokenForm()}"
+            )
+
+            fixture.projectService.cursorlessEngine.executeCommand(bringCmd)
+
+            runBlocking {
+                delay(100)
+            }
+
+            runInEdtAndWait {
+                val expected = "        } main"
+                assertEquals(expected, getTextFromLine(fixture.editor, 8))
+                val caretPos = fixture.editor.caretModel.currentCaret.logicalPosition
+                val expectedPos = LogicalPosition(8, 9)
+                assertEquals("cursor should be unchanged", expectedPos, caretPos)
             }
         }
     }
@@ -166,13 +293,13 @@ class TestCursorlessActions : BasePlatformTestCase() {
                 assertEquals(expectedFirst, getTextFromLine(fixture.editor, 4))
 
                 val expectedSecond = "        System.out.(\"i = \" + i);"
-                assertEquals(expectedSecond, getTextFromLine(fixture.editor, 10))
+                assertEquals(expectedSecond, getTextFromLine(fixture.editor, 11))
 
                 val carets = fixture.editor.caretModel.caretsAndSelections
                 assertEquals(2, carets.size)
 
                 assertEquals(carets[0].caretPosition, LogicalPosition(4, 19))
-                assertEquals(carets[1].caretPosition, LogicalPosition(10, 19))
+                assertEquals(carets[1].caretPosition, LogicalPosition(11, 19))
 
                 myFixture.type("write")
 
@@ -180,7 +307,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
                 assertEquals(expectedFirstAfter, getTextFromLine(fixture.editor, 4))
 
                 val expectedSecondAfter = "        System.out.write(\"i = \" + i);"
-                assertEquals(expectedSecondAfter, getTextFromLine(fixture.editor, 10))
+                assertEquals(expectedSecondAfter, getTextFromLine(fixture.editor, 11))
             }
         }
     }
@@ -189,7 +316,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
     fun testDrink() {
         val fixture = mainJavaFixture()
 //      target the println method method name in line 11
-        val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 10, 19, 10, 26)
+        val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 11, 19, 11, 26)
         println("target: $targetRange")
         val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
         val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
@@ -207,12 +334,12 @@ class TestCursorlessActions : BasePlatformTestCase() {
 
             runInEdtAndWait {
                 val expectedFirst = "        "
-                assertEquals(expectedFirst, getTextFromLine(fixture.editor, 10))
+                assertEquals(expectedFirst, getTextFromLine(fixture.editor, 11))
 
                 val carets = fixture.editor.caretModel.caretsAndSelections
                 assertEquals(1, carets.size)
 
-                assertEquals(carets[0].caretPosition, LogicalPosition(10, 8))
+                assertEquals(carets[0].caretPosition, LogicalPosition(11, 8))
             }
         }
     }
@@ -221,7 +348,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
     fun testPour() {
         val fixture = mainJavaFixture()
         // auto-indent does not work for java files in BasePlatformTestCase, so use xml instead
-        val xmlFile = myFixture.configureByFile("org/example/book-catalog.xml")
+        val xmlFile = myFixture.configureByFile("references/book-catalog.xml")
         val xmlEditor = getEditorFromPsiFile(xmlFile)!!
         runInEdtAndWait {
             EditorTestUtil.setEditorVisibleSize(xmlEditor, 80, 20)
@@ -264,52 +391,34 @@ class TestCursorlessActions : BasePlatformTestCase() {
         }
     }
 
+    private fun getTextFromRange(editor: Editor, range: CursorlessRange): String {
+        val document = editor.document
+        val startOffset = range.startOffset(editor)
+        val endOffset = range.endOffset(editor)
+        return document.getText(TextRange(startOffset, endOffset))
+    }
+
     private fun awaitHats(fixture: MainJavaFixture, editor: Editor): HatsFormat {
+        // Wait for the Cursorless system to initialize
         runBlocking {
-            delay(150)
+            delay(500)
         }
+
+        // Ensure the editor is properly loaded and hats are generated
+        runInEdtAndWait {
+            fixture.projectService.editorManager.reloadAllEditors()
+        }
+
         var editorHats: HatsFormat? = null
         await.atMost(2, TimeUnit.SECONDS).until {
             editorHats = fixture.projectService.editorManager.getEditorHats(editor)
+            println("Checking hats: ${editorHats?.size ?: "null"}")
             editorHats != null && editorHats!!.isNotEmpty()
         }
         return editorHats!!
     }
 
-    @Test
-    fun testTypeDefTarget() {
-        val fixture = mainJavaFixture()
-        val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
-        assertNotEmpty(editorHats.values)
-
-//      target the println call in visual line 5
-        val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 4, 19, 4, 26)
-        println("target: $targetRange")
-        val clTarget = awaitTargetForRange(fixture, fixture.editor, targetRange)
-
-
-        assertNotNull(clTarget)
-        fixture.projectService.cursorlessEngine.executeCommand(CursorlessCommand.typeDeaf(clTarget))
-        println("command executed")
-
-        runBlocking {
-            delay(150)
-        }
-
-        println("queue assert")
-        runInEdtAndWait {
-            println("Asserting in EDT...")
-            assertEquals("println", fixture.editor.selectionModel.selectedText)
-            assertEquals(
-                targetRange.startOffset(fixture.editor),
-                fixture.editor.selectionModel.selectionStart
-            )
-            assertEquals(
-                targetRange.endOffset(fixture.editor),
-                fixture.editor.selectionModel.selectionEnd
-            )
-        }
-    }
+    // testTypeDefTarget moved to TestCursorlessActionsUI.kt for proper UI testing with focus management
 
     @Test
     fun testTakeReadonly() {
@@ -414,6 +523,138 @@ class TestCursorlessActions : BasePlatformTestCase() {
         }
     }
 
+    @Test
+    fun testSnippetIfWrap() {
+        val fixture = mainJavaFixture()
+
+        // Target the doSomethingElse function call in line 7 (0-indexed line 6)
+        // "doSomethingElse(i);" is at line 7 in the file
+        // Let's target just the function name to match the hat system
+        val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 6, 12, 6, 27)
+        println("Targeting range: $targetRange")
+
+        // Print the text we're targeting to verify it's correct
+        val targetText = getTextFromRange(fixture.editor, targetRange)
+        println("Target text: '$targetText'")
+
+        val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
+
+        val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
+        assertNotNull("Should find a target for doSomethingElse function call", clTarget)
+
+        if (clTarget != null) {
+            println("Found target: $clTarget")
+
+            runBlocking {
+                delay(200) // Wait for command execution
+            }
+
+            // Create the wrapWithSnippet command to wrap the function call with an if statement
+            val wrapCommand = CursorlessCommand.wrapWithSnippet(clTarget, "if wrap")
+            println("Executing command: $wrapCommand")
+
+            val result = fixture.projectService.cursorlessEngine.executeCommand(wrapCommand)
+            println("Command result: success=${result.success}, error=${result.error}")
+
+            runBlocking {
+                delay(200) // Wait for command execution
+            }
+
+            runInEdtAndWait {
+                // Verify the command succeeded
+                assertNull("Command should not have error: ${result.error}", result.error)
+                assertTrue("Command should succeed", result.success)
+
+                myFixture.checkResultByFile("references/Main_after_snippet_if_wrap.java")
+
+            }
+        }
+    }
+
+    @Test
+    fun testFollowToDifferentFile() {
+        val fixture = mainJavaFixture()
+        // Target the Tool.add method call on line 8 (0-indexed line 7)
+        val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 7, 24, 7, 27)
+        println("target: $targetRange")
+        val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
+        val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
+        assertNotNull("No target found for range $targetRange", clTarget)
+        if (clTarget != null) {
+
+            val followCommand = CursorlessCommand.follow(clTarget)
+            println("clTarget: $clTarget")
+            println("command: $followCommand")
+
+            // Get the initial number of open editors and their names
+            val initialEditorCount = FileEditorManager.getInstance(fixture.project).allEditors.size
+            val initialOpenFiles = FileEditorManager.getInstance(fixture.project).openFiles.map { it.name }
+            println("Initial editors: $initialEditorCount, files: $initialOpenFiles")
+
+            val result = fixture.projectService.cursorlessEngine.executeCommand(followCommand)
+            println("Command result: $result")
+
+            runBlocking {
+                delay(100) // Wait for navigation to complete
+            }
+
+            runInEdtAndWait {
+                // Check what editors are open now
+                val finalEditorCount = FileEditorManager.getInstance(fixture.project).allEditors.size
+                val finalOpenFiles = FileEditorManager.getInstance(fixture.project).openFiles.map { it.name }
+                println("Final editors: $finalEditorCount, files: $finalOpenFiles")
+
+                // Verify that Tool.java is now open
+                val toolJavaOpen = finalOpenFiles.contains("Tool.java")
+                assertTrue("Expected Tool.java to be opened. Open files: $finalOpenFiles", toolJavaOpen)
+
+                // Verify that the active editor is Tool.java
+                val selectedEditor = FileEditorManager.getInstance(fixture.project).selectedEditor
+                assertNotNull("No selected editor found", selectedEditor)
+                val activeFileName = selectedEditor?.file?.name
+                assertEquals("Expected active editor to be Tool.java", "Tool.java", activeFileName)
+
+                // Verify that the cursor is positioned at the add() function
+                if (selectedEditor is TextEditor) {
+                    val editor = selectedEditor.editor
+                    val caretPosition = editor.caretModel.logicalPosition
+                    println("Cursor position: line ${caretPosition.line}, column ${caretPosition.column}")
+
+                    // The add() function definition should be on line 4 (0-indexed line 3)
+                    assertEquals(
+                        "Expected cursor to be on line 4 (where add() function is defined)",
+                        3,
+                        caretPosition.line
+                    )
+
+                    // Verify the cursor is positioned at or near the function name "add"
+                    val currentLineText = editor.document.getText(
+                        TextRange(
+                            editor.document.getLineStartOffset(caretPosition.line),
+                            editor.document.getLineEndOffset(caretPosition.line)
+                        )
+                    )
+                    println("Current line text: '$currentLineText'")
+                    assertTrue(
+                        "Expected current line to contain 'add' function definition",
+                        currentLineText.contains("add(")
+                    )
+
+                    // More specific: verify cursor is positioned at or near the function name
+                    val addFunctionIndex = currentLineText.indexOf("add")
+                    assertTrue("Expected to find 'add' in the line", addFunctionIndex >= 0)
+
+                    // Allow some flexibility in cursor positioning - it should be within the "add" function name
+                    val addFunctionEndIndex = addFunctionIndex + 3 // "add" is 3 characters
+                    assertTrue(
+                        "Expected cursor to be positioned at or within the 'add' function name (between $addFunctionIndex and $addFunctionEndIndex, actual: ${caretPosition.column})",
+                        caretPosition.column >= addFunctionIndex && caretPosition.column <= addFunctionEndIndex
+                    )
+                }
+            }
+        }
+    }
+
 
     private fun awaitTargetForRange(
         fixture: MainJavaFixture,
@@ -464,7 +705,10 @@ class TestCursorlessActions : BasePlatformTestCase() {
 
 
     private fun mainJavaFixture(): MainJavaFixture {
-        val psiFile = myFixture.configureByFile("org/example/Main.java")
+        val psiFile = myFixture.configureByFile("src/main/java/org/example/Main.java")
+        // Also add Tool.java to the project to enable cross-file navigation
+        myFixture.copyFileToProject("src/main/java/org/example/Tool.java", "src/main/java/org/example/Tool.java")
+
         val commandExecutorService = CommandExecutorService()
         val project = psiFile.project
         val appService = project.service<TalonProjectService>()
@@ -473,6 +717,11 @@ class TestCursorlessActions : BasePlatformTestCase() {
         runInEdtAndWait {
             EditorTestUtil.setEditorVisibleSize(editor, 80, 20)
             appService.editorManager.reloadAllEditors()
+        }
+
+        // Give the Cursorless system time to initialize
+        runBlocking {
+            delay(100)
         }
 
         return MainJavaFixture(psiFile, commandExecutorService, project, editor!!, appService)
@@ -508,6 +757,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
                 ClassLoader.getSystemResource("logging.properties").path
             )
         }
+
     }
 
 }

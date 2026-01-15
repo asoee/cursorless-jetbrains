@@ -1,8 +1,7 @@
 package com.github.asoee.cursorlessjetbrains.ui
 
 import com.github.weisj.jsvg.SVGDocument
-import com.github.weisj.jsvg.parser.DefaultParserProvider
-import com.github.weisj.jsvg.parser.DomProcessor
+import com.github.weisj.jsvg.parser.LoaderContext
 import com.github.weisj.jsvg.parser.SVGLoader
 import java.awt.Color
 
@@ -18,7 +17,10 @@ class CursorlessShape(
         fun loadShape(shape: String): CursorlessShape? {
             CursorlessShape::class.java.getResource("/icons/$shape.svg")?.let { svgUri ->
                 val dynamicColor = DynamicSvgPaint(Color.GRAY)
-                loader.load(svgUri, ColorParserProvider(dynamicColor))?.let { svg ->
+                val loaderContext = LoaderContext.builder()
+                    .preProcessor(CustomColorsProcessor(dynamicColor))
+                    .build()
+                loader.load(svgUri, loaderContext)?.let { svg ->
                     return CursorlessShape(dynamicColor, svg)
                 }
             }
@@ -34,10 +36,5 @@ class CursorlessShape(
         return svgDocument
     }
 
-    class ColorParserProvider(private val dynamicColor: DynamicSvgPaint) : DefaultParserProvider() {
-        override fun createPreProcessor(): DomProcessor {
-            return CustomColorsProcessor(dynamicColor)
-        }
-    }
 
 }

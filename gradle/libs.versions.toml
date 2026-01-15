@@ -1,18 +1,18 @@
 [versions]
 # libraries
 junit = "4.13.2"
-javet = "4.1.1"
+javet = "4.1.7"
 javenode = "0.8.0"
-kotlin = "2.1.20"
-kover = "0.8.3"
-qodana = "2024.2.3"
-jsvg = "1.6.0"
-kotlin-serialization = "1.8.1"
-awaitility = "4.2.0"
+kotlin = "2.2.21"
+kover = "0.9.1"
+qodana = "2025.1.1"
+jsvg = "2.0.0"
+kotlin-serialization = "1.9.0"
+awaitility = "4.3.0"
 
 # plugins
-changelog = "2.2.1"
-intelliJPlatform = "2.4.0"
+changelog = "2.4.0"
+intelliJPlatform = "2.8.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }

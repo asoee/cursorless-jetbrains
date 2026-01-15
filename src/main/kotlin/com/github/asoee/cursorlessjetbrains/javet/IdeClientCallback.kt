@@ -52,11 +52,19 @@ class IdeClientCallback {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
 
+        override fun insertSnippet(editorId: String, snippet: String) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
         override fun revealLine(editorId: String, line: Int, revealAt: String) {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
 
         override fun flashRanges(flashRanges: Array<CursorlessFlashRange>) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
+        override fun setHighlightRanges(highlightId: String?, editorId: String, ranges: Array<CursorlessGeneralizedRange>) {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
 
@@ -133,6 +141,12 @@ class IdeClientCallback {
     }
 
     @V8Function
+    fun insertSnippet(editorId: String, snippet: String) {
+        logger.info("IdeClientCallback.insertSnippet: $snippet")
+        cursorlessCallback.insertSnippet(editorId, snippet)
+    }
+
+    @V8Function
     fun revealLine(editorId: String, line: Int, revealAt: String) {
         logger.info("IdeClientCallback.revealLine: $line")
         cursorlessCallback.revealLine(editorId, line, revealAt)
@@ -146,6 +160,12 @@ class IdeClientCallback {
         cursorlessCallback.flashRanges(ranges)
     }
 
+    @V8Function
+    fun setHighlightRanges(highlightId: String?, editorId: String, rangesJson: String) {
+        logger.info("IdeClientCallback.setHighlightRanges: highlightId=$highlightId, editorId=$editorId, ranges=$rangesJson")
+        val ranges = jsonDecoder.decodeFromString<Array<CursorlessGeneralizedRange>>(rangesJson)
+        cursorlessCallback.setHighlightRanges(highlightId, editorId, ranges)
+    }
 
     @V8Function
     fun readQuery(filename: String): String? {

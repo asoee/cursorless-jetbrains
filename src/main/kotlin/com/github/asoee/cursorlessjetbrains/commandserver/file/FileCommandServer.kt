@@ -1,12 +1,15 @@
 package com.github.asoee.cursorlessjetbrains.commandserver.file
 
+import com.github.asoee.cursorlessjetbrains.commands.CommandExecutorService
+import com.github.asoee.cursorlessjetbrains.commands.CommandRegistryService
+import com.github.asoee.cursorlessjetbrains.commands.CommandRequest
 import com.github.asoee.cursorlessjetbrains.javet.ExecutionResult
-import com.github.asoee.cursorlessjetbrains.services.TalonProjectService
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonPrimitive
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -56,8 +59,7 @@ class FileCommandServer {
         }
         try {
             val userName = System.getProperty("user.name")
-            val command = "id -u $userName"
-            readProcessOutput(command).let {
+            readProcessOutput(arrayOf("id", "-u", userName)).let {
                 try {
                     Integer.parseInt(it)
                     return "-$it"
@@ -73,8 +75,10 @@ class FileCommandServer {
         return ""
     }
 
-    private fun readProcessOutput(command: String): String {
-        val process = Runtime.getRuntime().exec(command)
+    private fun readProcessOutput(command: Array<String>): String {
+        val process = ProcessBuilder(*command)
+            .redirectErrorStream(true)
+            .start()
         val output = StringBuilder()
 
         BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
@@ -106,7 +110,7 @@ class FileCommandServer {
 
     private fun readAndHandleFileRquest(fullPath: Path?, project: Project) {
         fullPath?.readText().let {
-            logger.debug("File content: $it")
+            logger.info("File content: $it")
             val request = Json.decodeFromString<CommandServerRequest>(it!!)
             val result = handleRequest(request, project)
             if (result.success) {
@@ -139,9 +143,24 @@ class FileCommandServer {
 
     private fun handleRequest(request: CommandServerRequest, project: Project): ExecutionResult {
         logger.info("Handling request..." + request.commandId + " " + request.args + " " + request.uuid)
-        val service = project.service<TalonProjectService>()
-        val executionResult = service.jsDriver.execute(request.args)
-        return executionResult
+
+        // Handle all commands uniformly through CommandRegistryService
+        val commandRegistryService = project.service<CommandRegistryService>()
+        val commandExecutorService = project.service<CommandExecutorService>()
+
+        val commandRequest = CommandRequest(project, request.commandId, request.args.filterNotNull())
+        val command = commandRegistryService.getCommand(commandRequest)
+
+        return if (command != null) {
+            try {
+                val result = commandExecutorService.execute(command)
+                ExecutionResult(true, JsonPrimitive(result), null)
+            } catch (e: Exception) {
+                ExecutionResult(false, null, "Command execution failed: ${e.message}")
+            }
+        } else {
+            ExecutionResult(false, null, "Unknown command: ${request.commandId}")
+        }
     }
 
 }

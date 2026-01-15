@@ -2,6 +2,46 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Tighten up javet javascript handling to prevent memory leaks
+- Restart JS engine when close to limit, if GC does not help
+- Limit file size sent to cursorless. Default to 1 Mb, but adjustable from settings.
+
+## [0.0.14] - 2025-09-26
+
+### Added
+
+- Added file-extension to treesitter language mapping for remaining languages
+- `Cursorless settings` support
+
+## [0.0.13] - 2025-08-05
+
+### New
+
+- Highlight support
+- Snipped support
+
+### Changed
+
+- Inspection fixes
+
+## [0.0.12] - 2025-08-03
+
+### Added
+
+- Add file-extension to tree-sitter language mapping, to avoid relying on know PSI languages.'
+- Add support for `follow` command.
+
+### Changed
+
+- Update to newest cursorless engine, including new version of treesitter.
+- Update various dependencies, including jetbrains-platform.
+
+### Fixed
+
+- Allow selection (take) in readonly files.
+
 ## [0.0.11] - 2025-05-06
 
 ### Changed
@@ -140,7 +180,10 @@
 - Communication with talon using both HTTP and file based command server
 - Most voice-code commands added to the plugin
 
-[Unreleased]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.11...HEAD
+[Unreleased]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.14...HEAD
+[0.0.14]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.13...v0.0.14
+[0.0.13]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.12...v0.0.13
+[0.0.12]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.11...v0.0.12
 [0.0.11]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.10...v0.0.11
 [0.0.10]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.9...v0.0.10
 [0.0.9]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.8...v0.0.9

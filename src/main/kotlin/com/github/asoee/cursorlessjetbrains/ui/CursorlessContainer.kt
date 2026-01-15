@@ -2,7 +2,7 @@ package com.github.asoee.cursorlessjetbrains.ui
 
 import com.github.asoee.cursorlessjetbrains.cursorless.*
 import com.github.asoee.cursorlessjetbrains.settings.TalonSettings
-import com.github.weisj.jsvg.attributes.ViewBox
+import com.github.weisj.jsvg.view.ViewBox
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Editor
@@ -124,7 +124,7 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         val svgIcon = shapes[shapeName ?: "default"]
 
         mapping[fullKeyName]?.forEach { range: CursorlessRange ->
-            if (range.end.line > lineCount) {
+            if (range.end.line >= lineCount) {
                 return@forEach
             }
             val offset = range.startOffset(editor)

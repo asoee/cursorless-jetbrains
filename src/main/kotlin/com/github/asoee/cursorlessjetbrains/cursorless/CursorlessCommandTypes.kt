@@ -38,6 +38,12 @@ class RevealTypeDefinitionActionDescriptor(
 ) : SimpleActionDescriptor()
 
 @Serializable
+@SerialName("followLink")
+class FollowLinkActionDescriptor(
+    override val target: PartialTargetDescriptor,
+) : SimpleActionDescriptor()
+
+@Serializable
 @SerialName("clearAndSetSelection")
 class ClearAndSetSelectionActionDescriptor(
     override val target: PartialTargetDescriptor,
@@ -55,6 +61,35 @@ class EditNewLineBeforeActionDescriptor(
 class EditNewLineAfterActionDescriptor(
     override val target: PartialTargetDescriptor,
 ) : SimpleActionDescriptor()
+
+@Serializable
+@SerialName("wrapWithSnippet")
+class WrapWithSnippetActionDescriptor(
+    val target: PartialTargetDescriptor,
+    val snippetDescription: SnippetDescription,
+) : ActionDescriptor
+
+@Serializable
+data class SnippetDescription(
+    val type: String,
+    val fallbackLanguage: String? = null,
+    val body: String? = null,
+    val snippets: List<CustomSnippet>? = null
+)
+
+@Serializable
+data class CustomSnippet(
+    val type: String,
+    val body: String,
+    val variableName: String? = null,
+    val scopeType: SnippetScopeType? = null,
+    val languages: List<String>? = null
+)
+
+@Serializable
+data class SnippetScopeType(
+    val type: String
+)
 
 @Serializable
 @SerialName("getText")
@@ -109,7 +144,15 @@ sealed interface PartialMark
 data class DecoratedSymbolMark(
     val symbolColor: String,
     val character: String,
-) : PartialMark
+) : PartialMark {
+    override fun toString(): String {
+        return "$symbolColor $character"
+    }
+}
+
+@Serializable
+@SerialName("that")
+class ThatMark() : PartialMark
 
 @Serializable
 sealed interface DestinationDescriptor

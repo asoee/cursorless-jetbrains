@@ -9,6 +9,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.runInEdtAndWait
@@ -18,6 +19,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.awt.datatransfer.StringSelection
+import java.nio.file.Paths
 
 //@TestDataPath("\$CONTENT_ROOT/src/test/testData")
 @RunWith(JUnit4::class)
@@ -27,12 +29,19 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
         return false
     }
 
+    override fun setUp() {
+        super.setUp()
+        // Allow access to test data directory structure
+        val testDataPath = Paths.get(System.getProperty("user.dir"), "src", "test", "testData").toAbsolutePath().toString()
+        VfsRootAccess.allowRootAccess(myFixture.testRootDisposable, testDataPath)
+    }
+
     @Test
     fun testInsertLineAfter() {
         val fixture = mainJavaFixture()
         val command = InsertLineAfterCommand(fixture.project, fixture.editor, listOf(LineRange(3, 3)).toTypedArray())
         val result = fixture.commandExecutorService.execute(command)
-        myFixture.checkResultByFile("org/example/Main_after_insert_lines.java")
+        myFixture.checkResultByFile("references/Main_after_insert_lines.java")
     }
 
     @Test
@@ -40,7 +49,7 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
         val fixture = mainJavaFixture()
         val command = CloneLineCommand(fixture.project, 7)
         val result = fixture.commandExecutorService.execute(command)
-        myFixture.checkResultByFile("org/example/Main_after_clone_line.java")
+        myFixture.checkResultByFile("references/Main_after_clone_line.java")
     }
 
     @Test
@@ -48,7 +57,7 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
         val fixture = mainJavaFixture()
         val command = FindCommand(fixture.project, "next", "print")
         val result = fixture.commandExecutorService.execute(command)
-        myFixture.checkResultByFile("org/example/Main.java")
+        myFixture.checkResultByFile("src/main/java/org/example/Main.java")
         runInEdtAndWait {
             val selectedText = fixture.editor.selectionModel.selectedText
             assertEquals("print", selectedText)
@@ -61,7 +70,7 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
         val fixture = mainJavaFixture()
         val command = GotoCommand(fixture.project, 5, 20)
         val result = fixture.commandExecutorService.execute(command)
-        myFixture.checkResultByFile("org/example/Main.java")
+        myFixture.checkResultByFile("src/main/java/org/example/Main.java")
         assertSelectedOffset(fixture, 106, 106)
 
     }
@@ -69,14 +78,22 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
     @Test
     fun testIdeActionCommandIntroduceVariable() {
         val fixture = mainJavaFixture()
-        val startPos = LogicalPosition(5, 31)
-        val endPos = LogicalPosition(5, 32)
+        val startPos = LogicalPosition(7, 20)  // Select "Tool.add(i, 2)" expression
+        val endPos = LogicalPosition(7, 34)
         runInEdtAndWait {
             fixture.editor.caretModel.caretsAndSelections = listOf(CaretState(endPos, startPos, endPos))
+            val selectedText = fixture.editor.document.getText(
+                com.intellij.openapi.util.TextRange(
+                    fixture.editor.logicalPositionToOffset(startPos),
+                    fixture.editor.logicalPositionToOffset(endPos),
+                )
+            )
+            println("Selected text: '$selectedText'")
+
         }
         val command = IDEActionCommand(fixture.project, "IntroduceVariable")
         val result = fixture.commandExecutorService.execute(command)
-        myFixture.checkResultByFile("org/example/Main.java")
+        myFixture.checkResultByFile("references/Main_after_introduce_variable.java")
 
     }
 
@@ -98,11 +115,63 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
         }
         runInEdtAndWait {
             println("check")
-            myFixture.checkResultByFile("org/example/Main_after_editor_paste.java")
+            myFixture.checkResultByFile("references/Main_after_editor_paste.java")
         }
         println("bg done")
 
         println("test done")
+    }
+
+
+    @Test
+    fun testIdeActionCommandGotoDeclaration() {
+        val fixture = mainJavaFixture()
+        // Place cursor on the function call "doSomethingElse" on line 7
+        val functionCallPos = LogicalPosition(6, 12) // 0-indexed line 6, character 12 (start of "doSomethingElse")
+        runInEdtAndWait {
+            fixture.editor.caretModel.caretsAndSelections =
+                listOf(CaretState(functionCallPos, functionCallPos, functionCallPos))
+        }
+
+        // Get initial cursor position
+        val initialPosition = runInEdtAndWait {
+            fixture.editor.caretModel.logicalPosition
+        }
+        println("Initial cursor position: $initialPosition")
+
+        val command = IDEActionCommand(fixture.project, "GotoDeclaration")
+        println("Executing GotoDeclaration command")
+        val result = fixture.commandExecutorService.execute(command)
+        println("Command execution result: $result")
+
+        runBlocking {
+            delay(100) // Wait longer for navigation to complete
+        }
+
+        runInEdtAndWait {
+            val finalPosition = fixture.editor.caretModel.logicalPosition
+            println("Final cursor position: $finalPosition")
+
+            // Get the text at the current cursor position for debugging
+            val currentLine = fixture.editor.document.getText(
+                com.intellij.openapi.util.TextRange(
+                    fixture.editor.document.getLineStartOffset(finalPosition.line),
+                    fixture.editor.document.getLineEndOffset(finalPosition.line)
+                )
+            )
+            println("Text at final cursor line: '$currentLine'")
+
+            // Verify that navigation worked - cursor should move to the function definition line
+            if (finalPosition.line == 6) {
+                println("Cursor remained on original line - GotoDeclaration may not have worked")
+                fail("GotoDeclaration should have moved cursor to function definition")
+            } else {
+                println("Cursor moved to line ${finalPosition.line}")
+                // The function definition should be on line 10 (0-indexed)
+                assertEquals("GotoDeclaration should navigate to function definition line", 10, finalPosition.line)
+                assertTrue("Should be on the function definition line", currentLine.contains("doSomethingElse"))
+            }
+        }
     }
 
     private fun assertSelectedOffset(fixture: MainJavaFixture, startOffset: Int, endOffset: Int) {
@@ -136,7 +205,7 @@ class CommandExecutorServiceTest : BasePlatformTestCase() {
     )
 
     private fun mainJavaFixture(): MainJavaFixture {
-        val psiFile = myFixture.configureByFile("org/example/Main.java")
+        val psiFile = myFixture.configureByFile("src/main/java/org/example/Main.java")
         val project = psiFile.project
         val commandExecutorService = CommandExecutorService()
         val appService = project.service<TalonProjectService>()

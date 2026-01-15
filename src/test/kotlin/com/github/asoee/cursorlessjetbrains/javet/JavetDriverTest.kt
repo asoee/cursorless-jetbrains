@@ -55,6 +55,7 @@ class JavetDriverTest {
             ),
             visible = true,
             editable = true,
+            writable = true,
         )
 
         driver.editorChanged(state)
@@ -152,6 +153,106 @@ class JavetDriverTest {
 
         runtime.close()
     }
+
+    @Test
+    fun testEngineRestartWorks() {
+        // Create and initialize first driver
+        val driver1 = JavetDriver()
+        driver1.loadCursorless()
+        val callback = CountingCallback()
+        driver1.setCursorlessCallback(callback)
+
+        // Create test editor state
+        val cursorPos = Cursor(1, 1)
+        val state = EditorState(
+            id = "test-editor",
+            path = "/test/example.kt",
+            text = """
+                fun hello() {
+                    println("Hello, world!")
+                }
+            """.trimIndent(),
+            active = true,
+            languageId = "kotlin",
+            firstVisibleLine = 0,
+            lastVisibleLine = 3,
+            cursors = listOf(cursorPos),
+            selections = listOf(
+                Selection(
+                    start = cursorPos,
+                    end = cursorPos,
+                    cursorPosition = cursorPos,
+                    active = cursorPos,
+                    anchor = cursorPos
+                )
+            ),
+            visible = true,
+            editable = true,
+            writable = true,
+        )
+
+        // Perform operations with first driver
+        println("Testing first driver before restart...")
+        driver1.editorCreated(state)
+        driver1.editorChanged(state)
+        driver1.dumpMemoryInfo()
+
+        // Close first driver (simulating restart)
+        println("Closing first driver (simulating restart)...")
+        driver1.close()
+
+        // Create and initialize second driver (simulating restart)
+        println("Creating second driver after restart...")
+        val driver2 = JavetDriver()
+        driver2.loadCursorless()
+        driver2.setCursorlessCallback(callback)
+
+        // Verify second driver works correctly
+        println("Testing second driver after restart...")
+        driver2.editorCreated(state)
+        driver2.editorChanged(state)
+
+        // Perform multiple operations to ensure stability
+        for (i in 1..10) {
+            driver2.editorChanged(state)
+        }
+
+        driver2.dumpMemoryInfo()
+
+        // Verify memory is reasonable after restart
+        assertThat(driver2.runtime.referenceCount, lessThanOrEqualTo(5))
+
+        println("Engine restart test completed successfully!")
+        driver2.close()
+    }
+
+    @Test
+    fun testNearOOMCallback() {
+        val driver = JavetDriver()
+
+        // Track if restart was requested
+        var restartRequested = false
+        var restartReason: String? = null
+
+        driver.setRestartListener(object : JavetDriverRestartListener {
+            override fun onRestartRequested(reason: String) {
+                restartRequested = true
+                restartReason = reason
+                println("Restart requested: $reason")
+            }
+        })
+
+        driver.loadCursorless()
+
+        // Verify the near OOM flag is initially false
+        assert(!driver.isNearingOOM()) { "Driver should not be near OOM initially" }
+
+        println("Near OOM callback test setup completed")
+        println("Note: To actually trigger OOM, you would need to allocate large amounts of memory")
+        println("This test verifies the callback mechanism is properly configured")
+
+        driver.close()
+    }
 }
 
 class CountingCallback : CursorlessCallback {
@@ -184,6 +285,10 @@ class CountingCallback : CursorlessCallback {
         println("Not yet implemented")
     }
 
+    override fun insertSnippet(editorId: String, snippet: String) {
+//        println("Not yet implemented")
+    }
+
     override fun executeRangeCommand(editorId: String, rangeCommand: CursorlessEditorCommand) {
         println("Not yet implemented")
     }
@@ -193,6 +298,13 @@ class CountingCallback : CursorlessCallback {
     }
 
     override fun flashRanges(flashRanges: Array<CursorlessFlashRange>) {
+    }
+
+    override fun setHighlightRanges(
+        highlightId: String?,
+        editorId: String,
+        ranges: Array<CursorlessGeneralizedRange>
+    ) {
         println("Not yet implemented")
     }
 

@@ -3,16 +3,23 @@ package com.github.asoee.cursorlessjetbrains.commands
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.diagnostic.thisLogger
 
 @Service(Service.Level.PROJECT)
 class CommandExecutorService {
 
     fun execute(command: VcCommand): String {
-        if (command.executionMode() == ExecutionMode.BACKGROUND) {
-            val context = CommandContext(command.project)
-            return command.execute(context)
-        } else {
-            return executeOnEDT(command)
+        thisLogger().info("Executing command: ${command.toString()}")
+        return try {
+            if (command.executionMode() == ExecutionMode.BACKGROUND) {
+                val context = CommandContext(command.project)
+                command.execute(context)
+            } else {
+                executeOnEDT(command)
+            }
+        } catch (e: Exception) {
+            thisLogger().error("Exception thrown while executing command: ${command.toString()}", e)
+            throw e
         }
     }
 

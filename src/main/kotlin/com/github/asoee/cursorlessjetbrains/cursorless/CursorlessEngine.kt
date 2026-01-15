@@ -3,6 +3,7 @@ package com.github.asoee.cursorlessjetbrains.cursorless
 import com.github.asoee.cursorlessjetbrains.javet.ExecutionResult
 import com.github.asoee.cursorlessjetbrains.javet.JavetDriver
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
+import com.intellij.openapi.diagnostic.thisLogger
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.encodeToJsonElement
@@ -27,7 +28,15 @@ class CursorlessEngine(private val driver: JavetDriver) {
 
     fun executeCommand(command: CommandV7): ExecutionResult {
         val jsonCmd = serialize(command)
-        return driver.execute(jsonCmd)
+        thisLogger().info("Executing command: ${jsonCmd}")
+        val res = driver.execute(jsonCmd)
+        return res
+    }
+
+    fun executeCommand(jsonObjects: List<JsonObject>): ExecutionResult {
+        thisLogger().info("Executing command with JsonObjects: ${jsonObjects}")
+        val res = driver.execute(jsonObjects)
+        return res
     }
 
     fun serialize(cmd: CommandV7): List<JsonObject> {
@@ -40,7 +49,7 @@ class CursorlessEngine(private val driver: JavetDriver) {
     }
 
     fun setHatShapePenalties(penalties: Map<String, Int>) {
-       driver.setHatShapePenalties(penalties)
+        driver.setHatShapePenalties(penalties)
     }
 
     fun setEnabledHatColors(enabledHatColors: List<String>) {
@@ -48,7 +57,7 @@ class CursorlessEngine(private val driver: JavetDriver) {
     }
 
     fun setHatColorPenalties(penalties: Map<String, Int>) {
-       driver.setHatColorPenalties(penalties)
+        driver.setHatColorPenalties(penalties)
     }
 
 

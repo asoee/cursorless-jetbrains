@@ -5,7 +5,6 @@ import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.util.PlatformUtils
 import com.sun.net.httpserver.HttpServer
 import java.io.IOException
 import java.net.InetAddress
@@ -27,19 +26,28 @@ class HttpCommandServer {
     private var server: HttpServer? = null
 
     init {
-        platformToPort[PlatformUtils.IDEA_PREFIX] = 8653
-        platformToPort[PlatformUtils.IDEA_CE_PREFIX] = 8654
-        platformToPort[PlatformUtils.APPCODE_PREFIX] = 8655
-        platformToPort[PlatformUtils.CLION_PREFIX] = 8657
-        platformToPort[PlatformUtils.PYCHARM_PREFIX] = 8658
-        platformToPort[PlatformUtils.PYCHARM_CE_PREFIX] = 8658
-        platformToPort[PlatformUtils.PYCHARM_EDU_PREFIX] = 8658
-        platformToPort[PlatformUtils.RUBY_PREFIX] = 8661
-        platformToPort[PlatformUtils.PHP_PREFIX] = 8662
-        platformToPort[PlatformUtils.WEB_PREFIX] = 8663
-        platformToPort[PlatformUtils.DBE_PREFIX] = 8664
-        platformToPort[PlatformUtils.RIDER_PREFIX] = 8660
-        platformToPort[PlatformUtils.GOIDE_PREFIX] = 8659
+        // Port mappings for different JetBrains IDEs using actual platform prefixes
+        platformToPort["idea"] = 8653              // IntelliJ IDEA Ultimate
+        platformToPort["Idea"] = 8654              // IntelliJ IDEA Community
+        platformToPort["IdeaEdu"] = 8656            // IntelliJ IDEA Educational
+        platformToPort["AppCode"] = 8655            // AppCode
+        platformToPort["Aqua"] = 8665               // Aqua
+        platformToPort["CLion"] = 8657              // CLion
+        platformToPort["Python"] = 8658            // PyCharm Professional
+        platformToPort["PyCharmCore"] = 8658        // PyCharm Community
+        platformToPort["DataSpell"] = 8666          // DataSpell
+        platformToPort["PyCharmEdu"] = 8658         // PyCharm Educational
+        platformToPort["Ruby"] = 8661              // RubyMine
+        platformToPort["PhpStorm"] = 8662           // PhpStorm
+        platformToPort["WebStorm"] = 8663           // WebStorm
+        platformToPort["DataGrip"] = 8664           // DataGrip
+        platformToPort["Rider"] = 8660              // Rider
+        platformToPort["GoLand"] = 8659             // GoLand
+        platformToPort["FleetBackend"] = 8667       // Fleet Backend
+        platformToPort["RustRover"] = 8668          // RustRover
+        platformToPort["Writerside"] = 8669         // Writerside
+        platformToPort["GitClient"] = 8670          // Git Client
+        platformToPort["MPS"] = 8671                // MPS (Meta Programming System)
     }
 
     fun start() {
@@ -49,8 +57,9 @@ class HttpCommandServer {
         random.nextBytes(bytes)
         val nonce = String(Base64.getUrlEncoder().encode(bytes))
         val portOverride = System.getProperty("talon.http.port")?.toIntOrNull()
+        val platformPrefix = System.getProperty("idea.platform.prefix", "idea")
         val port: Int = portOverride ?: platformToPort.getOrDefault(
-            PlatformUtils.getPlatformPrefix(),
+            platformPrefix,
             DEFAULT_PORT
         )
         try {

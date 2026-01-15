@@ -1,5 +1,6 @@
 package com.github.asoee.cursorlessjetbrains.sync
 
+import com.github.asoee.cursorlessjetbrains.settings.TalonSettings
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -29,7 +30,8 @@ fun serializeEditor(editor: Editor, editorId: String, psiFile: PsiFile?): Editor
         val project = editor.project
         val document = editor.document
         val visible = isEditorVisible(project, editor)
-        val editable = isEditorEditable(editor)
+        val editable = true // Editor is always editable for cursor positioning and selection
+        val writable = isDocumentWritable(editor)
 
         val active = isEditorFocused(editor)
         val currentFile =
@@ -48,11 +50,21 @@ fun serializeEditor(editor: Editor, editorId: String, psiFile: PsiFile?): Editor
         val startLine = editor.offsetToLogicalPosition(visibleRange.startOffset).line
         val endLine = editor.offsetToLogicalPosition(visibleRange.endOffset).line
 
+        // Check file size limit before sending to Cursorless
+        val maxFileSizeBytes = TalonSettings.instance.state.maxFileSizeKb * 1024
+        val documentText = document.text
+        val documentSizeBytes = documentText.toByteArray(Charsets.UTF_8).size
+        val textToSend = if (documentSizeBytes > maxFileSizeBytes) {
+            null // Don't send text if file is too large
+        } else {
+            documentText
+        }
+
 //    println("editorState: $currentFile, active: $active, visible: $visible")
         return@compute EditorState(
             editorId,
             currentFile,
-            document.text,
+            textToSend,
             active,
             language,
             startLine,
@@ -60,7 +72,8 @@ fun serializeEditor(editor: Editor, editorId: String, psiFile: PsiFile?): Editor
             cursors,
             selections,
             visible,
-            editable
+            editable,
+            writable
         )
     }
     return edtState
@@ -83,7 +96,7 @@ private fun isEditorVisible(
     return false
 }
 
-fun isEditorEditable(editor: Editor): Boolean {
+fun isDocumentWritable(editor: Editor): Boolean {
     return editor.document.isWritable
 }
 

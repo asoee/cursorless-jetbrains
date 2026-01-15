@@ -43,6 +43,7 @@ data class EditorState(
     val selections: List<Selection>,
     val visible: Boolean,
     val editable: Boolean,
+    val writable: Boolean,
     )
 
 
@@ -96,8 +97,8 @@ fun selectionFromCaretState(editor: Editor, lp: CaretState): Selection {
 
     // provide the "anchor" and "active" for ease of implementation inside of Visual Studio Code
     // note - if the cursor isn't either of these, will return null
-    var active: Cursor? = null
-    var anchor: Cursor? = null
+    var active: Cursor?
+    var anchor: Cursor?
     if (start == cursor) {
         active = start
         anchor = end

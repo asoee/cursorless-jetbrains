@@ -5,14 +5,12 @@ var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
-  get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
-}) : x)(function(x) {
-  if (typeof require !== "undefined") return require.apply(this, arguments);
-  throw Error('Dynamic require of "' + x + '" is not supported');
-});
-var __commonJS = (cb, mod) => function __require2() {
+var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+};
+var __export = (target, all) => {
+  for (var name2 in all)
+    __defProp(target, name2, { get: all[name2], enumerable: true });
 };
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
@@ -87,7 +85,7 @@ var require_nearley = __commonJS({
       };
       State2.prototype.finish = function() {
         if (this.rule.postprocess) {
-          this.data = this.rule.postprocess(this.data, this.reference, Parser5.fail);
+          this.data = this.rule.postprocess(this.data, this.reference, Parser3.fail);
         }
       };
       function Column(grammar2, index) {
@@ -106,7 +104,7 @@ var require_nearley = __commonJS({
           var state = states[w];
           if (state.isComplete) {
             state.finish();
-            if (state.data !== Parser5.fail) {
+            if (state.data !== Parser3.fail) {
               var wantedBy = state.wantedBy;
               for (var i2 = wantedBy.length; i2--; ) {
                 var left = wantedBy[i2];
@@ -226,7 +224,7 @@ var require_nearley = __commonJS({
           return Array(length - s.length + 1).join(" ") + s;
         }
       };
-      function Parser5(rules, start2, options2) {
+      function Parser3(rules, start2, options2) {
         if (rules instanceof Grammar2) {
           var grammar2 = rules;
           var options2 = start2;
@@ -250,8 +248,8 @@ var require_nearley = __commonJS({
         column.process();
         this.current = 0;
       }
-      Parser5.fail = {};
-      Parser5.prototype.feed = function(chunk) {
+      Parser3.fail = {};
+      Parser3.prototype.feed = function(chunk) {
         var lexer2 = this.lexer;
         lexer2.reset(chunk, this.lexerState);
         var token;
@@ -305,7 +303,7 @@ var require_nearley = __commonJS({
         this.results = this.finish();
         return this;
       };
-      Parser5.prototype.reportLexerError = function(lexerError) {
+      Parser3.prototype.reportLexerError = function(lexerError) {
         var tokenDisplay, lexerMessage;
         var token = lexerError.token;
         if (token) {
@@ -317,12 +315,12 @@ var require_nearley = __commonJS({
         }
         return this.reportErrorCommon(lexerMessage, tokenDisplay);
       };
-      Parser5.prototype.reportError = function(token) {
+      Parser3.prototype.reportError = function(token) {
         var tokenDisplay = (token.type ? token.type + " token: " : "") + JSON.stringify(token.value !== void 0 ? token.value : token);
         var lexerMessage = this.lexer.formatError(token, "Syntax error");
         return this.reportErrorCommon(lexerMessage, tokenDisplay);
       };
-      Parser5.prototype.reportErrorCommon = function(lexerMessage, tokenDisplay) {
+      Parser3.prototype.reportErrorCommon = function(lexerMessage, tokenDisplay) {
         var lines = [];
         lines.push(lexerMessage);
         var lastColumnIndex = this.table.length - 2;
@@ -350,7 +348,7 @@ var require_nearley = __commonJS({
         lines.push("");
         return lines.join("\n");
       };
-      Parser5.prototype.displayStateStack = function(stateStack, lines) {
+      Parser3.prototype.displayStateStack = function(stateStack, lines) {
         var lastDisplay;
         var sameDisplayCount = 0;
         for (var j = 0; j < stateStack.length; j++) {
@@ -368,10 +366,10 @@ var require_nearley = __commonJS({
           lastDisplay = display;
         }
       };
-      Parser5.prototype.getSymbolDisplay = function(symbol) {
+      Parser3.prototype.getSymbolDisplay = function(symbol) {
         return getSymbolLongDisplay(symbol);
       };
-      Parser5.prototype.buildFirstStateStack = function(state, visited) {
+      Parser3.prototype.buildFirstStateStack = function(state, visited) {
         if (visited.indexOf(state) !== -1) {
           return null;
         }
@@ -386,12 +384,12 @@ var require_nearley = __commonJS({
         }
         return [state].concat(childResult);
       };
-      Parser5.prototype.save = function() {
+      Parser3.prototype.save = function() {
         var column = this.table[this.current];
         column.lexerState = this.lexerState;
         return column;
       };
-      Parser5.prototype.restore = function(column) {
+      Parser3.prototype.restore = function(column) {
         var index = column.index;
         this.current = index;
         this.table[index] = column;
@@ -399,18 +397,18 @@ var require_nearley = __commonJS({
         this.lexerState = column.lexerState;
         this.results = this.finish();
       };
-      Parser5.prototype.rewind = function(index) {
+      Parser3.prototype.rewind = function(index) {
         if (!this.options.keepHistory) {
           throw new Error("set option `keepHistory` to enable rewinding");
         }
         this.restore(this.table[index]);
       };
-      Parser5.prototype.finish = function() {
+      Parser3.prototype.finish = function() {
         var considerations = [];
         var start2 = this.grammar.start;
         var column = this.table[this.table.length - 1];
         column.states.forEach(function(t) {
-          if (t.rule.name === start2 && t.dot === t.rule.symbols.length && t.reference === 0 && t.data !== Parser5.fail) {
+          if (t.rule.name === start2 && t.dot === t.rule.symbols.length && t.reference === 0 && t.data !== Parser3.fail) {
             considerations.push(t);
           }
         });
@@ -455,7 +453,7 @@ var require_nearley = __commonJS({
         }
       }
       return {
-        Parser: Parser5,
+        Parser: Parser3,
         Grammar: Grammar2,
         Rule
       };
@@ -1153,8 +1151,8 @@ var require_immutability_helper = __commonJS({
         invariantMapOrSet(nextObject, "$add");
         invariantSpecArray(values2, "$add");
         if (type2(nextObject) === "Map") {
-          values2.forEach(function(_a) {
-            var key = _a[0], value = _a[1];
+          values2.forEach(function(_a9) {
+            var key = _a9[0], value = _a9[1];
             if (nextObject === originalObject && nextObject.get(key) !== value) {
               nextObject = copy(originalObject);
             }
@@ -1248,2892 +1246,6 @@ var require_immutability_helper = __commonJS({
       invariant4(typeOfTarget === "Map" || typeOfTarget === "Set", function() {
         return "update(): " + stringifiable(command) + " expects a target of type Set or Map; got " + stringifiable(typeOfTarget);
       });
-    }
-  }
-});
-
-// ../../node_modules/.pnpm/web-tree-sitter@0.24.4/node_modules/web-tree-sitter/tree-sitter.js
-var require_tree_sitter = __commonJS({
-  "../../node_modules/.pnpm/web-tree-sitter@0.24.4/node_modules/web-tree-sitter/tree-sitter.js"(exports, module) {
-    var Module = typeof Module != "undefined" ? Module : {};
-    var ENVIRONMENT_IS_WEB = typeof window == "object";
-    var ENVIRONMENT_IS_WORKER = typeof importScripts == "function";
-    var ENVIRONMENT_IS_NODE = typeof process == "object" && typeof process.versions == "object" && typeof process.versions.node == "string";
-    if (ENVIRONMENT_IS_NODE) {
-    }
-    var TreeSitter = function() {
-      var initPromise;
-      var document = typeof window == "object" ? {
-        currentScript: window.document.currentScript
-      } : null;
-      class Parser {
-        constructor() {
-          this.initialize();
-        }
-        initialize() {
-          throw new Error("cannot construct a Parser before calling `init()`");
-        }
-        static init(moduleOptions) {
-          if (initPromise) return initPromise;
-          Module = Object.assign({}, Module, moduleOptions);
-          return initPromise = new Promise((resolveInitPromise) => {
-            var moduleOverrides = Object.assign({}, Module);
-            var arguments_ = [];
-            var thisProgram = "./this.program";
-            var quit_ = (status, toThrow) => {
-              throw toThrow;
-            };
-            var scriptDirectory = "";
-            function locateFile(path) {
-              if (Module["locateFile"]) {
-                return Module["locateFile"](path, scriptDirectory);
-              }
-              return scriptDirectory + path;
-            }
-            var readAsync, readBinary;
-            if (ENVIRONMENT_IS_NODE) {
-              var fs = __require("fs");
-              var nodePath = __require("path");
-              scriptDirectory = __dirname + "/";
-              readBinary = (filename) => {
-                filename = isFileURI(filename) ? new URL(filename) : nodePath.normalize(filename);
-                var ret = fs.readFileSync(filename);
-                return ret;
-              };
-              readAsync = (filename, binary3 = true) => {
-                filename = isFileURI(filename) ? new URL(filename) : nodePath.normalize(filename);
-                return new Promise((resolve, reject) => {
-                  fs.readFile(filename, binary3 ? void 0 : "utf8", (err2, data) => {
-                    if (err2) reject(err2);
-                    else resolve(binary3 ? data.buffer : data);
-                  });
-                });
-              };
-              if (!Module["thisProgram"] && process.argv.length > 1) {
-                thisProgram = process.argv[1].replace(/\\/g, "/");
-              }
-              arguments_ = process.argv.slice(2);
-              if (typeof module != "undefined") {
-                module["exports"] = Module;
-              }
-              quit_ = (status, toThrow) => {
-                process.exitCode = status;
-                throw toThrow;
-              };
-            } else if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
-              if (ENVIRONMENT_IS_WORKER) {
-                scriptDirectory = self.location.href;
-              } else if (typeof document != "undefined" && document.currentScript) {
-                scriptDirectory = document.currentScript.src;
-              }
-              if (scriptDirectory.startsWith("blob:")) {
-                scriptDirectory = "";
-              } else {
-                scriptDirectory = scriptDirectory.substr(0, scriptDirectory.replace(/[?#].*/, "").lastIndexOf("/") + 1);
-              }
-              {
-                if (ENVIRONMENT_IS_WORKER) {
-                  readBinary = (url) => {
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("GET", url, false);
-                    xhr.responseType = "arraybuffer";
-                    xhr.send(null);
-                    return new Uint8Array(
-                      /** @type{!ArrayBuffer} */
-                      xhr.response
-                    );
-                  };
-                }
-                readAsync = (url) => {
-                  if (isFileURI(url)) {
-                    return new Promise((reject, resolve) => {
-                      var xhr = new XMLHttpRequest();
-                      xhr.open("GET", url, true);
-                      xhr.responseType = "arraybuffer";
-                      xhr.onload = () => {
-                        if (xhr.status == 200 || xhr.status == 0 && xhr.response) {
-                          resolve(xhr.response);
-                        }
-                        reject(xhr.status);
-                      };
-                      xhr.onerror = reject;
-                      xhr.send(null);
-                    });
-                  }
-                  return fetch(url, {
-                    credentials: "same-origin"
-                  }).then((response) => {
-                    if (response.ok) {
-                      return response.arrayBuffer();
-                    }
-                    return Promise.reject(new Error(response.status + " : " + response.url));
-                  });
-                };
-              }
-            } else {
-            }
-            var out = Module["print"] || console.log.bind(console);
-            var err = Module["printErr"] || console.error.bind(console);
-            Object.assign(Module, moduleOverrides);
-            moduleOverrides = null;
-            if (Module["arguments"]) arguments_ = Module["arguments"];
-            if (Module["thisProgram"]) thisProgram = Module["thisProgram"];
-            if (Module["quit"]) quit_ = Module["quit"];
-            var dynamicLibraries = Module["dynamicLibraries"] || [];
-            var wasmBinary;
-            if (Module["wasmBinary"]) wasmBinary = Module["wasmBinary"];
-            var wasmMemory;
-            var ABORT = false;
-            var EXITSTATUS;
-            var HEAP8, HEAPU8, HEAP16, HEAPU16, HEAP32, HEAPU32, HEAPF32, HEAPF64;
-            var HEAP_DATA_VIEW;
-            function updateMemoryViews() {
-              var b = wasmMemory.buffer;
-              Module["HEAP_DATA_VIEW"] = HEAP_DATA_VIEW = new DataView(b);
-              Module["HEAP8"] = HEAP8 = new Int8Array(b);
-              Module["HEAP16"] = HEAP16 = new Int16Array(b);
-              Module["HEAPU8"] = HEAPU8 = new Uint8Array(b);
-              Module["HEAPU16"] = HEAPU16 = new Uint16Array(b);
-              Module["HEAP32"] = HEAP32 = new Int32Array(b);
-              Module["HEAPU32"] = HEAPU32 = new Uint32Array(b);
-              Module["HEAPF32"] = HEAPF32 = new Float32Array(b);
-              Module["HEAPF64"] = HEAPF64 = new Float64Array(b);
-            }
-            if (Module["wasmMemory"]) {
-              wasmMemory = Module["wasmMemory"];
-            } else {
-              var INITIAL_MEMORY = Module["INITIAL_MEMORY"] || 33554432;
-              wasmMemory = new WebAssembly.Memory({
-                "initial": INITIAL_MEMORY / 65536,
-                // In theory we should not need to emit the maximum if we want "unlimited"
-                // or 4GB of memory, but VMs error on that atm, see
-                // https://github.com/emscripten-core/emscripten/issues/14130
-                // And in the pthreads case we definitely need to emit a maximum. So
-                // always emit one.
-                "maximum": 2147483648 / 65536
-              });
-            }
-            updateMemoryViews();
-            var __ATPRERUN__ = [];
-            var __ATINIT__ = [];
-            var __ATMAIN__ = [];
-            var __ATPOSTRUN__ = [];
-            var __RELOC_FUNCS__ = [];
-            var runtimeInitialized = false;
-            function preRun() {
-              if (Module["preRun"]) {
-                if (typeof Module["preRun"] == "function") Module["preRun"] = [Module["preRun"]];
-                while (Module["preRun"].length) {
-                  addOnPreRun(Module["preRun"].shift());
-                }
-              }
-              callRuntimeCallbacks(__ATPRERUN__);
-            }
-            function initRuntime() {
-              runtimeInitialized = true;
-              callRuntimeCallbacks(__RELOC_FUNCS__);
-              callRuntimeCallbacks(__ATINIT__);
-            }
-            function preMain() {
-              callRuntimeCallbacks(__ATMAIN__);
-            }
-            function postRun() {
-              if (Module["postRun"]) {
-                if (typeof Module["postRun"] == "function") Module["postRun"] = [Module["postRun"]];
-                while (Module["postRun"].length) {
-                  addOnPostRun(Module["postRun"].shift());
-                }
-              }
-              callRuntimeCallbacks(__ATPOSTRUN__);
-            }
-            function addOnPreRun(cb) {
-              __ATPRERUN__.unshift(cb);
-            }
-            function addOnInit(cb) {
-              __ATINIT__.unshift(cb);
-            }
-            function addOnPostRun(cb) {
-              __ATPOSTRUN__.unshift(cb);
-            }
-            var runDependencies = 0;
-            var runDependencyWatcher = null;
-            var dependenciesFulfilled = null;
-            function getUniqueRunDependency(id2) {
-              return id2;
-            }
-            function addRunDependency(id2) {
-              runDependencies++;
-              Module["monitorRunDependencies"]?.(runDependencies);
-            }
-            function removeRunDependency(id2) {
-              runDependencies--;
-              Module["monitorRunDependencies"]?.(runDependencies);
-              if (runDependencies == 0) {
-                if (runDependencyWatcher !== null) {
-                  clearInterval(runDependencyWatcher);
-                  runDependencyWatcher = null;
-                }
-                if (dependenciesFulfilled) {
-                  var callback2 = dependenciesFulfilled;
-                  dependenciesFulfilled = null;
-                  callback2();
-                }
-              }
-            }
-            function abort(what) {
-              Module["onAbort"]?.(what);
-              what = "Aborted(" + what + ")";
-              err(what);
-              ABORT = true;
-              EXITSTATUS = 1;
-              what += ". Build with -sASSERTIONS for more info.";
-              var e = new WebAssembly.RuntimeError(what);
-              throw e;
-            }
-            var dataURIPrefix = "data:application/octet-stream;base64,";
-            var isDataURI = (filename) => filename.startsWith(dataURIPrefix);
-            var isFileURI = (filename) => filename.startsWith("file://");
-            function findWasmBinary() {
-              var f = "tree-sitter.wasm";
-              if (!isDataURI(f)) {
-                return locateFile(f);
-              }
-              return f;
-            }
-            var wasmBinaryFile;
-            function getBinarySync(file) {
-              if (file == wasmBinaryFile && wasmBinary) {
-                return new Uint8Array(wasmBinary);
-              }
-              if (readBinary) {
-                return readBinary(file);
-              }
-              throw "both async and sync fetching of the wasm failed";
-            }
-            function getBinaryPromise(binaryFile) {
-              if (!wasmBinary) {
-                return readAsync(binaryFile).then(
-                  (response) => new Uint8Array(
-                    /** @type{!ArrayBuffer} */
-                    response
-                  ),
-                  // Fall back to getBinarySync if readAsync fails
-                  () => getBinarySync(binaryFile)
-                );
-              }
-              return Promise.resolve().then(() => getBinarySync(binaryFile));
-            }
-            function instantiateArrayBuffer(binaryFile, imports, receiver) {
-              return getBinaryPromise(binaryFile).then((binary3) => WebAssembly.instantiate(binary3, imports)).then(receiver, (reason) => {
-                err(`failed to asynchronously prepare wasm: ${reason}`);
-                abort(reason);
-              });
-            }
-            function instantiateAsync(binary3, binaryFile, imports, callback2) {
-              if (!binary3 && typeof WebAssembly.instantiateStreaming == "function" && !isDataURI(binaryFile) && // Don't use streaming for file:// delivered objects in a webview, fetch them synchronously.
-              !isFileURI(binaryFile) && // Avoid instantiateStreaming() on Node.js environment for now, as while
-              // Node.js v18.1.0 implements it, it does not have a full fetch()
-              // implementation yet.
-              // Reference:
-              //   https://github.com/emscripten-core/emscripten/pull/16917
-              !ENVIRONMENT_IS_NODE && typeof fetch == "function") {
-                return fetch(binaryFile, {
-                  credentials: "same-origin"
-                }).then((response) => {
-                  var result = WebAssembly.instantiateStreaming(response, imports);
-                  return result.then(callback2, function(reason) {
-                    err(`wasm streaming compile failed: ${reason}`);
-                    err("falling back to ArrayBuffer instantiation");
-                    return instantiateArrayBuffer(binaryFile, imports, callback2);
-                  });
-                });
-              }
-              return instantiateArrayBuffer(binaryFile, imports, callback2);
-            }
-            function getWasmImports() {
-              return {
-                "env": wasmImports,
-                "wasi_snapshot_preview1": wasmImports,
-                "GOT.mem": new Proxy(wasmImports, GOTHandler),
-                "GOT.func": new Proxy(wasmImports, GOTHandler)
-              };
-            }
-            function createWasm() {
-              var info2 = getWasmImports();
-              function receiveInstance(instance2, module2) {
-                wasmExports = instance2.exports;
-                wasmExports = relocateExports(wasmExports, 1024);
-                var metadata2 = getDylinkMetadata(module2);
-                if (metadata2.neededDynlibs) {
-                  dynamicLibraries = metadata2.neededDynlibs.concat(dynamicLibraries);
-                }
-                mergeLibSymbols(wasmExports, "main");
-                LDSO.init();
-                loadDylibs();
-                addOnInit(wasmExports["__wasm_call_ctors"]);
-                __RELOC_FUNCS__.push(wasmExports["__wasm_apply_data_relocs"]);
-                removeRunDependency("wasm-instantiate");
-                return wasmExports;
-              }
-              addRunDependency("wasm-instantiate");
-              function receiveInstantiationResult(result) {
-                receiveInstance(result["instance"], result["module"]);
-              }
-              if (Module["instantiateWasm"]) {
-                try {
-                  return Module["instantiateWasm"](info2, receiveInstance);
-                } catch (e) {
-                  err(`Module.instantiateWasm callback failed with error: ${e}`);
-                  return false;
-                }
-              }
-              if (!wasmBinaryFile) wasmBinaryFile = findWasmBinary();
-              instantiateAsync(wasmBinary, wasmBinaryFile, info2, receiveInstantiationResult);
-              return {};
-            }
-            var ASM_CONSTS = {};
-            function ExitStatus(status) {
-              this.name = "ExitStatus";
-              this.message = `Program terminated with exit(${status})`;
-              this.status = status;
-            }
-            var GOT = {};
-            var currentModuleWeakSymbols = /* @__PURE__ */ new Set([]);
-            var GOTHandler = {
-              get(obj, symName) {
-                var rtn = GOT[symName];
-                if (!rtn) {
-                  rtn = GOT[symName] = new WebAssembly.Global({
-                    "value": "i32",
-                    "mutable": true
-                  });
-                }
-                if (!currentModuleWeakSymbols.has(symName)) {
-                  rtn.required = true;
-                }
-                return rtn;
-              }
-            };
-            var LE_HEAP_LOAD_F32 = (byteOffset) => HEAP_DATA_VIEW.getFloat32(byteOffset, true);
-            var LE_HEAP_LOAD_F64 = (byteOffset) => HEAP_DATA_VIEW.getFloat64(byteOffset, true);
-            var LE_HEAP_LOAD_I16 = (byteOffset) => HEAP_DATA_VIEW.getInt16(byteOffset, true);
-            var LE_HEAP_LOAD_I32 = (byteOffset) => HEAP_DATA_VIEW.getInt32(byteOffset, true);
-            var LE_HEAP_LOAD_U32 = (byteOffset) => HEAP_DATA_VIEW.getUint32(byteOffset, true);
-            var LE_HEAP_STORE_F32 = (byteOffset, value) => HEAP_DATA_VIEW.setFloat32(byteOffset, value, true);
-            var LE_HEAP_STORE_F64 = (byteOffset, value) => HEAP_DATA_VIEW.setFloat64(byteOffset, value, true);
-            var LE_HEAP_STORE_I16 = (byteOffset, value) => HEAP_DATA_VIEW.setInt16(byteOffset, value, true);
-            var LE_HEAP_STORE_I32 = (byteOffset, value) => HEAP_DATA_VIEW.setInt32(byteOffset, value, true);
-            var LE_HEAP_STORE_U32 = (byteOffset, value) => HEAP_DATA_VIEW.setUint32(byteOffset, value, true);
-            var callRuntimeCallbacks = (callbacks) => {
-              while (callbacks.length > 0) {
-                callbacks.shift()(Module);
-              }
-            };
-            var UTF8Decoder = typeof TextDecoder != "undefined" ? new TextDecoder() : void 0;
-            var UTF8ArrayToString = (heapOrArray, idx, maxBytesToRead) => {
-              var endIdx = idx + maxBytesToRead;
-              var endPtr = idx;
-              while (heapOrArray[endPtr] && !(endPtr >= endIdx)) ++endPtr;
-              if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
-                return UTF8Decoder.decode(heapOrArray.subarray(idx, endPtr));
-              }
-              var str2 = "";
-              while (idx < endPtr) {
-                var u0 = heapOrArray[idx++];
-                if (!(u0 & 128)) {
-                  str2 += String.fromCharCode(u0);
-                  continue;
-                }
-                var u1 = heapOrArray[idx++] & 63;
-                if ((u0 & 224) == 192) {
-                  str2 += String.fromCharCode((u0 & 31) << 6 | u1);
-                  continue;
-                }
-                var u2 = heapOrArray[idx++] & 63;
-                if ((u0 & 240) == 224) {
-                  u0 = (u0 & 15) << 12 | u1 << 6 | u2;
-                } else {
-                  u0 = (u0 & 7) << 18 | u1 << 12 | u2 << 6 | heapOrArray[idx++] & 63;
-                }
-                if (u0 < 65536) {
-                  str2 += String.fromCharCode(u0);
-                } else {
-                  var ch = u0 - 65536;
-                  str2 += String.fromCharCode(55296 | ch >> 10, 56320 | ch & 1023);
-                }
-              }
-              return str2;
-            };
-            var getDylinkMetadata = (binary3) => {
-              var offset = 0;
-              var end = 0;
-              function getU8() {
-                return binary3[offset++];
-              }
-              function getLEB() {
-                var ret = 0;
-                var mul = 1;
-                while (1) {
-                  var byte = binary3[offset++];
-                  ret += (byte & 127) * mul;
-                  mul *= 128;
-                  if (!(byte & 128)) break;
-                }
-                return ret;
-              }
-              function getString() {
-                var len = getLEB();
-                offset += len;
-                return UTF8ArrayToString(binary3, offset - len, len);
-              }
-              function failIf(condition, message) {
-                if (condition) throw new Error(message);
-              }
-              var name2 = "dylink.0";
-              if (binary3 instanceof WebAssembly.Module) {
-                var dylinkSection = WebAssembly.Module.customSections(binary3, name2);
-                if (dylinkSection.length === 0) {
-                  name2 = "dylink";
-                  dylinkSection = WebAssembly.Module.customSections(binary3, name2);
-                }
-                failIf(dylinkSection.length === 0, "need dylink section");
-                binary3 = new Uint8Array(dylinkSection[0]);
-                end = binary3.length;
-              } else {
-                var int32View = new Uint32Array(new Uint8Array(binary3.subarray(0, 24)).buffer);
-                var magicNumberFound = int32View[0] == 1836278016 || int32View[0] == 6386541;
-                failIf(!magicNumberFound, "need to see wasm magic number");
-                failIf(binary3[8] !== 0, "need the dylink section to be first");
-                offset = 9;
-                var section_size = getLEB();
-                end = offset + section_size;
-                name2 = getString();
-              }
-              var customSection = {
-                neededDynlibs: [],
-                tlsExports: /* @__PURE__ */ new Set(),
-                weakImports: /* @__PURE__ */ new Set()
-              };
-              if (name2 == "dylink") {
-                customSection.memorySize = getLEB();
-                customSection.memoryAlign = getLEB();
-                customSection.tableSize = getLEB();
-                customSection.tableAlign = getLEB();
-                var neededDynlibsCount = getLEB();
-                for (var i2 = 0; i2 < neededDynlibsCount; ++i2) {
-                  var libname = getString();
-                  customSection.neededDynlibs.push(libname);
-                }
-              } else {
-                failIf(name2 !== "dylink.0");
-                var WASM_DYLINK_MEM_INFO = 1;
-                var WASM_DYLINK_NEEDED = 2;
-                var WASM_DYLINK_EXPORT_INFO = 3;
-                var WASM_DYLINK_IMPORT_INFO = 4;
-                var WASM_SYMBOL_TLS = 256;
-                var WASM_SYMBOL_BINDING_MASK = 3;
-                var WASM_SYMBOL_BINDING_WEAK = 1;
-                while (offset < end) {
-                  var subsectionType = getU8();
-                  var subsectionSize = getLEB();
-                  if (subsectionType === WASM_DYLINK_MEM_INFO) {
-                    customSection.memorySize = getLEB();
-                    customSection.memoryAlign = getLEB();
-                    customSection.tableSize = getLEB();
-                    customSection.tableAlign = getLEB();
-                  } else if (subsectionType === WASM_DYLINK_NEEDED) {
-                    var neededDynlibsCount = getLEB();
-                    for (var i2 = 0; i2 < neededDynlibsCount; ++i2) {
-                      libname = getString();
-                      customSection.neededDynlibs.push(libname);
-                    }
-                  } else if (subsectionType === WASM_DYLINK_EXPORT_INFO) {
-                    var count2 = getLEB();
-                    while (count2--) {
-                      var symname = getString();
-                      var flags2 = getLEB();
-                      if (flags2 & WASM_SYMBOL_TLS) {
-                        customSection.tlsExports.add(symname);
-                      }
-                    }
-                  } else if (subsectionType === WASM_DYLINK_IMPORT_INFO) {
-                    var count2 = getLEB();
-                    while (count2--) {
-                      var modname = getString();
-                      var symname = getString();
-                      var flags2 = getLEB();
-                      if ((flags2 & WASM_SYMBOL_BINDING_MASK) == WASM_SYMBOL_BINDING_WEAK) {
-                        customSection.weakImports.add(symname);
-                      }
-                    }
-                  } else {
-                    offset += subsectionSize;
-                  }
-                }
-              }
-              return customSection;
-            };
-            function getValue(ptr, type2 = "i8") {
-              if (type2.endsWith("*")) type2 = "*";
-              switch (type2) {
-                case "i1":
-                  return HEAP8[ptr];
-                case "i8":
-                  return HEAP8[ptr];
-                case "i16":
-                  return LE_HEAP_LOAD_I16((ptr >> 1) * 2);
-                case "i32":
-                  return LE_HEAP_LOAD_I32((ptr >> 2) * 4);
-                case "i64":
-                  abort("to do getValue(i64) use WASM_BIGINT");
-                case "float":
-                  return LE_HEAP_LOAD_F32((ptr >> 2) * 4);
-                case "double":
-                  return LE_HEAP_LOAD_F64((ptr >> 3) * 8);
-                case "*":
-                  return LE_HEAP_LOAD_U32((ptr >> 2) * 4);
-                default:
-                  abort(`invalid type for getValue: ${type2}`);
-              }
-            }
-            var newDSO = (name2, handle2, syms) => {
-              var dso = {
-                refcount: Infinity,
-                name: name2,
-                exports: syms,
-                global: true
-              };
-              LDSO.loadedLibsByName[name2] = dso;
-              if (handle2 != void 0) {
-                LDSO.loadedLibsByHandle[handle2] = dso;
-              }
-              return dso;
-            };
-            var LDSO = {
-              loadedLibsByName: {},
-              loadedLibsByHandle: {},
-              init() {
-                newDSO("__main__", 0, wasmImports);
-              }
-            };
-            var ___heap_base = 78112;
-            var zeroMemory = (address, size) => {
-              HEAPU8.fill(0, address, address + size);
-              return address;
-            };
-            var alignMemory = (size, alignment) => Math.ceil(size / alignment) * alignment;
-            var getMemory = (size) => {
-              if (runtimeInitialized) {
-                return zeroMemory(_malloc(size), size);
-              }
-              var ret = ___heap_base;
-              var end = ret + alignMemory(size, 16);
-              ___heap_base = end;
-              GOT["__heap_base"].value = end;
-              return ret;
-            };
-            var isInternalSym = (symName) => ["__cpp_exception", "__c_longjmp", "__wasm_apply_data_relocs", "__dso_handle", "__tls_size", "__tls_align", "__set_stack_limits", "_emscripten_tls_init", "__wasm_init_tls", "__wasm_call_ctors", "__start_em_asm", "__stop_em_asm", "__start_em_js", "__stop_em_js"].includes(symName) || symName.startsWith("__em_js__");
-            var uleb128Encode = (n, target) => {
-              if (n < 128) {
-                target.push(n);
-              } else {
-                target.push(n % 128 | 128, n >> 7);
-              }
-            };
-            var sigToWasmTypes = (sig) => {
-              var typeNames = {
-                "i": "i32",
-                "j": "i64",
-                "f": "f32",
-                "d": "f64",
-                "e": "externref",
-                "p": "i32"
-              };
-              var type2 = {
-                parameters: [],
-                results: sig[0] == "v" ? [] : [typeNames[sig[0]]]
-              };
-              for (var i2 = 1; i2 < sig.length; ++i2) {
-                type2.parameters.push(typeNames[sig[i2]]);
-              }
-              return type2;
-            };
-            var generateFuncType = (sig, target) => {
-              var sigRet = sig.slice(0, 1);
-              var sigParam = sig.slice(1);
-              var typeCodes = {
-                "i": 127,
-                // i32
-                "p": 127,
-                // i32
-                "j": 126,
-                // i64
-                "f": 125,
-                // f32
-                "d": 124,
-                // f64
-                "e": 111
-              };
-              target.push(96);
-              uleb128Encode(sigParam.length, target);
-              for (var i2 = 0; i2 < sigParam.length; ++i2) {
-                target.push(typeCodes[sigParam[i2]]);
-              }
-              if (sigRet == "v") {
-                target.push(0);
-              } else {
-                target.push(1, typeCodes[sigRet]);
-              }
-            };
-            var convertJsFunctionToWasm = (func2, sig) => {
-              if (typeof WebAssembly.Function == "function") {
-                return new WebAssembly.Function(sigToWasmTypes(sig), func2);
-              }
-              var typeSectionBody = [1];
-              generateFuncType(sig, typeSectionBody);
-              var bytes = [
-                0,
-                97,
-                115,
-                109,
-                // magic ("\0asm")
-                1,
-                0,
-                0,
-                0,
-                // version: 1
-                1
-              ];
-              uleb128Encode(typeSectionBody.length, bytes);
-              bytes.push(...typeSectionBody);
-              bytes.push(
-                2,
-                7,
-                // import section
-                // (import "e" "f" (func 0 (type 0)))
-                1,
-                1,
-                101,
-                1,
-                102,
-                0,
-                0,
-                7,
-                5,
-                // export section
-                // (export "f" (func 0 (type 0)))
-                1,
-                1,
-                102,
-                0,
-                0
-              );
-              var module2 = new WebAssembly.Module(new Uint8Array(bytes));
-              var instance2 = new WebAssembly.Instance(module2, {
-                "e": {
-                  "f": func2
-                }
-              });
-              var wrappedFunc = instance2.exports["f"];
-              return wrappedFunc;
-            };
-            var wasmTableMirror = [];
-            var wasmTable = new WebAssembly.Table({
-              "initial": 28,
-              "element": "anyfunc"
-            });
-            var getWasmTableEntry = (funcPtr) => {
-              var func2 = wasmTableMirror[funcPtr];
-              if (!func2) {
-                if (funcPtr >= wasmTableMirror.length) wasmTableMirror.length = funcPtr + 1;
-                wasmTableMirror[funcPtr] = func2 = wasmTable.get(funcPtr);
-              }
-              return func2;
-            };
-            var updateTableMap = (offset, count2) => {
-              if (functionsInTableMap) {
-                for (var i2 = offset; i2 < offset + count2; i2++) {
-                  var item = getWasmTableEntry(i2);
-                  if (item) {
-                    functionsInTableMap.set(item, i2);
-                  }
-                }
-              }
-            };
-            var functionsInTableMap;
-            var getFunctionAddress = (func2) => {
-              if (!functionsInTableMap) {
-                functionsInTableMap = /* @__PURE__ */ new WeakMap();
-                updateTableMap(0, wasmTable.length);
-              }
-              return functionsInTableMap.get(func2) || 0;
-            };
-            var freeTableIndexes = [];
-            var getEmptyTableSlot = () => {
-              if (freeTableIndexes.length) {
-                return freeTableIndexes.pop();
-              }
-              try {
-                wasmTable.grow(1);
-              } catch (err2) {
-                if (!(err2 instanceof RangeError)) {
-                  throw err2;
-                }
-                throw "Unable to grow wasm table. Set ALLOW_TABLE_GROWTH.";
-              }
-              return wasmTable.length - 1;
-            };
-            var setWasmTableEntry = (idx, func2) => {
-              wasmTable.set(idx, func2);
-              wasmTableMirror[idx] = wasmTable.get(idx);
-            };
-            var addFunction = (func2, sig) => {
-              var rtn = getFunctionAddress(func2);
-              if (rtn) {
-                return rtn;
-              }
-              var ret = getEmptyTableSlot();
-              try {
-                setWasmTableEntry(ret, func2);
-              } catch (err2) {
-                if (!(err2 instanceof TypeError)) {
-                  throw err2;
-                }
-                var wrapped = convertJsFunctionToWasm(func2, sig);
-                setWasmTableEntry(ret, wrapped);
-              }
-              functionsInTableMap.set(func2, ret);
-              return ret;
-            };
-            var updateGOT = (exports2, replace) => {
-              for (var symName in exports2) {
-                if (isInternalSym(symName)) {
-                  continue;
-                }
-                var value = exports2[symName];
-                if (symName.startsWith("orig$")) {
-                  symName = symName.split("$")[1];
-                  replace = true;
-                }
-                GOT[symName] || (GOT[symName] = new WebAssembly.Global({
-                  "value": "i32",
-                  "mutable": true
-                }));
-                if (replace || GOT[symName].value == 0) {
-                  if (typeof value == "function") {
-                    GOT[symName].value = addFunction(value);
-                  } else if (typeof value == "number") {
-                    GOT[symName].value = value;
-                  } else {
-                    err(`unhandled export type for '${symName}': ${typeof value}`);
-                  }
-                }
-              }
-            };
-            var relocateExports = (exports2, memoryBase2, replace) => {
-              var relocated = {};
-              for (var e in exports2) {
-                var value = exports2[e];
-                if (typeof value == "object") {
-                  value = value.value;
-                }
-                if (typeof value == "number") {
-                  value += memoryBase2;
-                }
-                relocated[e] = value;
-              }
-              updateGOT(relocated, replace);
-              return relocated;
-            };
-            var isSymbolDefined = (symName) => {
-              var existing = wasmImports[symName];
-              if (!existing || existing.stub) {
-                return false;
-              }
-              return true;
-            };
-            var dynCallLegacy = (sig, ptr, args2) => {
-              sig = sig.replace(/p/g, "i");
-              var f = Module["dynCall_" + sig];
-              return f(ptr, ...args2);
-            };
-            var dynCall = (sig, ptr, args2 = []) => {
-              if (sig.includes("j")) {
-                return dynCallLegacy(sig, ptr, args2);
-              }
-              var rtn = getWasmTableEntry(ptr)(...args2);
-              return rtn;
-            };
-            var stackSave = () => _emscripten_stack_get_current();
-            var stackRestore = (val) => __emscripten_stack_restore(val);
-            var createInvokeFunction = (sig) => (ptr, ...args2) => {
-              var sp = stackSave();
-              try {
-                return dynCall(sig, ptr, args2);
-              } catch (e) {
-                stackRestore(sp);
-                if (e !== e + 0) throw e;
-                _setThrew(1, 0);
-              }
-            };
-            var resolveGlobalSymbol = (symName, direct = false) => {
-              var sym;
-              if (direct && "orig$" + symName in wasmImports) {
-                symName = "orig$" + symName;
-              }
-              if (isSymbolDefined(symName)) {
-                sym = wasmImports[symName];
-              } else if (symName.startsWith("invoke_")) {
-                sym = wasmImports[symName] = createInvokeFunction(symName.split("_")[1]);
-              }
-              return {
-                sym,
-                name: symName
-              };
-            };
-            var UTF8ToString = (ptr, maxBytesToRead) => ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead) : "";
-            var loadWebAssemblyModule = (binary, flags, libName, localScope, handle) => {
-              var metadata = getDylinkMetadata(binary);
-              currentModuleWeakSymbols = metadata.weakImports;
-              function loadModule() {
-                var firstLoad = !handle || !HEAP8[handle + 8];
-                if (firstLoad) {
-                  var memAlign = Math.pow(2, metadata.memoryAlign);
-                  var memoryBase = metadata.memorySize ? alignMemory(getMemory(metadata.memorySize + memAlign), memAlign) : 0;
-                  var tableBase = metadata.tableSize ? wasmTable.length : 0;
-                  if (handle) {
-                    HEAP8[handle + 8] = 1;
-                    LE_HEAP_STORE_U32((handle + 12 >> 2) * 4, memoryBase);
-                    LE_HEAP_STORE_I32((handle + 16 >> 2) * 4, metadata.memorySize);
-                    LE_HEAP_STORE_U32((handle + 20 >> 2) * 4, tableBase);
-                    LE_HEAP_STORE_I32((handle + 24 >> 2) * 4, metadata.tableSize);
-                  }
-                } else {
-                  memoryBase = LE_HEAP_LOAD_U32((handle + 12 >> 2) * 4);
-                  tableBase = LE_HEAP_LOAD_U32((handle + 20 >> 2) * 4);
-                }
-                var tableGrowthNeeded = tableBase + metadata.tableSize - wasmTable.length;
-                if (tableGrowthNeeded > 0) {
-                  wasmTable.grow(tableGrowthNeeded);
-                }
-                var moduleExports;
-                function resolveSymbol(sym) {
-                  var resolved = resolveGlobalSymbol(sym).sym;
-                  if (!resolved && localScope) {
-                    resolved = localScope[sym];
-                  }
-                  if (!resolved) {
-                    resolved = moduleExports[sym];
-                  }
-                  return resolved;
-                }
-                var proxyHandler = {
-                  get(stubs, prop) {
-                    switch (prop) {
-                      case "__memory_base":
-                        return memoryBase;
-                      case "__table_base":
-                        return tableBase;
-                    }
-                    if (prop in wasmImports && !wasmImports[prop].stub) {
-                      return wasmImports[prop];
-                    }
-                    if (!(prop in stubs)) {
-                      var resolved;
-                      stubs[prop] = (...args2) => {
-                        resolved || (resolved = resolveSymbol(prop));
-                        return resolved(...args2);
-                      };
-                    }
-                    return stubs[prop];
-                  }
-                };
-                var proxy = new Proxy({}, proxyHandler);
-                var info = {
-                  "GOT.mem": new Proxy({}, GOTHandler),
-                  "GOT.func": new Proxy({}, GOTHandler),
-                  "env": proxy,
-                  "wasi_snapshot_preview1": proxy
-                };
-                function postInstantiation(module, instance) {
-                  updateTableMap(tableBase, metadata.tableSize);
-                  moduleExports = relocateExports(instance.exports, memoryBase);
-                  if (!flags.allowUndefined) {
-                    reportUndefinedSymbols();
-                  }
-                  function addEmAsm(addr, body) {
-                    var args = [];
-                    var arity = 0;
-                    for (; arity < 16; arity++) {
-                      if (body.indexOf("$" + arity) != -1) {
-                        args.push("$" + arity);
-                      } else {
-                        break;
-                      }
-                    }
-                    args = args.join(",");
-                    var func = `(${args}) => { ${body} };`;
-                    ASM_CONSTS[start] = eval(func);
-                  }
-                  if ("__start_em_asm" in moduleExports) {
-                    var start = moduleExports["__start_em_asm"];
-                    var stop = moduleExports["__stop_em_asm"];
-                    while (start < stop) {
-                      var jsString = UTF8ToString(start);
-                      addEmAsm(start, jsString);
-                      start = HEAPU8.indexOf(0, start) + 1;
-                    }
-                  }
-                  function addEmJs(name, cSig, body) {
-                    var jsArgs = [];
-                    cSig = cSig.slice(1, -1);
-                    if (cSig != "void") {
-                      cSig = cSig.split(",");
-                      for (var i in cSig) {
-                        var jsArg = cSig[i].split(" ").pop();
-                        jsArgs.push(jsArg.replace("*", ""));
-                      }
-                    }
-                    var func = `(${jsArgs}) => ${body};`;
-                    moduleExports[name] = eval(func);
-                  }
-                  for (var name in moduleExports) {
-                    if (name.startsWith("__em_js__")) {
-                      var start = moduleExports[name];
-                      var jsString = UTF8ToString(start);
-                      var parts = jsString.split("<::>");
-                      addEmJs(name.replace("__em_js__", ""), parts[0], parts[1]);
-                      delete moduleExports[name];
-                    }
-                  }
-                  var applyRelocs = moduleExports["__wasm_apply_data_relocs"];
-                  if (applyRelocs) {
-                    if (runtimeInitialized) {
-                      applyRelocs();
-                    } else {
-                      __RELOC_FUNCS__.push(applyRelocs);
-                    }
-                  }
-                  var init = moduleExports["__wasm_call_ctors"];
-                  if (init) {
-                    if (runtimeInitialized) {
-                      init();
-                    } else {
-                      __ATINIT__.push(init);
-                    }
-                  }
-                  return moduleExports;
-                }
-                if (flags.loadAsync) {
-                  if (binary instanceof WebAssembly.Module) {
-                    var instance = new WebAssembly.Instance(binary, info);
-                    return Promise.resolve(postInstantiation(binary, instance));
-                  }
-                  return WebAssembly.instantiate(binary, info).then((result) => postInstantiation(result.module, result.instance));
-                }
-                var module = binary instanceof WebAssembly.Module ? binary : new WebAssembly.Module(binary);
-                var instance = new WebAssembly.Instance(module, info);
-                return postInstantiation(module, instance);
-              }
-              if (flags.loadAsync) {
-                return metadata.neededDynlibs.reduce((chain, dynNeeded) => chain.then(() => loadDynamicLibrary(dynNeeded, flags, localScope)), Promise.resolve()).then(loadModule);
-              }
-              metadata.neededDynlibs.forEach((needed) => loadDynamicLibrary(needed, flags, localScope));
-              return loadModule();
-            };
-            var mergeLibSymbols = (exports2, libName2) => {
-              for (var [sym, exp] of Object.entries(exports2)) {
-                const setImport = (target) => {
-                  if (!isSymbolDefined(target)) {
-                    wasmImports[target] = exp;
-                  }
-                };
-                setImport(sym);
-                const main_alias = "__main_argc_argv";
-                if (sym == "main") {
-                  setImport(main_alias);
-                }
-                if (sym == main_alias) {
-                  setImport("main");
-                }
-                if (sym.startsWith("dynCall_") && !Module.hasOwnProperty(sym)) {
-                  Module[sym] = exp;
-                }
-              }
-            };
-            var asyncLoad = (url, onload, onerror, noRunDep) => {
-              var dep = !noRunDep ? getUniqueRunDependency(`al ${url}`) : "";
-              readAsync(url).then((arrayBuffer) => {
-                onload(new Uint8Array(arrayBuffer));
-                if (dep) removeRunDependency(dep);
-              }, (err2) => {
-                if (onerror) {
-                  onerror();
-                } else {
-                  throw `Loading data file "${url}" failed.`;
-                }
-              });
-              if (dep) addRunDependency(dep);
-            };
-            function loadDynamicLibrary(libName2, flags2 = {
-              global: true,
-              nodelete: true
-            }, localScope2, handle2) {
-              var dso = LDSO.loadedLibsByName[libName2];
-              if (dso) {
-                if (!flags2.global) {
-                  if (localScope2) {
-                    Object.assign(localScope2, dso.exports);
-                  }
-                } else if (!dso.global) {
-                  dso.global = true;
-                  mergeLibSymbols(dso.exports, libName2);
-                }
-                if (flags2.nodelete && dso.refcount !== Infinity) {
-                  dso.refcount = Infinity;
-                }
-                dso.refcount++;
-                if (handle2) {
-                  LDSO.loadedLibsByHandle[handle2] = dso;
-                }
-                return flags2.loadAsync ? Promise.resolve(true) : true;
-              }
-              dso = newDSO(libName2, handle2, "loading");
-              dso.refcount = flags2.nodelete ? Infinity : 1;
-              dso.global = flags2.global;
-              function loadLibData() {
-                if (handle2) {
-                  var data = LE_HEAP_LOAD_U32((handle2 + 28 >> 2) * 4);
-                  var dataSize = LE_HEAP_LOAD_U32((handle2 + 32 >> 2) * 4);
-                  if (data && dataSize) {
-                    var libData = HEAP8.slice(data, data + dataSize);
-                    return flags2.loadAsync ? Promise.resolve(libData) : libData;
-                  }
-                }
-                var libFile = locateFile(libName2);
-                if (flags2.loadAsync) {
-                  return new Promise(function(resolve, reject) {
-                    asyncLoad(libFile, resolve, reject);
-                  });
-                }
-                if (!readBinary) {
-                  throw new Error(`${libFile}: file not found, and synchronous loading of external files is not available`);
-                }
-                return readBinary(libFile);
-              }
-              function getExports() {
-                if (flags2.loadAsync) {
-                  return loadLibData().then((libData) => loadWebAssemblyModule(libData, flags2, libName2, localScope2, handle2));
-                }
-                return loadWebAssemblyModule(loadLibData(), flags2, libName2, localScope2, handle2);
-              }
-              function moduleLoaded(exports2) {
-                if (dso.global) {
-                  mergeLibSymbols(exports2, libName2);
-                } else if (localScope2) {
-                  Object.assign(localScope2, exports2);
-                }
-                dso.exports = exports2;
-              }
-              if (flags2.loadAsync) {
-                return getExports().then((exports2) => {
-                  moduleLoaded(exports2);
-                  return true;
-                });
-              }
-              moduleLoaded(getExports());
-              return true;
-            }
-            var reportUndefinedSymbols = () => {
-              for (var [symName, entry] of Object.entries(GOT)) {
-                if (entry.value == 0) {
-                  var value = resolveGlobalSymbol(symName, true).sym;
-                  if (!value && !entry.required) {
-                    continue;
-                  }
-                  if (typeof value == "function") {
-                    entry.value = addFunction(value, value.sig);
-                  } else if (typeof value == "number") {
-                    entry.value = value;
-                  } else {
-                    throw new Error(`bad export type for '${symName}': ${typeof value}`);
-                  }
-                }
-              }
-            };
-            var loadDylibs = () => {
-              if (!dynamicLibraries.length) {
-                reportUndefinedSymbols();
-                return;
-              }
-              addRunDependency("loadDylibs");
-              dynamicLibraries.reduce((chain, lib) => chain.then(() => loadDynamicLibrary(lib, {
-                loadAsync: true,
-                global: true,
-                nodelete: true,
-                allowUndefined: true
-              })), Promise.resolve()).then(() => {
-                reportUndefinedSymbols();
-                removeRunDependency("loadDylibs");
-              });
-            };
-            var noExitRuntime = Module["noExitRuntime"] || true;
-            function setValue(ptr, value, type2 = "i8") {
-              if (type2.endsWith("*")) type2 = "*";
-              switch (type2) {
-                case "i1":
-                  HEAP8[ptr] = value;
-                  break;
-                case "i8":
-                  HEAP8[ptr] = value;
-                  break;
-                case "i16":
-                  LE_HEAP_STORE_I16((ptr >> 1) * 2, value);
-                  break;
-                case "i32":
-                  LE_HEAP_STORE_I32((ptr >> 2) * 4, value);
-                  break;
-                case "i64":
-                  abort("to do setValue(i64) use WASM_BIGINT");
-                case "float":
-                  LE_HEAP_STORE_F32((ptr >> 2) * 4, value);
-                  break;
-                case "double":
-                  LE_HEAP_STORE_F64((ptr >> 3) * 8, value);
-                  break;
-                case "*":
-                  LE_HEAP_STORE_U32((ptr >> 2) * 4, value);
-                  break;
-                default:
-                  abort(`invalid type for setValue: ${type2}`);
-              }
-            }
-            var ___memory_base = new WebAssembly.Global({
-              "value": "i32",
-              "mutable": false
-            }, 1024);
-            var ___stack_pointer = new WebAssembly.Global({
-              "value": "i32",
-              "mutable": true
-            }, 78112);
-            var ___table_base = new WebAssembly.Global({
-              "value": "i32",
-              "mutable": false
-            }, 1);
-            var __abort_js = () => {
-              abort("");
-            };
-            __abort_js.sig = "v";
-            var nowIsMonotonic = 1;
-            var __emscripten_get_now_is_monotonic = () => nowIsMonotonic;
-            __emscripten_get_now_is_monotonic.sig = "i";
-            var __emscripten_memcpy_js = (dest, src, num) => HEAPU8.copyWithin(dest, src, src + num);
-            __emscripten_memcpy_js.sig = "vppp";
-            var _emscripten_date_now = () => Date.now();
-            _emscripten_date_now.sig = "d";
-            var _emscripten_get_now;
-            _emscripten_get_now = () => performance.now();
-            _emscripten_get_now.sig = "d";
-            var getHeapMax = () => (
-              // Stay one Wasm page short of 4GB: while e.g. Chrome is able to allocate
-              // full 4GB Wasm memories, the size will wrap back to 0 bytes in Wasm side
-              // for any code that deals with heap sizes, which would require special
-              // casing all heap size related code to treat 0 specially.
-              2147483648
-            );
-            var growMemory = (size) => {
-              var b = wasmMemory.buffer;
-              var pages = (size - b.byteLength + 65535) / 65536;
-              try {
-                wasmMemory.grow(pages);
-                updateMemoryViews();
-                return 1;
-              } catch (e) {
-              }
-            };
-            var _emscripten_resize_heap = (requestedSize) => {
-              var oldSize = HEAPU8.length;
-              requestedSize >>>= 0;
-              var maxHeapSize = getHeapMax();
-              if (requestedSize > maxHeapSize) {
-                return false;
-              }
-              var alignUp = (x, multiple) => x + (multiple - x % multiple) % multiple;
-              for (var cutDown = 1; cutDown <= 4; cutDown *= 2) {
-                var overGrownHeapSize = oldSize * (1 + 0.2 / cutDown);
-                overGrownHeapSize = Math.min(overGrownHeapSize, requestedSize + 100663296);
-                var newSize = Math.min(maxHeapSize, alignUp(Math.max(requestedSize, overGrownHeapSize), 65536));
-                var replacement = growMemory(newSize);
-                if (replacement) {
-                  return true;
-                }
-              }
-              return false;
-            };
-            _emscripten_resize_heap.sig = "ip";
-            var _fd_close = (fd) => 52;
-            _fd_close.sig = "ii";
-            var convertI32PairToI53Checked = (lo, hi) => hi + 2097152 >>> 0 < 4194305 - !!lo ? (lo >>> 0) + hi * 4294967296 : NaN;
-            function _fd_seek(fd, offset_low, offset_high, whence, newOffset) {
-              var offset = convertI32PairToI53Checked(offset_low, offset_high);
-              return 70;
-            }
-            _fd_seek.sig = "iiiiip";
-            var printCharBuffers = [null, [], []];
-            var printChar = (stream, curr) => {
-              var buffer = printCharBuffers[stream];
-              if (curr === 0 || curr === 10) {
-                (stream === 1 ? out : err)(UTF8ArrayToString(buffer, 0));
-                buffer.length = 0;
-              } else {
-                buffer.push(curr);
-              }
-            };
-            var _fd_write = (fd, iov, iovcnt, pnum) => {
-              var num = 0;
-              for (var i2 = 0; i2 < iovcnt; i2++) {
-                var ptr = LE_HEAP_LOAD_U32((iov >> 2) * 4);
-                var len = LE_HEAP_LOAD_U32((iov + 4 >> 2) * 4);
-                iov += 8;
-                for (var j = 0; j < len; j++) {
-                  printChar(fd, HEAPU8[ptr + j]);
-                }
-                num += len;
-              }
-              LE_HEAP_STORE_U32((pnum >> 2) * 4, num);
-              return 0;
-            };
-            _fd_write.sig = "iippp";
-            function _tree_sitter_log_callback(isLexMessage, messageAddress) {
-              if (currentLogCallback) {
-                const message = UTF8ToString(messageAddress);
-                currentLogCallback(message, isLexMessage !== 0);
-              }
-            }
-            function _tree_sitter_parse_callback(inputBufferAddress, index, row, column, lengthAddress) {
-              const INPUT_BUFFER_SIZE = 10 * 1024;
-              const string2 = currentParseCallback(index, {
-                row,
-                column
-              });
-              if (typeof string2 === "string") {
-                setValue(lengthAddress, string2.length, "i32");
-                stringToUTF16(string2, inputBufferAddress, INPUT_BUFFER_SIZE);
-              } else {
-                setValue(lengthAddress, 0, "i32");
-              }
-            }
-            var runtimeKeepaliveCounter = 0;
-            var keepRuntimeAlive = () => noExitRuntime || runtimeKeepaliveCounter > 0;
-            var _proc_exit = (code) => {
-              EXITSTATUS = code;
-              if (!keepRuntimeAlive()) {
-                Module["onExit"]?.(code);
-                ABORT = true;
-              }
-              quit_(code, new ExitStatus(code));
-            };
-            _proc_exit.sig = "vi";
-            var exitJS = (status, implicit) => {
-              EXITSTATUS = status;
-              _proc_exit(status);
-            };
-            var handleException = (e) => {
-              if (e instanceof ExitStatus || e == "unwind") {
-                return EXITSTATUS;
-              }
-              quit_(1, e);
-            };
-            var lengthBytesUTF8 = (str2) => {
-              var len = 0;
-              for (var i2 = 0; i2 < str2.length; ++i2) {
-                var c = str2.charCodeAt(i2);
-                if (c <= 127) {
-                  len++;
-                } else if (c <= 2047) {
-                  len += 2;
-                } else if (c >= 55296 && c <= 57343) {
-                  len += 4;
-                  ++i2;
-                } else {
-                  len += 3;
-                }
-              }
-              return len;
-            };
-            var stringToUTF8Array = (str2, heap, outIdx, maxBytesToWrite) => {
-              if (!(maxBytesToWrite > 0)) return 0;
-              var startIdx = outIdx;
-              var endIdx = outIdx + maxBytesToWrite - 1;
-              for (var i2 = 0; i2 < str2.length; ++i2) {
-                var u = str2.charCodeAt(i2);
-                if (u >= 55296 && u <= 57343) {
-                  var u1 = str2.charCodeAt(++i2);
-                  u = 65536 + ((u & 1023) << 10) | u1 & 1023;
-                }
-                if (u <= 127) {
-                  if (outIdx >= endIdx) break;
-                  heap[outIdx++] = u;
-                } else if (u <= 2047) {
-                  if (outIdx + 1 >= endIdx) break;
-                  heap[outIdx++] = 192 | u >> 6;
-                  heap[outIdx++] = 128 | u & 63;
-                } else if (u <= 65535) {
-                  if (outIdx + 2 >= endIdx) break;
-                  heap[outIdx++] = 224 | u >> 12;
-                  heap[outIdx++] = 128 | u >> 6 & 63;
-                  heap[outIdx++] = 128 | u & 63;
-                } else {
-                  if (outIdx + 3 >= endIdx) break;
-                  heap[outIdx++] = 240 | u >> 18;
-                  heap[outIdx++] = 128 | u >> 12 & 63;
-                  heap[outIdx++] = 128 | u >> 6 & 63;
-                  heap[outIdx++] = 128 | u & 63;
-                }
-              }
-              heap[outIdx] = 0;
-              return outIdx - startIdx;
-            };
-            var stringToUTF8 = (str2, outPtr, maxBytesToWrite) => stringToUTF8Array(str2, HEAPU8, outPtr, maxBytesToWrite);
-            var stackAlloc = (sz) => __emscripten_stack_alloc(sz);
-            var stringToUTF8OnStack = (str2) => {
-              var size = lengthBytesUTF8(str2) + 1;
-              var ret = stackAlloc(size);
-              stringToUTF8(str2, ret, size);
-              return ret;
-            };
-            var stringToUTF16 = (str2, outPtr, maxBytesToWrite) => {
-              maxBytesToWrite ?? (maxBytesToWrite = 2147483647);
-              if (maxBytesToWrite < 2) return 0;
-              maxBytesToWrite -= 2;
-              var startPtr = outPtr;
-              var numCharsToWrite = maxBytesToWrite < str2.length * 2 ? maxBytesToWrite / 2 : str2.length;
-              for (var i2 = 0; i2 < numCharsToWrite; ++i2) {
-                var codeUnit = str2.charCodeAt(i2);
-                LE_HEAP_STORE_I16((outPtr >> 1) * 2, codeUnit);
-                outPtr += 2;
-              }
-              LE_HEAP_STORE_I16((outPtr >> 1) * 2, 0);
-              return outPtr - startPtr;
-            };
-            var AsciiToString = (ptr) => {
-              var str2 = "";
-              while (1) {
-                var ch = HEAPU8[ptr++];
-                if (!ch) return str2;
-                str2 += String.fromCharCode(ch);
-              }
-            };
-            var wasmImports = {
-              /** @export */
-              __heap_base: ___heap_base,
-              /** @export */
-              __indirect_function_table: wasmTable,
-              /** @export */
-              __memory_base: ___memory_base,
-              /** @export */
-              __stack_pointer: ___stack_pointer,
-              /** @export */
-              __table_base: ___table_base,
-              /** @export */
-              _abort_js: __abort_js,
-              /** @export */
-              _emscripten_get_now_is_monotonic: __emscripten_get_now_is_monotonic,
-              /** @export */
-              _emscripten_memcpy_js: __emscripten_memcpy_js,
-              /** @export */
-              emscripten_get_now: _emscripten_get_now,
-              /** @export */
-              emscripten_resize_heap: _emscripten_resize_heap,
-              /** @export */
-              fd_close: _fd_close,
-              /** @export */
-              fd_seek: _fd_seek,
-              /** @export */
-              fd_write: _fd_write,
-              /** @export */
-              memory: wasmMemory,
-              /** @export */
-              tree_sitter_log_callback: _tree_sitter_log_callback,
-              /** @export */
-              tree_sitter_parse_callback: _tree_sitter_parse_callback
-            };
-            var wasmExports = createWasm();
-            var ___wasm_call_ctors = () => (___wasm_call_ctors = wasmExports["__wasm_call_ctors"])();
-            var ___wasm_apply_data_relocs = () => (___wasm_apply_data_relocs = wasmExports["__wasm_apply_data_relocs"])();
-            var _malloc = Module["_malloc"] = (a0) => (_malloc = Module["_malloc"] = wasmExports["malloc"])(a0);
-            var _calloc = Module["_calloc"] = (a0, a1) => (_calloc = Module["_calloc"] = wasmExports["calloc"])(a0, a1);
-            var _realloc = Module["_realloc"] = (a0, a1) => (_realloc = Module["_realloc"] = wasmExports["realloc"])(a0, a1);
-            var _free = Module["_free"] = (a0) => (_free = Module["_free"] = wasmExports["free"])(a0);
-            var _ts_language_symbol_count = Module["_ts_language_symbol_count"] = (a0) => (_ts_language_symbol_count = Module["_ts_language_symbol_count"] = wasmExports["ts_language_symbol_count"])(a0);
-            var _ts_language_state_count = Module["_ts_language_state_count"] = (a0) => (_ts_language_state_count = Module["_ts_language_state_count"] = wasmExports["ts_language_state_count"])(a0);
-            var _ts_language_version = Module["_ts_language_version"] = (a0) => (_ts_language_version = Module["_ts_language_version"] = wasmExports["ts_language_version"])(a0);
-            var _ts_language_field_count = Module["_ts_language_field_count"] = (a0) => (_ts_language_field_count = Module["_ts_language_field_count"] = wasmExports["ts_language_field_count"])(a0);
-            var _ts_language_next_state = Module["_ts_language_next_state"] = (a0, a1, a2) => (_ts_language_next_state = Module["_ts_language_next_state"] = wasmExports["ts_language_next_state"])(a0, a1, a2);
-            var _ts_language_symbol_name = Module["_ts_language_symbol_name"] = (a0, a1) => (_ts_language_symbol_name = Module["_ts_language_symbol_name"] = wasmExports["ts_language_symbol_name"])(a0, a1);
-            var _ts_language_symbol_for_name = Module["_ts_language_symbol_for_name"] = (a0, a1, a2, a3) => (_ts_language_symbol_for_name = Module["_ts_language_symbol_for_name"] = wasmExports["ts_language_symbol_for_name"])(a0, a1, a2, a3);
-            var _strncmp = Module["_strncmp"] = (a0, a1, a2) => (_strncmp = Module["_strncmp"] = wasmExports["strncmp"])(a0, a1, a2);
-            var _ts_language_symbol_type = Module["_ts_language_symbol_type"] = (a0, a1) => (_ts_language_symbol_type = Module["_ts_language_symbol_type"] = wasmExports["ts_language_symbol_type"])(a0, a1);
-            var _ts_language_field_name_for_id = Module["_ts_language_field_name_for_id"] = (a0, a1) => (_ts_language_field_name_for_id = Module["_ts_language_field_name_for_id"] = wasmExports["ts_language_field_name_for_id"])(a0, a1);
-            var _ts_lookahead_iterator_new = Module["_ts_lookahead_iterator_new"] = (a0, a1) => (_ts_lookahead_iterator_new = Module["_ts_lookahead_iterator_new"] = wasmExports["ts_lookahead_iterator_new"])(a0, a1);
-            var _ts_lookahead_iterator_delete = Module["_ts_lookahead_iterator_delete"] = (a0) => (_ts_lookahead_iterator_delete = Module["_ts_lookahead_iterator_delete"] = wasmExports["ts_lookahead_iterator_delete"])(a0);
-            var _ts_lookahead_iterator_reset_state = Module["_ts_lookahead_iterator_reset_state"] = (a0, a1) => (_ts_lookahead_iterator_reset_state = Module["_ts_lookahead_iterator_reset_state"] = wasmExports["ts_lookahead_iterator_reset_state"])(a0, a1);
-            var _ts_lookahead_iterator_reset = Module["_ts_lookahead_iterator_reset"] = (a0, a1, a2) => (_ts_lookahead_iterator_reset = Module["_ts_lookahead_iterator_reset"] = wasmExports["ts_lookahead_iterator_reset"])(a0, a1, a2);
-            var _ts_lookahead_iterator_next = Module["_ts_lookahead_iterator_next"] = (a0) => (_ts_lookahead_iterator_next = Module["_ts_lookahead_iterator_next"] = wasmExports["ts_lookahead_iterator_next"])(a0);
-            var _ts_lookahead_iterator_current_symbol = Module["_ts_lookahead_iterator_current_symbol"] = (a0) => (_ts_lookahead_iterator_current_symbol = Module["_ts_lookahead_iterator_current_symbol"] = wasmExports["ts_lookahead_iterator_current_symbol"])(a0);
-            var _memset = Module["_memset"] = (a0, a1, a2) => (_memset = Module["_memset"] = wasmExports["memset"])(a0, a1, a2);
-            var _memcpy = Module["_memcpy"] = (a0, a1, a2) => (_memcpy = Module["_memcpy"] = wasmExports["memcpy"])(a0, a1, a2);
-            var _ts_parser_delete = Module["_ts_parser_delete"] = (a0) => (_ts_parser_delete = Module["_ts_parser_delete"] = wasmExports["ts_parser_delete"])(a0);
-            var _ts_parser_reset = Module["_ts_parser_reset"] = (a0) => (_ts_parser_reset = Module["_ts_parser_reset"] = wasmExports["ts_parser_reset"])(a0);
-            var _ts_parser_set_language = Module["_ts_parser_set_language"] = (a0, a1) => (_ts_parser_set_language = Module["_ts_parser_set_language"] = wasmExports["ts_parser_set_language"])(a0, a1);
-            var _ts_parser_timeout_micros = Module["_ts_parser_timeout_micros"] = (a0) => (_ts_parser_timeout_micros = Module["_ts_parser_timeout_micros"] = wasmExports["ts_parser_timeout_micros"])(a0);
-            var _ts_parser_set_timeout_micros = Module["_ts_parser_set_timeout_micros"] = (a0, a1, a2) => (_ts_parser_set_timeout_micros = Module["_ts_parser_set_timeout_micros"] = wasmExports["ts_parser_set_timeout_micros"])(a0, a1, a2);
-            var _ts_parser_set_included_ranges = Module["_ts_parser_set_included_ranges"] = (a0, a1, a2) => (_ts_parser_set_included_ranges = Module["_ts_parser_set_included_ranges"] = wasmExports["ts_parser_set_included_ranges"])(a0, a1, a2);
-            var _memmove = Module["_memmove"] = (a0, a1, a2) => (_memmove = Module["_memmove"] = wasmExports["memmove"])(a0, a1, a2);
-            var _memcmp = Module["_memcmp"] = (a0, a1, a2) => (_memcmp = Module["_memcmp"] = wasmExports["memcmp"])(a0, a1, a2);
-            var _ts_query_new = Module["_ts_query_new"] = (a0, a1, a2, a3, a4) => (_ts_query_new = Module["_ts_query_new"] = wasmExports["ts_query_new"])(a0, a1, a2, a3, a4);
-            var _ts_query_delete = Module["_ts_query_delete"] = (a0) => (_ts_query_delete = Module["_ts_query_delete"] = wasmExports["ts_query_delete"])(a0);
-            var _iswspace = Module["_iswspace"] = (a0) => (_iswspace = Module["_iswspace"] = wasmExports["iswspace"])(a0);
-            var _iswalnum = Module["_iswalnum"] = (a0) => (_iswalnum = Module["_iswalnum"] = wasmExports["iswalnum"])(a0);
-            var _ts_query_pattern_count = Module["_ts_query_pattern_count"] = (a0) => (_ts_query_pattern_count = Module["_ts_query_pattern_count"] = wasmExports["ts_query_pattern_count"])(a0);
-            var _ts_query_capture_count = Module["_ts_query_capture_count"] = (a0) => (_ts_query_capture_count = Module["_ts_query_capture_count"] = wasmExports["ts_query_capture_count"])(a0);
-            var _ts_query_string_count = Module["_ts_query_string_count"] = (a0) => (_ts_query_string_count = Module["_ts_query_string_count"] = wasmExports["ts_query_string_count"])(a0);
-            var _ts_query_capture_name_for_id = Module["_ts_query_capture_name_for_id"] = (a0, a1, a2) => (_ts_query_capture_name_for_id = Module["_ts_query_capture_name_for_id"] = wasmExports["ts_query_capture_name_for_id"])(a0, a1, a2);
-            var _ts_query_string_value_for_id = Module["_ts_query_string_value_for_id"] = (a0, a1, a2) => (_ts_query_string_value_for_id = Module["_ts_query_string_value_for_id"] = wasmExports["ts_query_string_value_for_id"])(a0, a1, a2);
-            var _ts_query_predicates_for_pattern = Module["_ts_query_predicates_for_pattern"] = (a0, a1, a2) => (_ts_query_predicates_for_pattern = Module["_ts_query_predicates_for_pattern"] = wasmExports["ts_query_predicates_for_pattern"])(a0, a1, a2);
-            var _ts_query_disable_capture = Module["_ts_query_disable_capture"] = (a0, a1, a2) => (_ts_query_disable_capture = Module["_ts_query_disable_capture"] = wasmExports["ts_query_disable_capture"])(a0, a1, a2);
-            var _ts_tree_copy = Module["_ts_tree_copy"] = (a0) => (_ts_tree_copy = Module["_ts_tree_copy"] = wasmExports["ts_tree_copy"])(a0);
-            var _ts_tree_delete = Module["_ts_tree_delete"] = (a0) => (_ts_tree_delete = Module["_ts_tree_delete"] = wasmExports["ts_tree_delete"])(a0);
-            var _ts_init = Module["_ts_init"] = () => (_ts_init = Module["_ts_init"] = wasmExports["ts_init"])();
-            var _ts_parser_new_wasm = Module["_ts_parser_new_wasm"] = () => (_ts_parser_new_wasm = Module["_ts_parser_new_wasm"] = wasmExports["ts_parser_new_wasm"])();
-            var _ts_parser_enable_logger_wasm = Module["_ts_parser_enable_logger_wasm"] = (a0, a1) => (_ts_parser_enable_logger_wasm = Module["_ts_parser_enable_logger_wasm"] = wasmExports["ts_parser_enable_logger_wasm"])(a0, a1);
-            var _ts_parser_parse_wasm = Module["_ts_parser_parse_wasm"] = (a0, a1, a2, a3, a4) => (_ts_parser_parse_wasm = Module["_ts_parser_parse_wasm"] = wasmExports["ts_parser_parse_wasm"])(a0, a1, a2, a3, a4);
-            var _ts_parser_included_ranges_wasm = Module["_ts_parser_included_ranges_wasm"] = (a0) => (_ts_parser_included_ranges_wasm = Module["_ts_parser_included_ranges_wasm"] = wasmExports["ts_parser_included_ranges_wasm"])(a0);
-            var _ts_language_type_is_named_wasm = Module["_ts_language_type_is_named_wasm"] = (a0, a1) => (_ts_language_type_is_named_wasm = Module["_ts_language_type_is_named_wasm"] = wasmExports["ts_language_type_is_named_wasm"])(a0, a1);
-            var _ts_language_type_is_visible_wasm = Module["_ts_language_type_is_visible_wasm"] = (a0, a1) => (_ts_language_type_is_visible_wasm = Module["_ts_language_type_is_visible_wasm"] = wasmExports["ts_language_type_is_visible_wasm"])(a0, a1);
-            var _ts_tree_root_node_wasm = Module["_ts_tree_root_node_wasm"] = (a0) => (_ts_tree_root_node_wasm = Module["_ts_tree_root_node_wasm"] = wasmExports["ts_tree_root_node_wasm"])(a0);
-            var _ts_tree_root_node_with_offset_wasm = Module["_ts_tree_root_node_with_offset_wasm"] = (a0) => (_ts_tree_root_node_with_offset_wasm = Module["_ts_tree_root_node_with_offset_wasm"] = wasmExports["ts_tree_root_node_with_offset_wasm"])(a0);
-            var _ts_tree_edit_wasm = Module["_ts_tree_edit_wasm"] = (a0) => (_ts_tree_edit_wasm = Module["_ts_tree_edit_wasm"] = wasmExports["ts_tree_edit_wasm"])(a0);
-            var _ts_tree_included_ranges_wasm = Module["_ts_tree_included_ranges_wasm"] = (a0) => (_ts_tree_included_ranges_wasm = Module["_ts_tree_included_ranges_wasm"] = wasmExports["ts_tree_included_ranges_wasm"])(a0);
-            var _ts_tree_get_changed_ranges_wasm = Module["_ts_tree_get_changed_ranges_wasm"] = (a0, a1) => (_ts_tree_get_changed_ranges_wasm = Module["_ts_tree_get_changed_ranges_wasm"] = wasmExports["ts_tree_get_changed_ranges_wasm"])(a0, a1);
-            var _ts_tree_cursor_new_wasm = Module["_ts_tree_cursor_new_wasm"] = (a0) => (_ts_tree_cursor_new_wasm = Module["_ts_tree_cursor_new_wasm"] = wasmExports["ts_tree_cursor_new_wasm"])(a0);
-            var _ts_tree_cursor_delete_wasm = Module["_ts_tree_cursor_delete_wasm"] = (a0) => (_ts_tree_cursor_delete_wasm = Module["_ts_tree_cursor_delete_wasm"] = wasmExports["ts_tree_cursor_delete_wasm"])(a0);
-            var _ts_tree_cursor_reset_wasm = Module["_ts_tree_cursor_reset_wasm"] = (a0) => (_ts_tree_cursor_reset_wasm = Module["_ts_tree_cursor_reset_wasm"] = wasmExports["ts_tree_cursor_reset_wasm"])(a0);
-            var _ts_tree_cursor_reset_to_wasm = Module["_ts_tree_cursor_reset_to_wasm"] = (a0, a1) => (_ts_tree_cursor_reset_to_wasm = Module["_ts_tree_cursor_reset_to_wasm"] = wasmExports["ts_tree_cursor_reset_to_wasm"])(a0, a1);
-            var _ts_tree_cursor_goto_first_child_wasm = Module["_ts_tree_cursor_goto_first_child_wasm"] = (a0) => (_ts_tree_cursor_goto_first_child_wasm = Module["_ts_tree_cursor_goto_first_child_wasm"] = wasmExports["ts_tree_cursor_goto_first_child_wasm"])(a0);
-            var _ts_tree_cursor_goto_last_child_wasm = Module["_ts_tree_cursor_goto_last_child_wasm"] = (a0) => (_ts_tree_cursor_goto_last_child_wasm = Module["_ts_tree_cursor_goto_last_child_wasm"] = wasmExports["ts_tree_cursor_goto_last_child_wasm"])(a0);
-            var _ts_tree_cursor_goto_first_child_for_index_wasm = Module["_ts_tree_cursor_goto_first_child_for_index_wasm"] = (a0) => (_ts_tree_cursor_goto_first_child_for_index_wasm = Module["_ts_tree_cursor_goto_first_child_for_index_wasm"] = wasmExports["ts_tree_cursor_goto_first_child_for_index_wasm"])(a0);
-            var _ts_tree_cursor_goto_first_child_for_position_wasm = Module["_ts_tree_cursor_goto_first_child_for_position_wasm"] = (a0) => (_ts_tree_cursor_goto_first_child_for_position_wasm = Module["_ts_tree_cursor_goto_first_child_for_position_wasm"] = wasmExports["ts_tree_cursor_goto_first_child_for_position_wasm"])(a0);
-            var _ts_tree_cursor_goto_next_sibling_wasm = Module["_ts_tree_cursor_goto_next_sibling_wasm"] = (a0) => (_ts_tree_cursor_goto_next_sibling_wasm = Module["_ts_tree_cursor_goto_next_sibling_wasm"] = wasmExports["ts_tree_cursor_goto_next_sibling_wasm"])(a0);
-            var _ts_tree_cursor_goto_previous_sibling_wasm = Module["_ts_tree_cursor_goto_previous_sibling_wasm"] = (a0) => (_ts_tree_cursor_goto_previous_sibling_wasm = Module["_ts_tree_cursor_goto_previous_sibling_wasm"] = wasmExports["ts_tree_cursor_goto_previous_sibling_wasm"])(a0);
-            var _ts_tree_cursor_goto_descendant_wasm = Module["_ts_tree_cursor_goto_descendant_wasm"] = (a0, a1) => (_ts_tree_cursor_goto_descendant_wasm = Module["_ts_tree_cursor_goto_descendant_wasm"] = wasmExports["ts_tree_cursor_goto_descendant_wasm"])(a0, a1);
-            var _ts_tree_cursor_goto_parent_wasm = Module["_ts_tree_cursor_goto_parent_wasm"] = (a0) => (_ts_tree_cursor_goto_parent_wasm = Module["_ts_tree_cursor_goto_parent_wasm"] = wasmExports["ts_tree_cursor_goto_parent_wasm"])(a0);
-            var _ts_tree_cursor_current_node_type_id_wasm = Module["_ts_tree_cursor_current_node_type_id_wasm"] = (a0) => (_ts_tree_cursor_current_node_type_id_wasm = Module["_ts_tree_cursor_current_node_type_id_wasm"] = wasmExports["ts_tree_cursor_current_node_type_id_wasm"])(a0);
-            var _ts_tree_cursor_current_node_state_id_wasm = Module["_ts_tree_cursor_current_node_state_id_wasm"] = (a0) => (_ts_tree_cursor_current_node_state_id_wasm = Module["_ts_tree_cursor_current_node_state_id_wasm"] = wasmExports["ts_tree_cursor_current_node_state_id_wasm"])(a0);
-            var _ts_tree_cursor_current_node_is_named_wasm = Module["_ts_tree_cursor_current_node_is_named_wasm"] = (a0) => (_ts_tree_cursor_current_node_is_named_wasm = Module["_ts_tree_cursor_current_node_is_named_wasm"] = wasmExports["ts_tree_cursor_current_node_is_named_wasm"])(a0);
-            var _ts_tree_cursor_current_node_is_missing_wasm = Module["_ts_tree_cursor_current_node_is_missing_wasm"] = (a0) => (_ts_tree_cursor_current_node_is_missing_wasm = Module["_ts_tree_cursor_current_node_is_missing_wasm"] = wasmExports["ts_tree_cursor_current_node_is_missing_wasm"])(a0);
-            var _ts_tree_cursor_current_node_id_wasm = Module["_ts_tree_cursor_current_node_id_wasm"] = (a0) => (_ts_tree_cursor_current_node_id_wasm = Module["_ts_tree_cursor_current_node_id_wasm"] = wasmExports["ts_tree_cursor_current_node_id_wasm"])(a0);
-            var _ts_tree_cursor_start_position_wasm = Module["_ts_tree_cursor_start_position_wasm"] = (a0) => (_ts_tree_cursor_start_position_wasm = Module["_ts_tree_cursor_start_position_wasm"] = wasmExports["ts_tree_cursor_start_position_wasm"])(a0);
-            var _ts_tree_cursor_end_position_wasm = Module["_ts_tree_cursor_end_position_wasm"] = (a0) => (_ts_tree_cursor_end_position_wasm = Module["_ts_tree_cursor_end_position_wasm"] = wasmExports["ts_tree_cursor_end_position_wasm"])(a0);
-            var _ts_tree_cursor_start_index_wasm = Module["_ts_tree_cursor_start_index_wasm"] = (a0) => (_ts_tree_cursor_start_index_wasm = Module["_ts_tree_cursor_start_index_wasm"] = wasmExports["ts_tree_cursor_start_index_wasm"])(a0);
-            var _ts_tree_cursor_end_index_wasm = Module["_ts_tree_cursor_end_index_wasm"] = (a0) => (_ts_tree_cursor_end_index_wasm = Module["_ts_tree_cursor_end_index_wasm"] = wasmExports["ts_tree_cursor_end_index_wasm"])(a0);
-            var _ts_tree_cursor_current_field_id_wasm = Module["_ts_tree_cursor_current_field_id_wasm"] = (a0) => (_ts_tree_cursor_current_field_id_wasm = Module["_ts_tree_cursor_current_field_id_wasm"] = wasmExports["ts_tree_cursor_current_field_id_wasm"])(a0);
-            var _ts_tree_cursor_current_depth_wasm = Module["_ts_tree_cursor_current_depth_wasm"] = (a0) => (_ts_tree_cursor_current_depth_wasm = Module["_ts_tree_cursor_current_depth_wasm"] = wasmExports["ts_tree_cursor_current_depth_wasm"])(a0);
-            var _ts_tree_cursor_current_descendant_index_wasm = Module["_ts_tree_cursor_current_descendant_index_wasm"] = (a0) => (_ts_tree_cursor_current_descendant_index_wasm = Module["_ts_tree_cursor_current_descendant_index_wasm"] = wasmExports["ts_tree_cursor_current_descendant_index_wasm"])(a0);
-            var _ts_tree_cursor_current_node_wasm = Module["_ts_tree_cursor_current_node_wasm"] = (a0) => (_ts_tree_cursor_current_node_wasm = Module["_ts_tree_cursor_current_node_wasm"] = wasmExports["ts_tree_cursor_current_node_wasm"])(a0);
-            var _ts_node_symbol_wasm = Module["_ts_node_symbol_wasm"] = (a0) => (_ts_node_symbol_wasm = Module["_ts_node_symbol_wasm"] = wasmExports["ts_node_symbol_wasm"])(a0);
-            var _ts_node_field_name_for_child_wasm = Module["_ts_node_field_name_for_child_wasm"] = (a0, a1) => (_ts_node_field_name_for_child_wasm = Module["_ts_node_field_name_for_child_wasm"] = wasmExports["ts_node_field_name_for_child_wasm"])(a0, a1);
-            var _ts_node_children_by_field_id_wasm = Module["_ts_node_children_by_field_id_wasm"] = (a0, a1) => (_ts_node_children_by_field_id_wasm = Module["_ts_node_children_by_field_id_wasm"] = wasmExports["ts_node_children_by_field_id_wasm"])(a0, a1);
-            var _ts_node_first_child_for_byte_wasm = Module["_ts_node_first_child_for_byte_wasm"] = (a0) => (_ts_node_first_child_for_byte_wasm = Module["_ts_node_first_child_for_byte_wasm"] = wasmExports["ts_node_first_child_for_byte_wasm"])(a0);
-            var _ts_node_first_named_child_for_byte_wasm = Module["_ts_node_first_named_child_for_byte_wasm"] = (a0) => (_ts_node_first_named_child_for_byte_wasm = Module["_ts_node_first_named_child_for_byte_wasm"] = wasmExports["ts_node_first_named_child_for_byte_wasm"])(a0);
-            var _ts_node_grammar_symbol_wasm = Module["_ts_node_grammar_symbol_wasm"] = (a0) => (_ts_node_grammar_symbol_wasm = Module["_ts_node_grammar_symbol_wasm"] = wasmExports["ts_node_grammar_symbol_wasm"])(a0);
-            var _ts_node_child_count_wasm = Module["_ts_node_child_count_wasm"] = (a0) => (_ts_node_child_count_wasm = Module["_ts_node_child_count_wasm"] = wasmExports["ts_node_child_count_wasm"])(a0);
-            var _ts_node_named_child_count_wasm = Module["_ts_node_named_child_count_wasm"] = (a0) => (_ts_node_named_child_count_wasm = Module["_ts_node_named_child_count_wasm"] = wasmExports["ts_node_named_child_count_wasm"])(a0);
-            var _ts_node_child_wasm = Module["_ts_node_child_wasm"] = (a0, a1) => (_ts_node_child_wasm = Module["_ts_node_child_wasm"] = wasmExports["ts_node_child_wasm"])(a0, a1);
-            var _ts_node_named_child_wasm = Module["_ts_node_named_child_wasm"] = (a0, a1) => (_ts_node_named_child_wasm = Module["_ts_node_named_child_wasm"] = wasmExports["ts_node_named_child_wasm"])(a0, a1);
-            var _ts_node_child_by_field_id_wasm = Module["_ts_node_child_by_field_id_wasm"] = (a0, a1) => (_ts_node_child_by_field_id_wasm = Module["_ts_node_child_by_field_id_wasm"] = wasmExports["ts_node_child_by_field_id_wasm"])(a0, a1);
-            var _ts_node_next_sibling_wasm = Module["_ts_node_next_sibling_wasm"] = (a0) => (_ts_node_next_sibling_wasm = Module["_ts_node_next_sibling_wasm"] = wasmExports["ts_node_next_sibling_wasm"])(a0);
-            var _ts_node_prev_sibling_wasm = Module["_ts_node_prev_sibling_wasm"] = (a0) => (_ts_node_prev_sibling_wasm = Module["_ts_node_prev_sibling_wasm"] = wasmExports["ts_node_prev_sibling_wasm"])(a0);
-            var _ts_node_next_named_sibling_wasm = Module["_ts_node_next_named_sibling_wasm"] = (a0) => (_ts_node_next_named_sibling_wasm = Module["_ts_node_next_named_sibling_wasm"] = wasmExports["ts_node_next_named_sibling_wasm"])(a0);
-            var _ts_node_prev_named_sibling_wasm = Module["_ts_node_prev_named_sibling_wasm"] = (a0) => (_ts_node_prev_named_sibling_wasm = Module["_ts_node_prev_named_sibling_wasm"] = wasmExports["ts_node_prev_named_sibling_wasm"])(a0);
-            var _ts_node_descendant_count_wasm = Module["_ts_node_descendant_count_wasm"] = (a0) => (_ts_node_descendant_count_wasm = Module["_ts_node_descendant_count_wasm"] = wasmExports["ts_node_descendant_count_wasm"])(a0);
-            var _ts_node_parent_wasm = Module["_ts_node_parent_wasm"] = (a0) => (_ts_node_parent_wasm = Module["_ts_node_parent_wasm"] = wasmExports["ts_node_parent_wasm"])(a0);
-            var _ts_node_descendant_for_index_wasm = Module["_ts_node_descendant_for_index_wasm"] = (a0) => (_ts_node_descendant_for_index_wasm = Module["_ts_node_descendant_for_index_wasm"] = wasmExports["ts_node_descendant_for_index_wasm"])(a0);
-            var _ts_node_named_descendant_for_index_wasm = Module["_ts_node_named_descendant_for_index_wasm"] = (a0) => (_ts_node_named_descendant_for_index_wasm = Module["_ts_node_named_descendant_for_index_wasm"] = wasmExports["ts_node_named_descendant_for_index_wasm"])(a0);
-            var _ts_node_descendant_for_position_wasm = Module["_ts_node_descendant_for_position_wasm"] = (a0) => (_ts_node_descendant_for_position_wasm = Module["_ts_node_descendant_for_position_wasm"] = wasmExports["ts_node_descendant_for_position_wasm"])(a0);
-            var _ts_node_named_descendant_for_position_wasm = Module["_ts_node_named_descendant_for_position_wasm"] = (a0) => (_ts_node_named_descendant_for_position_wasm = Module["_ts_node_named_descendant_for_position_wasm"] = wasmExports["ts_node_named_descendant_for_position_wasm"])(a0);
-            var _ts_node_start_point_wasm = Module["_ts_node_start_point_wasm"] = (a0) => (_ts_node_start_point_wasm = Module["_ts_node_start_point_wasm"] = wasmExports["ts_node_start_point_wasm"])(a0);
-            var _ts_node_end_point_wasm = Module["_ts_node_end_point_wasm"] = (a0) => (_ts_node_end_point_wasm = Module["_ts_node_end_point_wasm"] = wasmExports["ts_node_end_point_wasm"])(a0);
-            var _ts_node_start_index_wasm = Module["_ts_node_start_index_wasm"] = (a0) => (_ts_node_start_index_wasm = Module["_ts_node_start_index_wasm"] = wasmExports["ts_node_start_index_wasm"])(a0);
-            var _ts_node_end_index_wasm = Module["_ts_node_end_index_wasm"] = (a0) => (_ts_node_end_index_wasm = Module["_ts_node_end_index_wasm"] = wasmExports["ts_node_end_index_wasm"])(a0);
-            var _ts_node_to_string_wasm = Module["_ts_node_to_string_wasm"] = (a0) => (_ts_node_to_string_wasm = Module["_ts_node_to_string_wasm"] = wasmExports["ts_node_to_string_wasm"])(a0);
-            var _ts_node_children_wasm = Module["_ts_node_children_wasm"] = (a0) => (_ts_node_children_wasm = Module["_ts_node_children_wasm"] = wasmExports["ts_node_children_wasm"])(a0);
-            var _ts_node_named_children_wasm = Module["_ts_node_named_children_wasm"] = (a0) => (_ts_node_named_children_wasm = Module["_ts_node_named_children_wasm"] = wasmExports["ts_node_named_children_wasm"])(a0);
-            var _ts_node_descendants_of_type_wasm = Module["_ts_node_descendants_of_type_wasm"] = (a0, a1, a2, a3, a4, a5, a6) => (_ts_node_descendants_of_type_wasm = Module["_ts_node_descendants_of_type_wasm"] = wasmExports["ts_node_descendants_of_type_wasm"])(a0, a1, a2, a3, a4, a5, a6);
-            var _ts_node_is_named_wasm = Module["_ts_node_is_named_wasm"] = (a0) => (_ts_node_is_named_wasm = Module["_ts_node_is_named_wasm"] = wasmExports["ts_node_is_named_wasm"])(a0);
-            var _ts_node_has_changes_wasm = Module["_ts_node_has_changes_wasm"] = (a0) => (_ts_node_has_changes_wasm = Module["_ts_node_has_changes_wasm"] = wasmExports["ts_node_has_changes_wasm"])(a0);
-            var _ts_node_has_error_wasm = Module["_ts_node_has_error_wasm"] = (a0) => (_ts_node_has_error_wasm = Module["_ts_node_has_error_wasm"] = wasmExports["ts_node_has_error_wasm"])(a0);
-            var _ts_node_is_error_wasm = Module["_ts_node_is_error_wasm"] = (a0) => (_ts_node_is_error_wasm = Module["_ts_node_is_error_wasm"] = wasmExports["ts_node_is_error_wasm"])(a0);
-            var _ts_node_is_missing_wasm = Module["_ts_node_is_missing_wasm"] = (a0) => (_ts_node_is_missing_wasm = Module["_ts_node_is_missing_wasm"] = wasmExports["ts_node_is_missing_wasm"])(a0);
-            var _ts_node_is_extra_wasm = Module["_ts_node_is_extra_wasm"] = (a0) => (_ts_node_is_extra_wasm = Module["_ts_node_is_extra_wasm"] = wasmExports["ts_node_is_extra_wasm"])(a0);
-            var _ts_node_parse_state_wasm = Module["_ts_node_parse_state_wasm"] = (a0) => (_ts_node_parse_state_wasm = Module["_ts_node_parse_state_wasm"] = wasmExports["ts_node_parse_state_wasm"])(a0);
-            var _ts_node_next_parse_state_wasm = Module["_ts_node_next_parse_state_wasm"] = (a0) => (_ts_node_next_parse_state_wasm = Module["_ts_node_next_parse_state_wasm"] = wasmExports["ts_node_next_parse_state_wasm"])(a0);
-            var _ts_query_matches_wasm = Module["_ts_query_matches_wasm"] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) => (_ts_query_matches_wasm = Module["_ts_query_matches_wasm"] = wasmExports["ts_query_matches_wasm"])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
-            var _ts_query_captures_wasm = Module["_ts_query_captures_wasm"] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) => (_ts_query_captures_wasm = Module["_ts_query_captures_wasm"] = wasmExports["ts_query_captures_wasm"])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
-            var _iswalpha = Module["_iswalpha"] = (a0) => (_iswalpha = Module["_iswalpha"] = wasmExports["iswalpha"])(a0);
-            var _iswblank = Module["_iswblank"] = (a0) => (_iswblank = Module["_iswblank"] = wasmExports["iswblank"])(a0);
-            var _iswdigit = Module["_iswdigit"] = (a0) => (_iswdigit = Module["_iswdigit"] = wasmExports["iswdigit"])(a0);
-            var _iswlower = Module["_iswlower"] = (a0) => (_iswlower = Module["_iswlower"] = wasmExports["iswlower"])(a0);
-            var _iswupper = Module["_iswupper"] = (a0) => (_iswupper = Module["_iswupper"] = wasmExports["iswupper"])(a0);
-            var _iswxdigit = Module["_iswxdigit"] = (a0) => (_iswxdigit = Module["_iswxdigit"] = wasmExports["iswxdigit"])(a0);
-            var _memchr = Module["_memchr"] = (a0, a1, a2) => (_memchr = Module["_memchr"] = wasmExports["memchr"])(a0, a1, a2);
-            var _strlen = Module["_strlen"] = (a0) => (_strlen = Module["_strlen"] = wasmExports["strlen"])(a0);
-            var _strcmp = Module["_strcmp"] = (a0, a1) => (_strcmp = Module["_strcmp"] = wasmExports["strcmp"])(a0, a1);
-            var _strncat = Module["_strncat"] = (a0, a1, a2) => (_strncat = Module["_strncat"] = wasmExports["strncat"])(a0, a1, a2);
-            var _strncpy = Module["_strncpy"] = (a0, a1, a2) => (_strncpy = Module["_strncpy"] = wasmExports["strncpy"])(a0, a1, a2);
-            var _towlower = Module["_towlower"] = (a0) => (_towlower = Module["_towlower"] = wasmExports["towlower"])(a0);
-            var _towupper = Module["_towupper"] = (a0) => (_towupper = Module["_towupper"] = wasmExports["towupper"])(a0);
-            var _setThrew = (a0, a1) => (_setThrew = wasmExports["setThrew"])(a0, a1);
-            var __emscripten_stack_restore = (a0) => (__emscripten_stack_restore = wasmExports["_emscripten_stack_restore"])(a0);
-            var __emscripten_stack_alloc = (a0) => (__emscripten_stack_alloc = wasmExports["_emscripten_stack_alloc"])(a0);
-            var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmExports["emscripten_stack_get_current"])();
-            var dynCall_jiji = Module["dynCall_jiji"] = (a0, a1, a2, a3, a4) => (dynCall_jiji = Module["dynCall_jiji"] = wasmExports["dynCall_jiji"])(a0, a1, a2, a3, a4);
-            var _orig$ts_parser_timeout_micros = Module["_orig$ts_parser_timeout_micros"] = (a0) => (_orig$ts_parser_timeout_micros = Module["_orig$ts_parser_timeout_micros"] = wasmExports["orig$ts_parser_timeout_micros"])(a0);
-            var _orig$ts_parser_set_timeout_micros = Module["_orig$ts_parser_set_timeout_micros"] = (a0, a1) => (_orig$ts_parser_set_timeout_micros = Module["_orig$ts_parser_set_timeout_micros"] = wasmExports["orig$ts_parser_set_timeout_micros"])(a0, a1);
-            Module["AsciiToString"] = AsciiToString;
-            Module["stringToUTF16"] = stringToUTF16;
-            var calledRun;
-            dependenciesFulfilled = function runCaller() {
-              if (!calledRun) run();
-              if (!calledRun) dependenciesFulfilled = runCaller;
-            };
-            function callMain(args2 = []) {
-              var entryFunction = resolveGlobalSymbol("main").sym;
-              if (!entryFunction) return;
-              args2.unshift(thisProgram);
-              var argc = args2.length;
-              var argv = stackAlloc((argc + 1) * 4);
-              var argv_ptr = argv;
-              args2.forEach((arg) => {
-                LE_HEAP_STORE_U32((argv_ptr >> 2) * 4, stringToUTF8OnStack(arg));
-                argv_ptr += 4;
-              });
-              LE_HEAP_STORE_U32((argv_ptr >> 2) * 4, 0);
-              try {
-                var ret = entryFunction(argc, argv);
-                exitJS(
-                  ret,
-                  /* implicit = */
-                  true
-                );
-                return ret;
-              } catch (e) {
-                return handleException(e);
-              }
-            }
-            function run(args2 = arguments_) {
-              if (runDependencies > 0) {
-                return;
-              }
-              preRun();
-              if (runDependencies > 0) {
-                return;
-              }
-              function doRun() {
-                if (calledRun) return;
-                calledRun = true;
-                Module["calledRun"] = true;
-                if (ABORT) return;
-                initRuntime();
-                preMain();
-                Module["onRuntimeInitialized"]?.();
-                if (shouldRunNow) callMain(args2);
-                postRun();
-              }
-              if (Module["setStatus"]) {
-                Module["setStatus"]("Running...");
-                setTimeout(function() {
-                  setTimeout(function() {
-                    Module["setStatus"]("");
-                  }, 1);
-                  doRun();
-                }, 1);
-              } else {
-                doRun();
-              }
-            }
-            if (Module["preInit"]) {
-              if (typeof Module["preInit"] == "function") Module["preInit"] = [Module["preInit"]];
-              while (Module["preInit"].length > 0) {
-                Module["preInit"].pop()();
-              }
-            }
-            var shouldRunNow = true;
-            if (Module["noInitialRun"]) shouldRunNow = false;
-            run();
-            const C = Module;
-            const INTERNAL = {};
-            const SIZE_OF_INT = 4;
-            const SIZE_OF_CURSOR = 4 * SIZE_OF_INT;
-            const SIZE_OF_NODE = 5 * SIZE_OF_INT;
-            const SIZE_OF_POINT = 2 * SIZE_OF_INT;
-            const SIZE_OF_RANGE = 2 * SIZE_OF_INT + 2 * SIZE_OF_POINT;
-            const ZERO_POINT = {
-              row: 0,
-              column: 0
-            };
-            const QUERY_WORD_REGEX = /[\w-.]*/g;
-            const PREDICATE_STEP_TYPE_CAPTURE = 1;
-            const PREDICATE_STEP_TYPE_STRING = 2;
-            const LANGUAGE_FUNCTION_REGEX = /^_?tree_sitter_\w+/;
-            let VERSION;
-            let MIN_COMPATIBLE_VERSION;
-            let TRANSFER_BUFFER;
-            let currentParseCallback;
-            let currentLogCallback;
-            class ParserImpl {
-              static init() {
-                TRANSFER_BUFFER = C._ts_init();
-                VERSION = getValue(TRANSFER_BUFFER, "i32");
-                MIN_COMPATIBLE_VERSION = getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
-              }
-              initialize() {
-                C._ts_parser_new_wasm();
-                this[0] = getValue(TRANSFER_BUFFER, "i32");
-                this[1] = getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
-              }
-              delete() {
-                C._ts_parser_delete(this[0]);
-                C._free(this[1]);
-                this[0] = 0;
-                this[1] = 0;
-              }
-              setLanguage(language) {
-                let address;
-                if (!language) {
-                  address = 0;
-                  language = null;
-                } else if (language.constructor === Language) {
-                  address = language[0];
-                  const version = C._ts_language_version(address);
-                  if (version < MIN_COMPATIBLE_VERSION || VERSION < version) {
-                    throw new Error(`Incompatible language version ${version}. Compatibility range ${MIN_COMPATIBLE_VERSION} through ${VERSION}.`);
-                  }
-                } else {
-                  throw new Error("Argument must be a Language");
-                }
-                this.language = language;
-                C._ts_parser_set_language(this[0], address);
-                return this;
-              }
-              getLanguage() {
-                return this.language;
-              }
-              parse(callback2, oldTree, options2) {
-                if (typeof callback2 === "string") {
-                  currentParseCallback = (index, _) => callback2.slice(index);
-                } else if (typeof callback2 === "function") {
-                  currentParseCallback = callback2;
-                } else {
-                  throw new Error("Argument must be a string or a function");
-                }
-                if (this.logCallback) {
-                  currentLogCallback = this.logCallback;
-                  C._ts_parser_enable_logger_wasm(this[0], 1);
-                } else {
-                  currentLogCallback = null;
-                  C._ts_parser_enable_logger_wasm(this[0], 0);
-                }
-                let rangeCount = 0;
-                let rangeAddress = 0;
-                if (options2?.includedRanges) {
-                  rangeCount = options2.includedRanges.length;
-                  rangeAddress = C._calloc(rangeCount, SIZE_OF_RANGE);
-                  let address = rangeAddress;
-                  for (let i2 = 0; i2 < rangeCount; i2++) {
-                    marshalRange(address, options2.includedRanges[i2]);
-                    address += SIZE_OF_RANGE;
-                  }
-                }
-                const treeAddress = C._ts_parser_parse_wasm(this[0], this[1], oldTree ? oldTree[0] : 0, rangeAddress, rangeCount);
-                if (!treeAddress) {
-                  currentParseCallback = null;
-                  currentLogCallback = null;
-                  throw new Error("Parsing failed");
-                }
-                const result = new Tree(INTERNAL, treeAddress, this.language, currentParseCallback);
-                currentParseCallback = null;
-                currentLogCallback = null;
-                return result;
-              }
-              reset() {
-                C._ts_parser_reset(this[0]);
-              }
-              getIncludedRanges() {
-                C._ts_parser_included_ranges_wasm(this[0]);
-                const count2 = getValue(TRANSFER_BUFFER, "i32");
-                const buffer = getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
-                const result = new Array(count2);
-                if (count2 > 0) {
-                  let address = buffer;
-                  for (let i2 = 0; i2 < count2; i2++) {
-                    result[i2] = unmarshalRange(address);
-                    address += SIZE_OF_RANGE;
-                  }
-                  C._free(buffer);
-                }
-                return result;
-              }
-              getTimeoutMicros() {
-                return C._ts_parser_timeout_micros(this[0]);
-              }
-              setTimeoutMicros(timeout) {
-                C._ts_parser_set_timeout_micros(this[0], timeout);
-              }
-              setLogger(callback2) {
-                if (!callback2) {
-                  callback2 = null;
-                } else if (typeof callback2 !== "function") {
-                  throw new Error("Logger callback must be a function");
-                }
-                this.logCallback = callback2;
-                return this;
-              }
-              getLogger() {
-                return this.logCallback;
-              }
-            }
-            class Tree {
-              constructor(internal, address, language, textCallback) {
-                assertInternal(internal);
-                this[0] = address;
-                this.language = language;
-                this.textCallback = textCallback;
-              }
-              copy() {
-                const address = C._ts_tree_copy(this[0]);
-                return new Tree(INTERNAL, address, this.language, this.textCallback);
-              }
-              delete() {
-                C._ts_tree_delete(this[0]);
-                this[0] = 0;
-              }
-              edit(edit) {
-                marshalEdit(edit);
-                C._ts_tree_edit_wasm(this[0]);
-              }
-              get rootNode() {
-                C._ts_tree_root_node_wasm(this[0]);
-                return unmarshalNode(this);
-              }
-              rootNodeWithOffset(offsetBytes, offsetExtent) {
-                const address = TRANSFER_BUFFER + SIZE_OF_NODE;
-                setValue(address, offsetBytes, "i32");
-                marshalPoint(address + SIZE_OF_INT, offsetExtent);
-                C._ts_tree_root_node_with_offset_wasm(this[0]);
-                return unmarshalNode(this);
-              }
-              getLanguage() {
-                return this.language;
-              }
-              walk() {
-                return this.rootNode.walk();
-              }
-              getChangedRanges(other) {
-                if (other.constructor !== Tree) {
-                  throw new TypeError("Argument must be a Tree");
-                }
-                C._ts_tree_get_changed_ranges_wasm(this[0], other[0]);
-                const count2 = getValue(TRANSFER_BUFFER, "i32");
-                const buffer = getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
-                const result = new Array(count2);
-                if (count2 > 0) {
-                  let address = buffer;
-                  for (let i2 = 0; i2 < count2; i2++) {
-                    result[i2] = unmarshalRange(address);
-                    address += SIZE_OF_RANGE;
-                  }
-                  C._free(buffer);
-                }
-                return result;
-              }
-              getIncludedRanges() {
-                C._ts_tree_included_ranges_wasm(this[0]);
-                const count2 = getValue(TRANSFER_BUFFER, "i32");
-                const buffer = getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
-                const result = new Array(count2);
-                if (count2 > 0) {
-                  let address = buffer;
-                  for (let i2 = 0; i2 < count2; i2++) {
-                    result[i2] = unmarshalRange(address);
-                    address += SIZE_OF_RANGE;
-                  }
-                  C._free(buffer);
-                }
-                return result;
-              }
-            }
-            class Node {
-              constructor(internal, tree) {
-                assertInternal(internal);
-                this.tree = tree;
-              }
-              get typeId() {
-                marshalNode(this);
-                return C._ts_node_symbol_wasm(this.tree[0]);
-              }
-              get grammarId() {
-                marshalNode(this);
-                return C._ts_node_grammar_symbol_wasm(this.tree[0]);
-              }
-              get type() {
-                return this.tree.language.types[this.typeId] || "ERROR";
-              }
-              get grammarType() {
-                return this.tree.language.types[this.grammarId] || "ERROR";
-              }
-              get endPosition() {
-                marshalNode(this);
-                C._ts_node_end_point_wasm(this.tree[0]);
-                return unmarshalPoint(TRANSFER_BUFFER);
-              }
-              get endIndex() {
-                marshalNode(this);
-                return C._ts_node_end_index_wasm(this.tree[0]);
-              }
-              get text() {
-                return getText(this.tree, this.startIndex, this.endIndex);
-              }
-              get parseState() {
-                marshalNode(this);
-                return C._ts_node_parse_state_wasm(this.tree[0]);
-              }
-              get nextParseState() {
-                marshalNode(this);
-                return C._ts_node_next_parse_state_wasm(this.tree[0]);
-              }
-              get isNamed() {
-                marshalNode(this);
-                return C._ts_node_is_named_wasm(this.tree[0]) === 1;
-              }
-              get hasError() {
-                marshalNode(this);
-                return C._ts_node_has_error_wasm(this.tree[0]) === 1;
-              }
-              get hasChanges() {
-                marshalNode(this);
-                return C._ts_node_has_changes_wasm(this.tree[0]) === 1;
-              }
-              get isError() {
-                marshalNode(this);
-                return C._ts_node_is_error_wasm(this.tree[0]) === 1;
-              }
-              get isMissing() {
-                marshalNode(this);
-                return C._ts_node_is_missing_wasm(this.tree[0]) === 1;
-              }
-              get isExtra() {
-                marshalNode(this);
-                return C._ts_node_is_extra_wasm(this.tree[0]) === 1;
-              }
-              equals(other) {
-                return this.id === other.id;
-              }
-              child(index) {
-                marshalNode(this);
-                C._ts_node_child_wasm(this.tree[0], index);
-                return unmarshalNode(this.tree);
-              }
-              namedChild(index) {
-                marshalNode(this);
-                C._ts_node_named_child_wasm(this.tree[0], index);
-                return unmarshalNode(this.tree);
-              }
-              childForFieldId(fieldId) {
-                marshalNode(this);
-                C._ts_node_child_by_field_id_wasm(this.tree[0], fieldId);
-                return unmarshalNode(this.tree);
-              }
-              childForFieldName(fieldName) {
-                const fieldId = this.tree.language.fields.indexOf(fieldName);
-                if (fieldId !== -1) return this.childForFieldId(fieldId);
-                return null;
-              }
-              fieldNameForChild(index) {
-                marshalNode(this);
-                const address = C._ts_node_field_name_for_child_wasm(this.tree[0], index);
-                if (!address) {
-                  return null;
-                }
-                const result = AsciiToString(address);
-                return result;
-              }
-              childrenForFieldName(fieldName) {
-                const fieldId = this.tree.language.fields.indexOf(fieldName);
-                if (fieldId !== -1 && fieldId !== 0) return this.childrenForFieldId(fieldId);
-                return [];
-              }
-              childrenForFieldId(fieldId) {
-                marshalNode(this);
-                C._ts_node_children_by_field_id_wasm(this.tree[0], fieldId);
-                const count2 = getValue(TRANSFER_BUFFER, "i32");
-                const buffer = getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
-                const result = new Array(count2);
-                if (count2 > 0) {
-                  let address = buffer;
-                  for (let i2 = 0; i2 < count2; i2++) {
-                    result[i2] = unmarshalNode(this.tree, address);
-                    address += SIZE_OF_NODE;
-                  }
-                  C._free(buffer);
-                }
-                return result;
-              }
-              firstChildForIndex(index) {
-                marshalNode(this);
-                const address = TRANSFER_BUFFER + SIZE_OF_NODE;
-                setValue(address, index, "i32");
-                C._ts_node_first_child_for_byte_wasm(this.tree[0]);
-                return unmarshalNode(this.tree);
-              }
-              firstNamedChildForIndex(index) {
-                marshalNode(this);
-                const address = TRANSFER_BUFFER + SIZE_OF_NODE;
-                setValue(address, index, "i32");
-                C._ts_node_first_named_child_for_byte_wasm(this.tree[0]);
-                return unmarshalNode(this.tree);
-              }
-              get childCount() {
-                marshalNode(this);
-                return C._ts_node_child_count_wasm(this.tree[0]);
-              }
-              get namedChildCount() {
-                marshalNode(this);
-                return C._ts_node_named_child_count_wasm(this.tree[0]);
-              }
-              get firstChild() {
-                return this.child(0);
-              }
-              get firstNamedChild() {
-                return this.namedChild(0);
-              }
-              get lastChild() {
-                return this.child(this.childCount - 1);
-              }
-              get lastNamedChild() {
-                return this.namedChild(this.namedChildCount - 1);
-              }
-              get children() {
-                if (!this._children) {
-                  marshalNode(this);
-                  C._ts_node_children_wasm(this.tree[0]);
-                  const count2 = getValue(TRANSFER_BUFFER, "i32");
-                  const buffer = getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
-                  this._children = new Array(count2);
-                  if (count2 > 0) {
-                    let address = buffer;
-                    for (let i2 = 0; i2 < count2; i2++) {
-                      this._children[i2] = unmarshalNode(this.tree, address);
-                      address += SIZE_OF_NODE;
-                    }
-                    C._free(buffer);
-                  }
-                }
-                return this._children;
-              }
-              get namedChildren() {
-                if (!this._namedChildren) {
-                  marshalNode(this);
-                  C._ts_node_named_children_wasm(this.tree[0]);
-                  const count2 = getValue(TRANSFER_BUFFER, "i32");
-                  const buffer = getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
-                  this._namedChildren = new Array(count2);
-                  if (count2 > 0) {
-                    let address = buffer;
-                    for (let i2 = 0; i2 < count2; i2++) {
-                      this._namedChildren[i2] = unmarshalNode(this.tree, address);
-                      address += SIZE_OF_NODE;
-                    }
-                    C._free(buffer);
-                  }
-                }
-                return this._namedChildren;
-              }
-              descendantsOfType(types, startPosition, endPosition) {
-                if (!Array.isArray(types)) types = [types];
-                if (!startPosition) startPosition = ZERO_POINT;
-                if (!endPosition) endPosition = ZERO_POINT;
-                const symbols2 = [];
-                const typesBySymbol = this.tree.language.types;
-                for (let i2 = 0, n = typesBySymbol.length; i2 < n; i2++) {
-                  if (types.includes(typesBySymbol[i2])) {
-                    symbols2.push(i2);
-                  }
-                }
-                const symbolsAddress = C._malloc(SIZE_OF_INT * symbols2.length);
-                for (let i2 = 0, n = symbols2.length; i2 < n; i2++) {
-                  setValue(symbolsAddress + i2 * SIZE_OF_INT, symbols2[i2], "i32");
-                }
-                marshalNode(this);
-                C._ts_node_descendants_of_type_wasm(this.tree[0], symbolsAddress, symbols2.length, startPosition.row, startPosition.column, endPosition.row, endPosition.column);
-                const descendantCount = getValue(TRANSFER_BUFFER, "i32");
-                const descendantAddress = getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
-                const result = new Array(descendantCount);
-                if (descendantCount > 0) {
-                  let address = descendantAddress;
-                  for (let i2 = 0; i2 < descendantCount; i2++) {
-                    result[i2] = unmarshalNode(this.tree, address);
-                    address += SIZE_OF_NODE;
-                  }
-                }
-                C._free(descendantAddress);
-                C._free(symbolsAddress);
-                return result;
-              }
-              get nextSibling() {
-                marshalNode(this);
-                C._ts_node_next_sibling_wasm(this.tree[0]);
-                return unmarshalNode(this.tree);
-              }
-              get previousSibling() {
-                marshalNode(this);
-                C._ts_node_prev_sibling_wasm(this.tree[0]);
-                return unmarshalNode(this.tree);
-              }
-              get nextNamedSibling() {
-                marshalNode(this);
-                C._ts_node_next_named_sibling_wasm(this.tree[0]);
-                return unmarshalNode(this.tree);
-              }
-              get previousNamedSibling() {
-                marshalNode(this);
-                C._ts_node_prev_named_sibling_wasm(this.tree[0]);
-                return unmarshalNode(this.tree);
-              }
-              get descendantCount() {
-                marshalNode(this);
-                return C._ts_node_descendant_count_wasm(this.tree[0]);
-              }
-              get parent() {
-                marshalNode(this);
-                C._ts_node_parent_wasm(this.tree[0]);
-                return unmarshalNode(this.tree);
-              }
-              descendantForIndex(start2, end = start2) {
-                if (typeof start2 !== "number" || typeof end !== "number") {
-                  throw new Error("Arguments must be numbers");
-                }
-                marshalNode(this);
-                const address = TRANSFER_BUFFER + SIZE_OF_NODE;
-                setValue(address, start2, "i32");
-                setValue(address + SIZE_OF_INT, end, "i32");
-                C._ts_node_descendant_for_index_wasm(this.tree[0]);
-                return unmarshalNode(this.tree);
-              }
-              namedDescendantForIndex(start2, end = start2) {
-                if (typeof start2 !== "number" || typeof end !== "number") {
-                  throw new Error("Arguments must be numbers");
-                }
-                marshalNode(this);
-                const address = TRANSFER_BUFFER + SIZE_OF_NODE;
-                setValue(address, start2, "i32");
-                setValue(address + SIZE_OF_INT, end, "i32");
-                C._ts_node_named_descendant_for_index_wasm(this.tree[0]);
-                return unmarshalNode(this.tree);
-              }
-              descendantForPosition(start2, end = start2) {
-                if (!isPoint(start2) || !isPoint(end)) {
-                  throw new Error("Arguments must be {row, column} objects");
-                }
-                marshalNode(this);
-                const address = TRANSFER_BUFFER + SIZE_OF_NODE;
-                marshalPoint(address, start2);
-                marshalPoint(address + SIZE_OF_POINT, end);
-                C._ts_node_descendant_for_position_wasm(this.tree[0]);
-                return unmarshalNode(this.tree);
-              }
-              namedDescendantForPosition(start2, end = start2) {
-                if (!isPoint(start2) || !isPoint(end)) {
-                  throw new Error("Arguments must be {row, column} objects");
-                }
-                marshalNode(this);
-                const address = TRANSFER_BUFFER + SIZE_OF_NODE;
-                marshalPoint(address, start2);
-                marshalPoint(address + SIZE_OF_POINT, end);
-                C._ts_node_named_descendant_for_position_wasm(this.tree[0]);
-                return unmarshalNode(this.tree);
-              }
-              walk() {
-                marshalNode(this);
-                C._ts_tree_cursor_new_wasm(this.tree[0]);
-                return new TreeCursor(INTERNAL, this.tree);
-              }
-              toString() {
-                marshalNode(this);
-                const address = C._ts_node_to_string_wasm(this.tree[0]);
-                const result = AsciiToString(address);
-                C._free(address);
-                return result;
-              }
-            }
-            class TreeCursor {
-              constructor(internal, tree) {
-                assertInternal(internal);
-                this.tree = tree;
-                unmarshalTreeCursor(this);
-              }
-              delete() {
-                marshalTreeCursor(this);
-                C._ts_tree_cursor_delete_wasm(this.tree[0]);
-                this[0] = this[1] = this[2] = 0;
-              }
-              reset(node) {
-                marshalNode(node);
-                marshalTreeCursor(this, TRANSFER_BUFFER + SIZE_OF_NODE);
-                C._ts_tree_cursor_reset_wasm(this.tree[0]);
-                unmarshalTreeCursor(this);
-              }
-              resetTo(cursor) {
-                marshalTreeCursor(this, TRANSFER_BUFFER);
-                marshalTreeCursor(cursor, TRANSFER_BUFFER + SIZE_OF_CURSOR);
-                C._ts_tree_cursor_reset_to_wasm(this.tree[0], cursor.tree[0]);
-                unmarshalTreeCursor(this);
-              }
-              get nodeType() {
-                return this.tree.language.types[this.nodeTypeId] || "ERROR";
-              }
-              get nodeTypeId() {
-                marshalTreeCursor(this);
-                return C._ts_tree_cursor_current_node_type_id_wasm(this.tree[0]);
-              }
-              get nodeStateId() {
-                marshalTreeCursor(this);
-                return C._ts_tree_cursor_current_node_state_id_wasm(this.tree[0]);
-              }
-              get nodeId() {
-                marshalTreeCursor(this);
-                return C._ts_tree_cursor_current_node_id_wasm(this.tree[0]);
-              }
-              get nodeIsNamed() {
-                marshalTreeCursor(this);
-                return C._ts_tree_cursor_current_node_is_named_wasm(this.tree[0]) === 1;
-              }
-              get nodeIsMissing() {
-                marshalTreeCursor(this);
-                return C._ts_tree_cursor_current_node_is_missing_wasm(this.tree[0]) === 1;
-              }
-              get nodeText() {
-                marshalTreeCursor(this);
-                const startIndex = C._ts_tree_cursor_start_index_wasm(this.tree[0]);
-                const endIndex = C._ts_tree_cursor_end_index_wasm(this.tree[0]);
-                return getText(this.tree, startIndex, endIndex);
-              }
-              get startPosition() {
-                marshalTreeCursor(this);
-                C._ts_tree_cursor_start_position_wasm(this.tree[0]);
-                return unmarshalPoint(TRANSFER_BUFFER);
-              }
-              get endPosition() {
-                marshalTreeCursor(this);
-                C._ts_tree_cursor_end_position_wasm(this.tree[0]);
-                return unmarshalPoint(TRANSFER_BUFFER);
-              }
-              get startIndex() {
-                marshalTreeCursor(this);
-                return C._ts_tree_cursor_start_index_wasm(this.tree[0]);
-              }
-              get endIndex() {
-                marshalTreeCursor(this);
-                return C._ts_tree_cursor_end_index_wasm(this.tree[0]);
-              }
-              get currentNode() {
-                marshalTreeCursor(this);
-                C._ts_tree_cursor_current_node_wasm(this.tree[0]);
-                return unmarshalNode(this.tree);
-              }
-              get currentFieldId() {
-                marshalTreeCursor(this);
-                return C._ts_tree_cursor_current_field_id_wasm(this.tree[0]);
-              }
-              get currentFieldName() {
-                return this.tree.language.fields[this.currentFieldId];
-              }
-              get currentDepth() {
-                marshalTreeCursor(this);
-                return C._ts_tree_cursor_current_depth_wasm(this.tree[0]);
-              }
-              get currentDescendantIndex() {
-                marshalTreeCursor(this);
-                return C._ts_tree_cursor_current_descendant_index_wasm(this.tree[0]);
-              }
-              gotoFirstChild() {
-                marshalTreeCursor(this);
-                const result = C._ts_tree_cursor_goto_first_child_wasm(this.tree[0]);
-                unmarshalTreeCursor(this);
-                return result === 1;
-              }
-              gotoLastChild() {
-                marshalTreeCursor(this);
-                const result = C._ts_tree_cursor_goto_last_child_wasm(this.tree[0]);
-                unmarshalTreeCursor(this);
-                return result === 1;
-              }
-              gotoFirstChildForIndex(goalIndex) {
-                marshalTreeCursor(this);
-                setValue(TRANSFER_BUFFER + SIZE_OF_CURSOR, goalIndex, "i32");
-                const result = C._ts_tree_cursor_goto_first_child_for_index_wasm(this.tree[0]);
-                unmarshalTreeCursor(this);
-                return result === 1;
-              }
-              gotoFirstChildForPosition(goalPosition) {
-                marshalTreeCursor(this);
-                marshalPoint(TRANSFER_BUFFER + SIZE_OF_CURSOR, goalPosition);
-                const result = C._ts_tree_cursor_goto_first_child_for_position_wasm(this.tree[0]);
-                unmarshalTreeCursor(this);
-                return result === 1;
-              }
-              gotoNextSibling() {
-                marshalTreeCursor(this);
-                const result = C._ts_tree_cursor_goto_next_sibling_wasm(this.tree[0]);
-                unmarshalTreeCursor(this);
-                return result === 1;
-              }
-              gotoPreviousSibling() {
-                marshalTreeCursor(this);
-                const result = C._ts_tree_cursor_goto_previous_sibling_wasm(this.tree[0]);
-                unmarshalTreeCursor(this);
-                return result === 1;
-              }
-              gotoDescendant(goalDescendantindex) {
-                marshalTreeCursor(this);
-                C._ts_tree_cursor_goto_descendant_wasm(this.tree[0], goalDescendantindex);
-                unmarshalTreeCursor(this);
-              }
-              gotoParent() {
-                marshalTreeCursor(this);
-                const result = C._ts_tree_cursor_goto_parent_wasm(this.tree[0]);
-                unmarshalTreeCursor(this);
-                return result === 1;
-              }
-            }
-            class Language {
-              constructor(internal, address) {
-                assertInternal(internal);
-                this[0] = address;
-                this.types = new Array(C._ts_language_symbol_count(this[0]));
-                for (let i2 = 0, n = this.types.length; i2 < n; i2++) {
-                  if (C._ts_language_symbol_type(this[0], i2) < 2) {
-                    this.types[i2] = UTF8ToString(C._ts_language_symbol_name(this[0], i2));
-                  }
-                }
-                this.fields = new Array(C._ts_language_field_count(this[0]) + 1);
-                for (let i2 = 0, n = this.fields.length; i2 < n; i2++) {
-                  const fieldName = C._ts_language_field_name_for_id(this[0], i2);
-                  if (fieldName !== 0) {
-                    this.fields[i2] = UTF8ToString(fieldName);
-                  } else {
-                    this.fields[i2] = null;
-                  }
-                }
-              }
-              get version() {
-                return C._ts_language_version(this[0]);
-              }
-              get fieldCount() {
-                return this.fields.length - 1;
-              }
-              get stateCount() {
-                return C._ts_language_state_count(this[0]);
-              }
-              fieldIdForName(fieldName) {
-                const result = this.fields.indexOf(fieldName);
-                if (result !== -1) {
-                  return result;
-                } else {
-                  return null;
-                }
-              }
-              fieldNameForId(fieldId) {
-                return this.fields[fieldId] || null;
-              }
-              idForNodeType(type2, named) {
-                const typeLength = lengthBytesUTF8(type2);
-                const typeAddress = C._malloc(typeLength + 1);
-                stringToUTF8(type2, typeAddress, typeLength + 1);
-                const result = C._ts_language_symbol_for_name(this[0], typeAddress, typeLength, named);
-                C._free(typeAddress);
-                return result || null;
-              }
-              get nodeTypeCount() {
-                return C._ts_language_symbol_count(this[0]);
-              }
-              nodeTypeForId(typeId) {
-                const name2 = C._ts_language_symbol_name(this[0], typeId);
-                return name2 ? UTF8ToString(name2) : null;
-              }
-              nodeTypeIsNamed(typeId) {
-                return C._ts_language_type_is_named_wasm(this[0], typeId) ? true : false;
-              }
-              nodeTypeIsVisible(typeId) {
-                return C._ts_language_type_is_visible_wasm(this[0], typeId) ? true : false;
-              }
-              nextState(stateId, typeId) {
-                return C._ts_language_next_state(this[0], stateId, typeId);
-              }
-              lookaheadIterator(stateId) {
-                const address = C._ts_lookahead_iterator_new(this[0], stateId);
-                if (address) return new LookaheadIterable(INTERNAL, address, this);
-                return null;
-              }
-              query(source) {
-                const sourceLength = lengthBytesUTF8(source);
-                const sourceAddress = C._malloc(sourceLength + 1);
-                stringToUTF8(source, sourceAddress, sourceLength + 1);
-                const address = C._ts_query_new(this[0], sourceAddress, sourceLength, TRANSFER_BUFFER, TRANSFER_BUFFER + SIZE_OF_INT);
-                if (!address) {
-                  const errorId = getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
-                  const errorByte = getValue(TRANSFER_BUFFER, "i32");
-                  const errorIndex = UTF8ToString(sourceAddress, errorByte).length;
-                  const suffix = source.substr(errorIndex, 100).split("\n")[0];
-                  let word = suffix.match(QUERY_WORD_REGEX)[0];
-                  let error;
-                  switch (errorId) {
-                    case 2:
-                      error = new RangeError(`Bad node name '${word}'`);
-                      break;
-                    case 3:
-                      error = new RangeError(`Bad field name '${word}'`);
-                      break;
-                    case 4:
-                      error = new RangeError(`Bad capture name @${word}`);
-                      break;
-                    case 5:
-                      error = new TypeError(`Bad pattern structure at offset ${errorIndex}: '${suffix}'...`);
-                      word = "";
-                      break;
-                    default:
-                      error = new SyntaxError(`Bad syntax at offset ${errorIndex}: '${suffix}'...`);
-                      word = "";
-                      break;
-                  }
-                  error.index = errorIndex;
-                  error.length = word.length;
-                  C._free(sourceAddress);
-                  throw error;
-                }
-                const stringCount = C._ts_query_string_count(address);
-                const captureCount = C._ts_query_capture_count(address);
-                const patternCount = C._ts_query_pattern_count(address);
-                const captureNames2 = new Array(captureCount);
-                const stringValues = new Array(stringCount);
-                for (let i2 = 0; i2 < captureCount; i2++) {
-                  const nameAddress = C._ts_query_capture_name_for_id(address, i2, TRANSFER_BUFFER);
-                  const nameLength = getValue(TRANSFER_BUFFER, "i32");
-                  captureNames2[i2] = UTF8ToString(nameAddress, nameLength);
-                }
-                for (let i2 = 0; i2 < stringCount; i2++) {
-                  const valueAddress = C._ts_query_string_value_for_id(address, i2, TRANSFER_BUFFER);
-                  const nameLength = getValue(TRANSFER_BUFFER, "i32");
-                  stringValues[i2] = UTF8ToString(valueAddress, nameLength);
-                }
-                const setProperties = new Array(patternCount);
-                const assertedProperties = new Array(patternCount);
-                const refutedProperties = new Array(patternCount);
-                const predicates = new Array(patternCount);
-                const textPredicates = new Array(patternCount);
-                for (let i2 = 0; i2 < patternCount; i2++) {
-                  const predicatesAddress = C._ts_query_predicates_for_pattern(address, i2, TRANSFER_BUFFER);
-                  const stepCount = getValue(TRANSFER_BUFFER, "i32");
-                  predicates[i2] = [];
-                  textPredicates[i2] = [];
-                  const steps = [];
-                  let stepAddress = predicatesAddress;
-                  for (let j = 0; j < stepCount; j++) {
-                    const stepType = getValue(stepAddress, "i32");
-                    stepAddress += SIZE_OF_INT;
-                    const stepValueId = getValue(stepAddress, "i32");
-                    stepAddress += SIZE_OF_INT;
-                    if (stepType === PREDICATE_STEP_TYPE_CAPTURE) {
-                      steps.push({
-                        type: "capture",
-                        name: captureNames2[stepValueId]
-                      });
-                    } else if (stepType === PREDICATE_STEP_TYPE_STRING) {
-                      steps.push({
-                        type: "string",
-                        value: stringValues[stepValueId]
-                      });
-                    } else if (steps.length > 0) {
-                      if (steps[0].type !== "string") {
-                        throw new Error("Predicates must begin with a literal value");
-                      }
-                      const operator = steps[0].value;
-                      let isPositive = true;
-                      let matchAll2 = true;
-                      let captureName;
-                      switch (operator) {
-                        case "any-not-eq?":
-                        case "not-eq?":
-                          isPositive = false;
-                        case "any-eq?":
-                        case "eq?":
-                          if (steps.length !== 3) {
-                            throw new Error(`Wrong number of arguments to \`#${operator}\` predicate. Expected 2, got ${steps.length - 1}`);
-                          }
-                          if (steps[1].type !== "capture") {
-                            throw new Error(`First argument of \`#${operator}\` predicate must be a capture. Got "${steps[1].value}"`);
-                          }
-                          matchAll2 = !operator.startsWith("any-");
-                          if (steps[2].type === "capture") {
-                            const captureName1 = steps[1].name;
-                            const captureName2 = steps[2].name;
-                            textPredicates[i2].push((captures) => {
-                              const nodes1 = [];
-                              const nodes2 = [];
-                              for (const c of captures) {
-                                if (c.name === captureName1) nodes1.push(c.node);
-                                if (c.name === captureName2) nodes2.push(c.node);
-                              }
-                              const compare = (n1, n2, positive) => positive ? n1.text === n2.text : n1.text !== n2.text;
-                              return matchAll2 ? nodes1.every((n1) => nodes2.some((n2) => compare(n1, n2, isPositive))) : nodes1.some((n1) => nodes2.some((n2) => compare(n1, n2, isPositive)));
-                            });
-                          } else {
-                            captureName = steps[1].name;
-                            const stringValue = steps[2].value;
-                            const matches = (n) => n.text === stringValue;
-                            const doesNotMatch = (n) => n.text !== stringValue;
-                            textPredicates[i2].push((captures) => {
-                              const nodes = [];
-                              for (const c of captures) {
-                                if (c.name === captureName) nodes.push(c.node);
-                              }
-                              const test = isPositive ? matches : doesNotMatch;
-                              return matchAll2 ? nodes.every(test) : nodes.some(test);
-                            });
-                          }
-                          break;
-                        case "any-not-match?":
-                        case "not-match?":
-                          isPositive = false;
-                        case "any-match?":
-                        case "match?":
-                          if (steps.length !== 3) {
-                            throw new Error(`Wrong number of arguments to \`#${operator}\` predicate. Expected 2, got ${steps.length - 1}.`);
-                          }
-                          if (steps[1].type !== "capture") {
-                            throw new Error(`First argument of \`#${operator}\` predicate must be a capture. Got "${steps[1].value}".`);
-                          }
-                          if (steps[2].type !== "string") {
-                            throw new Error(`Second argument of \`#${operator}\` predicate must be a string. Got @${steps[2].value}.`);
-                          }
-                          captureName = steps[1].name;
-                          const regex = new RegExp(steps[2].value);
-                          matchAll2 = !operator.startsWith("any-");
-                          textPredicates[i2].push((captures) => {
-                            const nodes = [];
-                            for (const c of captures) {
-                              if (c.name === captureName) nodes.push(c.node.text);
-                            }
-                            const test = (text, positive) => positive ? regex.test(text) : !regex.test(text);
-                            if (nodes.length === 0) return !isPositive;
-                            return matchAll2 ? nodes.every((text) => test(text, isPositive)) : nodes.some((text) => test(text, isPositive));
-                          });
-                          break;
-                        case "set!":
-                          if (steps.length < 2 || steps.length > 3) {
-                            throw new Error(`Wrong number of arguments to \`#set!\` predicate. Expected 1 or 2. Got ${steps.length - 1}.`);
-                          }
-                          if (steps.some((s) => s.type !== "string")) {
-                            throw new Error(`Arguments to \`#set!\` predicate must be a strings.".`);
-                          }
-                          if (!setProperties[i2]) setProperties[i2] = {};
-                          setProperties[i2][steps[1].value] = steps[2] ? steps[2].value : null;
-                          break;
-                        case "is?":
-                        case "is-not?":
-                          if (steps.length < 2 || steps.length > 3) {
-                            throw new Error(`Wrong number of arguments to \`#${operator}\` predicate. Expected 1 or 2. Got ${steps.length - 1}.`);
-                          }
-                          if (steps.some((s) => s.type !== "string")) {
-                            throw new Error(`Arguments to \`#${operator}\` predicate must be a strings.".`);
-                          }
-                          const properties = operator === "is?" ? assertedProperties : refutedProperties;
-                          if (!properties[i2]) properties[i2] = {};
-                          properties[i2][steps[1].value] = steps[2] ? steps[2].value : null;
-                          break;
-                        case "not-any-of?":
-                          isPositive = false;
-                        case "any-of?":
-                          if (steps.length < 2) {
-                            throw new Error(`Wrong number of arguments to \`#${operator}\` predicate. Expected at least 1. Got ${steps.length - 1}.`);
-                          }
-                          if (steps[1].type !== "capture") {
-                            throw new Error(`First argument of \`#${operator}\` predicate must be a capture. Got "${steps[1].value}".`);
-                          }
-                          for (let i3 = 2; i3 < steps.length; i3++) {
-                            if (steps[i3].type !== "string") {
-                              throw new Error(`Arguments to \`#${operator}\` predicate must be a strings.".`);
-                            }
-                          }
-                          captureName = steps[1].name;
-                          const values2 = steps.slice(2).map((s) => s.value);
-                          textPredicates[i2].push((captures) => {
-                            const nodes = [];
-                            for (const c of captures) {
-                              if (c.name === captureName) nodes.push(c.node.text);
-                            }
-                            if (nodes.length === 0) return !isPositive;
-                            return nodes.every((text) => values2.includes(text)) === isPositive;
-                          });
-                          break;
-                        default:
-                          predicates[i2].push({
-                            operator,
-                            operands: steps.slice(1)
-                          });
-                      }
-                      steps.length = 0;
-                    }
-                  }
-                  Object.freeze(setProperties[i2]);
-                  Object.freeze(assertedProperties[i2]);
-                  Object.freeze(refutedProperties[i2]);
-                }
-                C._free(sourceAddress);
-                return new Query(INTERNAL, address, captureNames2, textPredicates, predicates, Object.freeze(setProperties), Object.freeze(assertedProperties), Object.freeze(refutedProperties));
-              }
-              static load(input) {
-                let bytes;
-                if (input instanceof Uint8Array) {
-                  bytes = Promise.resolve(input);
-                } else {
-                  const url = input;
-                  if (typeof process !== "undefined" && process.versions && process.versions.node) {
-                    const fs2 = __require("fs");
-                    bytes = Promise.resolve(fs2.readFileSync(url));
-                  } else {
-                    bytes = fetch(url).then((response) => response.arrayBuffer().then((buffer) => {
-                      if (response.ok) {
-                        return new Uint8Array(buffer);
-                      } else {
-                        const body2 = new TextDecoder("utf-8").decode(buffer);
-                        throw new Error(`Language.load failed with status ${response.status}.
-
-${body2}`);
-                      }
-                    }));
-                  }
-                }
-                return bytes.then((bytes2) => loadWebAssemblyModule(bytes2, {
-                  loadAsync: true
-                })).then((mod) => {
-                  const symbolNames = Object.keys(mod);
-                  const functionName = symbolNames.find((key) => LANGUAGE_FUNCTION_REGEX.test(key) && !key.includes("external_scanner_"));
-                  if (!functionName) {
-                    console.log(`Couldn't find language function in WASM file. Symbols:
-${JSON.stringify(symbolNames, null, 2)}`);
-                  }
-                  const languageAddress = mod[functionName]();
-                  return new Language(INTERNAL, languageAddress);
-                });
-              }
-            }
-            class LookaheadIterable {
-              constructor(internal, address, language) {
-                assertInternal(internal);
-                this[0] = address;
-                this.language = language;
-              }
-              get currentTypeId() {
-                return C._ts_lookahead_iterator_current_symbol(this[0]);
-              }
-              get currentType() {
-                return this.language.types[this.currentTypeId] || "ERROR";
-              }
-              delete() {
-                C._ts_lookahead_iterator_delete(this[0]);
-                this[0] = 0;
-              }
-              resetState(stateId) {
-                return C._ts_lookahead_iterator_reset_state(this[0], stateId);
-              }
-              reset(language, stateId) {
-                if (C._ts_lookahead_iterator_reset(this[0], language[0], stateId)) {
-                  this.language = language;
-                  return true;
-                }
-                return false;
-              }
-              [Symbol.iterator]() {
-                const self2 = this;
-                return {
-                  next() {
-                    if (C._ts_lookahead_iterator_next(self2[0])) {
-                      return {
-                        done: false,
-                        value: self2.currentType
-                      };
-                    }
-                    return {
-                      done: true,
-                      value: ""
-                    };
-                  }
-                };
-              }
-            }
-            class Query {
-              constructor(internal, address, captureNames2, textPredicates, predicates, setProperties, assertedProperties, refutedProperties) {
-                assertInternal(internal);
-                this[0] = address;
-                this.captureNames = captureNames2;
-                this.textPredicates = textPredicates;
-                this.predicates = predicates;
-                this.setProperties = setProperties;
-                this.assertedProperties = assertedProperties;
-                this.refutedProperties = refutedProperties;
-                this.exceededMatchLimit = false;
-              }
-              delete() {
-                C._ts_query_delete(this[0]);
-                this[0] = 0;
-              }
-              matches(node, { startPosition = ZERO_POINT, endPosition = ZERO_POINT, startIndex = 0, endIndex = 0, matchLimit = 4294967295, maxStartDepth = 4294967295, timeoutMicros = 0 } = {}) {
-                if (typeof matchLimit !== "number") {
-                  throw new Error("Arguments must be numbers");
-                }
-                marshalNode(node);
-                C._ts_query_matches_wasm(this[0], node.tree[0], startPosition.row, startPosition.column, endPosition.row, endPosition.column, startIndex, endIndex, matchLimit, maxStartDepth, timeoutMicros);
-                const rawCount = getValue(TRANSFER_BUFFER, "i32");
-                const startAddress = getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
-                const didExceedMatchLimit = getValue(TRANSFER_BUFFER + 2 * SIZE_OF_INT, "i32");
-                const result = new Array(rawCount);
-                this.exceededMatchLimit = Boolean(didExceedMatchLimit);
-                let filteredCount = 0;
-                let address = startAddress;
-                for (let i2 = 0; i2 < rawCount; i2++) {
-                  const pattern = getValue(address, "i32");
-                  address += SIZE_OF_INT;
-                  const captureCount = getValue(address, "i32");
-                  address += SIZE_OF_INT;
-                  const captures = new Array(captureCount);
-                  address = unmarshalCaptures(this, node.tree, address, captures);
-                  if (this.textPredicates[pattern].every((p) => p(captures))) {
-                    result[filteredCount] = {
-                      pattern,
-                      captures
-                    };
-                    const setProperties = this.setProperties[pattern];
-                    if (setProperties) result[filteredCount].setProperties = setProperties;
-                    const assertedProperties = this.assertedProperties[pattern];
-                    if (assertedProperties) result[filteredCount].assertedProperties = assertedProperties;
-                    const refutedProperties = this.refutedProperties[pattern];
-                    if (refutedProperties) result[filteredCount].refutedProperties = refutedProperties;
-                    filteredCount++;
-                  }
-                }
-                result.length = filteredCount;
-                C._free(startAddress);
-                return result;
-              }
-              captures(node, { startPosition = ZERO_POINT, endPosition = ZERO_POINT, startIndex = 0, endIndex = 0, matchLimit = 4294967295, maxStartDepth = 4294967295, timeoutMicros = 0 } = {}) {
-                if (typeof matchLimit !== "number") {
-                  throw new Error("Arguments must be numbers");
-                }
-                marshalNode(node);
-                C._ts_query_captures_wasm(this[0], node.tree[0], startPosition.row, startPosition.column, endPosition.row, endPosition.column, startIndex, endIndex, matchLimit, maxStartDepth, timeoutMicros);
-                const count2 = getValue(TRANSFER_BUFFER, "i32");
-                const startAddress = getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
-                const didExceedMatchLimit = getValue(TRANSFER_BUFFER + 2 * SIZE_OF_INT, "i32");
-                const result = [];
-                this.exceededMatchLimit = Boolean(didExceedMatchLimit);
-                const captures = [];
-                let address = startAddress;
-                for (let i2 = 0; i2 < count2; i2++) {
-                  const pattern = getValue(address, "i32");
-                  address += SIZE_OF_INT;
-                  const captureCount = getValue(address, "i32");
-                  address += SIZE_OF_INT;
-                  const captureIndex = getValue(address, "i32");
-                  address += SIZE_OF_INT;
-                  captures.length = captureCount;
-                  address = unmarshalCaptures(this, node.tree, address, captures);
-                  if (this.textPredicates[pattern].every((p) => p(captures))) {
-                    const capture = captures[captureIndex];
-                    const setProperties = this.setProperties[pattern];
-                    if (setProperties) capture.setProperties = setProperties;
-                    const assertedProperties = this.assertedProperties[pattern];
-                    if (assertedProperties) capture.assertedProperties = assertedProperties;
-                    const refutedProperties = this.refutedProperties[pattern];
-                    if (refutedProperties) capture.refutedProperties = refutedProperties;
-                    result.push(capture);
-                  }
-                }
-                C._free(startAddress);
-                return result;
-              }
-              predicatesForPattern(patternIndex) {
-                return this.predicates[patternIndex];
-              }
-              disableCapture(captureName) {
-                const captureNameLength = lengthBytesUTF8(captureName);
-                const captureNameAddress = C._malloc(captureNameLength + 1);
-                stringToUTF8(captureName, captureNameAddress, captureNameLength + 1);
-                C._ts_query_disable_capture(this[0], captureNameAddress, captureNameLength);
-                C._free(captureNameAddress);
-              }
-              didExceedMatchLimit() {
-                return this.exceededMatchLimit;
-              }
-            }
-            function getText(tree, startIndex, endIndex) {
-              const length = endIndex - startIndex;
-              let result = tree.textCallback(startIndex, null, endIndex);
-              startIndex += result.length;
-              while (startIndex < endIndex) {
-                const string2 = tree.textCallback(startIndex, null, endIndex);
-                if (string2 && string2.length > 0) {
-                  startIndex += string2.length;
-                  result += string2;
-                } else {
-                  break;
-                }
-              }
-              if (startIndex > endIndex) {
-                result = result.slice(0, length);
-              }
-              return result;
-            }
-            function unmarshalCaptures(query, tree, address, result) {
-              for (let i2 = 0, n = result.length; i2 < n; i2++) {
-                const captureIndex = getValue(address, "i32");
-                address += SIZE_OF_INT;
-                const node = unmarshalNode(tree, address);
-                address += SIZE_OF_NODE;
-                result[i2] = {
-                  name: query.captureNames[captureIndex],
-                  node
-                };
-              }
-              return address;
-            }
-            function assertInternal(x) {
-              if (x !== INTERNAL) throw new Error("Illegal constructor");
-            }
-            function isPoint(point) {
-              return point && typeof point.row === "number" && typeof point.column === "number";
-            }
-            function marshalNode(node) {
-              let address = TRANSFER_BUFFER;
-              setValue(address, node.id, "i32");
-              address += SIZE_OF_INT;
-              setValue(address, node.startIndex, "i32");
-              address += SIZE_OF_INT;
-              setValue(address, node.startPosition.row, "i32");
-              address += SIZE_OF_INT;
-              setValue(address, node.startPosition.column, "i32");
-              address += SIZE_OF_INT;
-              setValue(address, node[0], "i32");
-            }
-            function unmarshalNode(tree, address = TRANSFER_BUFFER) {
-              const id2 = getValue(address, "i32");
-              address += SIZE_OF_INT;
-              if (id2 === 0) return null;
-              const index = getValue(address, "i32");
-              address += SIZE_OF_INT;
-              const row = getValue(address, "i32");
-              address += SIZE_OF_INT;
-              const column = getValue(address, "i32");
-              address += SIZE_OF_INT;
-              const other = getValue(address, "i32");
-              const result = new Node(INTERNAL, tree);
-              result.id = id2;
-              result.startIndex = index;
-              result.startPosition = {
-                row,
-                column
-              };
-              result[0] = other;
-              return result;
-            }
-            function marshalTreeCursor(cursor, address = TRANSFER_BUFFER) {
-              setValue(address + 0 * SIZE_OF_INT, cursor[0], "i32");
-              setValue(address + 1 * SIZE_OF_INT, cursor[1], "i32");
-              setValue(address + 2 * SIZE_OF_INT, cursor[2], "i32");
-              setValue(address + 3 * SIZE_OF_INT, cursor[3], "i32");
-            }
-            function unmarshalTreeCursor(cursor) {
-              cursor[0] = getValue(TRANSFER_BUFFER + 0 * SIZE_OF_INT, "i32");
-              cursor[1] = getValue(TRANSFER_BUFFER + 1 * SIZE_OF_INT, "i32");
-              cursor[2] = getValue(TRANSFER_BUFFER + 2 * SIZE_OF_INT, "i32");
-              cursor[3] = getValue(TRANSFER_BUFFER + 3 * SIZE_OF_INT, "i32");
-            }
-            function marshalPoint(address, point) {
-              setValue(address, point.row, "i32");
-              setValue(address + SIZE_OF_INT, point.column, "i32");
-            }
-            function unmarshalPoint(address) {
-              const result = {
-                row: getValue(address, "i32") >>> 0,
-                column: getValue(address + SIZE_OF_INT, "i32") >>> 0
-              };
-              return result;
-            }
-            function marshalRange(address, range3) {
-              marshalPoint(address, range3.startPosition);
-              address += SIZE_OF_POINT;
-              marshalPoint(address, range3.endPosition);
-              address += SIZE_OF_POINT;
-              setValue(address, range3.startIndex, "i32");
-              address += SIZE_OF_INT;
-              setValue(address, range3.endIndex, "i32");
-              address += SIZE_OF_INT;
-            }
-            function unmarshalRange(address) {
-              const result = {};
-              result.startPosition = unmarshalPoint(address);
-              address += SIZE_OF_POINT;
-              result.endPosition = unmarshalPoint(address);
-              address += SIZE_OF_POINT;
-              result.startIndex = getValue(address, "i32") >>> 0;
-              address += SIZE_OF_INT;
-              result.endIndex = getValue(address, "i32") >>> 0;
-              return result;
-            }
-            function marshalEdit(edit) {
-              let address = TRANSFER_BUFFER;
-              marshalPoint(address, edit.startPosition);
-              address += SIZE_OF_POINT;
-              marshalPoint(address, edit.oldEndPosition);
-              address += SIZE_OF_POINT;
-              marshalPoint(address, edit.newEndPosition);
-              address += SIZE_OF_POINT;
-              setValue(address, edit.startIndex, "i32");
-              address += SIZE_OF_INT;
-              setValue(address, edit.oldEndIndex, "i32");
-              address += SIZE_OF_INT;
-              setValue(address, edit.newEndIndex, "i32");
-              address += SIZE_OF_INT;
-            }
-            for (const name2 of Object.getOwnPropertyNames(ParserImpl.prototype)) {
-              Object.defineProperty(Parser.prototype, name2, {
-                value: ParserImpl.prototype[name2],
-                enumerable: false,
-                writable: false
-              });
-            }
-            Parser.Language = Language;
-            Module.onRuntimeInitialized = () => {
-              ParserImpl.init();
-              resolveInitPromise();
-            };
-          });
-        }
-      }
-      return Parser;
-    }();
-    if (typeof exports === "object") {
-      module.exports = TreeSitter;
     }
   }
 });
@@ -4253,6 +1365,9 @@ var cursorlessCommandDescriptions = {
   ),
   ["cursorless.keyboard.redoTarget"]: new HiddenCommand(
     "Redo keyboard targeting changes"
+  ),
+  ["cursorless.migrateSnippets"]: new HiddenCommand(
+    "Migrate snippets from the old Cursorless format to the new community format"
   )
 };
 
@@ -4281,14 +1396,6 @@ var Debouncer = class {
 };
 
 // ../common/src/errors.ts
-var UnsupportedLanguageError = class extends Error {
-  constructor(languageId) {
-    super(
-      `Language '${languageId}' is not implemented yet; See https://www.cursorless.org/docs/contributing/adding-a-new-language/`
-    );
-    this.name = "UnsupportedLanguageError";
-  }
-};
 var OutdatedExtensionError = class extends Error {
   constructor() {
     super(
@@ -6428,12 +3535,6 @@ var createFlow_default = createFlow;
 var flow = createFlow_default();
 var flow_default = flow;
 
-// ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/_baseGt.js
-function baseGt(value, other) {
-  return value > other;
-}
-var baseGt_default = baseGt;
-
 // ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/_baseValues.js
 function baseValues(object, props) {
   return arrayMap_default(props, function(key) {
@@ -6472,12 +3573,6 @@ function baseExtremum(array, iteratee, comparator) {
   return result;
 }
 var baseExtremum_default = baseExtremum;
-
-// ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/maxBy.js
-function maxBy(array, iteratee) {
-  return array && array.length ? baseExtremum_default(array, baseIteratee_default(iteratee, 2), baseGt_default) : void 0;
-}
-var maxBy_default = maxBy;
 
 // ../../node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/_baseSum.js
 function baseSum(array, iteratee) {
@@ -7371,99 +4466,528 @@ function showError(messages, id2, message, ...options2) {
 // ../common/src/scopeSupportFacets/scopeSupportFacets.types.ts
 var ScopeSupportFacetLevel = /* @__PURE__ */ ((ScopeSupportFacetLevel2) => {
   ScopeSupportFacetLevel2[ScopeSupportFacetLevel2["supported"] = 0] = "supported";
-  ScopeSupportFacetLevel2[ScopeSupportFacetLevel2["supportedLegacy"] = 1] = "supportedLegacy";
-  ScopeSupportFacetLevel2[ScopeSupportFacetLevel2["unsupported"] = 2] = "unsupported";
-  ScopeSupportFacetLevel2[ScopeSupportFacetLevel2["notApplicable"] = 3] = "notApplicable";
+  ScopeSupportFacetLevel2[ScopeSupportFacetLevel2["unsupported"] = 1] = "unsupported";
+  ScopeSupportFacetLevel2[ScopeSupportFacetLevel2["notApplicable"] = 2] = "notApplicable";
   return ScopeSupportFacetLevel2;
 })(ScopeSupportFacetLevel || {});
 
 // ../common/src/scopeSupportFacets/c.ts
 var { supported, unsupported, notApplicable } = ScopeSupportFacetLevel;
-var cScopeSupport = {
-  ifStatement: supported,
+var cCoreScopeSupport = {
+  list: supported,
   disqualifyDelimiter: supported,
+  switchStatementSubject: supported,
+  ifStatement: supported,
+  statement: supported,
+  "statement.class": supported,
+  "statement.iteration.document": supported,
+  "statement.iteration.block": supported,
+  class: supported,
+  "class.iteration.document": supported,
+  className: supported,
+  "className.iteration.document": supported,
+  "collectionItem.unenclosed": supported,
+  "collectionItem.unenclosed.iteration": supported,
+  namedFunction: supported,
+  functionName: supported,
+  "functionName.iteration.document": supported,
+  "namedFunction.iteration.document": supported,
+  functionCall: supported,
+  functionCallee: supported,
+  "argument.actual": supported,
+  "argument.actual.iteration": supported,
+  "argument.actual.method": supported,
+  "argument.actual.method.iteration": supported,
+  "argument.formal": supported,
+  "argument.formal.iteration": supported,
+  "argumentList.actual.empty": supported,
+  "argumentList.actual.singleLine": supported,
+  "argumentList.actual.multiLine": supported,
+  "argumentList.actual.method.empty": supported,
+  "argumentList.actual.method.singleLine": supported,
+  "argumentList.actual.method.multiLine": supported,
+  "argumentList.formal.empty": supported,
+  "argumentList.formal.singleLine": supported,
+  "argumentList.formal.multiLine": supported,
+  "branch.if": supported,
+  "branch.if.iteration": supported,
+  "branch.switchCase": supported,
+  "branch.switchCase.iteration": supported,
+  "branch.ternary": supported,
+  "branch.loop": supported,
   "comment.line": supported,
   "comment.block": supported,
   "string.singleLine": supported,
   "textFragment.comment.line": supported,
   "textFragment.comment.block": supported,
   "textFragment.string.singleLine": supported,
-  class: supported,
-  className: supported,
-  namedFunction: supported,
+  "condition.if": supported,
+  "condition.while": supported,
+  "condition.doWhile": supported,
+  "condition.for": supported,
+  "condition.ternary": supported,
+  "condition.switchCase": supported,
+  "condition.switchCase.iteration": supported,
+  "name.assignment": supported,
+  "name.variable": supported,
   "name.function": supported,
   "name.class": supported,
   "name.field": supported,
-  functionName: supported,
+  "name.iteration.block": supported,
+  "name.iteration.document": supported,
   "name.argument.formal": supported,
   "name.argument.formal.iteration": supported,
-  "name.variable": supported,
-  "value.variable": supported,
-  "name.assignment": supported,
   "value.assignment": supported,
-  "statement.class": supported,
-  "type.class": supported,
+  "value.variable": supported,
+  "value.return": supported,
+  "type.variable": supported,
+  "type.argument.formal": supported,
+  "type.argument.formal.iteration": supported,
   "type.field": supported,
+  "type.field.iteration": supported,
+  "type.enum": supported,
+  "type.cast": supported,
+  "type.class": supported,
+  "type.return": supported,
+  "interior.class": supported,
+  "interior.function": supported,
+  "interior.if": supported,
+  "interior.switchCase": supported,
+  "interior.ternary": supported,
+  "interior.loop": supported,
+  /* UNSUPPORTED  */
+  fieldAccess: unsupported,
+  /* NOT APPLICABLE (C and C++) */
+  // Element and tags
+  element: notApplicable,
+  tags: notApplicable,
+  startTag: notApplicable,
+  endTag: notApplicable,
+  "interior.element": notApplicable,
+  "textFragment.element": notApplicable,
+  // Resource syntax
+  "interior.resource": notApplicable,
+  "type.resource": notApplicable,
+  "type.resource.iteration": notApplicable,
+  "name.resource": notApplicable,
+  "name.resource.iteration": notApplicable,
+  "value.resource": notApplicable,
+  "value.resource.iteration": notApplicable,
+  // Map literal
+  map: notApplicable,
+  "key.mapPair": notApplicable,
+  "key.mapPair.iteration": notApplicable,
+  "value.mapPair": notApplicable,
+  "value.mapPair.iteration": notApplicable,
+  // Keyword argument
+  "name.argument.actual": notApplicable,
+  "name.argument.actual.iteration": notApplicable,
+  "value.argument.actual": notApplicable,
+  "value.argument.actual.iteration": notApplicable,
+  // Multiline string
+  "string.multiLine": notApplicable,
+  "textFragment.string.multiLine": notApplicable,
+  // Section
+  section: notApplicable,
+  "section.iteration.document": notApplicable,
+  "section.iteration.parent": notApplicable,
+  // Pattern destructing
+  "name.assignment.pattern": notApplicable,
+  "name.variable.pattern": notApplicable,
+  "value.variable.pattern": notApplicable,
+  // Command
+  command: notApplicable,
+  "interior.command": notApplicable,
+  // Type alias
+  "type.alias": notApplicable,
+  "value.typeAlias": notApplicable,
+  // Notebook cell
+  notebookCell: notApplicable,
+  "interior.cell": notApplicable,
+  // Nested class
+  "class.iteration.block": notApplicable,
+  "className.iteration.block": notApplicable,
+  // Nested function
+  "functionName.iteration.block": notApplicable,
+  "namedFunction.iteration.block": notApplicable,
+  // Try catch
+  "branch.try": notApplicable,
+  "branch.try.iteration": notApplicable,
+  "interior.try": notApplicable,
+  // Miscellaneous
+  "key.attribute": notApplicable,
+  "type.interface": notApplicable,
+  "value.attribute": notApplicable,
+  "value.yield": notApplicable,
+  "value.field": notApplicable,
+  environment: notApplicable,
+  pairDelimiter: notApplicable,
+  regularExpression: notApplicable
+};
+var cScopeSupport = {
+  ...cCoreScopeSupport,
+  // Not applicable for C, but supported for C++
+  // These are defined here because we don't want C++ to import them and
+  // accidentally forget to add support for them.
+  attribute: notApplicable,
+  // Lambda
+  "argument.formal.lambda.iteration": notApplicable,
+  "argument.formal.lambda": notApplicable,
+  "argumentList.formal.lambda.empty": notApplicable,
+  "argumentList.formal.lambda.multiLine": notApplicable,
+  "argumentList.formal.lambda.singleLine": notApplicable,
+  "interior.lambda": notApplicable,
+  "value.return.lambda": notApplicable,
+  anonymousFunction: notApplicable,
+  // Constructor
+  "argument.actual.constructor.iteration": notApplicable,
+  "argument.actual.constructor": notApplicable,
+  "argument.formal.constructor.iteration": notApplicable,
+  "argument.formal.constructor": notApplicable,
+  "argumentList.actual.constructor.empty": notApplicable,
+  "argumentList.actual.constructor.multiLine": notApplicable,
+  "argumentList.actual.constructor.singleLine": notApplicable,
+  "argumentList.formal.constructor.empty": notApplicable,
+  "argumentList.formal.constructor.multiLine": notApplicable,
+  "argumentList.formal.constructor.singleLine": notApplicable,
+  "functionCall.constructor": notApplicable,
+  "functionCallee.constructor": notApplicable,
+  "functionName.constructor": notApplicable,
+  "name.argument.formal.constructor.iteration": notApplicable,
+  "name.argument.formal.constructor": notApplicable,
+  "name.constructor": notApplicable,
+  "namedFunction.constructor": notApplicable,
+  "type.argument.formal.constructor.iteration": notApplicable,
+  "type.argument.formal.constructor": notApplicable,
+  "value.argument.formal.constructor.iteration": notApplicable,
+  "value.argument.formal.constructor": notApplicable,
+  // Method
+  "argument.formal.method.iteration": notApplicable,
+  "argument.formal.method": notApplicable,
+  "argumentList.formal.method.empty": notApplicable,
+  "argumentList.formal.method.multiLine": notApplicable,
+  "argumentList.formal.method.singleLine": notApplicable,
+  "functionName.method.iteration.class": notApplicable,
+  "functionName.method": notApplicable,
+  "name.argument.formal.method.iteration": notApplicable,
+  "name.argument.formal.method": notApplicable,
+  "name.method": notApplicable,
+  "namedFunction.method.iteration.class": notApplicable,
+  "namedFunction.method": notApplicable,
+  "type.argument.formal.method.iteration": notApplicable,
+  "type.argument.formal.method": notApplicable,
+  "value.argument.formal.method.iteration": notApplicable,
+  "value.argument.formal.method": notApplicable,
+  // Foreach
+  "name.foreach": notApplicable,
+  "type.foreach": notApplicable,
+  "value.foreach": notApplicable,
+  // Default argument value
   "value.argument.formal": notApplicable,
-  "value.argument.formal.iteration": notApplicable
+  "value.argument.formal.iteration": notApplicable,
+  // Generic type
+  "type.typeArgument": notApplicable,
+  "type.typeArgument.iteration": notApplicable
 };
 
 // ../common/src/scopeSupportFacets/clojure.ts
 var { supported: supported2, unsupported: unsupported2, notApplicable: notApplicable2 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/cpp.ts
-var { supported: supported3, unsupported: unsupported3, notApplicable: notApplicable3 } = ScopeSupportFacetLevel;
+var { supported: supported3 } = ScopeSupportFacetLevel;
 var cppScopeSupport = {
-  ...cScopeSupport,
+  ...cCoreScopeSupport,
+  attribute: supported3,
+  anonymousFunction: supported3,
+  "branch.try": supported3,
+  "branch.try.iteration": supported3,
+  "argument.actual.constructor": supported3,
+  "argument.actual.constructor.iteration": supported3,
+  "argument.formal.method": supported3,
+  "argument.formal.method.iteration": supported3,
+  "argument.formal.constructor": supported3,
+  "argument.formal.constructor.iteration": supported3,
+  "argument.formal.lambda": supported3,
+  "argument.formal.lambda.iteration": supported3,
+  "argumentList.actual.constructor.empty": supported3,
+  "argumentList.actual.constructor.singleLine": supported3,
+  "argumentList.actual.constructor.multiLine": supported3,
+  "argumentList.formal.constructor.empty": supported3,
+  "argumentList.formal.constructor.singleLine": supported3,
+  "argumentList.formal.constructor.multiLine": supported3,
+  "argumentList.formal.lambda.empty": supported3,
+  "argumentList.formal.lambda.singleLine": supported3,
+  "argumentList.formal.lambda.multiLine": supported3,
+  "argumentList.formal.method.empty": supported3,
+  "argumentList.formal.method.singleLine": supported3,
+  "argumentList.formal.method.multiLine": supported3,
+  "functionCall.constructor": supported3,
+  "functionCallee.constructor": supported3,
+  "functionName.constructor": supported3,
+  "functionName.method": supported3,
+  "functionName.method.iteration.class": supported3,
+  "namedFunction.method": supported3,
+  "namedFunction.method.iteration.class": supported3,
+  "namedFunction.constructor": supported3,
+  "name.argument.formal.method": supported3,
+  "name.argument.formal.method.iteration": supported3,
+  "name.argument.formal.constructor": supported3,
+  "name.argument.formal.constructor.iteration": supported3,
+  "name.constructor": supported3,
+  "name.foreach": supported3,
+  "name.method": supported3,
   "value.argument.formal": supported3,
-  "value.argument.formal.iteration": supported3
+  "value.argument.formal.iteration": supported3,
+  "value.argument.formal.method": supported3,
+  "value.argument.formal.method.iteration": supported3,
+  "value.argument.formal.constructor": supported3,
+  "value.argument.formal.constructor.iteration": supported3,
+  "value.foreach": supported3,
+  "value.return.lambda": supported3,
+  "value.field": supported3,
+  "type.argument.formal.method": supported3,
+  "type.argument.formal.method.iteration": supported3,
+  "type.argument.formal.constructor": supported3,
+  "type.argument.formal.constructor.iteration": supported3,
+  "type.foreach": supported3,
+  "type.typeArgument": supported3,
+  "type.typeArgument.iteration": supported3,
+  "interior.lambda": supported3,
+  "interior.try": supported3
 };
 
 // ../common/src/scopeSupportFacets/csharp.ts
-var { supported: supported4, unsupported: unsupported4, notApplicable: notApplicable4 } = ScopeSupportFacetLevel;
+var { supported: supported4, unsupported: unsupported3, notApplicable: notApplicable3 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/css.ts
-var { supported: supported5, unsupported: unsupported5, notApplicable: notApplicable5 } = ScopeSupportFacetLevel;
+var { supported: supported5, notApplicable: notApplicable4 } = ScopeSupportFacetLevel;
 var cssScopeSupport = {
   "comment.block": supported5,
   "string.singleLine": supported5,
-  "name.iteration.block": supported5,
-  "name.iteration.document": supported5,
   disqualifyDelimiter: supported5,
-  "comment.line": unsupported5
+  map: supported5,
+  functionCall: supported5,
+  functionCallee: supported5,
+  "argument.actual": supported5,
+  "argument.actual.iteration": supported5,
+  "argumentList.actual.empty": supported5,
+  "argumentList.actual.singleLine": supported5,
+  "argumentList.actual.multiLine": supported5,
+  "name.iteration.document": supported5,
+  "name.iteration.block": supported5,
+  "textFragment.comment.block": supported5,
+  "textFragment.string.singleLine": supported5,
+  "key.mapPair": supported5,
+  "key.mapPair.iteration": supported5,
+  "value.mapPair": supported5,
+  "value.mapPair.iteration": supported5,
+  "collectionItem.unenclosed": supported5,
+  "collectionItem.unenclosed.iteration": supported5,
+  statement: supported5,
+  "statement.iteration.document": supported5,
+  // Not applicable
+  anonymousFunction: notApplicable4,
+  "argument.actual.constructor.iteration": notApplicable4,
+  "argument.actual.constructor": notApplicable4,
+  "argument.actual.method.iteration": notApplicable4,
+  "argument.actual.method": notApplicable4,
+  "argument.formal.constructor.iteration": notApplicable4,
+  "argument.formal.constructor": notApplicable4,
+  "argument.formal.iteration": notApplicable4,
+  "argument.formal.method.iteration": notApplicable4,
+  "argument.formal.method": notApplicable4,
+  "argument.formal": notApplicable4,
+  "argument.formal.lambda": notApplicable4,
+  "argument.formal.lambda.iteration": notApplicable4,
+  "argumentList.actual.method.empty": notApplicable4,
+  "argumentList.actual.method.singleLine": notApplicable4,
+  "argumentList.actual.method.multiLine": notApplicable4,
+  "argumentList.actual.constructor.empty": notApplicable4,
+  "argumentList.actual.constructor.singleLine": notApplicable4,
+  "argumentList.actual.constructor.multiLine": notApplicable4,
+  "argumentList.formal.empty": notApplicable4,
+  "argumentList.formal.singleLine": notApplicable4,
+  "argumentList.formal.multiLine": notApplicable4,
+  "argumentList.formal.lambda.empty": notApplicable4,
+  "argumentList.formal.lambda.singleLine": notApplicable4,
+  "argumentList.formal.lambda.multiLine": notApplicable4,
+  "argumentList.formal.method.empty": notApplicable4,
+  "argumentList.formal.method.singleLine": notApplicable4,
+  "argumentList.formal.method.multiLine": notApplicable4,
+  "argumentList.formal.constructor.empty": notApplicable4,
+  "argumentList.formal.constructor.singleLine": notApplicable4,
+  "argumentList.formal.constructor.multiLine": notApplicable4,
+  attribute: notApplicable4,
+  "branch.if.iteration": notApplicable4,
+  "branch.if": notApplicable4,
+  "branch.loop": notApplicable4,
+  "branch.switchCase.iteration": notApplicable4,
+  "branch.switchCase": notApplicable4,
+  "branch.ternary": notApplicable4,
+  "branch.try.iteration": notApplicable4,
+  "branch.try": notApplicable4,
+  "class.iteration.block": notApplicable4,
+  "class.iteration.document": notApplicable4,
+  class: notApplicable4,
+  "className.iteration.block": notApplicable4,
+  "className.iteration.document": notApplicable4,
+  className: notApplicable4,
+  command: notApplicable4,
+  "comment.line": notApplicable4,
+  "condition.doWhile": notApplicable4,
+  "condition.for": notApplicable4,
+  "condition.if": notApplicable4,
+  "condition.switchCase.iteration": notApplicable4,
+  "condition.switchCase": notApplicable4,
+  "condition.ternary": notApplicable4,
+  "condition.while": notApplicable4,
+  element: notApplicable4,
+  endTag: notApplicable4,
+  environment: notApplicable4,
+  fieldAccess: notApplicable4,
+  "functionCall.constructor": notApplicable4,
+  "functionCallee.constructor": notApplicable4,
+  "functionName.constructor": notApplicable4,
+  "functionName.iteration.block": notApplicable4,
+  "functionName.iteration.document": notApplicable4,
+  "functionName.method.iteration.class": notApplicable4,
+  "functionName.method": notApplicable4,
+  functionName: notApplicable4,
+  ifStatement: notApplicable4,
+  "interior.cell": notApplicable4,
+  "interior.class": notApplicable4,
+  "interior.command": notApplicable4,
+  "interior.element": notApplicable4,
+  "interior.function": notApplicable4,
+  "interior.if": notApplicable4,
+  "interior.lambda": notApplicable4,
+  "interior.loop": notApplicable4,
+  "interior.resource": notApplicable4,
+  "interior.switchCase": notApplicable4,
+  "interior.ternary": notApplicable4,
+  "interior.try": notApplicable4,
+  "key.attribute": notApplicable4,
+  list: notApplicable4,
+  "name.argument.actual.iteration": notApplicable4,
+  "name.argument.actual": notApplicable4,
+  "name.argument.formal.constructor.iteration": notApplicable4,
+  "name.argument.formal.constructor": notApplicable4,
+  "name.argument.formal.iteration": notApplicable4,
+  "name.argument.formal.method.iteration": notApplicable4,
+  "name.argument.formal.method": notApplicable4,
+  "name.argument.formal": notApplicable4,
+  "name.assignment.pattern": notApplicable4,
+  "name.assignment": notApplicable4,
+  "name.class": notApplicable4,
+  "name.constructor": notApplicable4,
+  "name.field": notApplicable4,
+  "name.foreach": notApplicable4,
+  "name.function": notApplicable4,
+  "name.method": notApplicable4,
+  "name.resource.iteration": notApplicable4,
+  "name.resource": notApplicable4,
+  "name.variable.pattern": notApplicable4,
+  "name.variable": notApplicable4,
+  "namedFunction.constructor": notApplicable4,
+  "namedFunction.iteration.block": notApplicable4,
+  "namedFunction.iteration.document": notApplicable4,
+  "namedFunction.method.iteration.class": notApplicable4,
+  "namedFunction.method": notApplicable4,
+  namedFunction: notApplicable4,
+  notebookCell: notApplicable4,
+  pairDelimiter: notApplicable4,
+  regularExpression: notApplicable4,
+  "section.iteration.document": notApplicable4,
+  "section.iteration.parent": notApplicable4,
+  section: notApplicable4,
+  startTag: notApplicable4,
+  "statement.iteration.block": notApplicable4,
+  "statement.class": notApplicable4,
+  "string.multiLine": notApplicable4,
+  switchStatementSubject: notApplicable4,
+  tags: notApplicable4,
+  "textFragment.comment.line": notApplicable4,
+  "textFragment.element": notApplicable4,
+  "textFragment.string.multiLine": notApplicable4,
+  "type.alias": notApplicable4,
+  "type.argument.formal.constructor.iteration": notApplicable4,
+  "type.argument.formal.constructor": notApplicable4,
+  "type.argument.formal.iteration": notApplicable4,
+  "type.argument.formal.method.iteration": notApplicable4,
+  "type.argument.formal.method": notApplicable4,
+  "type.argument.formal": notApplicable4,
+  "type.cast": notApplicable4,
+  "type.class": notApplicable4,
+  "type.enum": notApplicable4,
+  "type.field.iteration": notApplicable4,
+  "type.field": notApplicable4,
+  "type.foreach": notApplicable4,
+  "type.interface": notApplicable4,
+  "type.resource": notApplicable4,
+  "type.resource.iteration": notApplicable4,
+  "type.return": notApplicable4,
+  "type.typeArgument.iteration": notApplicable4,
+  "type.typeArgument": notApplicable4,
+  "type.variable": notApplicable4,
+  "value.argument.actual.iteration": notApplicable4,
+  "value.argument.actual": notApplicable4,
+  "value.argument.formal.constructor.iteration": notApplicable4,
+  "value.argument.formal.constructor": notApplicable4,
+  "value.argument.formal.iteration": notApplicable4,
+  "value.argument.formal.method.iteration": notApplicable4,
+  "value.argument.formal.method": notApplicable4,
+  "value.argument.formal": notApplicable4,
+  "value.assignment": notApplicable4,
+  "value.attribute": notApplicable4,
+  "value.field": notApplicable4,
+  "value.foreach": notApplicable4,
+  "value.resource.iteration": notApplicable4,
+  "value.resource": notApplicable4,
+  "value.return.lambda": notApplicable4,
+  "value.return": notApplicable4,
+  "value.typeAlias": notApplicable4,
+  "value.variable.pattern": notApplicable4,
+  "value.variable": notApplicable4,
+  "value.yield": notApplicable4
 };
 
 // ../common/src/scopeSupportFacets/dart.ts
-var { supported: supported6, unsupported: unsupported6, notApplicable: notApplicable6 } = ScopeSupportFacetLevel;
+var { supported: supported6, unsupported: unsupported4, notApplicable: notApplicable5 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/go.ts
-var { supported: supported7, unsupported: unsupported7, notApplicable: notApplicable7 } = ScopeSupportFacetLevel;
+var { supported: supported7, unsupported: unsupported5, notApplicable: notApplicable6 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/html.ts
-var { supported: supported8, notApplicable: notApplicable8 } = ScopeSupportFacetLevel;
+var { supported: supported8, notApplicable: notApplicable7 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/java.ts
-var { supported: supported9, notApplicable: notApplicable9 } = ScopeSupportFacetLevel;
+var { supported: supported9, unsupported: unsupported6, notApplicable: notApplicable8 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/javascript.ts
-var { supported: supported10, unsupported: unsupported8, notApplicable: notApplicable10 } = ScopeSupportFacetLevel;
+var { supported: supported10, notApplicable: notApplicable9 } = ScopeSupportFacetLevel;
 var javascriptCoreScopeSupport = {
   list: supported10,
   map: supported10,
-  ifStatement: supported10,
   regularExpression: supported10,
   switchStatementSubject: supported10,
   fieldAccess: supported10,
   disqualifyDelimiter: supported10,
+  pairDelimiter: supported10,
+  "collectionItem.unenclosed": supported10,
+  "collectionItem.unenclosed.iteration": supported10,
   "textFragment.string.singleLine": supported10,
   "textFragment.string.multiLine": supported10,
   "textFragment.comment.line": supported10,
   "textFragment.comment.block": supported10,
+  ifStatement: supported10,
   statement: supported10,
   "statement.iteration.document": supported10,
   "statement.iteration.block": supported10,
+  "statement.class": supported10,
   class: supported10,
+  "class.iteration.document": supported10,
   className: supported10,
+  "className.iteration.document": supported10,
   anonymousFunction: supported10,
   namedFunction: supported10,
   "namedFunction.iteration.document": supported10,
@@ -7491,6 +5015,29 @@ var javascriptCoreScopeSupport = {
   "argument.formal.method.iteration": supported10,
   "argument.formal.constructor": supported10,
   "argument.formal.constructor.iteration": supported10,
+  "argument.formal.lambda": supported10,
+  "argument.formal.lambda.iteration": supported10,
+  "argumentList.actual.empty": supported10,
+  "argumentList.actual.singleLine": supported10,
+  "argumentList.actual.multiLine": supported10,
+  "argumentList.actual.method.empty": supported10,
+  "argumentList.actual.method.singleLine": supported10,
+  "argumentList.actual.method.multiLine": supported10,
+  "argumentList.actual.constructor.empty": supported10,
+  "argumentList.actual.constructor.singleLine": supported10,
+  "argumentList.actual.constructor.multiLine": supported10,
+  "argumentList.formal.empty": supported10,
+  "argumentList.formal.singleLine": supported10,
+  "argumentList.formal.multiLine": supported10,
+  "argumentList.formal.lambda.empty": supported10,
+  "argumentList.formal.lambda.singleLine": supported10,
+  "argumentList.formal.lambda.multiLine": supported10,
+  "argumentList.formal.method.empty": supported10,
+  "argumentList.formal.method.singleLine": supported10,
+  "argumentList.formal.method.multiLine": supported10,
+  "argumentList.formal.constructor.empty": supported10,
+  "argumentList.formal.constructor.singleLine": supported10,
+  "argumentList.formal.constructor.multiLine": supported10,
   "comment.line": supported10,
   "comment.block": supported10,
   "string.singleLine": supported10,
@@ -7498,15 +5045,18 @@ var javascriptCoreScopeSupport = {
   "branch.if": supported10,
   "branch.if.iteration": supported10,
   "branch.try": supported10,
+  "branch.try.iteration": supported10,
   "branch.switchCase": supported10,
   "branch.switchCase.iteration": supported10,
   "branch.ternary": supported10,
+  "branch.loop": supported10,
   "condition.if": supported10,
   "condition.while": supported10,
   "condition.doWhile": supported10,
   "condition.for": supported10,
   "condition.ternary": supported10,
   "condition.switchCase": supported10,
+  "condition.switchCase.iteration": supported10,
   "name.argument.formal": supported10,
   "name.argument.formal.iteration": supported10,
   "name.argument.formal.method": supported10,
@@ -7523,6 +5073,8 @@ var javascriptCoreScopeSupport = {
   "name.constructor": supported10,
   "name.class": supported10,
   "name.field": supported10,
+  "name.iteration.document": supported10,
+  "name.iteration.block": supported10,
   "key.mapPair": supported10,
   "key.mapPair.iteration": supported10,
   "value.argument.formal": supported10,
@@ -7540,7 +5092,48 @@ var javascriptCoreScopeSupport = {
   "value.return": supported10,
   "value.return.lambda": supported10,
   "value.field": supported10,
-  "collectionItem.unenclosed": supported10
+  "value.yield": supported10,
+  "type.class": supported10,
+  "interior.class": supported10,
+  "interior.function": supported10,
+  "interior.if": supported10,
+  "interior.lambda": supported10,
+  "interior.loop": supported10,
+  "interior.switchCase": supported10,
+  "interior.ternary": supported10,
+  "interior.try": supported10,
+  /* NOT APPLICABLE (JS & TS) */
+  // Nested the classes
+  "class.iteration.block": notApplicable9,
+  "className.iteration.block": notApplicable9,
+  // Section
+  section: notApplicable9,
+  "section.iteration.document": notApplicable9,
+  "section.iteration.parent": notApplicable9,
+  // Command
+  command: notApplicable9,
+  "interior.command": notApplicable9,
+  // Notebook cell
+  notebookCell: notApplicable9,
+  "interior.cell": notApplicable9,
+  // Resource
+  "interior.resource": notApplicable9,
+  "name.resource.iteration": notApplicable9,
+  "name.resource": notApplicable9,
+  "type.resource.iteration": notApplicable9,
+  "type.resource": notApplicable9,
+  "value.resource.iteration": notApplicable9,
+  "value.resource": notApplicable9,
+  // Keyword argument
+  "name.argument.actual.iteration": notApplicable9,
+  "name.argument.actual": notApplicable9,
+  "value.argument.actual.iteration": notApplicable9,
+  "value.argument.actual": notApplicable9,
+  // Nested functions. Technically supported, but great problem with `every funk` in a method.
+  "functionName.iteration.block": notApplicable9,
+  "namedFunction.iteration.block": notApplicable9,
+  // Miscellaneous
+  environment: notApplicable9
 };
 var javascriptJsxScopeSupport = {
   element: supported10,
@@ -7549,99 +5142,307 @@ var javascriptJsxScopeSupport = {
   endTag: supported10,
   attribute: supported10,
   "key.attribute": supported10,
-  "value.attribute": supported10
+  "value.attribute": supported10,
+  "interior.element": supported10,
+  "textFragment.element": supported10
 };
 var javascriptScopeSupport = {
   ...javascriptCoreScopeSupport,
   ...javascriptJsxScopeSupport,
-  "type.variable": notApplicable10,
-  "type.argument.formal": notApplicable10,
-  "type.argument.formal.iteration": notApplicable10,
-  "type.argument.formal.method": notApplicable10,
-  "type.argument.formal.method.iteration": notApplicable10,
-  "type.argument.formal.constructor": notApplicable10,
-  "type.argument.formal.constructor.iteration": notApplicable10,
-  "type.return": notApplicable10,
-  "type.field": notApplicable10,
-  "type.foreach": notApplicable10,
-  "type.interface": notApplicable10,
-  command: notApplicable10
+  // Types are defined here because we don't want typescript to import them and
+  // accidentally forget to add support for them.
+  "type.argument.formal": notApplicable9,
+  "type.argument.formal.iteration": notApplicable9,
+  "type.argument.formal.method": notApplicable9,
+  "type.argument.formal.method.iteration": notApplicable9,
+  "type.argument.formal.constructor": notApplicable9,
+  "type.argument.formal.constructor.iteration": notApplicable9,
+  "type.alias": notApplicable9,
+  "type.cast": notApplicable9,
+  "type.field": notApplicable9,
+  "type.field.iteration": notApplicable9,
+  "type.foreach": notApplicable9,
+  "type.interface": notApplicable9,
+  "type.enum": notApplicable9,
+  "type.return": notApplicable9,
+  "type.variable": notApplicable9,
+  "type.typeArgument": notApplicable9,
+  "type.typeArgument.iteration": notApplicable9,
+  "value.typeAlias": notApplicable9
 };
 
 // ../common/src/scopeSupportFacets/javascriptreact.ts
-var { supported: supported11, unsupported: unsupported9, notApplicable: notApplicable11 } = ScopeSupportFacetLevel;
 var javascriptreactScopeSupport = {
-  ...javascriptScopeSupport,
-  "textFragment.element": supported11
+  ...javascriptScopeSupport
 };
 
 // ../common/src/scopeSupportFacets/json.ts
-var { supported: supported12 } = ScopeSupportFacetLevel;
+var { supported: supported11, notApplicable: notApplicable10 } = ScopeSupportFacetLevel;
 var jsonScopeSupport = {
-  "comment.line": supported12,
-  "comment.block": supported12,
-  map: supported12
+  list: supported11,
+  map: supported11,
+  "string.singleLine": supported11,
+  "key.mapPair.iteration": supported11,
+  "key.mapPair": supported11,
+  "value.mapPair.iteration": supported11,
+  "value.mapPair": supported11,
+  "comment.block": supported11,
+  "comment.line": supported11,
+  "textFragment.comment.block": supported11,
+  "textFragment.comment.line": supported11,
+  "textFragment.string.singleLine": supported11,
+  // Not applicable
+  anonymousFunction: notApplicable10,
+  "argument.actual": notApplicable10,
+  "argument.actual.constructor": notApplicable10,
+  "argument.actual.constructor.iteration": notApplicable10,
+  "argument.actual.iteration": notApplicable10,
+  "argument.actual.method": notApplicable10,
+  "argument.actual.method.iteration": notApplicable10,
+  "argument.formal": notApplicable10,
+  "argument.formal.constructor": notApplicable10,
+  "argument.formal.constructor.iteration": notApplicable10,
+  "argument.formal.iteration": notApplicable10,
+  "argument.formal.method": notApplicable10,
+  "argument.formal.method.iteration": notApplicable10,
+  "argument.formal.lambda": notApplicable10,
+  "argument.formal.lambda.iteration": notApplicable10,
+  "argumentList.actual.empty": notApplicable10,
+  "argumentList.actual.singleLine": notApplicable10,
+  "argumentList.actual.multiLine": notApplicable10,
+  "argumentList.actual.method.empty": notApplicable10,
+  "argumentList.actual.method.singleLine": notApplicable10,
+  "argumentList.actual.method.multiLine": notApplicable10,
+  "argumentList.actual.constructor.empty": notApplicable10,
+  "argumentList.actual.constructor.singleLine": notApplicable10,
+  "argumentList.actual.constructor.multiLine": notApplicable10,
+  "argumentList.formal.empty": notApplicable10,
+  "argumentList.formal.singleLine": notApplicable10,
+  "argumentList.formal.multiLine": notApplicable10,
+  "argumentList.formal.lambda.empty": notApplicable10,
+  "argumentList.formal.lambda.singleLine": notApplicable10,
+  "argumentList.formal.lambda.multiLine": notApplicable10,
+  "argumentList.formal.method.empty": notApplicable10,
+  "argumentList.formal.method.singleLine": notApplicable10,
+  "argumentList.formal.method.multiLine": notApplicable10,
+  "argumentList.formal.constructor.empty": notApplicable10,
+  "argumentList.formal.constructor.singleLine": notApplicable10,
+  "argumentList.formal.constructor.multiLine": notApplicable10,
+  attribute: notApplicable10,
+  "branch.if": notApplicable10,
+  "branch.if.iteration": notApplicable10,
+  "branch.loop": notApplicable10,
+  "branch.switchCase": notApplicable10,
+  "branch.switchCase.iteration": notApplicable10,
+  "branch.ternary": notApplicable10,
+  "branch.try": notApplicable10,
+  "branch.try.iteration": notApplicable10,
+  class: notApplicable10,
+  "class.iteration.block": notApplicable10,
+  "class.iteration.document": notApplicable10,
+  className: notApplicable10,
+  "className.iteration.block": notApplicable10,
+  "className.iteration.document": notApplicable10,
+  "collectionItem.unenclosed": notApplicable10,
+  "collectionItem.unenclosed.iteration": notApplicable10,
+  command: notApplicable10,
+  "condition.doWhile": notApplicable10,
+  "condition.for": notApplicable10,
+  "condition.if": notApplicable10,
+  "condition.switchCase": notApplicable10,
+  "condition.switchCase.iteration": notApplicable10,
+  "condition.ternary": notApplicable10,
+  "condition.while": notApplicable10,
+  disqualifyDelimiter: notApplicable10,
+  element: notApplicable10,
+  endTag: notApplicable10,
+  environment: notApplicable10,
+  fieldAccess: notApplicable10,
+  functionCall: notApplicable10,
+  "functionCall.constructor": notApplicable10,
+  functionCallee: notApplicable10,
+  "functionCallee.constructor": notApplicable10,
+  functionName: notApplicable10,
+  "functionName.constructor": notApplicable10,
+  "functionName.iteration.block": notApplicable10,
+  "functionName.iteration.document": notApplicable10,
+  "functionName.method": notApplicable10,
+  "functionName.method.iteration.class": notApplicable10,
+  ifStatement: notApplicable10,
+  "interior.cell": notApplicable10,
+  "interior.class": notApplicable10,
+  "interior.command": notApplicable10,
+  "interior.element": notApplicable10,
+  "interior.function": notApplicable10,
+  "interior.if": notApplicable10,
+  "interior.lambda": notApplicable10,
+  "interior.loop": notApplicable10,
+  "interior.resource": notApplicable10,
+  "interior.switchCase": notApplicable10,
+  "interior.ternary": notApplicable10,
+  "interior.try": notApplicable10,
+  "key.attribute": notApplicable10,
+  "name.argument.actual": notApplicable10,
+  "name.argument.actual.iteration": notApplicable10,
+  "name.argument.formal": notApplicable10,
+  "name.argument.formal.constructor": notApplicable10,
+  "name.argument.formal.constructor.iteration": notApplicable10,
+  "name.argument.formal.iteration": notApplicable10,
+  "name.argument.formal.method": notApplicable10,
+  "name.argument.formal.method.iteration": notApplicable10,
+  "name.assignment": notApplicable10,
+  "name.assignment.pattern": notApplicable10,
+  "name.class": notApplicable10,
+  "name.constructor": notApplicable10,
+  "name.field": notApplicable10,
+  "name.foreach": notApplicable10,
+  "name.function": notApplicable10,
+  "name.iteration.block": notApplicable10,
+  "name.iteration.document": notApplicable10,
+  "name.method": notApplicable10,
+  "name.resource": notApplicable10,
+  "name.resource.iteration": notApplicable10,
+  "name.variable": notApplicable10,
+  "name.variable.pattern": notApplicable10,
+  namedFunction: notApplicable10,
+  "namedFunction.constructor": notApplicable10,
+  "namedFunction.iteration.block": notApplicable10,
+  "namedFunction.iteration.document": notApplicable10,
+  "namedFunction.method": notApplicable10,
+  "namedFunction.method.iteration.class": notApplicable10,
+  notebookCell: notApplicable10,
+  pairDelimiter: notApplicable10,
+  regularExpression: notApplicable10,
+  section: notApplicable10,
+  "section.iteration.document": notApplicable10,
+  "section.iteration.parent": notApplicable10,
+  startTag: notApplicable10,
+  statement: notApplicable10,
+  "statement.class": notApplicable10,
+  "statement.iteration.block": notApplicable10,
+  "statement.iteration.document": notApplicable10,
+  "string.multiLine": notApplicable10,
+  switchStatementSubject: notApplicable10,
+  tags: notApplicable10,
+  "textFragment.element": notApplicable10,
+  "textFragment.string.multiLine": notApplicable10,
+  "type.alias": notApplicable10,
+  "type.argument.formal": notApplicable10,
+  "type.argument.formal.constructor": notApplicable10,
+  "type.argument.formal.constructor.iteration": notApplicable10,
+  "type.argument.formal.iteration": notApplicable10,
+  "type.argument.formal.method": notApplicable10,
+  "type.argument.formal.method.iteration": notApplicable10,
+  "type.cast": notApplicable10,
+  "type.class": notApplicable10,
+  "type.enum": notApplicable10,
+  "type.field": notApplicable10,
+  "type.field.iteration": notApplicable10,
+  "type.foreach": notApplicable10,
+  "type.interface": notApplicable10,
+  "type.resource": notApplicable10,
+  "type.resource.iteration": notApplicable10,
+  "type.return": notApplicable10,
+  "type.typeArgument": notApplicable10,
+  "type.typeArgument.iteration": notApplicable10,
+  "type.variable": notApplicable10,
+  "value.argument.actual": notApplicable10,
+  "value.argument.actual.iteration": notApplicable10,
+  "value.argument.formal": notApplicable10,
+  "value.argument.formal.constructor": notApplicable10,
+  "value.argument.formal.constructor.iteration": notApplicable10,
+  "value.argument.formal.iteration": notApplicable10,
+  "value.argument.formal.method": notApplicable10,
+  "value.argument.formal.method.iteration": notApplicable10,
+  "value.assignment": notApplicable10,
+  "value.attribute": notApplicable10,
+  "value.field": notApplicable10,
+  "value.foreach": notApplicable10,
+  "value.resource": notApplicable10,
+  "value.resource.iteration": notApplicable10,
+  "value.return": notApplicable10,
+  "value.return.lambda": notApplicable10,
+  "value.typeAlias": notApplicable10,
+  "value.variable": notApplicable10,
+  "value.variable.pattern": notApplicable10,
+  "value.yield": notApplicable10
 };
 
 // ../common/src/scopeSupportFacets/jsonc.ts
-var { supported: supported13, unsupported: unsupported10, notApplicable: notApplicable12 } = ScopeSupportFacetLevel;
+var { supported: supported12, unsupported: unsupported7, notApplicable: notApplicable11 } = ScopeSupportFacetLevel;
 var jsoncScopeSupport = {
   ...jsonScopeSupport
 };
 
 // ../common/src/scopeSupportFacets/jsonl.ts
-var { supported: supported14, unsupported: unsupported11, notApplicable: notApplicable13 } = ScopeSupportFacetLevel;
+var { supported: supported13, unsupported: unsupported8, notApplicable: notApplicable12 } = ScopeSupportFacetLevel;
 var jsonlScopeSupport = {
   ...jsonScopeSupport
 };
 
 // ../common/src/scopeSupportFacets/latex.ts
-var { supported: supported15, unsupported: unsupported12, notApplicable: notApplicable14 } = ScopeSupportFacetLevel;
+var { supported: supported14, unsupported: unsupported9, notApplicable: notApplicable13 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/lua.ts
-var { supported: supported16, notApplicable: notApplicable15 } = ScopeSupportFacetLevel;
+var { supported: supported15, notApplicable: notApplicable14 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/markdown.ts
-var { supported: supported17, unsupported: unsupported13, notApplicable: notApplicable16 } = ScopeSupportFacetLevel;
+var { supported: supported16, notApplicable: notApplicable15 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/php.ts
-var { supported: supported18, unsupported: unsupported14, notApplicable: notApplicable17 } = ScopeSupportFacetLevel;
+var { supported: supported17, unsupported: unsupported10, notApplicable: notApplicable16 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/python.ts
-var { supported: supported19, notApplicable: notApplicable18 } = ScopeSupportFacetLevel;
+var { supported: supported18, notApplicable: notApplicable17 } = ScopeSupportFacetLevel;
+
+// ../common/src/scopeSupportFacets/r.ts
+var { supported: supported19, unsupported: unsupported11, notApplicable: notApplicable18 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/ruby.ts
-var { supported: supported20, unsupported: unsupported15, notApplicable: notApplicable19 } = ScopeSupportFacetLevel;
+var { supported: supported20, unsupported: unsupported12, notApplicable: notApplicable19 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/rust.ts
-var { supported: supported21, unsupported: unsupported16, notApplicable: notApplicable20 } = ScopeSupportFacetLevel;
+var { supported: supported21, unsupported: unsupported13, notApplicable: notApplicable20 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/scala.ts
-var { supported: supported22, unsupported: unsupported17, notApplicable: notApplicable21 } = ScopeSupportFacetLevel;
+var { supported: supported22, unsupported: unsupported14, notApplicable: notApplicable21 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/scm.ts
-var { supported: supported23, unsupported: unsupported18, notApplicable: notApplicable22 } = ScopeSupportFacetLevel;
+var { supported: supported23, notApplicable: notApplicable22 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/scss.ts
-var { supported: supported24, unsupported: unsupported19, notApplicable: notApplicable23 } = ScopeSupportFacetLevel;
+var { supported: supported24 } = ScopeSupportFacetLevel;
 var scssScopeSupport = {
   ...cssScopeSupport,
-  "namedFunction.iteration": supported24,
-  "namedFunction.iteration.document": supported24,
-  "functionName.iteration": supported24,
-  "functionName.iteration.document": supported24,
   "comment.line": supported24,
-  disqualifyDelimiter: supported24
+  namedFunction: supported24,
+  "namedFunction.iteration.block": supported24,
+  "namedFunction.iteration.document": supported24,
+  functionName: supported24,
+  "functionName.iteration.block": supported24,
+  "functionName.iteration.document": supported24,
+  "name.argument.formal": supported24,
+  "name.argument.formal.iteration": supported24,
+  "name.function": supported24,
+  "value.argument.formal": supported24,
+  "value.argument.formal.iteration": supported24,
+  "value.return": supported24,
+  "textFragment.comment.line": supported24,
+  ifStatement: supported24,
+  "branch.if": supported24,
+  "branch.if.iteration": supported24,
+  "condition.if": supported24,
+  "interior.if": supported24,
+  "interior.function": supported24
 };
 
 // ../common/src/scopeSupportFacets/talon.ts
-var { supported: supported25 } = ScopeSupportFacetLevel;
+var { supported: supported25, unsupported: unsupported15, notApplicable: notApplicable23 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/typescript.ts
-var { supported: supported26 } = ScopeSupportFacetLevel;
+var { supported: supported26, notApplicable: notApplicable24 } = ScopeSupportFacetLevel;
 var typescriptScopeSupport = {
   ...javascriptCoreScopeSupport,
-  "name.field": supported26,
   "type.argument.formal": supported26,
   "type.argument.formal.iteration": supported26,
   "type.argument.formal.method": supported26,
@@ -7651,26 +5452,40 @@ var typescriptScopeSupport = {
   "type.alias": supported26,
   "type.cast": supported26,
   "type.field": supported26,
+  "type.field.iteration": supported26,
   "type.interface": supported26,
+  "type.enum": supported26,
   "type.return": supported26,
   "type.variable": supported26,
-  "value.field": supported26,
+  "type.typeArgument": supported26,
+  "type.typeArgument.iteration": supported26,
   "value.typeAlias": supported26,
-  disqualifyDelimiter: supported26
+  /* NOT APPLICABLE */
+  // Element and tags
+  element: notApplicable24,
+  tags: notApplicable24,
+  startTag: notApplicable24,
+  endTag: notApplicable24,
+  attribute: notApplicable24,
+  "key.attribute": notApplicable24,
+  "value.attribute": notApplicable24,
+  "interior.element": notApplicable24,
+  "textFragment.element": notApplicable24,
+  // Miscellaneous
+  "type.foreach": notApplicable24
 };
 
 // ../common/src/scopeSupportFacets/typescriptreact.ts
-var { supported: supported27, unsupported: unsupported20, notApplicable: notApplicable24 } = ScopeSupportFacetLevel;
 var typescriptreactScopeSupport = {
   ...typescriptScopeSupport,
   ...javascriptJsxScopeSupport
 };
 
 // ../common/src/scopeSupportFacets/xml.ts
-var { supported: supported28, unsupported: unsupported21, notApplicable: notApplicable25 } = ScopeSupportFacetLevel;
+var { supported: supported27, notApplicable: notApplicable25 } = ScopeSupportFacetLevel;
 
 // ../common/src/scopeSupportFacets/yaml.ts
-var { supported: supported29, unsupported: unsupported22, notApplicable: notApplicable26 } = ScopeSupportFacetLevel;
+var { supported: supported28, unsupported: unsupported16, notApplicable: notApplicable26 } = ScopeSupportFacetLevel;
 
 // ../common/src/StoredTargetKey.ts
 var storedTargetKeys = [
@@ -10398,9 +8213,14 @@ var simpleActionNames = [
   "extractVariable",
   "findInDocument",
   "findInWorkspace",
+  "flashTargets",
   "foldRegion",
   "followLink",
   "followLinkAside",
+  "gitAccept",
+  "gitRevert",
+  "gitStage",
+  "gitUnstage",
   "increment",
   "indentLine",
   "insertCopyAfter",
@@ -10473,6 +8293,7 @@ var simpleSurroundingPairNames = [
   "parentheses",
   "singleQuotes",
   "squareBrackets",
+  "tripleBacktickQuotes",
   "tripleDoubleQuotes",
   "tripleSingleQuotes"
 ];
@@ -10487,6 +8308,7 @@ var surroundingPairNames = [
 ];
 var simpleScopeTypeTypes = [
   "argumentOrParameter",
+  "argumentList",
   "anonymousFunction",
   "attribute",
   "branch",
@@ -10726,29 +8548,6 @@ function getKey(hatStyle, character) {
   return `${hatStyle}.${character}`;
 }
 
-// ../common/src/util/textFormatters.ts
-var textFormatters = {
-  camelCase(tokens2) {
-    if (tokens2.length === 0) {
-      return "";
-    }
-    const [first, ...rest] = tokens2;
-    return first + rest.map(capitalizeToken).join("");
-  },
-  snakeCase(tokens2) {
-    return tokens2.join("_");
-  },
-  upperSnakeCase(tokens2) {
-    return tokens2.map((token) => token.toUpperCase()).join("_");
-  },
-  pascalCase(tokens2) {
-    return tokens2.map(capitalizeToken).join("");
-  }
-};
-function capitalizeToken(token) {
-  return token.length === 0 ? "" : token[0].toUpperCase() + token.substr(1);
-}
-
 // ../common/src/util/uniqWithHash.ts
 function uniqWithHash(array, isEqual2, hash) {
   if (array.length < 2) {
@@ -10953,7 +8752,11 @@ var COMMAND_CAPABILITIES = {
   highlight: { acceptsLocation: true },
   unfold: { acceptsLocation: true },
   showReferences: { acceptsLocation: true },
-  insertLineAfter: { acceptsLocation: true }
+  insertLineAfter: { acceptsLocation: true },
+  gitAccept: { acceptsLocation: false },
+  gitRevert: { acceptsLocation: false },
+  gitStage: { acceptsLocation: false },
+  gitUnstage: { acceptsLocation: false }
 };
 var JetbrainsCapabilities = class {
   constructor() {
@@ -11021,129 +8824,129 @@ var JetbrainsKeyValueStore = class {
   }
 };
 
-// ../../node_modules/.pnpm/vscode-uri@3.0.8/node_modules/vscode-uri/lib/esm/index.mjs
+// ../../node_modules/.pnpm/vscode-uri@3.1.0/node_modules/vscode-uri/lib/esm/index.mjs
 var LIB;
 (() => {
   "use strict";
-  var t = { 470: (t2) => {
+  var t = { 975: (t2) => {
     function e2(t3) {
       if ("string" != typeof t3) throw new TypeError("Path must be a string. Received " + JSON.stringify(t3));
     }
     function r2(t3, e3) {
-      for (var r3, n3 = "", i2 = 0, o = -1, s = 0, h = 0; h <= t3.length; ++h) {
-        if (h < t3.length) r3 = t3.charCodeAt(h);
+      for (var r3, n3 = "", i3 = 0, o2 = -1, s2 = 0, h2 = 0; h2 <= t3.length; ++h2) {
+        if (h2 < t3.length) r3 = t3.charCodeAt(h2);
         else {
           if (47 === r3) break;
           r3 = 47;
         }
         if (47 === r3) {
-          if (o === h - 1 || 1 === s) ;
-          else if (o !== h - 1 && 2 === s) {
-            if (n3.length < 2 || 2 !== i2 || 46 !== n3.charCodeAt(n3.length - 1) || 46 !== n3.charCodeAt(n3.length - 2)) {
+          if (o2 === h2 - 1 || 1 === s2) ;
+          else if (o2 !== h2 - 1 && 2 === s2) {
+            if (n3.length < 2 || 2 !== i3 || 46 !== n3.charCodeAt(n3.length - 1) || 46 !== n3.charCodeAt(n3.length - 2)) {
               if (n3.length > 2) {
-                var a = n3.lastIndexOf("/");
-                if (a !== n3.length - 1) {
-                  -1 === a ? (n3 = "", i2 = 0) : i2 = (n3 = n3.slice(0, a)).length - 1 - n3.lastIndexOf("/"), o = h, s = 0;
+                var a2 = n3.lastIndexOf("/");
+                if (a2 !== n3.length - 1) {
+                  -1 === a2 ? (n3 = "", i3 = 0) : i3 = (n3 = n3.slice(0, a2)).length - 1 - n3.lastIndexOf("/"), o2 = h2, s2 = 0;
                   continue;
                 }
               } else if (2 === n3.length || 1 === n3.length) {
-                n3 = "", i2 = 0, o = h, s = 0;
+                n3 = "", i3 = 0, o2 = h2, s2 = 0;
                 continue;
               }
             }
-            e3 && (n3.length > 0 ? n3 += "/.." : n3 = "..", i2 = 2);
-          } else n3.length > 0 ? n3 += "/" + t3.slice(o + 1, h) : n3 = t3.slice(o + 1, h), i2 = h - o - 1;
-          o = h, s = 0;
-        } else 46 === r3 && -1 !== s ? ++s : s = -1;
+            e3 && (n3.length > 0 ? n3 += "/.." : n3 = "..", i3 = 2);
+          } else n3.length > 0 ? n3 += "/" + t3.slice(o2 + 1, h2) : n3 = t3.slice(o2 + 1, h2), i3 = h2 - o2 - 1;
+          o2 = h2, s2 = 0;
+        } else 46 === r3 && -1 !== s2 ? ++s2 : s2 = -1;
       }
       return n3;
     }
     var n2 = { resolve: function() {
-      for (var t3, n3 = "", i2 = false, o = arguments.length - 1; o >= -1 && !i2; o--) {
-        var s;
-        o >= 0 ? s = arguments[o] : (void 0 === t3 && (t3 = process.cwd()), s = t3), e2(s), 0 !== s.length && (n3 = s + "/" + n3, i2 = 47 === s.charCodeAt(0));
+      for (var t3, n3 = "", i3 = false, o2 = arguments.length - 1; o2 >= -1 && !i3; o2--) {
+        var s2;
+        o2 >= 0 ? s2 = arguments[o2] : (void 0 === t3 && (t3 = process.cwd()), s2 = t3), e2(s2), 0 !== s2.length && (n3 = s2 + "/" + n3, i3 = 47 === s2.charCodeAt(0));
       }
-      return n3 = r2(n3, !i2), i2 ? n3.length > 0 ? "/" + n3 : "/" : n3.length > 0 ? n3 : ".";
+      return n3 = r2(n3, !i3), i3 ? n3.length > 0 ? "/" + n3 : "/" : n3.length > 0 ? n3 : ".";
     }, normalize: function(t3) {
       if (e2(t3), 0 === t3.length) return ".";
-      var n3 = 47 === t3.charCodeAt(0), i2 = 47 === t3.charCodeAt(t3.length - 1);
-      return 0 !== (t3 = r2(t3, !n3)).length || n3 || (t3 = "."), t3.length > 0 && i2 && (t3 += "/"), n3 ? "/" + t3 : t3;
+      var n3 = 47 === t3.charCodeAt(0), i3 = 47 === t3.charCodeAt(t3.length - 1);
+      return 0 !== (t3 = r2(t3, !n3)).length || n3 || (t3 = "."), t3.length > 0 && i3 && (t3 += "/"), n3 ? "/" + t3 : t3;
     }, isAbsolute: function(t3) {
       return e2(t3), t3.length > 0 && 47 === t3.charCodeAt(0);
     }, join: function() {
       if (0 === arguments.length) return ".";
       for (var t3, r3 = 0; r3 < arguments.length; ++r3) {
-        var i2 = arguments[r3];
-        e2(i2), i2.length > 0 && (void 0 === t3 ? t3 = i2 : t3 += "/" + i2);
+        var i3 = arguments[r3];
+        e2(i3), i3.length > 0 && (void 0 === t3 ? t3 = i3 : t3 += "/" + i3);
       }
       return void 0 === t3 ? "." : n2.normalize(t3);
     }, relative: function(t3, r3) {
       if (e2(t3), e2(r3), t3 === r3) return "";
       if ((t3 = n2.resolve(t3)) === (r3 = n2.resolve(r3))) return "";
-      for (var i2 = 1; i2 < t3.length && 47 === t3.charCodeAt(i2); ++i2) ;
-      for (var o = t3.length, s = o - i2, h = 1; h < r3.length && 47 === r3.charCodeAt(h); ++h) ;
-      for (var a = r3.length - h, c = s < a ? s : a, f = -1, u = 0; u <= c; ++u) {
-        if (u === c) {
-          if (a > c) {
-            if (47 === r3.charCodeAt(h + u)) return r3.slice(h + u + 1);
-            if (0 === u) return r3.slice(h + u);
-          } else s > c && (47 === t3.charCodeAt(i2 + u) ? f = u : 0 === u && (f = 0));
+      for (var i3 = 1; i3 < t3.length && 47 === t3.charCodeAt(i3); ++i3) ;
+      for (var o2 = t3.length, s2 = o2 - i3, h2 = 1; h2 < r3.length && 47 === r3.charCodeAt(h2); ++h2) ;
+      for (var a2 = r3.length - h2, c2 = s2 < a2 ? s2 : a2, f2 = -1, u2 = 0; u2 <= c2; ++u2) {
+        if (u2 === c2) {
+          if (a2 > c2) {
+            if (47 === r3.charCodeAt(h2 + u2)) return r3.slice(h2 + u2 + 1);
+            if (0 === u2) return r3.slice(h2 + u2);
+          } else s2 > c2 && (47 === t3.charCodeAt(i3 + u2) ? f2 = u2 : 0 === u2 && (f2 = 0));
           break;
         }
-        var l = t3.charCodeAt(i2 + u);
-        if (l !== r3.charCodeAt(h + u)) break;
-        47 === l && (f = u);
+        var l2 = t3.charCodeAt(i3 + u2);
+        if (l2 !== r3.charCodeAt(h2 + u2)) break;
+        47 === l2 && (f2 = u2);
       }
-      var g = "";
-      for (u = i2 + f + 1; u <= o; ++u) u !== o && 47 !== t3.charCodeAt(u) || (0 === g.length ? g += ".." : g += "/..");
-      return g.length > 0 ? g + r3.slice(h + f) : (h += f, 47 === r3.charCodeAt(h) && ++h, r3.slice(h));
+      var g2 = "";
+      for (u2 = i3 + f2 + 1; u2 <= o2; ++u2) u2 !== o2 && 47 !== t3.charCodeAt(u2) || (0 === g2.length ? g2 += ".." : g2 += "/..");
+      return g2.length > 0 ? g2 + r3.slice(h2 + f2) : (h2 += f2, 47 === r3.charCodeAt(h2) && ++h2, r3.slice(h2));
     }, _makeLong: function(t3) {
       return t3;
     }, dirname: function(t3) {
       if (e2(t3), 0 === t3.length) return ".";
-      for (var r3 = t3.charCodeAt(0), n3 = 47 === r3, i2 = -1, o = true, s = t3.length - 1; s >= 1; --s) if (47 === (r3 = t3.charCodeAt(s))) {
-        if (!o) {
-          i2 = s;
+      for (var r3 = t3.charCodeAt(0), n3 = 47 === r3, i3 = -1, o2 = true, s2 = t3.length - 1; s2 >= 1; --s2) if (47 === (r3 = t3.charCodeAt(s2))) {
+        if (!o2) {
+          i3 = s2;
           break;
         }
-      } else o = false;
-      return -1 === i2 ? n3 ? "/" : "." : n3 && 1 === i2 ? "//" : t3.slice(0, i2);
+      } else o2 = false;
+      return -1 === i3 ? n3 ? "/" : "." : n3 && 1 === i3 ? "//" : t3.slice(0, i3);
     }, basename: function(t3, r3) {
       if (void 0 !== r3 && "string" != typeof r3) throw new TypeError('"ext" argument must be a string');
       e2(t3);
-      var n3, i2 = 0, o = -1, s = true;
+      var n3, i3 = 0, o2 = -1, s2 = true;
       if (void 0 !== r3 && r3.length > 0 && r3.length <= t3.length) {
         if (r3.length === t3.length && r3 === t3) return "";
-        var h = r3.length - 1, a = -1;
+        var h2 = r3.length - 1, a2 = -1;
         for (n3 = t3.length - 1; n3 >= 0; --n3) {
-          var c = t3.charCodeAt(n3);
-          if (47 === c) {
-            if (!s) {
-              i2 = n3 + 1;
+          var c2 = t3.charCodeAt(n3);
+          if (47 === c2) {
+            if (!s2) {
+              i3 = n3 + 1;
               break;
             }
-          } else -1 === a && (s = false, a = n3 + 1), h >= 0 && (c === r3.charCodeAt(h) ? -1 == --h && (o = n3) : (h = -1, o = a));
+          } else -1 === a2 && (s2 = false, a2 = n3 + 1), h2 >= 0 && (c2 === r3.charCodeAt(h2) ? -1 == --h2 && (o2 = n3) : (h2 = -1, o2 = a2));
         }
-        return i2 === o ? o = a : -1 === o && (o = t3.length), t3.slice(i2, o);
+        return i3 === o2 ? o2 = a2 : -1 === o2 && (o2 = t3.length), t3.slice(i3, o2);
       }
       for (n3 = t3.length - 1; n3 >= 0; --n3) if (47 === t3.charCodeAt(n3)) {
-        if (!s) {
-          i2 = n3 + 1;
+        if (!s2) {
+          i3 = n3 + 1;
           break;
         }
-      } else -1 === o && (s = false, o = n3 + 1);
-      return -1 === o ? "" : t3.slice(i2, o);
+      } else -1 === o2 && (s2 = false, o2 = n3 + 1);
+      return -1 === o2 ? "" : t3.slice(i3, o2);
     }, extname: function(t3) {
       e2(t3);
-      for (var r3 = -1, n3 = 0, i2 = -1, o = true, s = 0, h = t3.length - 1; h >= 0; --h) {
-        var a = t3.charCodeAt(h);
-        if (47 !== a) -1 === i2 && (o = false, i2 = h + 1), 46 === a ? -1 === r3 ? r3 = h : 1 !== s && (s = 1) : -1 !== r3 && (s = -1);
-        else if (!o) {
-          n3 = h + 1;
+      for (var r3 = -1, n3 = 0, i3 = -1, o2 = true, s2 = 0, h2 = t3.length - 1; h2 >= 0; --h2) {
+        var a2 = t3.charCodeAt(h2);
+        if (47 !== a2) -1 === i3 && (o2 = false, i3 = h2 + 1), 46 === a2 ? -1 === r3 ? r3 = h2 : 1 !== s2 && (s2 = 1) : -1 !== r3 && (s2 = -1);
+        else if (!o2) {
+          n3 = h2 + 1;
           break;
         }
       }
-      return -1 === r3 || -1 === i2 || 0 === s || 1 === s && r3 === i2 - 1 && r3 === n3 + 1 ? "" : t3.slice(r3, i2);
+      return -1 === r3 || -1 === i3 || 0 === s2 || 1 === s2 && r3 === i3 - 1 && r3 === n3 + 1 ? "" : t3.slice(r3, i3);
     }, format: function(t3) {
       if (null === t3 || "object" != typeof t3) throw new TypeError('The "pathObject" argument must be of type Object. Received type ' + typeof t3);
       return function(t4, e3) {
@@ -11154,22 +8957,22 @@ var LIB;
       e2(t3);
       var r3 = { root: "", dir: "", base: "", ext: "", name: "" };
       if (0 === t3.length) return r3;
-      var n3, i2 = t3.charCodeAt(0), o = 47 === i2;
-      o ? (r3.root = "/", n3 = 1) : n3 = 0;
-      for (var s = -1, h = 0, a = -1, c = true, f = t3.length - 1, u = 0; f >= n3; --f) if (47 !== (i2 = t3.charCodeAt(f))) -1 === a && (c = false, a = f + 1), 46 === i2 ? -1 === s ? s = f : 1 !== u && (u = 1) : -1 !== s && (u = -1);
-      else if (!c) {
-        h = f + 1;
+      var n3, i3 = t3.charCodeAt(0), o2 = 47 === i3;
+      o2 ? (r3.root = "/", n3 = 1) : n3 = 0;
+      for (var s2 = -1, h2 = 0, a2 = -1, c2 = true, f2 = t3.length - 1, u2 = 0; f2 >= n3; --f2) if (47 !== (i3 = t3.charCodeAt(f2))) -1 === a2 && (c2 = false, a2 = f2 + 1), 46 === i3 ? -1 === s2 ? s2 = f2 : 1 !== u2 && (u2 = 1) : -1 !== s2 && (u2 = -1);
+      else if (!c2) {
+        h2 = f2 + 1;
         break;
       }
-      return -1 === s || -1 === a || 0 === u || 1 === u && s === a - 1 && s === h + 1 ? -1 !== a && (r3.base = r3.name = 0 === h && o ? t3.slice(1, a) : t3.slice(h, a)) : (0 === h && o ? (r3.name = t3.slice(1, s), r3.base = t3.slice(1, a)) : (r3.name = t3.slice(h, s), r3.base = t3.slice(h, a)), r3.ext = t3.slice(s, a)), h > 0 ? r3.dir = t3.slice(0, h - 1) : o && (r3.dir = "/"), r3;
+      return -1 === s2 || -1 === a2 || 0 === u2 || 1 === u2 && s2 === a2 - 1 && s2 === h2 + 1 ? -1 !== a2 && (r3.base = r3.name = 0 === h2 && o2 ? t3.slice(1, a2) : t3.slice(h2, a2)) : (0 === h2 && o2 ? (r3.name = t3.slice(1, s2), r3.base = t3.slice(1, a2)) : (r3.name = t3.slice(h2, s2), r3.base = t3.slice(h2, a2)), r3.ext = t3.slice(s2, a2)), h2 > 0 ? r3.dir = t3.slice(0, h2 - 1) : o2 && (r3.dir = "/"), r3;
     }, sep: "/", delimiter: ":", win32: null, posix: null };
     n2.posix = n2, t2.exports = n2;
   } }, e = {};
   function r(n2) {
-    var i2 = e[n2];
-    if (void 0 !== i2) return i2.exports;
-    var o = e[n2] = { exports: {} };
-    return t[n2](o, o.exports, r), o.exports;
+    var i3 = e[n2];
+    if (void 0 !== i3) return i3.exports;
+    var o2 = e[n2] = { exports: {} };
+    return t[n2](o2, o2.exports, r), o2.exports;
   }
   r.d = (t2, e2) => {
     for (var n2 in e2) r.o(e2, n2) && !r.o(t2, n2) && Object.defineProperty(t2, n2, { enumerable: true, get: e2[n2] });
@@ -11177,187 +8980,185 @@ var LIB;
     "undefined" != typeof Symbol && Symbol.toStringTag && Object.defineProperty(t2, Symbol.toStringTag, { value: "Module" }), Object.defineProperty(t2, "__esModule", { value: true });
   };
   var n = {};
-  (() => {
-    let t2;
-    if (r.r(n), r.d(n, { URI: () => f, Utils: () => P }), "object" == typeof process) t2 = "win32" === process.platform;
-    else if ("object" == typeof navigator) {
-      let e3 = navigator.userAgent;
-      t2 = e3.indexOf("Windows") >= 0;
+  let i2;
+  if (r.r(n), r.d(n, { URI: () => l, Utils: () => I }), "object" == typeof process) i2 = "win32" === process.platform;
+  else if ("object" == typeof navigator) {
+    let t2 = navigator.userAgent;
+    i2 = t2.indexOf("Windows") >= 0;
+  }
+  const o = /^\w[\w\d+.-]*$/, s = /^\//, h = /^\/\//;
+  function a(t2, e2) {
+    if (!t2.scheme && e2) throw new Error(`[UriError]: Scheme is missing: {scheme: "", authority: "${t2.authority}", path: "${t2.path}", query: "${t2.query}", fragment: "${t2.fragment}"}`);
+    if (t2.scheme && !o.test(t2.scheme)) throw new Error("[UriError]: Scheme contains illegal characters.");
+    if (t2.path) {
+      if (t2.authority) {
+        if (!s.test(t2.path)) throw new Error('[UriError]: If a URI contains an authority component, then the path component must either be empty or begin with a slash ("/") character');
+      } else if (h.test(t2.path)) throw new Error('[UriError]: If a URI does not contain an authority component, then the path cannot begin with two slash characters ("//")');
     }
-    const e2 = /^\w[\w\d+.-]*$/, i2 = /^\//, o = /^\/\//;
-    function s(t3, r2) {
-      if (!t3.scheme && r2) throw new Error(`[UriError]: Scheme is missing: {scheme: "", authority: "${t3.authority}", path: "${t3.path}", query: "${t3.query}", fragment: "${t3.fragment}"}`);
-      if (t3.scheme && !e2.test(t3.scheme)) throw new Error("[UriError]: Scheme contains illegal characters.");
-      if (t3.path) {
-        if (t3.authority) {
-          if (!i2.test(t3.path)) throw new Error('[UriError]: If a URI contains an authority component, then the path component must either be empty or begin with a slash ("/") character');
-        } else if (o.test(t3.path)) throw new Error('[UriError]: If a URI does not contain an authority component, then the path cannot begin with two slash characters ("//")');
-      }
-    }
-    const h = "", a = "/", c = /^(([^:/?#]+?):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/;
-    class f {
-      constructor(t3, e3, r2, n2, i3, o2 = false) {
-        __publicField(this, "scheme");
-        __publicField(this, "authority");
-        __publicField(this, "path");
-        __publicField(this, "query");
-        __publicField(this, "fragment");
-        "object" == typeof t3 ? (this.scheme = t3.scheme || h, this.authority = t3.authority || h, this.path = t3.path || h, this.query = t3.query || h, this.fragment = t3.fragment || h) : (this.scheme = /* @__PURE__ */ function(t4, e4) {
-          return t4 || e4 ? t4 : "file";
-        }(t3, o2), this.authority = e3 || h, this.path = function(t4, e4) {
-          switch (t4) {
-            case "https":
-            case "http":
-            case "file":
-              e4 ? e4[0] !== a && (e4 = a + e4) : e4 = a;
-          }
-          return e4;
-        }(this.scheme, r2 || h), this.query = n2 || h, this.fragment = i3 || h, s(this, o2));
-      }
-      static isUri(t3) {
-        return t3 instanceof f || !!t3 && "string" == typeof t3.authority && "string" == typeof t3.fragment && "string" == typeof t3.path && "string" == typeof t3.query && "string" == typeof t3.scheme && "string" == typeof t3.fsPath && "function" == typeof t3.with && "function" == typeof t3.toString;
-      }
-      get fsPath() {
-        return m(this, false);
-      }
-      with(t3) {
-        if (!t3) return this;
-        let { scheme: e3, authority: r2, path: n2, query: i3, fragment: o2 } = t3;
-        return void 0 === e3 ? e3 = this.scheme : null === e3 && (e3 = h), void 0 === r2 ? r2 = this.authority : null === r2 && (r2 = h), void 0 === n2 ? n2 = this.path : null === n2 && (n2 = h), void 0 === i3 ? i3 = this.query : null === i3 && (i3 = h), void 0 === o2 ? o2 = this.fragment : null === o2 && (o2 = h), e3 === this.scheme && r2 === this.authority && n2 === this.path && i3 === this.query && o2 === this.fragment ? this : new l(e3, r2, n2, i3, o2);
-      }
-      static parse(t3, e3 = false) {
-        const r2 = c.exec(t3);
-        return r2 ? new l(r2[2] || h, C2(r2[4] || h), C2(r2[5] || h), C2(r2[7] || h), C2(r2[9] || h), e3) : new l(h, h, h, h, h);
-      }
-      static file(e3) {
-        let r2 = h;
-        if (t2 && (e3 = e3.replace(/\\/g, a)), e3[0] === a && e3[1] === a) {
-          const t3 = e3.indexOf(a, 2);
-          -1 === t3 ? (r2 = e3.substring(2), e3 = a) : (r2 = e3.substring(2, t3), e3 = e3.substring(t3) || a);
+  }
+  const c = "", f = "/", u = /^(([^:/?#]+?):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/;
+  class l {
+    constructor(t2, e2, r2, n2, i3, o2 = false) {
+      __publicField(this, "scheme");
+      __publicField(this, "authority");
+      __publicField(this, "path");
+      __publicField(this, "query");
+      __publicField(this, "fragment");
+      "object" == typeof t2 ? (this.scheme = t2.scheme || c, this.authority = t2.authority || c, this.path = t2.path || c, this.query = t2.query || c, this.fragment = t2.fragment || c) : (this.scheme = /* @__PURE__ */ function(t3, e3) {
+        return t3 || e3 ? t3 : "file";
+      }(t2, o2), this.authority = e2 || c, this.path = function(t3, e3) {
+        switch (t3) {
+          case "https":
+          case "http":
+          case "file":
+            e3 ? e3[0] !== f && (e3 = f + e3) : e3 = f;
         }
-        return new l("file", r2, e3, h, h);
-      }
-      static from(t3) {
-        const e3 = new l(t3.scheme, t3.authority, t3.path, t3.query, t3.fragment);
-        return s(e3, true), e3;
-      }
-      toString(t3 = false) {
-        return y(this, t3);
-      }
-      toJSON() {
-        return this;
-      }
-      static revive(t3) {
-        if (t3) {
-          if (t3 instanceof f) return t3;
-          {
-            const e3 = new l(t3);
-            return e3._formatted = t3.external, e3._fsPath = t3._sep === u ? t3.fsPath : null, e3;
-          }
-        }
-        return t3;
-      }
+        return e3;
+      }(this.scheme, r2 || c), this.query = n2 || c, this.fragment = i3 || c, a(this, o2));
     }
-    const u = t2 ? 1 : void 0;
-    class l extends f {
-      constructor() {
-        super(...arguments);
-        __publicField(this, "_formatted", null);
-        __publicField(this, "_fsPath", null);
-      }
-      get fsPath() {
-        return this._fsPath || (this._fsPath = m(this, false)), this._fsPath;
-      }
-      toString(t3 = false) {
-        return t3 ? y(this, true) : (this._formatted || (this._formatted = y(this, false)), this._formatted);
-      }
-      toJSON() {
-        const t3 = { $mid: 1 };
-        return this._fsPath && (t3.fsPath = this._fsPath, t3._sep = u), this._formatted && (t3.external = this._formatted), this.path && (t3.path = this.path), this.scheme && (t3.scheme = this.scheme), this.authority && (t3.authority = this.authority), this.query && (t3.query = this.query), this.fragment && (t3.fragment = this.fragment), t3;
-      }
+    static isUri(t2) {
+      return t2 instanceof l || !!t2 && "string" == typeof t2.authority && "string" == typeof t2.fragment && "string" == typeof t2.path && "string" == typeof t2.query && "string" == typeof t2.scheme && "string" == typeof t2.fsPath && "function" == typeof t2.with && "function" == typeof t2.toString;
     }
-    const g = { 58: "%3A", 47: "%2F", 63: "%3F", 35: "%23", 91: "%5B", 93: "%5D", 64: "%40", 33: "%21", 36: "%24", 38: "%26", 39: "%27", 40: "%28", 41: "%29", 42: "%2A", 43: "%2B", 44: "%2C", 59: "%3B", 61: "%3D", 32: "%20" };
-    function d(t3, e3, r2) {
-      let n2, i3 = -1;
-      for (let o2 = 0; o2 < t3.length; o2++) {
-        const s2 = t3.charCodeAt(o2);
-        if (s2 >= 97 && s2 <= 122 || s2 >= 65 && s2 <= 90 || s2 >= 48 && s2 <= 57 || 45 === s2 || 46 === s2 || 95 === s2 || 126 === s2 || e3 && 47 === s2 || r2 && 91 === s2 || r2 && 93 === s2 || r2 && 58 === s2) -1 !== i3 && (n2 += encodeURIComponent(t3.substring(i3, o2)), i3 = -1), void 0 !== n2 && (n2 += t3.charAt(o2));
-        else {
-          void 0 === n2 && (n2 = t3.substr(0, o2));
-          const e4 = g[s2];
-          void 0 !== e4 ? (-1 !== i3 && (n2 += encodeURIComponent(t3.substring(i3, o2)), i3 = -1), n2 += e4) : -1 === i3 && (i3 = o2);
+    get fsPath() {
+      return v(this, false);
+    }
+    with(t2) {
+      if (!t2) return this;
+      let { scheme: e2, authority: r2, path: n2, query: i3, fragment: o2 } = t2;
+      return void 0 === e2 ? e2 = this.scheme : null === e2 && (e2 = c), void 0 === r2 ? r2 = this.authority : null === r2 && (r2 = c), void 0 === n2 ? n2 = this.path : null === n2 && (n2 = c), void 0 === i3 ? i3 = this.query : null === i3 && (i3 = c), void 0 === o2 ? o2 = this.fragment : null === o2 && (o2 = c), e2 === this.scheme && r2 === this.authority && n2 === this.path && i3 === this.query && o2 === this.fragment ? this : new d(e2, r2, n2, i3, o2);
+    }
+    static parse(t2, e2 = false) {
+      const r2 = u.exec(t2);
+      return r2 ? new d(r2[2] || c, w(r2[4] || c), w(r2[5] || c), w(r2[7] || c), w(r2[9] || c), e2) : new d(c, c, c, c, c);
+    }
+    static file(t2) {
+      let e2 = c;
+      if (i2 && (t2 = t2.replace(/\\/g, f)), t2[0] === f && t2[1] === f) {
+        const r2 = t2.indexOf(f, 2);
+        -1 === r2 ? (e2 = t2.substring(2), t2 = f) : (e2 = t2.substring(2, r2), t2 = t2.substring(r2) || f);
+      }
+      return new d("file", e2, t2, c, c);
+    }
+    static from(t2) {
+      const e2 = new d(t2.scheme, t2.authority, t2.path, t2.query, t2.fragment);
+      return a(e2, true), e2;
+    }
+    toString(t2 = false) {
+      return b(this, t2);
+    }
+    toJSON() {
+      return this;
+    }
+    static revive(t2) {
+      if (t2) {
+        if (t2 instanceof l) return t2;
+        {
+          const e2 = new d(t2);
+          return e2._formatted = t2.external, e2._fsPath = t2._sep === g ? t2.fsPath : null, e2;
         }
       }
-      return -1 !== i3 && (n2 += encodeURIComponent(t3.substring(i3))), void 0 !== n2 ? n2 : t3;
+      return t2;
     }
-    function p(t3) {
-      let e3;
-      for (let r2 = 0; r2 < t3.length; r2++) {
-        const n2 = t3.charCodeAt(r2);
-        35 === n2 || 63 === n2 ? (void 0 === e3 && (e3 = t3.substr(0, r2)), e3 += g[n2]) : void 0 !== e3 && (e3 += t3[r2]);
-      }
-      return void 0 !== e3 ? e3 : t3;
+  }
+  const g = i2 ? 1 : void 0;
+  class d extends l {
+    constructor() {
+      super(...arguments);
+      __publicField(this, "_formatted", null);
+      __publicField(this, "_fsPath", null);
     }
-    function m(e3, r2) {
-      let n2;
-      return n2 = e3.authority && e3.path.length > 1 && "file" === e3.scheme ? `//${e3.authority}${e3.path}` : 47 === e3.path.charCodeAt(0) && (e3.path.charCodeAt(1) >= 65 && e3.path.charCodeAt(1) <= 90 || e3.path.charCodeAt(1) >= 97 && e3.path.charCodeAt(1) <= 122) && 58 === e3.path.charCodeAt(2) ? r2 ? e3.path.substr(1) : e3.path[1].toLowerCase() + e3.path.substr(2) : e3.path, t2 && (n2 = n2.replace(/\//g, "\\")), n2;
+    get fsPath() {
+      return this._fsPath || (this._fsPath = v(this, false)), this._fsPath;
     }
-    function y(t3, e3) {
-      const r2 = e3 ? p : d;
-      let n2 = "", { scheme: i3, authority: o2, path: s2, query: h2, fragment: c2 } = t3;
-      if (i3 && (n2 += i3, n2 += ":"), (o2 || "file" === i3) && (n2 += a, n2 += a), o2) {
-        let t4 = o2.indexOf("@");
-        if (-1 !== t4) {
-          const e4 = o2.substr(0, t4);
-          o2 = o2.substr(t4 + 1), t4 = e4.lastIndexOf(":"), -1 === t4 ? n2 += r2(e4, false, false) : (n2 += r2(e4.substr(0, t4), false, false), n2 += ":", n2 += r2(e4.substr(t4 + 1), false, true)), n2 += "@";
-        }
-        o2 = o2.toLowerCase(), t4 = o2.lastIndexOf(":"), -1 === t4 ? n2 += r2(o2, false, true) : (n2 += r2(o2.substr(0, t4), false, true), n2 += o2.substr(t4));
-      }
-      if (s2) {
-        if (s2.length >= 3 && 47 === s2.charCodeAt(0) && 58 === s2.charCodeAt(2)) {
-          const t4 = s2.charCodeAt(1);
-          t4 >= 65 && t4 <= 90 && (s2 = `/${String.fromCharCode(t4 + 32)}:${s2.substr(3)}`);
-        } else if (s2.length >= 2 && 58 === s2.charCodeAt(1)) {
-          const t4 = s2.charCodeAt(0);
-          t4 >= 65 && t4 <= 90 && (s2 = `${String.fromCharCode(t4 + 32)}:${s2.substr(2)}`);
-        }
-        n2 += r2(s2, true, false);
-      }
-      return h2 && (n2 += "?", n2 += r2(h2, false, false)), c2 && (n2 += "#", n2 += e3 ? c2 : d(c2, false, false)), n2;
+    toString(t2 = false) {
+      return t2 ? b(this, true) : (this._formatted || (this._formatted = b(this, false)), this._formatted);
     }
-    function v(t3) {
-      try {
-        return decodeURIComponent(t3);
-      } catch {
-        return t3.length > 3 ? t3.substr(0, 3) + v(t3.substr(3)) : t3;
+    toJSON() {
+      const t2 = { $mid: 1 };
+      return this._fsPath && (t2.fsPath = this._fsPath, t2._sep = g), this._formatted && (t2.external = this._formatted), this.path && (t2.path = this.path), this.scheme && (t2.scheme = this.scheme), this.authority && (t2.authority = this.authority), this.query && (t2.query = this.query), this.fragment && (t2.fragment = this.fragment), t2;
+    }
+  }
+  const p = { 58: "%3A", 47: "%2F", 63: "%3F", 35: "%23", 91: "%5B", 93: "%5D", 64: "%40", 33: "%21", 36: "%24", 38: "%26", 39: "%27", 40: "%28", 41: "%29", 42: "%2A", 43: "%2B", 44: "%2C", 59: "%3B", 61: "%3D", 32: "%20" };
+  function m(t2, e2, r2) {
+    let n2, i3 = -1;
+    for (let o2 = 0; o2 < t2.length; o2++) {
+      const s2 = t2.charCodeAt(o2);
+      if (s2 >= 97 && s2 <= 122 || s2 >= 65 && s2 <= 90 || s2 >= 48 && s2 <= 57 || 45 === s2 || 46 === s2 || 95 === s2 || 126 === s2 || e2 && 47 === s2 || r2 && 91 === s2 || r2 && 93 === s2 || r2 && 58 === s2) -1 !== i3 && (n2 += encodeURIComponent(t2.substring(i3, o2)), i3 = -1), void 0 !== n2 && (n2 += t2.charAt(o2));
+      else {
+        void 0 === n2 && (n2 = t2.substr(0, o2));
+        const e3 = p[s2];
+        void 0 !== e3 ? (-1 !== i3 && (n2 += encodeURIComponent(t2.substring(i3, o2)), i3 = -1), n2 += e3) : -1 === i3 && (i3 = o2);
       }
     }
-    const b = /(%[0-9A-Za-z][0-9A-Za-z])+/g;
-    function C2(t3) {
-      return t3.match(b) ? t3.replace(b, (t4) => v(t4)) : t3;
+    return -1 !== i3 && (n2 += encodeURIComponent(t2.substring(i3))), void 0 !== n2 ? n2 : t2;
+  }
+  function y(t2) {
+    let e2;
+    for (let r2 = 0; r2 < t2.length; r2++) {
+      const n2 = t2.charCodeAt(r2);
+      35 === n2 || 63 === n2 ? (void 0 === e2 && (e2 = t2.substr(0, r2)), e2 += p[n2]) : void 0 !== e2 && (e2 += t2[r2]);
     }
-    var A = r(470);
-    const w = A.posix || A, x = "/";
-    var P;
-    !function(t3) {
-      t3.joinPath = function(t4, ...e3) {
-        return t4.with({ path: w.join(t4.path, ...e3) });
-      }, t3.resolvePath = function(t4, ...e3) {
-        let r2 = t4.path, n2 = false;
-        r2[0] !== x && (r2 = x + r2, n2 = true);
-        let i3 = w.resolve(r2, ...e3);
-        return n2 && i3[0] === x && !t4.authority && (i3 = i3.substring(1)), t4.with({ path: i3 });
-      }, t3.dirname = function(t4) {
-        if (0 === t4.path.length || t4.path === x) return t4;
-        let e3 = w.dirname(t4.path);
-        return 1 === e3.length && 46 === e3.charCodeAt(0) && (e3 = ""), t4.with({ path: e3 });
-      }, t3.basename = function(t4) {
-        return w.basename(t4.path);
-      }, t3.extname = function(t4) {
-        return w.extname(t4.path);
-      };
-    }(P || (P = {}));
-  })(), LIB = n;
+    return void 0 !== e2 ? e2 : t2;
+  }
+  function v(t2, e2) {
+    let r2;
+    return r2 = t2.authority && t2.path.length > 1 && "file" === t2.scheme ? `//${t2.authority}${t2.path}` : 47 === t2.path.charCodeAt(0) && (t2.path.charCodeAt(1) >= 65 && t2.path.charCodeAt(1) <= 90 || t2.path.charCodeAt(1) >= 97 && t2.path.charCodeAt(1) <= 122) && 58 === t2.path.charCodeAt(2) ? e2 ? t2.path.substr(1) : t2.path[1].toLowerCase() + t2.path.substr(2) : t2.path, i2 && (r2 = r2.replace(/\//g, "\\")), r2;
+  }
+  function b(t2, e2) {
+    const r2 = e2 ? y : m;
+    let n2 = "", { scheme: i3, authority: o2, path: s2, query: h2, fragment: a2 } = t2;
+    if (i3 && (n2 += i3, n2 += ":"), (o2 || "file" === i3) && (n2 += f, n2 += f), o2) {
+      let t3 = o2.indexOf("@");
+      if (-1 !== t3) {
+        const e3 = o2.substr(0, t3);
+        o2 = o2.substr(t3 + 1), t3 = e3.lastIndexOf(":"), -1 === t3 ? n2 += r2(e3, false, false) : (n2 += r2(e3.substr(0, t3), false, false), n2 += ":", n2 += r2(e3.substr(t3 + 1), false, true)), n2 += "@";
+      }
+      o2 = o2.toLowerCase(), t3 = o2.lastIndexOf(":"), -1 === t3 ? n2 += r2(o2, false, true) : (n2 += r2(o2.substr(0, t3), false, true), n2 += o2.substr(t3));
+    }
+    if (s2) {
+      if (s2.length >= 3 && 47 === s2.charCodeAt(0) && 58 === s2.charCodeAt(2)) {
+        const t3 = s2.charCodeAt(1);
+        t3 >= 65 && t3 <= 90 && (s2 = `/${String.fromCharCode(t3 + 32)}:${s2.substr(3)}`);
+      } else if (s2.length >= 2 && 58 === s2.charCodeAt(1)) {
+        const t3 = s2.charCodeAt(0);
+        t3 >= 65 && t3 <= 90 && (s2 = `${String.fromCharCode(t3 + 32)}:${s2.substr(2)}`);
+      }
+      n2 += r2(s2, true, false);
+    }
+    return h2 && (n2 += "?", n2 += r2(h2, false, false)), a2 && (n2 += "#", n2 += e2 ? a2 : m(a2, false, false)), n2;
+  }
+  function C2(t2) {
+    try {
+      return decodeURIComponent(t2);
+    } catch {
+      return t2.length > 3 ? t2.substr(0, 3) + C2(t2.substr(3)) : t2;
+    }
+  }
+  const A = /(%[0-9A-Za-z][0-9A-Za-z])+/g;
+  function w(t2) {
+    return t2.match(A) ? t2.replace(A, (t3) => C2(t3)) : t2;
+  }
+  var x = r(975);
+  const P = x.posix || x, _ = "/";
+  var I;
+  !function(t2) {
+    t2.joinPath = function(t3, ...e2) {
+      return t3.with({ path: P.join(t3.path, ...e2) });
+    }, t2.resolvePath = function(t3, ...e2) {
+      let r2 = t3.path, n2 = false;
+      r2[0] !== _ && (r2 = _ + r2, n2 = true);
+      let i3 = P.resolve(r2, ...e2);
+      return n2 && i3[0] === _ && !t3.authority && (i3 = i3.substring(1)), t3.with({ path: i3 });
+    }, t2.dirname = function(t3) {
+      if (0 === t3.path.length || t3.path === _) return t3;
+      let e2 = P.dirname(t3.path);
+      return 1 === e2.length && 46 === e2.charCodeAt(0) && (e2 = ""), t3.with({ path: e2 });
+    }, t2.basename = function(t3) {
+      return P.basename(t3.path);
+    }, t2.extname = function(t3) {
+      return P.extname(t3.path);
+    };
+  }(I || (I = {})), LIB = n;
 })();
 var { URI, Utils } = LIB;
 
@@ -11412,6 +9213,7 @@ var JetbrainsEditor = class {
     this.isActive = true;
     this.isVisible = true;
     this.isEditable = true;
+    this.isWritable = true;
   }
   isEqual(other) {
     return this.id === other.id;
@@ -11423,9 +9225,8 @@ var JetbrainsEditor = class {
     }
   }
   edit(edits) {
-    if (!this.isEditable) {
-      console.log("Editor is not editable.");
-      return Promise.reject("Editor is not editable");
+    if (!this.isWritable) {
+      return Promise.resolve(false);
     }
     jetbrainsPerformEdits(this.client, this.ide, this.document, this.id, edits);
     return Promise.resolve(true);
@@ -11466,8 +9267,14 @@ var JetbrainsEditor = class {
   async revealLine(lineNumber, at) {
     await this.client.revealLine(this.id, lineNumber, at);
   }
-  openLink(_range, _options) {
-    throw new Error("openLink not implemented.");
+  async openLink(range3, _options) {
+    const command = new JetbrainsEditorCommand(
+      [range3],
+      true,
+      false,
+      "GotoDeclaration"
+    );
+    await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
   async fold(ranges) {
     const command = new JetbrainsEditorCommand(
@@ -11487,7 +9294,7 @@ var JetbrainsEditor = class {
     );
     await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
-  async toggleBreakpoint(_descriptors) {
+  async toggleBreakpoint(_ranges) {
     throw new Error("toggleBreakpoint not implemented.");
   }
   async toggleLineComment(ranges) {
@@ -11499,8 +9306,12 @@ var JetbrainsEditor = class {
     );
     await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
-  insertSnippet(_snippet, _ranges) {
-    throw new Error("insertSnippet not implemented.");
+  async insertSnippet(snippet2, ranges) {
+    console.log("insertSnippet" + snippet2);
+    if (ranges != null) {
+      await this.setSelections(ranges.map((range3) => range3.toSelection(false)));
+    }
+    await this.client.insertSnippet(this.id, snippet2);
   }
   async rename(range3) {
     const command = new JetbrainsEditorCommand(
@@ -11568,6 +9379,18 @@ var JetbrainsEditor = class {
   editNewNotebookCellBelow() {
     throw new Error("editNewNotebookCellBelow not implemented.");
   }
+  async gitAccept(_range) {
+    throw new Error("gitAccept not implemented.");
+  }
+  async gitRevert(_range) {
+    throw new Error("gitRevert not implemented.");
+  }
+  async gitStage(_range) {
+    throw new Error("gitStage not implemented.");
+  }
+  async gitUnstage(_range) {
+    throw new Error("gitUnstage not implemented.");
+  }
 };
 
 // src/ide/createTextEditor.ts
@@ -11582,7 +9405,7 @@ function createTextEditor(client, ide2, editorState) {
   const selections = editorState.selections.map(
     (selection) => createSelection(document2, selection)
   );
-  return new JetbrainsEditor(
+  const editor = new JetbrainsEditor(
     client,
     ide2,
     id2,
@@ -11590,6 +9413,11 @@ function createTextEditor(client, ide2, editorState) {
     visibleRanges,
     selections
   );
+  editor.isActive = editorState.active;
+  editor.isVisible = editorState.visible;
+  editor.isEditable = editorState.editable;
+  editor.isWritable = editorState.writable;
+  return editor;
 }
 function createSelection(document2, selection) {
   return new Selection(
@@ -11631,8 +9459,10 @@ var JetbrainsIDE = class {
   async showQuickPick(_items, _options) {
     throw Error("showQuickPick Not implemented");
   }
-  async setHighlightRanges(_highlightId, _editor, _ranges) {
-    throw Error("setHighlightRanges Not implemented");
+  async setHighlightRanges(highlightId, editor, ranges) {
+    const editorId = editor.id;
+    const rangesJson = JSON.stringify(ranges);
+    this.client.setHighlightRanges(highlightId, editorId, rangesJson);
   }
   async flashRanges(flashDescriptors) {
     console.log("flashRangeses");
@@ -11669,7 +9499,11 @@ var JetbrainsIDE = class {
   }
   getEditableTextEditor(editor) {
     if (editor instanceof JetbrainsEditor) {
-      return editor;
+      if (editor.isEditable) {
+        return editor;
+      } else {
+        throw Error(`Editor is not editable: ${editor}`);
+      }
     }
     throw Error(`Unsupported text editor type: ${editor}`);
   }
@@ -11775,6 +9609,7 @@ function updateEditor(editor, editorState) {
   editor.isActive = editorState.active;
   editor.isVisible = editorState.visible;
   editor.isEditable = editorState.editable;
+  editor.isWritable = editorState.writable;
 }
 function getLines(text, firstLine, lastLine) {
   const lines = text.split("\n");
@@ -12652,6 +10487,7 @@ var defaultSpokenFormMapCore = {
     singleQuotes: "twin",
     tripleDoubleQuotes: isPrivate("triple quad"),
     tripleSingleQuotes: isPrivate("triple twin"),
+    tripleBacktickQuotes: isPrivate("triple skis"),
     any: "pair",
     string: "string",
     whitespace: "void",
@@ -12659,6 +10495,7 @@ var defaultSpokenFormMapCore = {
   },
   simpleScopeTypeType: {
     argumentOrParameter: "arg",
+    argumentList: "arg list",
     attribute: "attribute",
     functionCall: "call",
     functionCallee: "callee",
@@ -12784,6 +10621,7 @@ var defaultSpokenFormMapCore = {
     foldRegion: "fold",
     followLink: "follow",
     followLinkAside: "follow split",
+    flashTargets: "flash",
     deselect: "give",
     highlight: "highlight",
     showHover: "hover",
@@ -12817,6 +10655,10 @@ var defaultSpokenFormMapCore = {
     insertSnippet: "snippet",
     pasteFromClipboard: "paste",
     joinLines: "join",
+    gitAccept: "git accept",
+    gitRevert: "git revert",
+    gitStage: "git stage",
+    gitUnstage: "git unstage",
     ["private.showParseTree"]: isPrivate("parse tree"),
     ["experimental.setInstanceReference"]: isDisabledByDefault("from"),
     editNew: isPrivate("edit new"),
@@ -12969,6 +10811,20 @@ for (const [mark, spokenForm] of Object.entries(marks)) {
     };
   }
 }
+defaultSpokenFormMap.modifierExtra.next.spokenForms.forEach((spokenForm) => {
+  tokens[spokenForm] = {
+    type: "direction",
+    value: "forward"
+  };
+});
+defaultSpokenFormMap.modifierExtra.previous.spokenForms.forEach(
+  (spokenForm) => {
+    tokens[spokenForm] = {
+      type: "direction",
+      value: "backward"
+    };
+  }
+);
 var lexer = new CommandLexer({
   ws: /[ \t]+/,
   placeholderTarget: {
@@ -13008,6 +10864,15 @@ function containingScopeModifier(scopeType) {
   return {
     type: "containingScope",
     scopeType
+  };
+}
+function relativeScopeModifier(scopeType, direction2) {
+  return {
+    type: "relativeScope",
+    scopeType,
+    offset: 1,
+    length: 1,
+    direction: direction2
   };
 }
 function simpleScopeType(type2) {
@@ -13075,13 +10940,13 @@ var grammar = {
     },
     {
       "name": "modifier",
-      "symbols": ["containingScopeModifier"],
-      "postprocess": ([containingScopeModifier2]) => containingScopeModifier2
-    },
-    {
-      "name": "containingScopeModifier",
       "symbols": ["scopeType"],
       "postprocess": ([scopeType]) => containingScopeModifier(scopeType)
+    },
+    {
+      "name": "modifier",
+      "symbols": [lexer.has("direction") ? { type: "direction" } : direction, "scopeType"],
+      "postprocess": ([direction2, scopeType]) => relativeScopeModifier(scopeType, direction2)
     },
     {
       "name": "scopeType",
@@ -14126,6 +11991,78 @@ var StoredTargetMap = class {
   }
 };
 
+// ../cursorless-engine/src/util/targetUtils.ts
+function ensureSingleEditor(targets) {
+  if (targets.length === 0) {
+    throw new Error("Require at least one target with this action");
+  }
+  const editors = targets.map((target) => target.editor);
+  if (new Set(editors).size > 1) {
+    throw new Error("Can only have one editor with this action");
+  }
+  return editors[0];
+}
+function ensureSingleTarget(targets) {
+  if (targets.length !== 1) {
+    throw new Error("Can only have one target with this action");
+  }
+  return targets[0];
+}
+async function runForEachEditor(targets, getEditor2, func2) {
+  return Promise.all(
+    groupForEachEditor(targets, getEditor2).map(
+      ([editor, editorTargets]) => func2(editor, editorTargets)
+    )
+  );
+}
+async function runOnTargetsForEachEditor(targets, func2) {
+  return runForEachEditor(targets, (target) => target.editor, func2);
+}
+async function runOnTargetsForEachEditorSequentially(targets, func2) {
+  const editorGroups = groupForEachEditor(targets, (target) => target.editor);
+  const result = [];
+  for (const [editor, targets2] of editorGroups) {
+    result.push(await func2(editor, targets2));
+  }
+  return result;
+}
+function groupTargetsForEachEditor(targets) {
+  return groupForEachEditor(targets, (target) => target.editor);
+}
+function groupForEachEditor(targets, getEditor2) {
+  const getDocumentUri = (target) => getEditor2(target).document.uri;
+  const editorMap = groupBy(targets, getDocumentUri);
+  return Array.from(editorMap.values(), (editorTargets) => {
+    const editor = getEditor2(editorTargets[0]);
+    return [editor, editorTargets];
+  });
+}
+function createThatMark(targets, ranges) {
+  const thatMark = ranges != null ? zip_default(targets, ranges).map(([target, range3]) => ({
+    editor: target.editor,
+    selection: target?.isReversed ? new Selection(range3.end, range3.start) : new Selection(range3.start, range3.end)
+  })) : targets.map((target) => ({
+    editor: target.editor,
+    selection: target.contentSelection
+  }));
+  return thatMark;
+}
+function toGeneralizedRange(target, range3) {
+  return target.textualType === "line" ? toLineRange(range3) : toCharacterRange(range3);
+}
+function toGeneralizedContentRange(target) {
+  return toGeneralizedRange(target, target.contentRange);
+}
+function flashTargets(ide2, targets, style, getRange = toGeneralizedContentRange) {
+  return ide2.flashRanges(
+    targets.map((target) => ({
+      editor: target.editor,
+      range: getRange(target),
+      style
+    }))
+  );
+}
+
 // ../cursorless-engine/src/util/rangeUtils.ts
 function expandToFullLine(editor, range3) {
   return new Range(
@@ -14304,15 +12241,12 @@ function createContinuousLineRange(startTarget, endTarget, includeStart, include
 // ../cursorless-engine/src/processTargets/targets/BaseTarget.ts
 var BaseTarget = class _BaseTarget {
   constructor(parameters) {
-    this.isLine = false;
-    this.isToken = true;
     this.hasExplicitScopeType = true;
     this.hasExplicitRange = true;
     this.isRaw = false;
     this.isImplicit = false;
     this.isNotebookCell = false;
-    this.isWord = false;
-    this.joinAs = "line";
+    this.textualType = "token";
     this.state = {
       editor: parameters.editor,
       isReversed: parameters.isReversed,
@@ -14346,7 +12280,7 @@ var BaseTarget = class _BaseTarget {
     };
   }
   getRemovalHighlightRange() {
-    return this.getRemovalRange();
+    return toGeneralizedRange(this, this.getRemovalRange());
   }
   withThatTarget(thatTarget) {
     return this.cloneWith({ thatTarget });
@@ -14418,18 +12352,6 @@ var BaseTarget = class _BaseTarget {
 };
 
 // ../cursorless-engine/src/util/selectionUtils.ts
-function selectionWithEditorFromRange(selection, range3) {
-  return selectionWithEditorFromPositions(selection, range3.start, range3.end);
-}
-function selectionWithEditorFromPositions(selection, start2, end) {
-  return {
-    editor: selection.editor,
-    selection: selectionFromPositions(selection.selection, start2, end)
-  };
-}
-function selectionFromPositions(selection, start2, end) {
-  return !selection.isReversed ? new Selection(start2, end) : new Selection(end, start2);
-}
 function shrinkRangeToFitContent(editor, range3) {
   const { document: document2 } = editor;
   const text = document2.getText(range3);
@@ -14459,13 +12381,13 @@ var PlainTarget = class extends BaseTarget {
     this.getLeadingDelimiterTarget = () => void 0;
     this.getTrailingDelimiterTarget = () => void 0;
     this.getRemovalRange = () => this.contentRange;
-    this.isToken = parameters.isToken ?? true;
+    this.textualType = parameters.textualType ?? "token";
     this.insertionDelimiter = parameters.insertionDelimiter ?? "";
   }
   getCloneParameters() {
     return {
       ...this.state,
-      isToken: this.isToken,
+      textualType: this.textualType,
       insertionDelimiter: this.insertionDelimiter
     };
   }
@@ -14479,17 +12401,8 @@ var DocumentTarget = class extends BaseTarget {
   constructor(parameters) {
     super(parameters);
     this.type = "DocumentTarget";
-    this.insertionDelimiter = "\n";
-    this.isLine = true;
-  }
-  getLeadingDelimiterTarget() {
-    return void 0;
-  }
-  getTrailingDelimiterTarget() {
-    return void 0;
-  }
-  getRemovalRange() {
-    return this.contentRange;
+    this.textualType = "line";
+    this.insertionDelimiter = "\n\n";
   }
   getInterior() {
     return [
@@ -14501,6 +12414,15 @@ var DocumentTarget = class extends BaseTarget {
       })
     ];
   }
+  getRemovalRange() {
+    return this.contentRange;
+  }
+  getLeadingDelimiterTarget() {
+    return void 0;
+  }
+  getTrailingDelimiterTarget() {
+    return void 0;
+  }
   getCloneParameters() {
     return this.state;
   }
@@ -14511,9 +12433,11 @@ var LineTarget = class _LineTarget extends BaseTarget {
   constructor() {
     super(...arguments);
     this.type = "LineTarget";
+    this.textualType = "line";
     this.insertionDelimiter = "\n";
-    this.isLine = true;
-    this.getRemovalHighlightRange = () => this.fullLineContentRange;
+    this.getRemovalHighlightRange = () => {
+      return toLineRange(this.fullLineContentRange);
+    };
   }
   get fullLineContentRange() {
     return expandToFullLine(this.editor, this.contentRange);
@@ -14616,8 +12540,8 @@ var ParagraphTarget = class _ParagraphTarget extends BaseTarget {
   constructor() {
     super(...arguments);
     this.type = "ParagraphTarget";
+    this.textualType = "line";
     this.insertionDelimiter = "\n\n";
-    this.isLine = true;
   }
   getLeadingDelimiterTarget() {
     return constructLineTarget(
@@ -14647,7 +12571,8 @@ var ParagraphTarget = class _ParagraphTarget extends BaseTarget {
   }
   getRemovalHighlightRange() {
     const delimiterTarget = this.getTrailingDelimiterTarget() ?? this.getLeadingDelimiterTarget();
-    return delimiterTarget != null ? this.fullLineContentRange.union(delimiterTarget.contentRange) : this.fullLineContentRange;
+    const range3 = delimiterTarget != null ? this.fullLineContentRange.union(delimiterTarget.contentRange) : this.fullLineContentRange;
+    return toLineRange(range3);
   }
   maybeCreateRichRangeTarget(isReversed, endTarget) {
     return new _ParagraphTarget({
@@ -14728,50 +12653,13 @@ var RawSelectionTarget = class extends BaseTarget {
   constructor() {
     super(...arguments);
     this.type = "RawSelectionTarget";
+    this.textualType = "character";
     this.insertionDelimiter = "";
     this.isRaw = true;
-    this.isToken = false;
     this.getLeadingDelimiterTarget = () => void 0;
     this.getTrailingDelimiterTarget = () => void 0;
     this.getRemovalRange = () => this.contentRange;
     this.getCloneParameters = () => this.state;
-  }
-};
-
-// ../cursorless-engine/src/processTargets/targets/InteriorTarget.ts
-var InteriorTarget = class _InteriorTarget extends BaseTarget {
-  constructor(parameters) {
-    super({
-      ...parameters,
-      contentRange: shrinkRangeToFitContent(
-        parameters.editor,
-        parameters.fullInteriorRange
-      )
-    });
-    this.type = "InteriorTarget";
-    this.insertionDelimiter = " ";
-    this.getLeadingDelimiterTarget = () => void 0;
-    this.getTrailingDelimiterTarget = () => void 0;
-    this.getRemovalRange = () => this.fullInteriorRange;
-    this.fullInteriorRange = parameters.fullInteriorRange;
-  }
-  getCloneParameters() {
-    return {
-      ...this.state,
-      fullInteriorRange: this.fullInteriorRange
-    };
-  }
-  maybeCreateRichRangeTarget(isReversed, endTarget) {
-    return new _InteriorTarget({
-      ...this.getCloneParameters(),
-      isReversed,
-      fullInteriorRange: createContinuousRangeFromRanges(
-        this.fullInteriorRange,
-        endTarget.fullInteriorRange,
-        true,
-        true
-      )
-    });
   }
 };
 
@@ -14852,6 +12740,63 @@ function getTrailingCharacter(editor, contentRange) {
   return end.isBefore(line.range.end) ? editor.document.getText(new Range(end.translate(void 0, 1), end)) : "";
 }
 
+// ../cursorless-engine/src/processTargets/targets/TokenTarget.ts
+var TokenTarget = class extends BaseTarget {
+  constructor() {
+    super(...arguments);
+    this.type = "TokenTarget";
+    this.textualType = "token";
+    this.insertionDelimiter = " ";
+  }
+  getLeadingDelimiterTarget() {
+    return getTokenLeadingDelimiterTarget(this);
+  }
+  getTrailingDelimiterTarget() {
+    return getTokenTrailingDelimiterTarget(this);
+  }
+  getRemovalRange() {
+    return getTokenRemovalRange(this);
+  }
+  getCloneParameters() {
+    return this.state;
+  }
+};
+
+// ../cursorless-engine/src/processTargets/targets/util/insertionRemovalBehaviors/getSmartRemovalTarget.ts
+function getSmartRemovalTarget(target) {
+  const { editor, isReversed } = target;
+  const { document: document2 } = editor;
+  const contentRange = union(target.contentRange, target.prefixRange);
+  if (isWholeLines(document2, contentRange)) {
+    if (hasLeadingAndTrailingEmptyLines(document2, contentRange)) {
+      return new ParagraphTarget({
+        editor,
+        isReversed,
+        contentRange
+      });
+    }
+    return new LineTarget({
+      editor,
+      isReversed,
+      contentRange
+    });
+  }
+  return new TokenTarget({
+    editor,
+    isReversed,
+    contentRange
+  });
+}
+function isWholeLines(document2, contentRange) {
+  const start2 = document2.lineAt(contentRange.start).rangeTrimmed?.start;
+  const end = document2.lineAt(contentRange.end).rangeTrimmed?.end;
+  return start2 != null && end != null && start2.isEqual(contentRange.start) && end.isEqual(contentRange.end);
+}
+function hasLeadingAndTrailingEmptyLines(document2, contentRange) {
+  const { start: start2, end } = contentRange;
+  return (start2.line === 0 || document2.lineAt(start2.line - 1).isEmptyOrWhitespace) && (end.line === document2.lineCount - 1 || document2.lineAt(end.line + 1).isEmptyOrWhitespace);
+}
+
 // ../cursorless-engine/src/processTargets/targets/ScopeTypeTarget.ts
 var ScopeTypeTarget = class _ScopeTypeTarget extends BaseTarget {
   constructor(parameters) {
@@ -14859,7 +12804,6 @@ var ScopeTypeTarget = class _ScopeTypeTarget extends BaseTarget {
     this.type = "ScopeTypeTarget";
     this.scopeTypeType_ = parameters.scopeTypeType;
     this.removalRange_ = parameters.removalRange;
-    this.interiorRange_ = parameters.interiorRange;
     this.leadingDelimiterRange_ = parameters.leadingDelimiterRange;
     this.trailingDelimiterRange_ = parameters.trailingDelimiterRange;
     this.prefixRange = parameters.prefixRange;
@@ -14892,30 +12836,30 @@ var ScopeTypeTarget = class _ScopeTypeTarget extends BaseTarget {
     }
     return void 0;
   }
-  getInterior() {
-    if (this.interiorRange_ == null) {
-      return super.getInterior();
-    }
-    return [
-      new InteriorTarget({
-        editor: this.editor,
-        isReversed: this.isReversed,
-        fullInteriorRange: this.interiorRange_
-      })
-    ];
-  }
   getRemovalRange() {
-    return this.removalRange_ != null ? this.removalRange_ : this.hasDelimiterRange_ ? getDelimitedSequenceRemovalRange(this) : getTokenRemovalRange(this);
+    if (this.removalRange_ != null) {
+      return this.removalRange_;
+    }
+    if (this.hasDelimiterRange_) {
+      return getDelimitedSequenceRemovalRange(this);
+    }
+    return getSmartRemovalTarget(this).getRemovalRange();
+  }
+  getRemovalHighlightRange() {
+    if (this.removalRange_ != null) {
+      return toGeneralizedRange(this, this.removalRange_);
+    }
+    if (this.hasDelimiterRange_) {
+      return toGeneralizedRange(this, getDelimitedSequenceRemovalRange(this));
+    }
+    return getSmartRemovalTarget(this).getRemovalHighlightRange();
   }
   maybeCreateRichRangeTarget(isReversed, endTarget) {
     if (this.scopeTypeType_ !== endTarget.scopeTypeType_) {
       return null;
     }
-    const contentRemovalRange = this.removalRange_ != null || endTarget.removalRange_ != null ? createContinuousRangeFromRanges(
-      this.removalRange_ ?? this.contentRange,
-      endTarget.removalRange_ ?? endTarget.contentRange,
-      true,
-      true
+    const contentRemovalRange = this.removalRange_ != null || endTarget.removalRange_ != null ? (this.removalRange_ ?? this.contentRange).union(
+      endTarget.removalRange_ ?? endTarget.contentRange
     ) : void 0;
     return new _ScopeTypeTarget({
       ...this.getCloneParameters(),
@@ -14923,7 +12867,7 @@ var ScopeTypeTarget = class _ScopeTypeTarget extends BaseTarget {
       leadingDelimiterRange: this.leadingDelimiterRange_,
       trailingDelimiterRange: endTarget.trailingDelimiterRange_,
       removalRange: contentRemovalRange,
-      contentRange: createContinuousRange(this, endTarget, true, true)
+      contentRange: this.contentRange.union(endTarget.contentRange)
     });
   }
   getCloneParameters() {
@@ -14976,8 +12920,7 @@ var SubTokenWordTarget = class _SubTokenWordTarget extends BaseTarget {
   constructor(parameters) {
     super(parameters);
     this.type = "SubTokenWordTarget";
-    this.isToken = false;
-    this.isWord = true;
+    this.textualType = "word";
     this.leadingDelimiterRange_ = parameters.leadingDelimiterRange;
     this.trailingDelimiterRange_ = parameters.trailingDelimiterRange;
     this.insertionDelimiter = parameters.insertionDelimiter;
@@ -15017,25 +12960,37 @@ var SubTokenWordTarget = class _SubTokenWordTarget extends BaseTarget {
   }
 };
 
-// ../cursorless-engine/src/processTargets/targets/TokenTarget.ts
-var TokenTarget = class extends BaseTarget {
-  constructor() {
-    super(...arguments);
-    this.type = "TokenTarget";
+// ../cursorless-engine/src/processTargets/targets/InteriorTarget.ts
+var InteriorTarget = class _InteriorTarget extends BaseTarget {
+  constructor(parameters) {
+    super({
+      ...parameters,
+      contentRange: shrinkRangeToFitContent(
+        parameters.editor,
+        parameters.fullInteriorRange
+      )
+    });
+    this.type = "InteriorTarget";
     this.insertionDelimiter = " ";
-    this.joinAs = "token";
-  }
-  getLeadingDelimiterTarget() {
-    return getTokenLeadingDelimiterTarget(this);
-  }
-  getTrailingDelimiterTarget() {
-    return getTokenTrailingDelimiterTarget(this);
-  }
-  getRemovalRange() {
-    return getTokenRemovalRange(this);
+    this.getLeadingDelimiterTarget = () => void 0;
+    this.getTrailingDelimiterTarget = () => void 0;
+    this.getRemovalRange = () => this.fullInteriorRange;
+    this.fullInteriorRange = parameters.fullInteriorRange;
   }
   getCloneParameters() {
-    return this.state;
+    return {
+      ...this.state,
+      fullInteriorRange: this.fullInteriorRange
+    };
+  }
+  maybeCreateRichRangeTarget(isReversed, endTarget) {
+    return new _InteriorTarget({
+      ...this.getCloneParameters(),
+      isReversed,
+      fullInteriorRange: this.fullInteriorRange.union(
+        endTarget.fullInteriorRange
+      )
+    });
   }
 };
 
@@ -15092,7 +13047,7 @@ var UntypedTarget = class extends BaseTarget {
     this.insertionDelimiter = " ";
     this.hasExplicitScopeType = false;
     this.hasExplicitRange = parameters.hasExplicitRange;
-    this.isToken = parameters.isToken ?? true;
+    this.textualType = parameters.textualType ?? "token";
   }
   getLeadingDelimiterTarget() {
     return getTokenLeadingDelimiterTarget(this);
@@ -15109,7 +13064,7 @@ var UntypedTarget = class extends BaseTarget {
   getCloneParameters() {
     return {
       ...this.state,
-      isToken: this.isToken,
+      textualType: this.textualType,
       hasExplicitRange: this.hasExplicitRange
     };
   }
@@ -15120,11 +13075,11 @@ var ImplicitTarget = class extends BaseTarget {
   constructor() {
     super(...arguments);
     this.type = "ImplicitTarget";
+    this.textualType = "character";
     this.insertionDelimiter = "";
     this.isRaw = true;
     this.hasExplicitScopeType = false;
     this.isImplicit = true;
-    this.isToken = false;
     this.getLeadingDelimiterTarget = () => void 0;
     this.getTrailingDelimiterTarget = () => void 0;
     this.getRemovalRange = () => this.contentRange;
@@ -15200,8 +13155,8 @@ var BoundedParagraphTarget = class _BoundedParagraphTarget extends BaseTarget {
       )
     });
     this.type = "BoundedParagraphTarget";
+    this.textualType = "line";
     this.insertionDelimiter = "\n\n";
-    this.isLine = true;
     this.containingInterior = parameters.containingInterior;
     this.paragraphTarget = parameters.paragraphTarget;
     this.startLineGap = this.contentRange.start.line - this.containingInterior.fullInteriorRange.start.line;
@@ -15229,11 +13184,14 @@ var BoundedParagraphTarget = class _BoundedParagraphTarget extends BaseTarget {
     return expandToFullLine(this.editor, this.contentRange);
   }
   getRemovalHighlightRange() {
-    if (this.startLineGap < 1 || this.endLineGap < 1) {
-      return this.getRemovalRange();
-    }
-    const delimiterTarget = this.getTrailingDelimiterTarget() ?? this.getLeadingDelimiterTarget();
-    return delimiterTarget != null ? this.fullLineContentRange.union(delimiterTarget.contentRange) : this.fullLineContentRange;
+    const range3 = (() => {
+      if (this.startLineGap < 1 || this.endLineGap < 1) {
+        return this.getRemovalRange();
+      }
+      const delimiterTarget = this.getTrailingDelimiterTarget() ?? this.getLeadingDelimiterTarget();
+      return delimiterTarget != null ? this.fullLineContentRange.union(delimiterTarget.contentRange) : this.fullLineContentRange;
+    })();
+    return toLineRange(range3);
   }
   maybeCreateRichRangeTarget(isReversed, endTarget) {
     return new _BoundedParagraphTarget({
@@ -15282,7 +13240,7 @@ var CursorStage = class {
         isReversed: selection.selection.isReversed,
         contentRange: selection.selection,
         hasExplicitRange: !selection.selection.isEmpty,
-        isToken: false
+        textualType: "character"
       })
     );
   }
@@ -15544,153 +13502,6 @@ function tokenGraphemeSplitter() {
 }
 var tokenGraphemeSplitter_;
 
-// ../cursorless-engine/src/util/allocateHats/HatMetrics.ts
-var negativePenalty = ({ penalty }) => -penalty;
-function hatOldTokenRank(hatOldTokenRanks) {
-  return ({ grapheme: { text: grapheme }, style }) => {
-    const hatOldTokenRank2 = hatOldTokenRanks.get({
-      grapheme,
-      hatStyle: style
-    });
-    return hatOldTokenRank2 == null ? Infinity : -hatOldTokenRank2;
-  };
-}
-function minimumTokenRankContainingGrapheme(tokenRank, graphemeTokenRanks) {
-  const coreMetric = memoize_default((graphemeText) => {
-    return min_default(graphemeTokenRanks[graphemeText].filter((r) => r > tokenRank)) ?? Infinity;
-  });
-  return ({ grapheme: { text } }) => coreMetric(text);
-}
-function isOldTokenHat(oldTokenHat) {
-  return (hat) => hat.grapheme.text === oldTokenHat?.grapheme && hat.style === oldTokenHat?.hatStyle ? 1 : 0;
-}
-function penaltyEquivalenceClass(hatStability) {
-  switch (hatStability) {
-    case "greedy" /* greedy */:
-      return ({ penalty }) => -penalty;
-    case "balanced" /* balanced */:
-      return ({ penalty }) => -(penalty < 2 ? 0 : 1);
-    case "stable" /* stable */:
-      return (_) => 0;
-  }
-}
-
-// ../cursorless-engine/src/util/allocateHats/maxByFirstDiffering.ts
-function maxByFirstDiffering(arr, fns) {
-  if (arr.length === 0) {
-    return void 0;
-  }
-  let remainingValues = arr;
-  for (const fn of fns) {
-    if (remainingValues.length === 1) {
-      return remainingValues[0];
-    }
-    remainingValues = maxByAllowingTies(remainingValues, fn);
-  }
-  return remainingValues[0];
-}
-function maxByAllowingTies(arr, fn) {
-  let best = -Infinity;
-  const keep = [];
-  for (const item of arr) {
-    const value = fn(item);
-    if (value < best) {
-      continue;
-    }
-    if (value > best) {
-      best = value;
-      keep.length = 0;
-    }
-    keep.push(item);
-  }
-  return keep;
-}
-
-// ../cursorless-engine/src/util/allocateHats/chooseTokenHat.ts
-function chooseTokenHat({ hatOldTokenRanks, graphemeTokenRanks }, hatStability, tokenRank, forcedTokenHat, oldTokenHat, candidates) {
-  return maxByFirstDiffering(candidates, [
-    // Use forced hat
-    isOldTokenHat(forcedTokenHat),
-    // Discard any hats that are sufficiently worse than the best hat that we
-    // wouldn't use them even if they were our old hat
-    penaltyEquivalenceClass(hatStability),
-    // Use our old hat if it's still in the running
-    isOldTokenHat(oldTokenHat),
-    // Use a free hat if possible; if not, steal the hat of the token with
-    // lowest rank
-    hatOldTokenRank(hatOldTokenRanks),
-    // Narrow to the hats with the lowest penalty
-    negativePenalty,
-    // Prefer hats that sit on a grapheme that doesn't appear in any highly
-    // ranked token
-    minimumTokenRankContainingGrapheme(tokenRank, graphemeTokenRanks)
-  ]);
-}
-
-// ../cursorless-engine/src/util/allocateHats/getHatRankingContext.ts
-function getHatRankingContext(tokens2, oldTokenHatMap, tokenGraphemeSplitter2) {
-  const graphemeTokenRanks = {};
-  const hatOldTokenRanks = new CompositeKeyMap(({ grapheme, hatStyle }) => [grapheme, hatStyle]);
-  tokens2.forEach(({ token, rank }) => {
-    const existingTokenHat = oldTokenHatMap.get(token);
-    if (existingTokenHat != null) {
-      hatOldTokenRanks.set(existingTokenHat, rank);
-    }
-    tokenGraphemeSplitter2.getTokenGraphemes(token.text).forEach(({ text: graphemeText }) => {
-      let tokenRanksForGrapheme;
-      if (graphemeText in graphemeTokenRanks) {
-        tokenRanksForGrapheme = graphemeTokenRanks[graphemeText];
-      } else {
-        tokenRanksForGrapheme = [];
-        graphemeTokenRanks[graphemeText] = tokenRanksForGrapheme;
-      }
-      tokenRanksForGrapheme.push(rank);
-    });
-  });
-  return {
-    hatOldTokenRanks,
-    graphemeTokenRanks
-  };
-}
-
-// ../cursorless-engine/src/util/allocateHats/getDisplayLineMap.ts
-function getDisplayLineMap(editor, extraLines = []) {
-  return new Map(
-    flow_default(
-      flatten_default,
-      uniq_default
-    )(
-      concat_default(
-        [extraLines],
-        editor.visibleRanges.map(
-          (visibleRange) => range_default(visibleRange.start.line, visibleRange.end.line + 1)
-        )
-      )
-    ).sort((a, b) => a - b).map((value, index) => [value, index])
-  );
-}
-
-// ../cursorless-engine/src/util/allocateHats/getTokenComparator.ts
-function getTokenComparator(selectionDisplayLine, selectionCharacterIndex) {
-  return (token1, token2) => {
-    const token1LineDiff = Math.abs(token1.displayLine - selectionDisplayLine);
-    const token2LineDiff = Math.abs(token2.displayLine - selectionDisplayLine);
-    if (token1LineDiff < token2LineDiff) {
-      return -1;
-    }
-    if (token1LineDiff > token2LineDiff) {
-      return 1;
-    }
-    const token1CharacterDiff = Math.abs(
-      token1.range.start.character - selectionCharacterIndex
-    );
-    const token2CharacterDiff = Math.abs(
-      token2.range.start.character - selectionCharacterIndex
-    );
-    return token1CharacterDiff - token2CharacterDiff;
-  };
-}
-
 // ../cursorless-engine/src/tokenizer/tokenizer.ts
 var REPEATABLE_SYMBOLS = [
   "-",
@@ -15783,6 +13594,171 @@ function getMatcher(languageId) {
 }
 function tokenize(text, languageId, mapfn) {
   return matchAll(text, getMatcher(languageId).tokenMatcher, mapfn);
+}
+
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/WordScopeHandler/WordTokenizer.ts
+var CAMEL_REGEX = /\p{Lu}?\p{Ll}+|\p{Lu}+(?!\p{Ll})|\p{N}+/gu;
+var WordTokenizer = class {
+  constructor(languageId) {
+    this.wordRegex = getMatcher(languageId).wordMatcher;
+  }
+  splitIdentifier(text) {
+    const wordMatches = matchText(text, this.wordRegex);
+    return wordMatches.length > 1 ? wordMatches : (
+      // Secondly try split on camel case
+      matchText(text, CAMEL_REGEX)
+    );
+  }
+};
+
+// ../cursorless-engine/src/util/allocateHats/HatMetrics.ts
+var negativePenalty = ({ penalty }) => -penalty;
+var avoidFirstLetter = ({ isFirstLetter }) => isFirstLetter ? -1 : 0;
+function hatOldTokenRank(hatOldTokenRanks) {
+  return ({ grapheme: { text: grapheme }, style }) => {
+    const hatOldTokenRank2 = hatOldTokenRanks.get({
+      grapheme,
+      hatStyle: style
+    });
+    return hatOldTokenRank2 == null ? Infinity : -hatOldTokenRank2;
+  };
+}
+function minimumTokenRankContainingGrapheme(tokenRank, graphemeTokenRanks) {
+  const coreMetric = memoize_default((graphemeText) => {
+    return min_default(graphemeTokenRanks[graphemeText].filter((r) => r > tokenRank)) ?? Infinity;
+  });
+  return ({ grapheme: { text } }) => coreMetric(text);
+}
+function isOldTokenHat(oldTokenHat) {
+  return (hat) => hat.grapheme.text === oldTokenHat?.grapheme && hat.style === oldTokenHat?.hatStyle ? 1 : 0;
+}
+function penaltyEquivalenceClass(hatStability) {
+  switch (hatStability) {
+    case "greedy" /* greedy */:
+      return ({ penalty }) => -penalty;
+    case "balanced" /* balanced */:
+      return ({ penalty }) => -(penalty < 2 ? 0 : 1);
+    case "stable" /* stable */:
+      return (_) => 0;
+  }
+}
+
+// ../cursorless-engine/src/util/allocateHats/maxByFirstDiffering.ts
+function maxByFirstDiffering(arr, fns) {
+  if (arr.length === 0) {
+    return void 0;
+  }
+  let remainingValues = arr;
+  for (const fn of fns) {
+    if (remainingValues.length === 1) {
+      return remainingValues[0];
+    }
+    remainingValues = maxByAllowingTies(remainingValues, fn);
+  }
+  return remainingValues[0];
+}
+function maxByAllowingTies(arr, fn) {
+  let best = -Infinity;
+  const keep = [];
+  for (const item of arr) {
+    const value = fn(item);
+    if (value < best) {
+      continue;
+    }
+    if (value > best) {
+      best = value;
+      keep.length = 0;
+    }
+    keep.push(item);
+  }
+  return keep;
+}
+
+// ../cursorless-engine/src/util/allocateHats/chooseTokenHat.ts
+function chooseTokenHat({ hatOldTokenRanks, graphemeTokenRanks }, hatStability, tokenRank, forcedTokenHat, oldTokenHat, candidates) {
+  return maxByFirstDiffering(candidates, [
+    // Use forced hat
+    isOldTokenHat(forcedTokenHat),
+    // Discard any hats that are sufficiently worse than the best hat that we
+    // wouldn't use them even if they were our old hat
+    penaltyEquivalenceClass(hatStability),
+    // Use our old hat if it's still in the running
+    isOldTokenHat(oldTokenHat),
+    // Use a free hat if possible; if not, steal the hat of the token with
+    // lowest rank
+    hatOldTokenRank(hatOldTokenRanks),
+    // Narrow to the hats with the lowest penalty
+    negativePenalty,
+    // Avoid the first grapheme of the token if possible
+    avoidFirstLetter,
+    // Prefer hats that sit on a grapheme that doesn't appear in any highly
+    // ranked token
+    minimumTokenRankContainingGrapheme(tokenRank, graphemeTokenRanks)
+  ]);
+}
+
+// ../cursorless-engine/src/util/allocateHats/getHatRankingContext.ts
+function getHatRankingContext(tokens2, oldTokenHatMap, tokenGraphemeSplitter2) {
+  const graphemeTokenRanks = {};
+  const hatOldTokenRanks = new CompositeKeyMap(({ grapheme, hatStyle }) => [grapheme, hatStyle]);
+  tokens2.forEach(({ token, rank }) => {
+    const existingTokenHat = oldTokenHatMap.get(token);
+    if (existingTokenHat != null) {
+      hatOldTokenRanks.set(existingTokenHat, rank);
+    }
+    tokenGraphemeSplitter2.getTokenGraphemes(token.text).forEach(({ text: graphemeText }) => {
+      let tokenRanksForGrapheme;
+      if (graphemeText in graphemeTokenRanks) {
+        tokenRanksForGrapheme = graphemeTokenRanks[graphemeText];
+      } else {
+        tokenRanksForGrapheme = [];
+        graphemeTokenRanks[graphemeText] = tokenRanksForGrapheme;
+      }
+      tokenRanksForGrapheme.push(rank);
+    });
+  });
+  return {
+    hatOldTokenRanks,
+    graphemeTokenRanks
+  };
+}
+
+// ../cursorless-engine/src/util/allocateHats/getDisplayLineMap.ts
+function getDisplayLineMap(editor, extraLines = []) {
+  return new Map(
+    flow_default(
+      flatten_default,
+      uniq_default
+    )(
+      concat_default(
+        [extraLines],
+        editor.visibleRanges.map(
+          (visibleRange) => range_default(visibleRange.start.line, visibleRange.end.line + 1)
+        )
+      )
+    ).sort((a, b) => a - b).map((value, index) => [value, index])
+  );
+}
+
+// ../cursorless-engine/src/util/allocateHats/getTokenComparator.ts
+function getTokenComparator(selectionDisplayLine, selectionCharacterIndex) {
+  return (token1, token2) => {
+    const token1LineDiff = Math.abs(token1.displayLine - selectionDisplayLine);
+    const token2LineDiff = Math.abs(token2.displayLine - selectionDisplayLine);
+    if (token1LineDiff < token2LineDiff) {
+      return -1;
+    }
+    if (token1LineDiff > token2LineDiff) {
+      return 1;
+    }
+    const token1CharacterDiff = Math.abs(
+      token1.range.start.character - selectionCharacterIndex
+    );
+    const token2CharacterDiff = Math.abs(
+      token2.range.start.character - selectionCharacterIndex
+    );
+    return token1CharacterDiff - token2CharacterDiff;
+  };
 }
 
 // ../cursorless-engine/src/util/allocateHats/getTokensInRange.ts
@@ -15928,12 +13904,17 @@ function getTokenOldHatMap(oldTokenHats) {
 function getTokenRemainingHatCandidates(tokenGraphemeSplitter2, token, graphemeRemainingHatCandidates, enabledHatStyles) {
   const candidates = [];
   const graphemes = tokenGraphemeSplitter2.getTokenGraphemes(token.text);
+  const firstLetterOffsets = new Set(
+    new WordTokenizer(token.editor.document.languageId).splitIdentifier(token.text).map((word) => word.index)
+  );
   for (const grapheme of graphemes) {
+    const isFirstLetter = firstLetterOffsets.has(grapheme.tokenStartOffset);
     for (const style of graphemeRemainingHatCandidates.get(grapheme.text)) {
       candidates.push({
         grapheme,
         style,
-        penalty: enabledHatStyles[style].penalty
+        penalty: enabledHatStyles[style].penalty,
+        isFirstLetter
       });
     }
   }
@@ -16629,12 +14610,6 @@ var DisabledLanguageDefinitions = class {
 
 // ../cursorless-engine/src/disabledComponents/DisabledSnippets.ts
 var DisabledSnippets = class {
-  updateUserSnippets() {
-    throw new Error("Snippets are not implemented.");
-  }
-  registerThirdPartySnippets(_extensionId, _snippets) {
-    throw new Error("Snippets are not implemented.");
-  }
   getSnippetStrict(_snippetName) {
     throw new Error("Snippets are not implemented.");
   }
@@ -16662,10 +14637,10 @@ var DisabledTreeSitter = class {
   loadLanguage(_languageId) {
     return Promise.resolve(false);
   }
-  getLanguage(_languageId) {
+  getNodeAtLocation(_document, _range) {
     throw new Error("Tree sitter not provided");
   }
-  getNodeAtLocation(_document, _range) {
+  createQuery(_languageId, _source) {
     throw new Error("Tree sitter not provided");
   }
 };
@@ -16693,6 +14668,7 @@ var surroundingPairsDelimiters = {
   backtickQuotes: ["`", "`"],
   squareBrackets: ["[", "]"],
   singleQuotes: ["'", "'"],
+  tripleBacktickQuotes: ["```", "```"],
   tripleDoubleQuotes: ['"""', '"""'],
   tripleSingleQuotes: ["'''", "'''"],
   whitespace: [" ", " "],
@@ -16720,47 +14696,11 @@ function surroundingPairDelimitersToSpokenForm(spokenFormMap, left, right) {
 }
 
 // ../cursorless-engine/src/generateSpokenForm/defaultSpokenForms/snippets.ts
-var insertionSnippets = {
-  ifStatement: "if",
-  ifElseStatement: "if else",
-  tryCatchStatement: "try",
-  functionDeclaration: "funk",
-  link: "link"
-};
-var wrapperSnippets = {
-  "ifElseStatement.alternative": "else",
-  "functionDeclaration.body": "funk",
-  "ifElseStatement.consequence": "if else",
-  "ifStatement.consequence": "if",
-  "tryCatchStatement.body": "try",
-  "link.text": "link"
-};
 function insertionSnippetToSpokenForm(snippetDescription) {
-  if (snippetDescription.type === "custom") {
-    throw new NoSpokenFormError("Custom insertion snippet");
-  }
-  const result = insertionSnippets[snippetDescription.name];
-  if (result == null) {
-    throw new NoSpokenFormError(
-      `Named insertion snippet '${snippetDescription.name}'`
-    );
-  }
-  if (snippetDescription.substitutions != null) {
-    const values2 = Object.values(snippetDescription.substitutions);
-    return `${result} ${values2.join(" ")}`;
-  }
-  return result;
+  throw new NoSpokenFormError(`${snippetDescription.type} insertion snippet`);
 }
 function wrapperSnippetToSpokenForm(snippetDescription) {
-  if (snippetDescription.type === "custom") {
-    throw new NoSpokenFormError("Custom wrap with snippet");
-  }
-  const name2 = `${snippetDescription.name}.${snippetDescription.variableName}`;
-  const result = wrapperSnippets[name2];
-  if (result == null) {
-    throw new NoSpokenFormError(`Named wrap with snippet '${name2}'`);
-  }
-  return result;
+  throw new NoSpokenFormError(`${snippetDescription.type} wrap with snippet`);
 }
 
 // ../cursorless-engine/src/generateSpokenForm/getRangeConnective.ts
@@ -16970,15 +14910,12 @@ var PrimitiveTargetSpokenFormGenerator = class {
         if (modifier.ancestorIndex == null || modifier.ancestorIndex === 0) {
           return this.handleScopeType(modifier.scopeType);
         }
-        if (modifier.ancestorIndex === 1) {
-          return [
-            this.spokenFormMap.modifierExtra.ancestor,
-            this.handleScopeType(modifier.scopeType)
-          ];
-        }
-        throw new NoSpokenFormError(
-          `Modifier '${modifier.type}' with ancestor index ${modifier.ancestorIndex}`
-        );
+        return [
+          new Array(modifier.ancestorIndex).fill(
+            this.spokenFormMap.modifierExtra.ancestor
+          ),
+          this.handleScopeType(modifier.scopeType)
+        ];
       case "everyScope":
         return [
           this.spokenFormMap.simpleModifier.everyScope,
@@ -17052,8 +14989,8 @@ var PrimitiveTargetSpokenFormGenerator = class {
     const scope = this.handleScopeType(modifier.scopeType);
     const isEvery = modifier.isEvery ? this.spokenFormMap.simpleModifier.everyScope : [];
     if (modifier.length === 1) {
-      const direction = modifier.direction === "forward" ? connectives.forward : connectives.backward;
-      return [isEvery, scope, direction];
+      const direction2 = modifier.direction === "forward" ? connectives.forward : connectives.backward;
+      return [isEvery, scope, direction2];
     }
     const length = numberToSpokenForm(modifier.length);
     const scopePlural = pluralize(scope);
@@ -17064,19 +15001,19 @@ var PrimitiveTargetSpokenFormGenerator = class {
   }
   handleRelativeScopeExclusive(modifier) {
     const scope = this.handleScopeType(modifier.scopeType);
-    const direction = modifier.direction === "forward" ? connectives.next : connectives.previous;
+    const direction2 = modifier.direction === "forward" ? connectives.next : connectives.previous;
     const isEvery = modifier.isEvery ? this.spokenFormMap.simpleModifier.everyScope : [];
     if (modifier.offset === 1) {
       const number = numberToSpokenForm(modifier.length);
       if (modifier.length === 1) {
-        return [isEvery, direction, scope];
+        return [isEvery, direction2, scope];
       }
       const scopePlural = pluralize(scope);
-      return [isEvery, direction, number, scopePlural];
+      return [isEvery, direction2, number, scopePlural];
     }
     if (modifier.length === 1) {
       const ordinal = ordinalToSpokenForm(modifier.offset);
-      return [isEvery, ordinal, direction, scope];
+      return [isEvery, ordinal, direction2, scope];
     }
     throw new NoSpokenFormError(
       `${modifier.type} modifier with offset > 1 and length > 1`
@@ -17119,6 +15056,8 @@ var PrimitiveTargetSpokenFormGenerator = class {
           spokenFormType: "customRegex",
           id: scopeType.regex
         };
+      case "interior":
+        return this.spokenFormMap.simpleModifier.interiorOnly;
       default:
         return this.spokenFormMap.simpleScopeTypeType[scopeType.type];
     }
@@ -17495,12 +15434,9 @@ var CustomSpokenForms = class {
      */
     this.onDidChangeCustomSpokenForms = this.notifier.registerListener;
     this.disposable = talonSpokenForms.onDidChange(
-      () => this.updateSpokenFormMaps().catch(() => {
-      })
+      () => this.updateSpokenFormMaps()
     );
     this.customSpokenFormsInitialized = this.updateSpokenFormMaps();
-    this.customSpokenFormsInitialized.catch(() => {
-    });
   }
   get spokenFormMap() {
     return this.spokenFormMap_;
@@ -17534,7 +15470,7 @@ var CustomSpokenForms = class {
       }
       this.spokenFormMap_ = { ...defaultSpokenFormMap };
       this.notifier.notifyListeners();
-      throw err2;
+      return;
     }
     for (const entryType of SUPPORTED_ENTRY_TYPES) {
       updateEntriesForType(
@@ -17639,7 +15575,7 @@ var CustomSpokenFormGeneratorImpl = class {
   }
 };
 
-// ../../node_modules/.pnpm/itertools@2.3.2/node_modules/itertools/dist/index.js
+// ../../node_modules/.pnpm/itertools@2.4.1/node_modules/itertools/dist/index.js
 function* flatten2(iterableOfIterables) {
   for (const iterable of iterableOfIterables) {
     for (const item of iterable) {
@@ -17680,8 +15616,9 @@ function* count(start2 = 0, step = 1) {
   }
 }
 function* ifilter(iterable, predicate) {
+  let index = 0;
   for (const value of iterable) {
-    if (predicate(value)) {
+    if (predicate(value, index++)) {
       yield value;
     }
   }
@@ -17700,36 +15637,30 @@ function* islice(iterable, stopOrStart, possiblyStop, step = 1) {
     start2 = 0;
     stop2 = stopOrStart;
   }
-  if (start2 < 0)
-    throw new Error("start cannot be negative");
-  if (stop2 !== null && stop2 < 0)
-    throw new Error("stop cannot be negative");
-  if (step <= 0)
-    throw new Error("step cannot be negative");
+  if (start2 < 0) throw new Error("start cannot be negative");
+  if (stop2 !== null && stop2 < 0) throw new Error("stop cannot be negative");
+  if (step <= 0) throw new Error("step cannot be negative");
   let i2 = -1;
   const it = iter(iterable);
   let res;
   while (true) {
     i2++;
-    if (stop2 !== null && i2 >= stop2)
-      return;
+    if (stop2 !== null && i2 >= stop2) return;
     res = it.next();
-    if (res.done)
-      return;
-    if (i2 < start2)
-      continue;
+    if (res.done) return;
+    if (i2 < start2) continue;
     if ((i2 - start2) % step === 0) {
       yield res.value;
     }
   }
 }
 function* takewhile(iterable, predicate) {
+  let index = 0;
   const it = iter(iterable);
   let res;
   while (!(res = it.next()).done) {
     const value = res.value;
-    if (!predicate(value))
-      return;
+    if (!predicate(value, index++)) return;
     yield value;
   }
 }
@@ -17756,8 +15687,8 @@ function flatmap(iterable, mapper) {
 }
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/compareTargetScopes.ts
-function compareTargetScopes(direction, position, { domain: a }, { domain: b }) {
-  return direction === "forward" ? compareTargetScopesForward(position, a, b) : compareTargetScopesBackward(position, a, b);
+function compareTargetScopes(direction2, position, { domain: a }, { domain: b }) {
+  return direction2 === "forward" ? compareTargetScopesForward(position, a, b) : compareTargetScopesBackward(position, a, b);
 }
 function compareTargetScopesForward(position, a, b) {
   const aIsStartVisible = a.start.isAfterOrEqual(position);
@@ -17797,13 +15728,13 @@ function compareTargetScopesBackward(position, a, b) {
 }
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/shouldYieldScope.ts
-function shouldYieldScope(initialPosition, currentPosition, direction, requirements, previousScope, scope) {
+function shouldYieldScope(initialPosition, currentPosition, direction2, requirements, previousScope, scope) {
   return checkRequirements(initialPosition, requirements, previousScope, scope) && // Note that we're using `currentPosition` instead of `initialPosition`
   // below, because we want to filter out scopes that are strictly contained
   // by previous scopes.  However, if we want to include descendant scopes,
   // then we do use the initial position
   (previousScope == null || compareTargetScopes(
-    direction,
+    direction2,
     requirements.includeDescendantScopes ? initialPosition : currentPosition,
     previousScope,
     scope
@@ -17862,38 +15793,38 @@ var BaseScopeHandler = class {
   constructor() {
     this.includeAdjacentInEvery = false;
   }
-  *generateScopes(editor, position, direction, requirements = {}) {
+  *generateScopes(editor, position, direction2, requirements = {}) {
     const hints = {
       ...DEFAULT_REQUIREMENTS,
       ...requirements,
-      distalPosition: requirements.distalPosition ?? (direction === "forward" ? editor.document.range.end : editor.document.range.start)
+      distalPosition: requirements.distalPosition ?? (direction2 === "forward" ? editor.document.range.end : editor.document.range.start)
     };
     let previousScope = void 0;
     let currentPosition = position;
     for (const scope of this.generateScopeCandidates(
       editor,
       position,
-      direction,
+      direction2,
       hints
     )) {
       if (shouldYieldScope(
         position,
         currentPosition,
-        direction,
+        direction2,
         hints,
         previousScope,
         scope
       )) {
         yield scope;
         previousScope = scope;
-        currentPosition = direction === "forward" ? scope.domain.end : scope.domain.start;
+        currentPosition = direction2 === "forward" ? scope.domain.end : scope.domain.start;
       }
-      if (this.canStopEarly(position, direction, hints, previousScope, scope)) {
+      if (this.canStopEarly(position, direction2, hints, previousScope, scope)) {
         return;
       }
     }
   }
-  canStopEarly(position, direction, requirements, previousScope, scope) {
+  canStopEarly(position, direction2, requirements, previousScope, scope) {
     const { containment, distalPosition, skipAncestorScopes } = requirements;
     if (this.isHierarchical && !skipAncestorScopes) {
       return false;
@@ -17902,10 +15833,10 @@ var BaseScopeHandler = class {
     if (scopeToCheck == null) {
       return false;
     }
-    if (containment === "required" && (direction === "forward" ? scopeToCheck.domain.end.isAfter(position) : scopeToCheck.domain.start.isBefore(position))) {
+    if (containment === "required" && (direction2 === "forward" ? scopeToCheck.domain.end.isAfter(position) : scopeToCheck.domain.start.isBefore(position))) {
       return true;
     }
-    if (direction === "forward" ? scopeToCheck.domain.end.isAfterOrEqual(distalPosition) : scopeToCheck.domain.start.isBeforeOrEqual(distalPosition)) {
+    if (direction2 === "forward" ? scopeToCheck.domain.end.isAfterOrEqual(distalPosition) : scopeToCheck.domain.start.isBeforeOrEqual(distalPosition)) {
       return true;
     }
     return false;
@@ -17940,12 +15871,12 @@ var NestedScopeHandler = class extends BaseScopeHandler {
     }
     return this._searchScopeHandler;
   }
-  generateScopeCandidates(editor, position, direction, hints) {
+  generateScopeCandidates(editor, position, direction2, hints) {
     const { containment, ...rest } = hints;
     const generator = this.searchScopeHandler.generateScopes(
       editor,
       position,
-      direction,
+      direction2,
       // If containment is disallowed, we need to unset that for the search
       // scope, because the search scope could contain position but nested
       // scopes do not.
@@ -17956,7 +15887,7 @@ var NestedScopeHandler = class extends BaseScopeHandler {
     );
     return flatmap(
       generator,
-      (searchScope) => this.generateScopesInSearchScope(direction, searchScope)
+      (searchScope) => this.generateScopesInSearchScope(direction2, searchScope)
     );
   }
 };
@@ -17972,8 +15903,8 @@ var LineScopeHandler = class extends BaseScopeHandler {
     this.isHierarchical = false;
     this.includeAdjacentInEvery = true;
   }
-  *generateScopeCandidates(editor, position, direction) {
-    if (direction === "forward") {
+  *generateScopeCandidates(editor, position, direction2) {
+    if (direction2 === "forward") {
       for (let i2 = position.line; i2 < editor.document.lineCount; i2++) {
         yield lineNumberToScope(editor, i2);
       }
@@ -18009,7 +15940,7 @@ function fitRangeToLineContent(editor, range3) {
 }
 
 // ../cursorless-engine/src/util/getMatchesInRange.ts
-function generateMatchesInRange(regex, editor, range3, direction) {
+function generateMatchesInRange(regex, editor, range3, direction2) {
   const offset = editor.document.offsetAt(range3.start);
   const text = editor.document.getText(range3);
   const matchToRange = (match) => new Range(
@@ -18017,7 +15948,7 @@ function generateMatchesInRange(regex, editor, range3, direction) {
     editor.document.positionAt(offset + match.index + match[0].length)
   );
   regex.lastIndex = 0;
-  return direction === "forward" ? imap(text.matchAll(regex), matchToRange) : Array.from(text.matchAll(regex), matchToRange).reverse();
+  return direction2 === "forward" ? imap(text.matchAll(regex), matchToRange) : Array.from(text.matchAll(regex), matchToRange).reverse();
 }
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/IdentifierScopeHandler.ts
@@ -18028,9 +15959,9 @@ var IdentifierScopeHandler = class extends NestedScopeHandler {
     this.iterationScopeType = { type: "line" };
     this.regex = getMatcher(this.languageId).identifierMatcher;
   }
-  generateScopesInSearchScope(direction, { editor, domain }) {
+  generateScopesInSearchScope(direction2, { editor, domain }) {
     return imap(
-      generateMatchesInRange(this.regex, editor, domain, direction),
+      generateMatchesInRange(this.regex, editor, domain, direction2),
       (range3) => ({
         editor,
         domain: range3,
@@ -18050,9 +15981,9 @@ var IdentifierScopeHandler = class extends NestedScopeHandler {
 function isPreferredOverHelper(scopeA, scopeB, matchers2) {
   const textA = scopeA.editor.document.getText(scopeA.domain);
   const textB = scopeB.editor.document.getText(scopeB.domain);
-  for (const matcher2 of matchers2) {
-    const aMatchesRegex = testRegex(matcher2, textA);
-    const bMatchesRegex = testRegex(matcher2, textB);
+  for (const matcher of matchers2) {
+    const aMatchesRegex = testRegex(matcher, textA);
+    const bMatchesRegex = testRegex(matcher, textB);
     if (aMatchesRegex && !bMatchesRegex) {
       return true;
     }
@@ -18076,9 +16007,9 @@ var CharacterScopeHandler = class extends NestedScopeHandler {
   get searchScopeType() {
     return { type: "line" };
   }
-  generateScopesInSearchScope(direction, { editor, domain }) {
+  generateScopesInSearchScope(direction2, { editor, domain }) {
     return imap(
-      generateMatchesInRange(SPLIT_REGEX, editor, domain, direction),
+      generateMatchesInRange(SPLIT_REGEX, editor, domain, direction2),
       (range3) => ({
         editor,
         domain: range3,
@@ -18087,7 +16018,7 @@ var CharacterScopeHandler = class extends NestedScopeHandler {
             editor,
             contentRange: range3,
             isReversed,
-            isToken: false
+            textualType: "character"
           })
         ]
       })
@@ -18100,21 +16031,6 @@ var CharacterScopeHandler = class extends NestedScopeHandler {
       PREFERRED_SYMBOLS_REGEX,
       NONWHITESPACE_REGEX
     ]);
-  }
-};
-
-// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/WordScopeHandler/WordTokenizer.ts
-var CAMEL_REGEX = /\p{Lu}?\p{Ll}+|\p{Lu}+(?!\p{Ll})|\p{N}+/gu;
-var WordTokenizer = class {
-  constructor(languageId) {
-    this.wordRegex = getMatcher(languageId).wordMatcher;
-  }
-  splitIdentifier(text) {
-    const wordMatches = matchText(text, this.wordRegex);
-    return wordMatches.length > 1 ? wordMatches : (
-      // Secondly try split on camel case
-      matchText(text, CAMEL_REGEX)
-    );
   }
 };
 
@@ -18159,9 +16075,9 @@ var WordScopeHandler = class extends NestedScopeHandler {
       }
     }));
   }
-  generateScopesInSearchScope(direction, searchScope) {
+  generateScopesInSearchScope(direction2, searchScope) {
     const scopes = this.getScopesInSearchScope(searchScope);
-    if (direction === "backward") {
+    if (direction2 === "backward") {
       scopes.reverse();
     }
     return scopes;
@@ -18191,9 +16107,9 @@ var TokenScopeHandler = class extends NestedScopeHandler {
     this.iterationScopeType = { type: "line" };
     this.regex = getMatcher(this.languageId).tokenMatcher;
   }
-  generateScopesInSearchScope(direction, { editor, domain }) {
+  generateScopesInSearchScope(direction2, { editor, domain }) {
     return imap(
-      generateMatchesInRange(this.regex, editor, domain, direction),
+      generateMatchesInRange(this.regex, editor, domain, direction2),
       (range3) => ({
         editor,
         domain: range3,
@@ -18240,8 +16156,24 @@ var DocumentScopeHandler = class extends BaseScopeHandler {
   }
 };
 
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/util/getCollectionItemRemovalRange.ts
+function getCollectionItemRemovalRange(isEveryScope, editor, contentRange, leadingDelimiterRange, trailingDelimiterRange) {
+  if (isEveryScope) {
+    return void 0;
+  }
+  if (leadingDelimiterRange != null && trailingDelimiterRange != null && getRangeLength(editor, leadingDelimiterRange) > getRangeLength(editor, trailingDelimiterRange)) {
+    return contentRange.union(leadingDelimiterRange);
+  }
+  return void 0;
+}
+
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/util/isHintsEveryScope.ts
+function isEveryScopeModifier(hints) {
+  return hints.containment == null && hints.skipAncestorScopes;
+}
+
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/TreeSitterScopeHandler/getQuerySearchRange.ts
-function getQuerySearchRange(document2, position, direction, {
+function getQuerySearchRange(document2, position, direction2, {
   containment,
   distalPosition,
   allowAdjacentScopes
@@ -18249,7 +16181,7 @@ function getQuerySearchRange(document2, position, direction, {
   const { start: start2, end } = getQuerySearchRangeCore(
     document2.offsetAt(position),
     document2.offsetAt(distalPosition),
-    direction,
+    direction2,
     containment,
     allowAdjacentScopes
   );
@@ -18258,10 +16190,10 @@ function getQuerySearchRange(document2, position, direction, {
     end: document2.positionAt(end)
   };
 }
-function getQuerySearchRangeCore(offset, distalOffset, direction, containment, allowAdjacentScopes) {
+function getQuerySearchRangeCore(offset, distalOffset, direction2, containment, allowAdjacentScopes) {
   const adjacentShift = allowAdjacentScopes ? 1 : 0;
   if (containment === "required") {
-    return direction === "forward" ? {
+    return direction2 === "forward" ? {
       start: offset - adjacentShift,
       end: offset + 1
     } : {
@@ -18270,7 +16202,7 @@ function getQuerySearchRangeCore(offset, distalOffset, direction, containment, a
     };
   }
   const proximalShift = containment === "disallowed" ? 1 : -adjacentShift;
-  return direction === "forward" ? {
+  return direction2 === "forward" ? {
     start: offset + proximalShift,
     end: distalOffset + adjacentShift
   } : {
@@ -18303,15 +16235,16 @@ var BaseTreeSitterScopeHandler = class extends BaseScopeHandler {
     super();
     this.query = query;
   }
-  *generateScopeCandidates(editor, position, direction, hints) {
+  *generateScopeCandidates(editor, position, direction2, hints) {
     const { document: document2 } = editor;
+    const isEveryScope = isEveryScopeModifier(hints);
     const { start: start2, end } = getQuerySearchRange(
       document2,
       position,
-      direction,
+      direction2,
       hints
     );
-    const scopes = this.query.matches(document2, start2, end).map((match) => this.matchToScope(editor, match)).filter((scope) => scope != null).sort((a, b) => compareTargetScopes(direction, position, a, b));
+    const scopes = this.query.matches(document2, start2, end).map((match) => this.matchToScope(editor, match, isEveryScope)).filter((scope) => scope != null).sort((a, b) => compareTargetScopes(direction2, position, a, b));
     yield* mergeAdjacentBy(
       scopes,
       (a, b) => a.domain.isRangeEqual(b.domain),
@@ -18384,13 +16317,16 @@ var TreeSitterIterationScopeHandler = class extends BaseTreeSitterScopeHandler {
   get iterationScopeType() {
     throw Error("Not implemented");
   }
-  matchToScope(editor, match) {
+  matchToScope(editor, match, _isEveryScope) {
     const scopeTypeType = this.iterateeScopeType.type;
     const capture = getRelatedCapture(match, scopeTypeType, "iteration", false);
     if (capture == null) {
       return void 0;
     }
     const { range: contentRange, allowMultiple } = capture;
+    if (contentRange.isEmpty) {
+      return void 0;
+    }
     const domain = getRelatedRange(match, scopeTypeType, "iteration.domain", false) ?? contentRange;
     return {
       editor,
@@ -18425,7 +16361,7 @@ var TreeSitterScopeHandler = class extends BaseTreeSitterScopeHandler {
       )
     };
   }
-  matchToScope(editor, match) {
+  matchToScope(editor, match, isEveryScope) {
     const scopeTypeType = this.scopeType.type;
     const capture = findCaptureByName(match, scopeTypeType);
     if (capture == null) {
@@ -18433,13 +16369,6 @@ var TreeSitterScopeHandler = class extends BaseTreeSitterScopeHandler {
     }
     const { range: contentRange, allowMultiple, insertionDelimiter } = capture;
     const domain = getRelatedRange(match, scopeTypeType, "domain", true) ?? contentRange;
-    const removalRange = getRelatedRange(match, scopeTypeType, "removal", true);
-    const interiorRange = getRelatedRange(
-      match,
-      scopeTypeType,
-      "interior",
-      true
-    );
     const prefixRange = getRelatedRange(
       match,
       scopeTypeType,
@@ -18458,6 +16387,16 @@ var TreeSitterScopeHandler = class extends BaseTreeSitterScopeHandler {
       "trailing",
       true
     )?.with(contentRange.end);
+    let removalRange = getRelatedRange(match, scopeTypeType, "removal", true);
+    if (removalRange == null && (scopeTypeType === "collectionItem" || scopeTypeType === "argumentOrParameter")) {
+      removalRange = getCollectionItemRemovalRange(
+        isEveryScope,
+        editor,
+        contentRange,
+        leadingDelimiterRange,
+        trailingDelimiterRange
+      );
+    }
     return {
       editor,
       domain,
@@ -18472,7 +16411,6 @@ var TreeSitterScopeHandler = class extends BaseTreeSitterScopeHandler {
           removalRange,
           leadingDelimiterRange,
           trailingDelimiterRange,
-          interiorRange,
           insertionDelimiter
         })
       ]
@@ -18508,14 +16446,14 @@ function advanceIteratorsUntil(iteratorInfos, criterion) {
   });
 }
 
-// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/OneOfScopeHandler.ts
-var OneOfScopeHandler = class _OneOfScopeHandler extends BaseScopeHandler {
-  constructor(scopeType, scopeHandlers, getIterationScopeHandler) {
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/SortedScopeHandler.ts
+var SortedScopeHandler = class _SortedScopeHandler extends BaseScopeHandler {
+  constructor(scopeHandlers, getIterationScopeHandler) {
     super();
-    this.scopeType = scopeType;
     this.scopeHandlers = scopeHandlers;
     this.getIterationScopeHandler = getIterationScopeHandler;
     this.isHierarchical = true;
+    this.scopeType = void 0;
   }
   static create(scopeHandlerFactory, scopeType, languageId) {
     const scopeHandlers = scopeType.scopeTypes.map(
@@ -18523,14 +16461,12 @@ var OneOfScopeHandler = class _OneOfScopeHandler extends BaseScopeHandler {
     );
     return this.createFromScopeHandlers(
       scopeHandlerFactory,
-      scopeType,
-      scopeHandlers,
-      languageId
+      languageId,
+      scopeHandlers
     );
   }
-  static createFromScopeHandlers(scopeHandlerFactory, scopeType, scopeHandlers, languageId) {
-    const getIterationScopeHandler = () => new _OneOfScopeHandler(
-      void 0,
+  static createFromScopeHandlers(scopeHandlerFactory, languageId, scopeHandlers) {
+    const getIterationScopeHandler = () => new _SortedScopeHandler(
       scopeHandlers.map(
         (scopeHandler) => scopeHandlerFactory.create(
           scopeHandler.iterationScopeType,
@@ -18541,11 +16477,7 @@ var OneOfScopeHandler = class _OneOfScopeHandler extends BaseScopeHandler {
         throw new Error("Not implemented");
       }
     );
-    return new _OneOfScopeHandler(
-      scopeType,
-      scopeHandlers,
-      getIterationScopeHandler
-    );
+    return new _SortedScopeHandler(scopeHandlers, getIterationScopeHandler);
   }
   get iterationScopeType() {
     if (this.iterationScopeHandler == null) {
@@ -18556,20 +16488,20 @@ var OneOfScopeHandler = class _OneOfScopeHandler extends BaseScopeHandler {
       scopeHandler: this.iterationScopeHandler
     };
   }
-  *generateScopeCandidates(editor, position, direction, hints) {
+  *generateScopeCandidates(editor, position, direction2, hints) {
     if (this.iterationScopeHandler?.lastYieldedIndex != null) {
       const handlerIndex = this.iterationScopeHandler.lastYieldedIndex;
       const handler = this.scopeHandlers[handlerIndex];
-      yield* handler.generateScopes(editor, position, direction, hints);
+      yield* handler.generateScopes(editor, position, direction2, hints);
       return;
     }
     const iterators = this.scopeHandlers.map(
-      (scopeHandler) => scopeHandler.generateScopes(editor, position, direction, hints)[Symbol.iterator]()
+      (scopeHandler) => scopeHandler.generateScopes(editor, position, direction2, hints)[Symbol.iterator]()
     );
     let iteratorInfos = getInitialIteratorInfos(iterators);
     while (iteratorInfos.length > 0) {
       iteratorInfos.sort(
-        (a, b) => compareTargetScopes(direction, position, a.value, b.value)
+        (a, b) => compareTargetScopes(direction2, position, a.value, b.value)
       );
       const iteratorInfo = iteratorInfos[0];
       const currentScope2 = iteratorInfo.value;
@@ -18577,7 +16509,7 @@ var OneOfScopeHandler = class _OneOfScopeHandler extends BaseScopeHandler {
       yield currentScope2;
       iteratorInfos = advanceIteratorsUntil(
         iteratorInfos,
-        (scope) => compareTargetScopes(direction, position, currentScope2, scope) < 0
+        (scope) => compareTargetScopes(direction2, position, currentScope2, scope) < 0
       );
     }
   }
@@ -18591,11 +16523,11 @@ var ParagraphScopeHandler = class extends BaseScopeHandler {
     this.iterationScopeType = { type: "document" };
     this.isHierarchical = false;
   }
-  *generateScopeCandidates(editor, position, direction) {
+  *generateScopeCandidates(editor, position, direction2) {
     const { document: document2 } = editor;
-    const offset = direction === "forward" ? 1 : -1;
-    const stop2 = direction === "forward" ? document2.lineCount : -1;
-    let startLine = getStartLine(document2, position, direction);
+    const offset = direction2 === "forward" ? 1 : -1;
+    const stop2 = direction2 === "forward" ? document2.lineCount : -1;
+    let startLine = getStartLine(document2, position, direction2);
     let previousLine = editor.document.lineAt(position);
     for (let i2 = position.line + offset; i2 !== stop2; i2 += offset) {
       const currentLine = editor.document.lineAt(i2);
@@ -18614,9 +16546,9 @@ var ParagraphScopeHandler = class extends BaseScopeHandler {
     }
   }
 };
-function getStartLine(document2, position, direction) {
-  const offset = direction === "forward" ? -1 : 1;
-  const stop2 = direction === "forward" ? -1 : document2.lineCount;
+function getStartLine(document2, position, direction2) {
+  const offset = direction2 === "forward" ? -1 : 1;
+  const stop2 = direction2 === "forward" ? -1 : document2.lineCount;
   let startLine = document2.lineAt(position);
   if (startLine.isEmptyOrWhitespace) {
     return void 0;
@@ -19046,7 +16978,7 @@ var SentenceScopeHandler = class extends NestedScopeHandler {
     this.iterationScopeType = { type: "paragraph" };
     this.segmenter = new SentenceSegmenter();
   }
-  generateScopesInSearchScope(direction, { editor, domain }) {
+  generateScopesInSearchScope(direction2, { editor, domain }) {
     const offset = editor.document.offsetAt(domain.start);
     const text = editor.document.getText(domain);
     const sentenceToScope = (sentence) => {
@@ -19069,7 +17001,7 @@ var SentenceScopeHandler = class extends NestedScopeHandler {
       };
     };
     const sentences = this.segmenter.segment(text);
-    return direction === "forward" ? imap(sentences, sentenceToScope) : Array.from(sentences, sentenceToScope).reverse();
+    return direction2 === "forward" ? imap(sentences, sentenceToScope) : Array.from(sentences, sentenceToScope).reverse();
   }
 };
 
@@ -19079,9 +17011,9 @@ var RegexStageBase = class extends NestedScopeHandler {
     super(...arguments);
     this.iterationScopeType = { type: "line" };
   }
-  generateScopesInSearchScope(direction, { editor, domain }) {
+  generateScopesInSearchScope(direction2, { editor, domain }) {
     return imap(
-      generateMatchesInRange(this.regex, editor, domain, direction),
+      generateMatchesInRange(this.regex, editor, domain, direction2),
       (range3) => ({
         editor,
         domain: range3,
@@ -19169,11 +17101,11 @@ var BoundedBaseScopeHandler = class extends BaseScopeHandler {
       ]
     };
   }
-  *generateScopeCandidates(editor, position, direction, hints) {
+  *generateScopeCandidates(editor, position, direction2, hints) {
     const targetScopes = this.targetScopeHandler.generateScopes(
       editor,
       position,
-      direction,
+      direction2,
       {
         ...hints,
         // Don't skip containing paint since it might have non contained nested scopes.
@@ -19184,11 +17116,11 @@ var BoundedBaseScopeHandler = class extends BaseScopeHandler {
       this.surroundingPairInteriorScopeHandler.generateScopes(
         editor,
         position,
-        direction,
+        direction2,
         {
           ...hints,
-          // For every (skipAncestorScopes=true) we don't want to go outside of the surrounding pair
-          containment: hints.containment == null && hints.skipAncestorScopes ? "required" : hints.containment
+          // For the every scope, we don't want to go outside of the surrounding pair
+          containment: isEveryScopeModifier(hints) ? "required" : hints.containment
         }
       )
     );
@@ -19203,8 +17135,8 @@ var BoundedBaseScopeHandler = class extends BaseScopeHandler {
             getTargets: (isReversed) => {
               return [
                 this.getTargets(
-                  ensureSingleTarget(targetScope, isReversed),
-                  ensureSingleTarget(interiorScope, isReversed)
+                  ensureSingleTarget2(targetScope, isReversed),
+                  ensureSingleTarget2(interiorScope, isReversed)
                 )
               ];
             }
@@ -19212,12 +17144,12 @@ var BoundedBaseScopeHandler = class extends BaseScopeHandler {
         }
       }
       allScopes.push(targetScope);
-      allScopes.sort((a, b) => compareTargetScopes(direction, position, a, b));
+      allScopes.sort((a, b) => compareTargetScopes(direction2, position, a, b));
       yield* allScopes;
     }
   }
 };
-function ensureSingleTarget(scope, isReversed) {
+function ensureSingleTarget2(scope, isReversed) {
   const targets = scope.getTargets(isReversed);
   if (targets.length !== 1) {
     throw Error(`Expected one target but got ${targets.length}`);
@@ -19359,8 +17291,12 @@ var collectionItemTextualIterationScopeHandler = {
   type: "fallback",
   scopeTypes: [
     {
-      type: "surroundingPairInterior",
-      delimiter: "collectionBoundary"
+      type: "conditional",
+      scopeType: {
+        type: "surroundingPairInterior",
+        delimiter: "collectionBoundary"
+      },
+      predicate: (scope) => !scope.domain.isEmpty
     },
     {
       type: "conditional",
@@ -19379,7 +17315,13 @@ var collectionItemTextualIterationScopeHandler = {
 function createTargetScope(isEveryScope, editor, iterationRange, contentRange, previousRange, nextRange) {
   const leadingDelimiterRange = previousRange != null ? new Range(previousRange.end, contentRange.start) : void 0;
   const trailingDelimiterRange = nextRange != null ? new Range(contentRange.end, nextRange.start) : void 0;
-  const removalRange = !isEveryScope && leadingDelimiterRange != null && trailingDelimiterRange != null && getRangeLength(editor, leadingDelimiterRange) > getRangeLength(editor, trailingDelimiterRange) ? contentRange.union(leadingDelimiterRange) : void 0;
+  const removalRange = getCollectionItemRemovalRange(
+    isEveryScope,
+    editor,
+    contentRange,
+    leadingDelimiterRange,
+    trailingDelimiterRange
+  );
   const insertionDelimiter = iterationRange.isSingleLine ? ", " : ",\n";
   return {
     editor,
@@ -19432,8 +17374,8 @@ var CollectionItemTextualScopeHandler = class extends BaseScopeHandler {
   get iterationScopeType() {
     return collectionItemTextualIterationScopeHandler;
   }
-  *generateScopeCandidates(editor, position, direction, hints) {
-    const isEveryScope = hints.containment == null && hints.skipAncestorScopes;
+  *generateScopeCandidates(editor, position, direction2, hints) {
+    const isEveryScope = isEveryScopeModifier(hints);
     const separatorRanges = getSeparatorOccurrences(editor.document);
     const interiorRanges = getInteriorRanges(
       this.scopeHandlerFactory,
@@ -19497,7 +17439,7 @@ var CollectionItemTextualScopeHandler = class extends BaseScopeHandler {
         }
       }
     }
-    scopes.sort((a, b) => compareTargetScopes(direction, position, a, b));
+    scopes.sort((a, b) => compareTargetScopes(direction2, position, a, b));
     yield* scopes;
   }
   addScopes(scopes, state) {
@@ -19549,25 +17491,18 @@ var CollectionItemScopeHandler = class extends BaseScopeHandler {
       if (languageScopeHandler == null) {
         return textualScopeHandler;
       }
-      return OneOfScopeHandler.createFromScopeHandlers(
+      return SortedScopeHandler.createFromScopeHandlers(
         scopeHandlerFactory,
-        {
-          type: "oneOf",
-          scopeTypes: [
-            languageScopeHandler.scopeType,
-            textualScopeHandler.scopeType
-          ]
-        },
-        [languageScopeHandler, textualScopeHandler],
-        languageId
+        languageId,
+        [languageScopeHandler, textualScopeHandler]
       );
     })();
   }
   get iterationScopeType() {
     return this.scopeHandler.iterationScopeType;
   }
-  generateScopeCandidates(editor, position, direction, hints) {
-    return this.scopeHandler.generateScopes(editor, position, direction, hints);
+  generateScopeCandidates(editor, position, direction2, hints) {
+    return this.scopeHandler.generateScopes(editor, position, direction2, hints);
   }
 };
 
@@ -19586,39 +17521,43 @@ var ConditionalScopeHandler = class extends BaseScopeHandler {
       "Iteration scope for ConditionalScopeHandler"
     );
   }
-  generateScopeCandidates(editor, position, direction, hints) {
+  generateScopeCandidates(editor, position, direction2, hints) {
     const scopeHandler = this.scopeHandlerFactory.create(
       this.conditionalScopeType.scopeType,
       this.languageId
     );
     return ifilter(
-      scopeHandler.generateScopes(editor, position, direction, hints),
+      scopeHandler.generateScopes(editor, position, direction2, hints),
       this.conditionalScopeType.predicate
     );
   }
 };
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/FallbackScopeHandler.ts
-var FallbackScopeHandler = class extends BaseScopeHandler {
-  constructor(scopeHandlerFactory, fallbackScopeType, languageId) {
+var FallbackScopeHandler = class _FallbackScopeHandler extends BaseScopeHandler {
+  constructor(scopeHandlers) {
     super();
-    this.scopeHandlerFactory = scopeHandlerFactory;
-    this.fallbackScopeType = fallbackScopeType;
-    this.languageId = languageId;
+    this.scopeHandlers = scopeHandlers;
     this.scopeType = void 0;
     this.isHierarchical = true;
+  }
+  static create(scopeHandlerFactory, scopeType, languageId) {
+    const scopeHandlers = scopeType.scopeTypes.map(
+      (scopeType2) => scopeHandlerFactory.create(scopeType2, languageId)
+    );
+    return this.createFromScopeHandlers(scopeHandlers);
+  }
+  static createFromScopeHandlers(scopeHandlers) {
+    return new _FallbackScopeHandler(scopeHandlers);
   }
   get iterationScopeType() {
     throw new NoContainingScopeError(
       "Iteration scope for FallbackScopeHandler"
     );
   }
-  *generateScopeCandidates(editor, position, direction, hints) {
-    const scopeHandlers = this.fallbackScopeType.scopeTypes.map(
-      (scopeType) => this.scopeHandlerFactory.create(scopeType, this.languageId)
-    );
-    for (const scopeHandler of scopeHandlers) {
-      yield* scopeHandler.generateScopes(editor, position, direction, hints);
+  *generateScopeCandidates(editor, position, direction2, hints) {
+    for (const scopeHandler of this.scopeHandlers) {
+      yield* scopeHandler.generateScopes(editor, position, direction2, hints);
     }
   }
 };
@@ -19631,14 +17570,14 @@ var NotebookCellApiScopeHandler = class extends BaseScopeHandler {
     this.iterationScopeType = { type: "document" };
     this.isHierarchical = false;
   }
-  *generateScopeCandidates(editor, position, direction, hints) {
-    const cells = getNotebookCells(editor, position, direction, hints);
+  *generateScopeCandidates(editor, position, direction2, hints) {
+    const cells = getNotebookCells(editor, position, direction2, hints);
     for (const cell of cells) {
       yield createTargetScope2(cell);
     }
   }
 };
-function getNotebookCells(editor, position, direction, hints) {
+function getNotebookCells(editor, position, direction2, hints) {
   const nb = getNotebook(editor);
   if (nb == null) {
     return [];
@@ -19648,7 +17587,7 @@ function getNotebookCells(editor, position, direction, hints) {
     return [cell];
   }
   if (hints.containment === "disallowed" || hints.containment === "disallowedIfStrict") {
-    return direction === "forward" ? notebook.cells.slice(cell.index + 1) : notebook.cells.slice(0, cell.index).reverse();
+    return direction2 === "forward" ? notebook.cells.slice(cell.index + 1) : notebook.cells.slice(0, cell.index).reverse();
   }
   if (hints.distalPosition != null) {
     const searchRange = new Range(position, hints.distalPosition);
@@ -19656,7 +17595,7 @@ function getNotebookCells(editor, position, direction, hints) {
       return notebook.cells;
     }
   }
-  return direction === "forward" ? notebook.cells.slice(cell.index) : notebook.cells.slice(0, cell.index + 1).reverse();
+  return direction2 === "forward" ? notebook.cells.slice(cell.index) : notebook.cells.slice(0, cell.index + 1).reverse();
 }
 function getNotebook(editor) {
   const uri = editor.document.uri.toString();
@@ -19706,25 +17645,18 @@ var NotebookCellScopeHandler = class extends BaseScopeHandler {
       if (languageScopeHandler == null) {
         return apiScopeHandler;
       }
-      return OneOfScopeHandler.createFromScopeHandlers(
+      return SortedScopeHandler.createFromScopeHandlers(
         scopeHandlerFactory,
-        {
-          type: "oneOf",
-          scopeTypes: [
-            languageScopeHandler.scopeType,
-            apiScopeHandler.scopeType
-          ]
-        },
-        [languageScopeHandler, apiScopeHandler],
-        languageId
+        languageId,
+        [languageScopeHandler, apiScopeHandler]
       );
     })();
   }
   get iterationScopeType() {
     return this.scopeHandler.iterationScopeType;
   }
-  generateScopeCandidates(editor, position, direction, hints) {
-    return this.scopeHandler.generateScopes(editor, position, direction, hints);
+  generateScopeCandidates(editor, position, direction2, hints) {
+    return this.scopeHandler.generateScopes(editor, position, direction2, hints);
   }
 };
 
@@ -19748,17 +17680,14 @@ var SurroundingPairInteriorScopeHandler = class extends BaseScopeHandler {
   get iterationScopeType() {
     return this.surroundingPairScopeHandler.iterationScopeType;
   }
-  *generateScopeCandidates(editor, position, direction, hints) {
+  *generateScopeCandidates(editor, position, direction2, hints) {
     const scopes = this.surroundingPairScopeHandler.generateScopes(
       editor,
       position,
-      direction,
+      direction2,
       hints
     );
     for (const scope of scopes) {
-      if (this.scopeType.requireSingleLine && !scope.domain.isSingleLine) {
-        continue;
-      }
       yield {
         editor,
         domain: scope.domain,
@@ -19863,8 +17792,8 @@ var delimiterToText = Object.freeze({
     ["</", "<"],
     [">", "/>"]
   ],
-  backtickQuotes: ["`", "`"],
   curlyBrackets: [["{", "${"], "}"],
+  tripleBacktickQuotes: [[], []],
   tripleDoubleQuotes: [[], []],
   tripleSingleQuotes: [[], []],
   doubleQuotes: ['"', '"', { isSingleLine: true }],
@@ -19873,6 +17802,7 @@ var delimiterToText = Object.freeze({
   escapedSquareBrackets: ["\\[", "\\]"],
   escapedSingleQuotes: ["\\'", "\\'", { isSingleLine: true }],
   parentheses: [["(", "$("], ")"],
+  backtickQuotes: ["`", "`"],
   singleQuotes: ["'", "'", { isSingleLine: true }],
   squareBrackets: ["[", "]"]
 });
@@ -19893,8 +17823,17 @@ var delimiterToTextOverrides = {
     tripleSingleQuotes: ["'''", "'''"],
     tripleDoubleQuotes: ['"""', '"""']
   },
+  markdown: {
+    tripleBacktickQuotes: ["```", "```"]
+  },
   ruby: {
     tripleDoubleQuotes: ["%Q(", ")"]
+  },
+  csharp: {
+    doubleQuotes: [
+      ['@"', '"'],
+      ['"', '"']
+    ]
   }
 };
 var leftToRightMap = Object.fromEntries(
@@ -19905,6 +17844,7 @@ var complexDelimiterMap = {
   string: [
     "tripleDoubleQuotes",
     "tripleSingleQuotes",
+    "tripleBacktickQuotes",
     "doubleQuotes",
     "singleQuotes",
     "backtickQuotes"
@@ -19964,34 +17904,28 @@ function getSimpleIndividualDelimiters(languageId, delimiters) {
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/SurroundingPairScopeHandler/getSurroundingPairOccurrences.ts
 function getSurroundingPairOccurrences(delimiterOccurrences) {
   const result = [];
-  const openingDelimiterOccurrences = new DefaultMap(() => []);
+  const openingDelimitersStack = [];
   for (const occurrence of delimiterOccurrences) {
     const {
       delimiterInfo: { delimiterName, side, isSingleLine },
       textFragmentRange,
       range: range3
     } = occurrence;
-    let openingDelimiters = openingDelimiterOccurrences.get(delimiterName);
-    if (isSingleLine) {
-      openingDelimiters = openingDelimiters.filter(
-        (openingDelimiter) => openingDelimiter.range.start.line === range3.start.line
-      );
-      openingDelimiterOccurrences.set(delimiterName, openingDelimiters);
-    }
-    const relevantOpeningDelimiters = openingDelimiters.filter(
-      (openingDelimiter) => textFragmentRange == null && openingDelimiter.textFragmentRange == null || textFragmentRange != null && openingDelimiter.textFragmentRange != null && openingDelimiter.textFragmentRange.isRangeEqual(textFragmentRange)
-    );
-    if (side === "left" || side === "unknown" && relevantOpeningDelimiters.length % 2 === 0) {
-      openingDelimiters.push(occurrence);
+    if (side === "left") {
+      openingDelimitersStack.push(occurrence);
     } else {
-      const openingDelimiter = relevantOpeningDelimiters.at(-1);
-      if (openingDelimiter == null) {
+      const openingDelimiterIndex = findLastIndex_default(
+        openingDelimitersStack,
+        (o) => o.delimiterInfo.delimiterName === delimiterName && isSameTextFragment(o.textFragmentRange, textFragmentRange) && isValidLine(isSingleLine, o.range, range3)
+      );
+      if (openingDelimiterIndex === -1) {
+        if (side === "unknown") {
+          openingDelimitersStack.push(occurrence);
+        }
         continue;
       }
-      openingDelimiters.splice(
-        openingDelimiters.lastIndexOf(openingDelimiter),
-        1
-      );
+      const openingDelimiter = openingDelimitersStack[openingDelimiterIndex];
+      openingDelimitersStack.length = openingDelimiterIndex;
       result.push({
         delimiterName,
         openingDelimiterRange: openingDelimiter.range,
@@ -20001,6 +17935,15 @@ function getSurroundingPairOccurrences(delimiterOccurrences) {
   }
   return result;
 }
+function isSameTextFragment(a, b) {
+  if (a == null || b == null) {
+    return a === b;
+  }
+  return a.isRangeEqual(b);
+}
+function isValidLine(isSingleLine, a, b) {
+  return !isSingleLine || a.start.line === b.start.line;
+}
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/SurroundingPairScopeHandler/SurroundingPairScopeHandler.ts
 var SurroundingPairScopeHandler = class extends BaseScopeHandler {
@@ -20009,10 +17952,14 @@ var SurroundingPairScopeHandler = class extends BaseScopeHandler {
     this.languageDefinitions = languageDefinitions;
     this.scopeType = scopeType;
     this.languageId = languageId;
-    this.iterationScopeType = { type: "line" };
+    this.iterationScopeType = {
+      type: "conditional",
+      scopeType: { type: "line" },
+      predicate: (scope) => !scope.domain.isEmpty
+    };
     this.isHierarchical = true;
   }
-  *generateScopeCandidates(editor, position, direction, hints) {
+  *generateScopeCandidates(editor, position, direction2, hints) {
     if (this.scopeType.forceDirection != null) {
       void showError(
         ide().messages,
@@ -20028,7 +17975,7 @@ var SurroundingPairScopeHandler = class extends BaseScopeHandler {
     );
     let surroundingPairs = getSurroundingPairOccurrences(delimiterOccurrences);
     surroundingPairs = maybeApplyEmptyTargetHack(
-      direction,
+      direction2,
       hints,
       position,
       surroundingPairs
@@ -20039,16 +17986,103 @@ var SurroundingPairScopeHandler = class extends BaseScopeHandler {
         pair,
         this.scopeType.requireStrongContainment ?? false
       )
-    ).sort((a, b) => compareTargetScopes(direction, position, a, b));
+    ).sort((a, b) => compareTargetScopes(direction2, position, a, b));
   }
 };
-function maybeApplyEmptyTargetHack(direction, hints, position, surroundingPairs) {
-  if (direction === "forward" && hints.containment === "required" && hints.allowAdjacentScopes && hints.skipAncestorScopes) {
+function maybeApplyEmptyTargetHack(direction2, hints, position, surroundingPairs) {
+  if (direction2 === "forward" && hints.containment === "required" && hints.allowAdjacentScopes && hints.skipAncestorScopes) {
     return surroundingPairs.filter(
       (pair, i2) => !(pair.closingDelimiterRange.end.isEqual(position) && surroundingPairs[i2 + 1]?.closingDelimiterRange.start.isEqual(position))
     );
   }
   return surroundingPairs;
+}
+
+// ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/SurroundingPairScopeHandler/InteriorScopeHandler.ts
+var InteriorScopeHandler = class extends BaseScopeHandler {
+  constructor(scopeHandlerFactory, languageDefinitions, scopeType, languageId) {
+    super();
+    this.scopeHandlerFactory = scopeHandlerFactory;
+    this.languageDefinitions = languageDefinitions;
+    this.scopeType = scopeType;
+    this.languageId = languageId;
+    this.isHierarchical = true;
+  }
+  get iterationScopeType() {
+    throw new NoContainingScopeError(
+      "Iteration scope for InteriorScopeHandler"
+    );
+  }
+  *generateScopeCandidates(editor, position, direction2, hints) {
+    const targetDomain = new Range(position, hints.distalPosition);
+    const scopeHandler = this.getScopeHandler();
+    if (scopeHandler == null) {
+      return;
+    }
+    const scopes = scopeHandler.generateScopes(
+      editor,
+      position,
+      direction2,
+      hints
+    );
+    for (const scope of scopes) {
+      if (this.shouldYield(targetDomain, scope)) {
+        yield createInteriorScope(scope);
+      }
+    }
+  }
+  getScopeHandler() {
+    const languageScopeHandler = this.languageDefinitions.get(this.languageId)?.getScopeHandler(this.scopeType);
+    const pairScopeHandler = this.scopeHandlerFactory.create(
+      {
+        type: "surroundingPair",
+        delimiter: "any"
+      },
+      this.languageId
+    );
+    if (this.scopeType.explicitScopeType) {
+      if (languageScopeHandler == null) {
+        return pairScopeHandler;
+      }
+      return FallbackScopeHandler.createFromScopeHandlers([
+        languageScopeHandler,
+        pairScopeHandler
+      ]);
+    }
+    if (languageScopeHandler == null) {
+      return pairScopeHandler;
+    }
+    return SortedScopeHandler.createFromScopeHandlers(
+      this.scopeHandlerFactory,
+      this.languageId,
+      [languageScopeHandler, pairScopeHandler]
+    );
+  }
+  shouldYield(targetDomain, scope) {
+    return !this.scopeType.explicitScopeType || targetDomain.contains(scope.domain);
+  }
+};
+function createInteriorScope(scope) {
+  return {
+    editor: scope.editor,
+    domain: scope.domain,
+    getTargets(isReversed) {
+      return scope.getTargets(isReversed).flatMap(createInteriorTargets);
+    }
+  };
+}
+function createInteriorTargets(target) {
+  const interior = target.getInterior();
+  if (interior != null) {
+    return interior;
+  }
+  return [
+    new InteriorTarget({
+      editor: target.editor,
+      isReversed: target.isReversed,
+      fullInteriorRange: target.contentRange
+    })
+  ];
 }
 
 // ../cursorless-engine/src/processTargets/modifiers/scopeHandlers/ScopeHandlerFactoryImpl.ts
@@ -20121,12 +18155,19 @@ var ScopeHandlerFactoryImpl = class {
           scopeType,
           languageId
         );
+      case "interior":
+        return new InteriorScopeHandler(
+          this,
+          this.languageDefinitions,
+          scopeType,
+          languageId
+        );
       case "custom":
         return scopeType.scopeHandler;
       case "oneOf":
-        return OneOfScopeHandler.create(this, scopeType, languageId);
+        return SortedScopeHandler.create(this, scopeType, languageId);
       case "fallback":
-        return new FallbackScopeHandler(this, scopeType, languageId);
+        return FallbackScopeHandler.create(this, scopeType, languageId);
       case "conditional":
         return new ConditionalScopeHandler(this, scopeType, languageId);
       case "instance":
@@ -20144,18 +18185,7 @@ var ScopeHandlerFactoryImpl = class {
   }
 };
 
-// ../cursorless-engine/src/util/nodeSelectors.ts
-function makeRangeFromPositions(startPosition, endPosition) {
-  return new Range(
-    startPosition.row,
-    startPosition.column,
-    endPosition.row,
-    endPosition.column
-  );
-}
-function positionFromPoint(point) {
-  return new Position(point.row, point.column);
-}
+// ../cursorless-engine/src/languages/TreeSitterQuery/getNodeRange.ts
 function getNodeRange(node) {
   return new Range(
     node.startPosition.row,
@@ -20163,220 +18193,6 @@ function getNodeRange(node) {
     node.endPosition.row,
     node.endPosition.column
   );
-}
-function makeNodePairSelection(anchor, active) {
-  return new Selection(
-    anchor.startPosition.row,
-    anchor.startPosition.column,
-    active.endPosition.row,
-    active.endPosition.column
-  );
-}
-function simpleSelectionExtractor(editor, node) {
-  return {
-    selection: new Selection(
-      new Position(node.startPosition.row, node.startPosition.column),
-      new Position(node.endPosition.row, node.endPosition.column)
-    ),
-    context: {}
-  };
-}
-function pairSelectionExtractor(editor, node1, node2) {
-  const isForward = node1.startIndex < node2.startIndex;
-  const start2 = isForward ? node1 : node2;
-  const end = isForward ? node2 : node1;
-  return {
-    selection: new Selection(
-      new Position(start2.startPosition.row, start2.startPosition.column),
-      new Position(end.endPosition.row, end.endPosition.column)
-    ),
-    context: {}
-  };
-}
-function argumentSelectionExtractor() {
-  return delimitedSelector(
-    (node) => node.type === "," || node.type === "(" || node.type === ")" || node.type === "[" || node.type === "]" || node.type === ">" || node.type === "<" || node.type === "}" || node.type === "{",
-    ", "
-  );
-}
-function unwrapSelectionExtractor(editor, node) {
-  let startIndex = node.startIndex;
-  let endIndex = node.endIndex;
-  if (node.text.startsWith("(") && node.text.endsWith(")")) {
-    startIndex += 1;
-    endIndex -= 1;
-  } else if (node.text.endsWith(";")) {
-    endIndex -= 1;
-  }
-  return {
-    selection: new Selection(
-      editor.document.positionAt(startIndex),
-      editor.document.positionAt(endIndex)
-    ),
-    context: {}
-  };
-}
-function selectWithLeadingDelimiter(...delimiters) {
-  return function(editor, node) {
-    const firstSibling = node.previousSibling;
-    const secondSibling = firstSibling?.previousSibling;
-    let leadingDelimiterRange;
-    if (firstSibling) {
-      if (delimiters.includes(firstSibling.type)) {
-        if (secondSibling) {
-          leadingDelimiterRange = makeRangeFromPositions(
-            secondSibling.endPosition,
-            node.startPosition
-          );
-        } else {
-          leadingDelimiterRange = makeRangeFromPositions(
-            firstSibling.startPosition,
-            node.startPosition
-          );
-        }
-      } else {
-        leadingDelimiterRange = makeRangeFromPositions(
-          firstSibling.endPosition,
-          node.startPosition
-        );
-      }
-    }
-    return {
-      ...simpleSelectionExtractor(editor, node),
-      context: {
-        leadingDelimiterRange
-      }
-    };
-  };
-}
-function childRangeSelector(typesToExclude = [], typesToInclude = [], { includeUnnamedChildren = false } = {}) {
-  return function(editor, node) {
-    if (typesToExclude.length > 0 && typesToInclude.length > 0) {
-      throw new Error("Cannot have both exclusions and inclusions.");
-    }
-    let nodes = includeUnnamedChildren ? node.children : node.namedChildren;
-    const exclusionSet = new Set(typesToExclude);
-    const inclusionSet = new Set(typesToInclude);
-    nodes = nodes.filter((child) => {
-      if (exclusionSet.size > 0) {
-        return !exclusionSet.has(child.type);
-      }
-      if (inclusionSet.size > 0) {
-        return inclusionSet.has(child.type);
-      }
-      return true;
-    });
-    return pairSelectionExtractor(editor, nodes[0], nodes[nodes.length - 1]);
-  };
-}
-function selectWithTrailingDelimiter(...delimiters) {
-  return function(editor, node) {
-    const firstSibling = node.nextSibling;
-    const secondSibling = firstSibling?.nextSibling;
-    let trailingDelimiterRange;
-    if (firstSibling) {
-      if (delimiters.includes(firstSibling.type)) {
-        if (secondSibling) {
-          trailingDelimiterRange = makeRangeFromPositions(
-            node.endPosition,
-            secondSibling.startPosition
-          );
-        } else {
-          trailingDelimiterRange = makeRangeFromPositions(
-            node.endPosition,
-            firstSibling.endPosition
-          );
-        }
-      } else {
-        trailingDelimiterRange = makeRangeFromPositions(
-          node.endPosition,
-          firstSibling.startPosition
-        );
-      }
-    }
-    return {
-      ...simpleSelectionExtractor(editor, node),
-      context: {
-        trailingDelimiterRange
-      }
-    };
-  };
-}
-function getNextNonDelimiterNode(startNode, isDelimiterNode) {
-  let node = startNode.nextSibling;
-  while (node != null) {
-    if (!isDelimiterNode(node)) {
-      return node;
-    }
-    node = node.nextSibling;
-  }
-  return node;
-}
-function getPreviousNonDelimiterNode(startNode, isDelimiterNode) {
-  let node = startNode.previousSibling;
-  while (node != null) {
-    if (!isDelimiterNode(node)) {
-      return node;
-    }
-    node = node.previousSibling;
-  }
-  return node;
-}
-function delimitedSelector(isDelimiterNode, defaultDelimiter, getStartNode = identity_default, getEndNode = identity_default) {
-  return (editor, node) => {
-    let leadingDelimiterRange;
-    let trailingDelimiterRange;
-    const startNode = getStartNode(node);
-    const endNode = getEndNode(node);
-    const previousNonDelimiterNode = getPreviousNonDelimiterNode(
-      startNode,
-      isDelimiterNode
-    );
-    const nextNonDelimiterNode = getNextNonDelimiterNode(
-      endNode,
-      isDelimiterNode
-    );
-    if (previousNonDelimiterNode != null) {
-      leadingDelimiterRange = makeRangeFromPositions(
-        previousNonDelimiterNode.endPosition,
-        startNode.startPosition
-      );
-    }
-    if (nextNonDelimiterNode != null) {
-      trailingDelimiterRange = makeRangeFromPositions(
-        endNode.endPosition,
-        nextNonDelimiterNode.startPosition
-      );
-    }
-    const containingListDelimiter = getInsertionDelimiter2(
-      editor,
-      leadingDelimiterRange,
-      trailingDelimiterRange,
-      defaultDelimiter
-    );
-    return {
-      selection: new Selection(
-        new Position(
-          startNode.startPosition.row,
-          startNode.startPosition.column
-        ),
-        new Position(endNode.endPosition.row, endNode.endPosition.column)
-      ),
-      context: {
-        containingListDelimiter,
-        leadingDelimiterRange,
-        trailingDelimiterRange
-      }
-    };
-  };
-}
-function getInsertionDelimiter2(editor, leadingDelimiterRange, trailingDelimiterRange, defaultDelimiterInsertion) {
-  const { document: document2 } = editor;
-  const delimiters = [
-    trailingDelimiterRange != null ? document2.getText(trailingDelimiterRange) : defaultDelimiterInsertion,
-    leadingDelimiterRange != null ? document2.getText(leadingDelimiterRange) : defaultDelimiterInsertion
-  ];
-  return maxBy_default(delimiters, "length");
 }
 
 // ../cursorless-engine/src/languages/TreeSitterQuery/checkCaptureStartEnd.ts
@@ -20392,7 +18208,7 @@ function checkCaptureStartEnd(captures, messages) {
       void showError(
         messages,
         "TreeSitterQuery.checkCaptures.badOrder",
-        `Start capture must be before end capture: ${captures}`
+        `Start capture must be before end capture: ${captures.map((c) => c.name)}`
       );
       shownError = true;
     }
@@ -20427,12 +18243,21 @@ function checkCaptureStartEnd(captures, messages) {
 
 // ../cursorless-engine/src/languages/TreeSitterQuery/isContainedInErrorNode.ts
 function isContainedInErrorNode(node) {
-  let currentNode = node;
-  while (currentNode != null) {
-    if (currentNode.hasError) {
+  if (node.hasError) {
+    return true;
+  }
+  let ancestorNode = node.parent;
+  while (ancestorNode != null) {
+    if (ancestorNode.isError) {
       return true;
     }
-    currentNode = currentNode.parent;
+    if (ancestorNode.hasError) {
+      return false;
+    }
+    if (ancestorNode.previousSibling?.isError || ancestorNode.nextSibling?.isError) {
+      return true;
+    }
+    ancestorNode = ancestorNode.parent;
   }
   return false;
 }
@@ -20442,10 +18267,123 @@ function normalizeCaptureName(name2) {
   return name2.replace(/(\.(start|end))?(\.(startOf|endOf))?$/, "");
 }
 
-// ../../node_modules/.pnpm/zod@3.23.8/node_modules/zod/lib/index.mjs
+// ../../node_modules/.pnpm/zod@3.25.64/node_modules/zod/dist/esm/v3/external.js
+var external_exports = {};
+__export(external_exports, {
+  BRAND: () => BRAND,
+  DIRTY: () => DIRTY,
+  EMPTY_PATH: () => EMPTY_PATH,
+  INVALID: () => INVALID,
+  NEVER: () => NEVER,
+  OK: () => OK,
+  ParseStatus: () => ParseStatus,
+  Schema: () => ZodType,
+  ZodAny: () => ZodAny,
+  ZodArray: () => ZodArray,
+  ZodBigInt: () => ZodBigInt,
+  ZodBoolean: () => ZodBoolean,
+  ZodBranded: () => ZodBranded,
+  ZodCatch: () => ZodCatch,
+  ZodDate: () => ZodDate,
+  ZodDefault: () => ZodDefault,
+  ZodDiscriminatedUnion: () => ZodDiscriminatedUnion,
+  ZodEffects: () => ZodEffects,
+  ZodEnum: () => ZodEnum,
+  ZodError: () => ZodError,
+  ZodFirstPartyTypeKind: () => ZodFirstPartyTypeKind,
+  ZodFunction: () => ZodFunction,
+  ZodIntersection: () => ZodIntersection,
+  ZodIssueCode: () => ZodIssueCode,
+  ZodLazy: () => ZodLazy,
+  ZodLiteral: () => ZodLiteral,
+  ZodMap: () => ZodMap,
+  ZodNaN: () => ZodNaN,
+  ZodNativeEnum: () => ZodNativeEnum,
+  ZodNever: () => ZodNever,
+  ZodNull: () => ZodNull,
+  ZodNullable: () => ZodNullable,
+  ZodNumber: () => ZodNumber,
+  ZodObject: () => ZodObject,
+  ZodOptional: () => ZodOptional,
+  ZodParsedType: () => ZodParsedType,
+  ZodPipeline: () => ZodPipeline,
+  ZodPromise: () => ZodPromise,
+  ZodReadonly: () => ZodReadonly,
+  ZodRecord: () => ZodRecord,
+  ZodSchema: () => ZodType,
+  ZodSet: () => ZodSet,
+  ZodString: () => ZodString,
+  ZodSymbol: () => ZodSymbol,
+  ZodTransformer: () => ZodEffects,
+  ZodTuple: () => ZodTuple,
+  ZodType: () => ZodType,
+  ZodUndefined: () => ZodUndefined,
+  ZodUnion: () => ZodUnion,
+  ZodUnknown: () => ZodUnknown,
+  ZodVoid: () => ZodVoid,
+  addIssueToContext: () => addIssueToContext,
+  any: () => anyType,
+  array: () => arrayType,
+  bigint: () => bigIntType,
+  boolean: () => booleanType,
+  coerce: () => coerce,
+  custom: () => custom,
+  date: () => dateType,
+  datetimeRegex: () => datetimeRegex,
+  defaultErrorMap: () => en_default,
+  discriminatedUnion: () => discriminatedUnionType,
+  effect: () => effectsType,
+  enum: () => enumType,
+  function: () => functionType,
+  getErrorMap: () => getErrorMap,
+  getParsedType: () => getParsedType,
+  instanceof: () => instanceOfType,
+  intersection: () => intersectionType,
+  isAborted: () => isAborted,
+  isAsync: () => isAsync,
+  isDirty: () => isDirty,
+  isValid: () => isValid,
+  late: () => late,
+  lazy: () => lazyType,
+  literal: () => literalType,
+  makeIssue: () => makeIssue,
+  map: () => mapType,
+  nan: () => nanType,
+  nativeEnum: () => nativeEnumType,
+  never: () => neverType,
+  null: () => nullType,
+  nullable: () => nullableType,
+  number: () => numberType,
+  object: () => objectType,
+  objectUtil: () => objectUtil,
+  oboolean: () => oboolean,
+  onumber: () => onumber,
+  optional: () => optionalType,
+  ostring: () => ostring,
+  pipeline: () => pipelineType,
+  preprocess: () => preprocessType,
+  promise: () => promiseType,
+  quotelessJson: () => quotelessJson,
+  record: () => recordType,
+  set: () => setType,
+  setErrorMap: () => setErrorMap,
+  strictObject: () => strictObjectType,
+  string: () => stringType,
+  symbol: () => symbolType,
+  transformer: () => effectsType,
+  tuple: () => tupleType,
+  undefined: () => undefinedType,
+  union: () => unionType,
+  unknown: () => unknownType,
+  util: () => util,
+  void: () => voidType
+});
+
+// ../../node_modules/.pnpm/zod@3.25.64/node_modules/zod/dist/esm/v3/helpers/util.js
 var util;
 (function(util2) {
-  util2.assertEqual = (val) => val;
+  util2.assertEqual = (_) => {
+  };
   function assertIs(_arg) {
   }
   util2.assertIs = assertIs;
@@ -20489,7 +18427,7 @@ var util;
     }
     return void 0;
   };
-  util2.isInteger = typeof Number.isInteger === "function" ? (val) => Number.isInteger(val) : (val) => typeof val === "number" && isFinite(val) && Math.floor(val) === val;
+  util2.isInteger = typeof Number.isInteger === "function" ? (val) => Number.isInteger(val) : (val) => typeof val === "number" && Number.isFinite(val) && Math.floor(val) === val;
   function joinValues(array, separator2 = " | ") {
     return array.map((val) => typeof val === "string" ? `'${val}'` : val).join(separator2);
   }
@@ -20541,7 +18479,7 @@ var getParsedType = (data) => {
     case "string":
       return ZodParsedType.string;
     case "number":
-      return isNaN(data) ? ZodParsedType.nan : ZodParsedType.number;
+      return Number.isNaN(data) ? ZodParsedType.nan : ZodParsedType.number;
     case "boolean":
       return ZodParsedType.boolean;
     case "function":
@@ -20574,6 +18512,8 @@ var getParsedType = (data) => {
       return ZodParsedType.unknown;
   }
 };
+
+// ../../node_modules/.pnpm/zod@3.25.64/node_modules/zod/dist/esm/v3/ZodError.js
 var ZodIssueCode = util.arrayToEnum([
   "invalid_type",
   "invalid_literal",
@@ -20597,6 +18537,9 @@ var quotelessJson = (obj) => {
   return json2.replace(/"([^"]+)":/g, "$1:");
 };
 var ZodError = class _ZodError extends Error {
+  get errors() {
+    return this.issues;
+  }
   constructor(issues) {
     super();
     this.issues = [];
@@ -20614,9 +18557,6 @@ var ZodError = class _ZodError extends Error {
     }
     this.name = "ZodError";
     this.issues = issues;
-  }
-  get errors() {
-    return this.issues;
   }
   format(_mapper) {
     const mapper = _mapper || function(issue) {
@@ -20689,6 +18629,8 @@ ZodError.create = (issues) => {
   const error = new ZodError(issues);
   return error;
 };
+
+// ../../node_modules/.pnpm/zod@3.25.64/node_modules/zod/dist/esm/v3/locales/en.js
 var errorMap = (issue, _ctx) => {
   let message;
   switch (issue.code) {
@@ -20787,13 +18729,18 @@ var errorMap = (issue, _ctx) => {
   }
   return { message };
 };
-var overrideErrorMap = errorMap;
+var en_default = errorMap;
+
+// ../../node_modules/.pnpm/zod@3.25.64/node_modules/zod/dist/esm/v3/errors.js
+var overrideErrorMap = en_default;
 function setErrorMap(map3) {
   overrideErrorMap = map3;
 }
 function getErrorMap() {
   return overrideErrorMap;
 }
+
+// ../../node_modules/.pnpm/zod@3.25.64/node_modules/zod/dist/esm/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
   const { data, path, errorMaps, issueData } = params;
   const fullPath = [...path, ...issueData.path || []];
@@ -20828,9 +18775,12 @@ function addIssueToContext(ctx, issueData) {
     path: ctx.path,
     errorMaps: [
       ctx.common.contextualErrorMap,
+      // contextual error map is first priority
       ctx.schemaErrorMap,
+      // then schema-bound map if available
       overrideMap,
-      overrideMap === errorMap ? void 0 : errorMap
+      // then global override map
+      overrideMap === en_default ? void 0 : en_default
       // then global default map
     ].filter((x) => !!x)
   });
@@ -20899,24 +18849,15 @@ var isAborted = (x) => x.status === "aborted";
 var isDirty = (x) => x.status === "dirty";
 var isValid = (x) => x.status === "valid";
 var isAsync = (x) => typeof Promise !== "undefined" && x instanceof Promise;
-function __classPrivateFieldGet(receiver, state, kind, f) {
-  if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-  return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-}
-function __classPrivateFieldSet(receiver, state, value, kind, f) {
-  if (kind === "m") throw new TypeError("Private method is not writable");
-  if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-  return kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), value;
-}
+
+// ../../node_modules/.pnpm/zod@3.25.64/node_modules/zod/dist/esm/v3/helpers/errorUtil.js
 var errorUtil;
 (function(errorUtil2) {
   errorUtil2.errToObj = (message) => typeof message === "string" ? { message } : message || {};
-  errorUtil2.toString = (message) => typeof message === "string" ? message : message === null || message === void 0 ? void 0 : message.message;
+  errorUtil2.toString = (message) => typeof message === "string" ? message : message?.message;
 })(errorUtil || (errorUtil = {}));
-var _ZodEnum_cache;
-var _ZodNativeEnum_cache;
+
+// ../../node_modules/.pnpm/zod@3.25.64/node_modules/zod/dist/esm/v3/types.js
 var ParseInputLazyPath = class {
   constructor(parent, value, path, key) {
     this._cachedPath = [];
@@ -20927,7 +18868,7 @@ var ParseInputLazyPath = class {
   }
   get path() {
     if (!this._cachedPath.length) {
-      if (this._key instanceof Array) {
+      if (Array.isArray(this._key)) {
         this._cachedPath.push(...this._path, ...this._key);
       } else {
         this._cachedPath.push(...this._path, this._key);
@@ -20965,49 +18906,20 @@ function processCreateParams(params) {
   if (errorMap2)
     return { errorMap: errorMap2, description };
   const customMap = (iss, ctx) => {
-    var _a, _b;
     const { message } = params;
     if (iss.code === "invalid_enum_value") {
-      return { message: message !== null && message !== void 0 ? message : ctx.defaultError };
+      return { message: message ?? ctx.defaultError };
     }
     if (typeof ctx.data === "undefined") {
-      return { message: (_a = message !== null && message !== void 0 ? message : required_error) !== null && _a !== void 0 ? _a : ctx.defaultError };
+      return { message: message ?? required_error ?? ctx.defaultError };
     }
     if (iss.code !== "invalid_type")
       return { message: ctx.defaultError };
-    return { message: (_b = message !== null && message !== void 0 ? message : invalid_type_error) !== null && _b !== void 0 ? _b : ctx.defaultError };
+    return { message: message ?? invalid_type_error ?? ctx.defaultError };
   };
   return { errorMap: customMap, description };
 }
 var ZodType = class {
-  constructor(def) {
-    this.spa = this.safeParseAsync;
-    this._def = def;
-    this.parse = this.parse.bind(this);
-    this.safeParse = this.safeParse.bind(this);
-    this.parseAsync = this.parseAsync.bind(this);
-    this.safeParseAsync = this.safeParseAsync.bind(this);
-    this.spa = this.spa.bind(this);
-    this.refine = this.refine.bind(this);
-    this.refinement = this.refinement.bind(this);
-    this.superRefine = this.superRefine.bind(this);
-    this.optional = this.optional.bind(this);
-    this.nullable = this.nullable.bind(this);
-    this.nullish = this.nullish.bind(this);
-    this.array = this.array.bind(this);
-    this.promise = this.promise.bind(this);
-    this.or = this.or.bind(this);
-    this.and = this.and.bind(this);
-    this.transform = this.transform.bind(this);
-    this.brand = this.brand.bind(this);
-    this.default = this.default.bind(this);
-    this.catch = this.catch.bind(this);
-    this.describe = this.describe.bind(this);
-    this.pipe = this.pipe.bind(this);
-    this.readonly = this.readonly.bind(this);
-    this.isNullable = this.isNullable.bind(this);
-    this.isOptional = this.isOptional.bind(this);
-  }
   get description() {
     return this._def.description;
   }
@@ -21055,14 +18967,13 @@ var ZodType = class {
     throw result.error;
   }
   safeParse(data, params) {
-    var _a;
     const ctx = {
       common: {
         issues: [],
-        async: (_a = params === null || params === void 0 ? void 0 : params.async) !== null && _a !== void 0 ? _a : false,
-        contextualErrorMap: params === null || params === void 0 ? void 0 : params.errorMap
+        async: params?.async ?? false,
+        contextualErrorMap: params?.errorMap
       },
-      path: (params === null || params === void 0 ? void 0 : params.path) || [],
+      path: params?.path || [],
       schemaErrorMap: this._def.errorMap,
       parent: null,
       data,
@@ -21070,6 +18981,42 @@ var ZodType = class {
     };
     const result = this._parseSync({ data, path: ctx.path, parent: ctx });
     return handleResult(ctx, result);
+  }
+  "~validate"(data) {
+    const ctx = {
+      common: {
+        issues: [],
+        async: !!this["~standard"].async
+      },
+      path: [],
+      schemaErrorMap: this._def.errorMap,
+      parent: null,
+      data,
+      parsedType: getParsedType(data)
+    };
+    if (!this["~standard"].async) {
+      try {
+        const result = this._parseSync({ data, path: [], parent: ctx });
+        return isValid(result) ? {
+          value: result.value
+        } : {
+          issues: ctx.common.issues
+        };
+      } catch (err2) {
+        if (err2?.message?.toLowerCase()?.includes("encountered")) {
+          this["~standard"].async = true;
+        }
+        ctx.common = {
+          issues: [],
+          async: true
+        };
+      }
+    }
+    return this._parseAsync({ data, path: [], parent: ctx }).then((result) => isValid(result) ? {
+      value: result.value
+    } : {
+      issues: ctx.common.issues
+    });
   }
   async parseAsync(data, params) {
     const result = await this.safeParseAsync(data, params);
@@ -21081,10 +19028,10 @@ var ZodType = class {
     const ctx = {
       common: {
         issues: [],
-        contextualErrorMap: params === null || params === void 0 ? void 0 : params.errorMap,
+        contextualErrorMap: params?.errorMap,
         async: true
       },
-      path: (params === null || params === void 0 ? void 0 : params.path) || [],
+      path: params?.path || [],
       schemaErrorMap: this._def.errorMap,
       parent: null,
       data,
@@ -21148,6 +19095,39 @@ var ZodType = class {
   superRefine(refinement) {
     return this._refinement(refinement);
   }
+  constructor(def) {
+    this.spa = this.safeParseAsync;
+    this._def = def;
+    this.parse = this.parse.bind(this);
+    this.safeParse = this.safeParse.bind(this);
+    this.parseAsync = this.parseAsync.bind(this);
+    this.safeParseAsync = this.safeParseAsync.bind(this);
+    this.spa = this.spa.bind(this);
+    this.refine = this.refine.bind(this);
+    this.refinement = this.refinement.bind(this);
+    this.superRefine = this.superRefine.bind(this);
+    this.optional = this.optional.bind(this);
+    this.nullable = this.nullable.bind(this);
+    this.nullish = this.nullish.bind(this);
+    this.array = this.array.bind(this);
+    this.promise = this.promise.bind(this);
+    this.or = this.or.bind(this);
+    this.and = this.and.bind(this);
+    this.transform = this.transform.bind(this);
+    this.brand = this.brand.bind(this);
+    this.default = this.default.bind(this);
+    this.catch = this.catch.bind(this);
+    this.describe = this.describe.bind(this);
+    this.pipe = this.pipe.bind(this);
+    this.readonly = this.readonly.bind(this);
+    this.isNullable = this.isNullable.bind(this);
+    this.isOptional = this.isOptional.bind(this);
+    this["~standard"] = {
+      version: 1,
+      vendor: "zod",
+      validate: (data) => this["~validate"](data)
+    };
+  }
   optional() {
     return ZodOptional.create(this, this._def);
   }
@@ -21158,7 +19138,7 @@ var ZodType = class {
     return this.nullable().optional();
   }
   array() {
-    return ZodArray.create(this, this._def);
+    return ZodArray.create(this);
   }
   promise() {
     return ZodPromise.create(this, this._def);
@@ -21224,26 +19204,31 @@ var ZodType = class {
 };
 var cuidRegex = /^c[^\s-]{8,}$/i;
 var cuid2Regex = /^[0-9a-z]+$/;
-var ulidRegex = /^[0-9A-HJKMNP-TV-Z]{26}$/;
+var ulidRegex = /^[0-9A-HJKMNP-TV-Z]{26}$/i;
 var uuidRegex = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/i;
 var nanoidRegex = /^[a-z0-9_-]{21}$/i;
+var jwtRegex = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/;
 var durationRegex = /^[-+]?P(?!$)(?:(?:[-+]?\d+Y)|(?:[-+]?\d+[.,]\d+Y$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:(?:[-+]?\d+W)|(?:[-+]?\d+[.,]\d+W$))?(?:(?:[-+]?\d+D)|(?:[-+]?\d+[.,]\d+D$))?(?:T(?=[\d+-])(?:(?:[-+]?\d+H)|(?:[-+]?\d+[.,]\d+H$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:[-+]?\d+(?:[.,]\d+)?S)?)??$/;
 var emailRegex = /^(?!\.)(?!.*\.\.)([A-Z0-9_'+\-\.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i;
 var _emojiRegex = `^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$`;
 var emojiRegex;
 var ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/;
-var ipv6Regex = /^(([a-f0-9]{1,4}:){7}|::([a-f0-9]{1,4}:){0,6}|([a-f0-9]{1,4}:){1}:([a-f0-9]{1,4}:){0,5}|([a-f0-9]{1,4}:){2}:([a-f0-9]{1,4}:){0,4}|([a-f0-9]{1,4}:){3}:([a-f0-9]{1,4}:){0,3}|([a-f0-9]{1,4}:){4}:([a-f0-9]{1,4}:){0,2}|([a-f0-9]{1,4}:){5}:([a-f0-9]{1,4}:){0,1})([a-f0-9]{1,4}|(((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2}))\.){3}((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2})))$/;
+var ipv4CidrRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/(3[0-2]|[12]?[0-9])$/;
+var ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
+var ipv6CidrRegex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/;
 var base64Regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+var base64urlRegex = /^([0-9a-zA-Z-_]{4})*(([0-9a-zA-Z-_]{2}(==)?)|([0-9a-zA-Z-_]{3}(=)?))?$/;
 var dateRegexSource = `((\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-((0[13578]|1[02])-(0[1-9]|[12]\\d|3[01])|(0[469]|11)-(0[1-9]|[12]\\d|30)|(02)-(0[1-9]|1\\d|2[0-8])))`;
 var dateRegex = new RegExp(`^${dateRegexSource}$`);
 function timeRegexSource(args2) {
-  let regex = `([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d`;
+  let secondsRegexSource = `[0-5]\\d`;
   if (args2.precision) {
-    regex = `${regex}\\.\\d{${args2.precision}}`;
+    secondsRegexSource = `${secondsRegexSource}\\.\\d{${args2.precision}}`;
   } else if (args2.precision == null) {
-    regex = `${regex}(\\.\\d+)?`;
+    secondsRegexSource = `${secondsRegexSource}(\\.\\d+)?`;
   }
-  return regex;
+  const secondsQuantifier = args2.precision ? "+" : "?";
+  return `([01]\\d|2[0-3]):[0-5]\\d(:${secondsRegexSource})${secondsQuantifier}`;
 }
 function timeRegex(args2) {
   return new RegExp(`^${timeRegexSource(args2)}$`);
@@ -21262,6 +19247,35 @@ function isValidIP(ip, version) {
     return true;
   }
   if ((version === "v6" || !version) && ipv6Regex.test(ip)) {
+    return true;
+  }
+  return false;
+}
+function isValidJWT(jwt, alg) {
+  if (!jwtRegex.test(jwt))
+    return false;
+  try {
+    const [header] = jwt.split(".");
+    const base64 = header.replace(/-/g, "+").replace(/_/g, "/").padEnd(header.length + (4 - header.length % 4) % 4, "=");
+    const decoded = JSON.parse(atob(base64));
+    if (typeof decoded !== "object" || decoded === null)
+      return false;
+    if ("typ" in decoded && decoded?.typ !== "JWT")
+      return false;
+    if (!decoded.alg)
+      return false;
+    if (alg && decoded.alg !== alg)
+      return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+function isValidCidr(ip, version) {
+  if ((version === "v4" || !version) && ipv4CidrRegex.test(ip)) {
+    return true;
+  }
+  if ((version === "v6" || !version) && ipv6CidrRegex.test(ip)) {
     return true;
   }
   return false;
@@ -21412,7 +19426,7 @@ var ZodString = class _ZodString extends ZodType {
       } else if (check.kind === "url") {
         try {
           new URL(input.data);
-        } catch (_a) {
+        } catch {
           ctx = this._getOrReturnCtx(input, ctx);
           addIssueToContext(ctx, {
             validation: "url",
@@ -21522,11 +19536,41 @@ var ZodString = class _ZodString extends ZodType {
           });
           status.dirty();
         }
+      } else if (check.kind === "jwt") {
+        if (!isValidJWT(input.data, check.alg)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "jwt",
+            code: ZodIssueCode.invalid_string,
+            message: check.message
+          });
+          status.dirty();
+        }
+      } else if (check.kind === "cidr") {
+        if (!isValidCidr(input.data, check.version)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "cidr",
+            code: ZodIssueCode.invalid_string,
+            message: check.message
+          });
+          status.dirty();
+        }
       } else if (check.kind === "base64") {
         if (!base64Regex.test(input.data)) {
           ctx = this._getOrReturnCtx(input, ctx);
           addIssueToContext(ctx, {
             validation: "base64",
+            code: ZodIssueCode.invalid_string,
+            message: check.message
+          });
+          status.dirty();
+        }
+      } else if (check.kind === "base64url") {
+        if (!base64urlRegex.test(input.data)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "base64url",
             code: ZodIssueCode.invalid_string,
             message: check.message
           });
@@ -21578,11 +19622,22 @@ var ZodString = class _ZodString extends ZodType {
   base64(message) {
     return this._addCheck({ kind: "base64", ...errorUtil.errToObj(message) });
   }
+  base64url(message) {
+    return this._addCheck({
+      kind: "base64url",
+      ...errorUtil.errToObj(message)
+    });
+  }
+  jwt(options2) {
+    return this._addCheck({ kind: "jwt", ...errorUtil.errToObj(options2) });
+  }
   ip(options2) {
     return this._addCheck({ kind: "ip", ...errorUtil.errToObj(options2) });
   }
+  cidr(options2) {
+    return this._addCheck({ kind: "cidr", ...errorUtil.errToObj(options2) });
+  }
   datetime(options2) {
-    var _a, _b;
     if (typeof options2 === "string") {
       return this._addCheck({
         kind: "datetime",
@@ -21594,10 +19649,10 @@ var ZodString = class _ZodString extends ZodType {
     }
     return this._addCheck({
       kind: "datetime",
-      precision: typeof (options2 === null || options2 === void 0 ? void 0 : options2.precision) === "undefined" ? null : options2 === null || options2 === void 0 ? void 0 : options2.precision,
-      offset: (_a = options2 === null || options2 === void 0 ? void 0 : options2.offset) !== null && _a !== void 0 ? _a : false,
-      local: (_b = options2 === null || options2 === void 0 ? void 0 : options2.local) !== null && _b !== void 0 ? _b : false,
-      ...errorUtil.errToObj(options2 === null || options2 === void 0 ? void 0 : options2.message)
+      precision: typeof options2?.precision === "undefined" ? null : options2?.precision,
+      offset: options2?.offset ?? false,
+      local: options2?.local ?? false,
+      ...errorUtil.errToObj(options2?.message)
     });
   }
   date(message) {
@@ -21613,8 +19668,8 @@ var ZodString = class _ZodString extends ZodType {
     }
     return this._addCheck({
       kind: "time",
-      precision: typeof (options2 === null || options2 === void 0 ? void 0 : options2.precision) === "undefined" ? null : options2 === null || options2 === void 0 ? void 0 : options2.precision,
-      ...errorUtil.errToObj(options2 === null || options2 === void 0 ? void 0 : options2.message)
+      precision: typeof options2?.precision === "undefined" ? null : options2?.precision,
+      ...errorUtil.errToObj(options2?.message)
     });
   }
   duration(message) {
@@ -21631,8 +19686,8 @@ var ZodString = class _ZodString extends ZodType {
     return this._addCheck({
       kind: "includes",
       value,
-      position: options2 === null || options2 === void 0 ? void 0 : options2.position,
-      ...errorUtil.errToObj(options2 === null || options2 === void 0 ? void 0 : options2.message)
+      position: options2?.position,
+      ...errorUtil.errToObj(options2?.message)
     });
   }
   startsWith(value, message) {
@@ -21671,8 +19726,7 @@ var ZodString = class _ZodString extends ZodType {
     });
   }
   /**
-   * @deprecated Use z.string().min(1) instead.
-   * @see {@link ZodString.min}
+   * Equivalent to `.min(1)`
    */
   nonempty(message) {
     return this.min(1, errorUtil.errToObj(message));
@@ -21734,8 +19788,14 @@ var ZodString = class _ZodString extends ZodType {
   get isIP() {
     return !!this._def.checks.find((ch) => ch.kind === "ip");
   }
+  get isCIDR() {
+    return !!this._def.checks.find((ch) => ch.kind === "cidr");
+  }
   get isBase64() {
     return !!this._def.checks.find((ch) => ch.kind === "base64");
+  }
+  get isBase64url() {
+    return !!this._def.checks.find((ch) => ch.kind === "base64url");
   }
   get minLength() {
     let min2 = null;
@@ -21759,11 +19819,10 @@ var ZodString = class _ZodString extends ZodType {
   }
 };
 ZodString.create = (params) => {
-  var _a;
   return new ZodString({
     checks: [],
     typeName: ZodFirstPartyTypeKind.ZodString,
-    coerce: (_a = params === null || params === void 0 ? void 0 : params.coerce) !== null && _a !== void 0 ? _a : false,
+    coerce: params?.coerce ?? false,
     ...processCreateParams(params)
   });
 };
@@ -21771,9 +19830,9 @@ function floatSafeRemainder(val, step) {
   const valDecCount = (val.toString().split(".")[1] || "").length;
   const stepDecCount = (step.toString().split(".")[1] || "").length;
   const decCount = valDecCount > stepDecCount ? valDecCount : stepDecCount;
-  const valInt = parseInt(val.toFixed(decCount).replace(".", ""));
-  const stepInt = parseInt(step.toFixed(decCount).replace(".", ""));
-  return valInt % stepInt / Math.pow(10, decCount);
+  const valInt = Number.parseInt(val.toFixed(decCount).replace(".", ""));
+  const stepInt = Number.parseInt(step.toFixed(decCount).replace(".", ""));
+  return valInt % stepInt / 10 ** decCount;
 }
 var ZodNumber = class _ZodNumber extends ZodType {
   constructor() {
@@ -21983,7 +20042,8 @@ var ZodNumber = class _ZodNumber extends ZodType {
     return !!this._def.checks.find((ch) => ch.kind === "int" || ch.kind === "multipleOf" && util.isInteger(ch.value));
   }
   get isFinite() {
-    let max = null, min2 = null;
+    let max = null;
+    let min2 = null;
     for (const ch of this._def.checks) {
       if (ch.kind === "finite" || ch.kind === "int" || ch.kind === "multipleOf") {
         return true;
@@ -22002,7 +20062,7 @@ ZodNumber.create = (params) => {
   return new ZodNumber({
     checks: [],
     typeName: ZodFirstPartyTypeKind.ZodNumber,
-    coerce: (params === null || params === void 0 ? void 0 : params.coerce) || false,
+    coerce: params?.coerce || false,
     ...processCreateParams(params)
   });
 };
@@ -22014,17 +20074,15 @@ var ZodBigInt = class _ZodBigInt extends ZodType {
   }
   _parse(input) {
     if (this._def.coerce) {
-      input.data = BigInt(input.data);
+      try {
+        input.data = BigInt(input.data);
+      } catch {
+        return this._getInvalidInput(input);
+      }
     }
     const parsedType = this._getType(input);
     if (parsedType !== ZodParsedType.bigint) {
-      const ctx2 = this._getOrReturnCtx(input);
-      addIssueToContext(ctx2, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.bigint,
-        received: ctx2.parsedType
-      });
-      return INVALID;
+      return this._getInvalidInput(input);
     }
     let ctx = void 0;
     const status = new ParseStatus();
@@ -22070,6 +20128,15 @@ var ZodBigInt = class _ZodBigInt extends ZodType {
       }
     }
     return { status: status.value, value: input.data };
+  }
+  _getInvalidInput(input) {
+    const ctx = this._getOrReturnCtx(input);
+    addIssueToContext(ctx, {
+      code: ZodIssueCode.invalid_type,
+      expected: ZodParsedType.bigint,
+      received: ctx.parsedType
+    });
+    return INVALID;
   }
   gte(value, message) {
     return this.setLimit("min", value, true, errorUtil.toString(message));
@@ -22164,11 +20231,10 @@ var ZodBigInt = class _ZodBigInt extends ZodType {
   }
 };
 ZodBigInt.create = (params) => {
-  var _a;
   return new ZodBigInt({
     checks: [],
     typeName: ZodFirstPartyTypeKind.ZodBigInt,
-    coerce: (_a = params === null || params === void 0 ? void 0 : params.coerce) !== null && _a !== void 0 ? _a : false,
+    coerce: params?.coerce ?? false,
     ...processCreateParams(params)
   });
 };
@@ -22193,7 +20259,7 @@ var ZodBoolean = class extends ZodType {
 ZodBoolean.create = (params) => {
   return new ZodBoolean({
     typeName: ZodFirstPartyTypeKind.ZodBoolean,
-    coerce: (params === null || params === void 0 ? void 0 : params.coerce) || false,
+    coerce: params?.coerce || false,
     ...processCreateParams(params)
   });
 };
@@ -22212,7 +20278,7 @@ var ZodDate = class _ZodDate extends ZodType {
       });
       return INVALID;
     }
-    if (isNaN(input.data.getTime())) {
+    if (Number.isNaN(input.data.getTime())) {
       const ctx2 = this._getOrReturnCtx(input);
       addIssueToContext(ctx2, {
         code: ZodIssueCode.invalid_date
@@ -22301,7 +20367,7 @@ var ZodDate = class _ZodDate extends ZodType {
 ZodDate.create = (params) => {
   return new ZodDate({
     checks: [],
-    coerce: (params === null || params === void 0 ? void 0 : params.coerce) || false,
+    coerce: params?.coerce || false,
     typeName: ZodFirstPartyTypeKind.ZodDate,
     ...processCreateParams(params)
   });
@@ -22576,7 +20642,8 @@ var ZodObject = class _ZodObject extends ZodType {
       return this._cached;
     const shape = this._def.shape();
     const keys2 = util.objectKeys(shape);
-    return this._cached = { shape, keys: keys2 };
+    this._cached = { shape, keys: keys2 };
+    return this._cached;
   }
   _parse(input) {
     const parsedType = this._getType(input);
@@ -22626,8 +20693,8 @@ var ZodObject = class _ZodObject extends ZodType {
           });
           status.dirty();
         }
-      } else if (unknownKeys === "strip") ;
-      else {
+      } else if (unknownKeys === "strip") {
+      } else {
         throw new Error(`Internal ZodObject error: invalid unknownKeys value.`);
       }
     } else {
@@ -22674,11 +20741,10 @@ var ZodObject = class _ZodObject extends ZodType {
       unknownKeys: "strict",
       ...message !== void 0 ? {
         errorMap: (issue, ctx) => {
-          var _a, _b, _c, _d;
-          const defaultError = (_c = (_b = (_a = this._def).errorMap) === null || _b === void 0 ? void 0 : _b.call(_a, issue, ctx).message) !== null && _c !== void 0 ? _c : ctx.defaultError;
+          const defaultError = this._def.errorMap?.(issue, ctx).message ?? ctx.defaultError;
           if (issue.code === "unrecognized_keys")
             return {
-              message: (_d = errorUtil.errToObj(message).message) !== null && _d !== void 0 ? _d : defaultError
+              message: errorUtil.errToObj(message).message ?? defaultError
             };
           return {
             message: defaultError
@@ -22809,11 +20875,11 @@ var ZodObject = class _ZodObject extends ZodType {
   }
   pick(mask) {
     const shape = {};
-    util.objectKeys(mask).forEach((key) => {
+    for (const key of util.objectKeys(mask)) {
       if (mask[key] && this.shape[key]) {
         shape[key] = this.shape[key];
       }
-    });
+    }
     return new _ZodObject({
       ...this._def,
       shape: () => shape
@@ -22821,11 +20887,11 @@ var ZodObject = class _ZodObject extends ZodType {
   }
   omit(mask) {
     const shape = {};
-    util.objectKeys(this.shape).forEach((key) => {
+    for (const key of util.objectKeys(this.shape)) {
       if (!mask[key]) {
         shape[key] = this.shape[key];
       }
-    });
+    }
     return new _ZodObject({
       ...this._def,
       shape: () => shape
@@ -22839,14 +20905,14 @@ var ZodObject = class _ZodObject extends ZodType {
   }
   partial(mask) {
     const newShape = {};
-    util.objectKeys(this.shape).forEach((key) => {
+    for (const key of util.objectKeys(this.shape)) {
       const fieldSchema = this.shape[key];
       if (mask && !mask[key]) {
         newShape[key] = fieldSchema;
       } else {
         newShape[key] = fieldSchema.optional();
       }
-    });
+    }
     return new _ZodObject({
       ...this._def,
       shape: () => newShape
@@ -22854,7 +20920,7 @@ var ZodObject = class _ZodObject extends ZodType {
   }
   required(mask) {
     const newShape = {};
-    util.objectKeys(this.shape).forEach((key) => {
+    for (const key of util.objectKeys(this.shape)) {
       if (mask && !mask[key]) {
         newShape[key] = this.shape[key];
       } else {
@@ -22865,7 +20931,7 @@ var ZodObject = class _ZodObject extends ZodType {
         }
         newShape[key] = newField;
       }
-    });
+    }
     return new _ZodObject({
       ...this._def,
       shape: () => newShape
@@ -23481,12 +21547,7 @@ var ZodFunction = class _ZodFunction extends ZodType {
       return makeIssue({
         data: args2,
         path: ctx.path,
-        errorMaps: [
-          ctx.common.contextualErrorMap,
-          ctx.schemaErrorMap,
-          getErrorMap(),
-          errorMap
-        ].filter((x) => !!x),
+        errorMaps: [ctx.common.contextualErrorMap, ctx.schemaErrorMap, getErrorMap(), en_default].filter((x) => !!x),
         issueData: {
           code: ZodIssueCode.invalid_arguments,
           argumentsError: error
@@ -23497,12 +21558,7 @@ var ZodFunction = class _ZodFunction extends ZodType {
       return makeIssue({
         data: returns,
         path: ctx.path,
-        errorMaps: [
-          ctx.common.contextualErrorMap,
-          ctx.schemaErrorMap,
-          getErrorMap(),
-          errorMap
-        ].filter((x) => !!x),
+        errorMaps: [ctx.common.contextualErrorMap, ctx.schemaErrorMap, getErrorMap(), en_default].filter((x) => !!x),
         issueData: {
           code: ZodIssueCode.invalid_return_type,
           returnTypeError: error
@@ -23626,10 +21682,6 @@ function createZodEnum(values2, params) {
   });
 }
 var ZodEnum = class _ZodEnum extends ZodType {
-  constructor() {
-    super(...arguments);
-    _ZodEnum_cache.set(this, void 0);
-  }
   _parse(input) {
     if (typeof input.data !== "string") {
       const ctx = this._getOrReturnCtx(input);
@@ -23641,10 +21693,10 @@ var ZodEnum = class _ZodEnum extends ZodType {
       });
       return INVALID;
     }
-    if (!__classPrivateFieldGet(this, _ZodEnum_cache, "f")) {
-      __classPrivateFieldSet(this, _ZodEnum_cache, new Set(this._def.values), "f");
+    if (!this._cache) {
+      this._cache = new Set(this._def.values);
     }
-    if (!__classPrivateFieldGet(this, _ZodEnum_cache, "f").has(input.data)) {
+    if (!this._cache.has(input.data)) {
       const ctx = this._getOrReturnCtx(input);
       const expectedValues = this._def.values;
       addIssueToContext(ctx, {
@@ -23693,13 +21745,8 @@ var ZodEnum = class _ZodEnum extends ZodType {
     });
   }
 };
-_ZodEnum_cache = /* @__PURE__ */ new WeakMap();
 ZodEnum.create = createZodEnum;
 var ZodNativeEnum = class extends ZodType {
-  constructor() {
-    super(...arguments);
-    _ZodNativeEnum_cache.set(this, void 0);
-  }
   _parse(input) {
     const nativeEnumValues = util.getValidEnumValues(this._def.values);
     const ctx = this._getOrReturnCtx(input);
@@ -23712,10 +21759,10 @@ var ZodNativeEnum = class extends ZodType {
       });
       return INVALID;
     }
-    if (!__classPrivateFieldGet(this, _ZodNativeEnum_cache, "f")) {
-      __classPrivateFieldSet(this, _ZodNativeEnum_cache, new Set(util.getValidEnumValues(this._def.values)), "f");
+    if (!this._cache) {
+      this._cache = new Set(util.getValidEnumValues(this._def.values));
     }
-    if (!__classPrivateFieldGet(this, _ZodNativeEnum_cache, "f").has(input.data)) {
+    if (!this._cache.has(input.data)) {
       const expectedValues = util.objectValues(nativeEnumValues);
       addIssueToContext(ctx, {
         received: ctx.data,
@@ -23730,7 +21777,6 @@ var ZodNativeEnum = class extends ZodType {
     return this._def.values;
   }
 };
-_ZodNativeEnum_cache = /* @__PURE__ */ new WeakMap();
 ZodNativeEnum.create = (values2, params) => {
   return new ZodNativeEnum({
     values: values2,
@@ -23871,7 +21917,7 @@ var ZodEffects = class extends ZodType {
           parent: ctx
         });
         if (!isValid(base))
-          return base;
+          return INVALID;
         const result = effect.transform(base.value, checkCtx);
         if (result instanceof Promise) {
           throw new Error(`Asynchronous transform encountered during synchronous parse operation. Use .parseAsync instead.`);
@@ -23880,8 +21926,11 @@ var ZodEffects = class extends ZodType {
       } else {
         return this._def.schema._parseAsync({ data: ctx.data, path: ctx.path, parent: ctx }).then((base) => {
           if (!isValid(base))
-            return base;
-          return Promise.resolve(effect.transform(base.value, checkCtx)).then((result) => ({ status: status.value, value: result }));
+            return INVALID;
+          return Promise.resolve(effect.transform(base.value, checkCtx)).then((result) => ({
+            status: status.value,
+            value: result
+          }));
         });
       }
     }
@@ -24133,16 +22182,30 @@ ZodReadonly.create = (type2, params) => {
     ...processCreateParams(params)
   });
 };
-function custom(check, params = {}, fatal) {
+function cleanParams(params, data) {
+  const p = typeof params === "function" ? params(data) : typeof params === "string" ? { message: params } : params;
+  const p2 = typeof p === "string" ? { message: p } : p;
+  return p2;
+}
+function custom(check, _params = {}, fatal) {
   if (check)
     return ZodAny.create().superRefine((data, ctx) => {
-      var _a, _b;
-      if (!check(data)) {
-        const p = typeof params === "function" ? params(data) : typeof params === "string" ? { message: params } : params;
-        const _fatal = (_b = (_a = p.fatal) !== null && _a !== void 0 ? _a : fatal) !== null && _b !== void 0 ? _b : true;
-        const p2 = typeof p === "string" ? { message: p } : p;
-        ctx.addIssue({ code: "custom", ...p2, fatal: _fatal });
+      const r = check(data);
+      if (r instanceof Promise) {
+        return r.then((r2) => {
+          if (!r2) {
+            const params = cleanParams(_params, data);
+            const _fatal = params.fatal ?? fatal ?? true;
+            ctx.addIssue({ code: "custom", ...params, fatal: _fatal });
+          }
+        });
       }
+      if (!r) {
+        const params = cleanParams(_params, data);
+        const _fatal = params.fatal ?? fatal ?? true;
+        ctx.addIssue({ code: "custom", ...params, fatal: _fatal });
+      }
+      return;
     });
   return ZodAny.create();
 }
@@ -24239,122 +22302,16 @@ var coerce = {
   date: (arg) => ZodDate.create({ ...arg, coerce: true })
 };
 var NEVER = INVALID;
-var z = /* @__PURE__ */ Object.freeze({
-  __proto__: null,
-  defaultErrorMap: errorMap,
-  setErrorMap,
-  getErrorMap,
-  makeIssue,
-  EMPTY_PATH,
-  addIssueToContext,
-  ParseStatus,
-  INVALID,
-  DIRTY,
-  OK,
-  isAborted,
-  isDirty,
-  isValid,
-  isAsync,
-  get util() {
-    return util;
-  },
-  get objectUtil() {
-    return objectUtil;
-  },
-  ZodParsedType,
-  getParsedType,
-  ZodType,
-  datetimeRegex,
-  ZodString,
-  ZodNumber,
-  ZodBigInt,
-  ZodBoolean,
-  ZodDate,
-  ZodSymbol,
-  ZodUndefined,
-  ZodNull,
-  ZodAny,
-  ZodUnknown,
-  ZodNever,
-  ZodVoid,
-  ZodArray,
-  ZodObject,
-  ZodUnion,
-  ZodDiscriminatedUnion,
-  ZodIntersection,
-  ZodTuple,
-  ZodRecord,
-  ZodMap,
-  ZodSet,
-  ZodFunction,
-  ZodLazy,
-  ZodLiteral,
-  ZodEnum,
-  ZodNativeEnum,
-  ZodPromise,
-  ZodEffects,
-  ZodTransformer: ZodEffects,
-  ZodOptional,
-  ZodNullable,
-  ZodDefault,
-  ZodCatch,
-  ZodNaN,
-  BRAND,
-  ZodBranded,
-  ZodPipeline,
-  ZodReadonly,
-  custom,
-  Schema: ZodType,
-  ZodSchema: ZodType,
-  late,
-  get ZodFirstPartyTypeKind() {
-    return ZodFirstPartyTypeKind;
-  },
-  coerce,
-  any: anyType,
-  array: arrayType,
-  bigint: bigIntType,
-  boolean: booleanType,
-  date: dateType,
-  discriminatedUnion: discriminatedUnionType,
-  effect: effectsType,
-  "enum": enumType,
-  "function": functionType,
-  "instanceof": instanceOfType,
-  intersection: intersectionType,
-  lazy: lazyType,
-  literal: literalType,
-  map: mapType,
-  nan: nanType,
-  nativeEnum: nativeEnumType,
-  never: neverType,
-  "null": nullType,
-  nullable: nullableType,
-  number: numberType,
-  object: objectType,
-  oboolean,
-  onumber,
-  optional: optionalType,
-  ostring,
-  pipeline: pipelineType,
-  preprocess: preprocessType,
-  promise: promiseType,
-  record: recordType,
-  set: setType,
-  strictObject: strictObjectType,
-  string: stringType,
-  symbol: symbolType,
-  transformer: effectsType,
-  tuple: tupleType,
-  "undefined": undefinedType,
-  union: unionType,
-  unknown: unknownType,
-  "void": voidType,
-  NEVER,
-  ZodIssueCode,
-  quotelessJson,
-  ZodError
-});
+
+// ../cursorless-engine/src/languages/TreeSitterQuery/makeRangeFromPositions.ts
+function makeRangeFromPositions(startPosition, endPosition) {
+  return new Range(
+    startPosition.row,
+    startPosition.column,
+    endPosition.row,
+    endPosition.column
+  );
+}
 
 // ../cursorless-engine/src/languages/TreeSitterQuery/predicateToString.ts
 function predicateToString(predicateDescriptor) {
@@ -24466,14 +22423,34 @@ var CaptureNotFoundError = class extends Error {
   }
 };
 
+// ../cursorless-engine/src/languages/TreeSitterQuery/isEven.ts
+function isEven(node, fieldName) {
+  if (node.parent == null) {
+    throw Error("Node has no parent");
+  }
+  const treeCursor = node.parent.walk();
+  let hasNext = treeCursor.gotoFirstChild();
+  let even = true;
+  while (hasNext) {
+    if (treeCursor.currentFieldName === fieldName) {
+      if (treeCursor.currentNode.id === node.id) {
+        return even;
+      }
+      even = !even;
+    }
+    hasNext = treeCursor.gotoNextSibling();
+  }
+  throw Error(`Node not found in parent for field: ${fieldName}`);
+}
+
 // ../cursorless-engine/src/languages/TreeSitterQuery/operatorArgumentSchemaTypes.ts
-var string = z.object({ type: z.literal("string"), value: z.string() });
+var string = external_exports.object({ type: external_exports.literal("string"), value: external_exports.string() });
 var q = {
   /**
    * Expect a capture, eg @foo.  The operator will receive the node referenced
    * by the capture
    */
-  node: z.object({ type: z.literal("capture"), name: z.string() }),
+  node: external_exports.object({ type: external_exports.literal("capture"), name: external_exports.string() }),
   /** Expect a string */
   string,
   /** Expect an integer */
@@ -24481,10 +22458,10 @@ var q = {
     const parsedValue = parseInt(val.value);
     if (isNaN(parsedValue)) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: external_exports.ZodIssueCode.custom,
         message: "Expected an integer"
       });
-      return z.NEVER;
+      return external_exports.NEVER;
     }
     return { type: "integer", value: parsedValue };
   }),
@@ -24497,19 +22474,59 @@ var q = {
       return { type: "boolean", value: false };
     }
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: external_exports.ZodIssueCode.custom,
       message: "Expected true or false"
     });
-    return z.NEVER;
+    return external_exports.NEVER;
   })
 };
 
 // ../cursorless-engine/src/languages/TreeSitterQuery/queryPredicateOperators.ts
+var Even = class extends QueryPredicateOperator {
+  constructor() {
+    super(...arguments);
+    this.name = "even?";
+    this.schema = external_exports.tuple([q.node, q.string]);
+  }
+  run({ node }, fieldName) {
+    return isEven(node, fieldName);
+  }
+};
+var Odd = class extends QueryPredicateOperator {
+  constructor() {
+    super(...arguments);
+    this.name = "odd?";
+    this.schema = external_exports.tuple([q.node, q.string]);
+  }
+  run({ node }, fieldName) {
+    return !isEven(node, fieldName);
+  }
+};
+var Text = class extends QueryPredicateOperator {
+  constructor() {
+    super(...arguments);
+    this.name = "text?";
+    this.schema = external_exports.tuple([q.node, q.string]).rest(q.string);
+  }
+  run({ document: document2, range: range3 }, ...texts) {
+    return texts.includes(document2.getText(range3));
+  }
+};
+var Type2 = class extends QueryPredicateOperator {
+  constructor() {
+    super(...arguments);
+    this.name = "type?";
+    this.schema = external_exports.tuple([q.node, q.string]).rest(q.string);
+  }
+  run({ node }, ...types) {
+    return types.includes(node.type);
+  }
+};
 var NotType = class extends QueryPredicateOperator {
   constructor() {
     super(...arguments);
     this.name = "not-type?";
-    this.schema = z.tuple([q.node, q.string]).rest(q.string);
+    this.schema = external_exports.tuple([q.node, q.string]).rest(q.string);
   }
   run({ node }, ...types) {
     return !types.includes(node.type);
@@ -24519,7 +22536,7 @@ var NotParentType = class extends QueryPredicateOperator {
   constructor() {
     super(...arguments);
     this.name = "not-parent-type?";
-    this.schema = z.tuple([q.node, q.string]).rest(q.string);
+    this.schema = external_exports.tuple([q.node, q.string]).rest(q.string);
   }
   run({ node }, ...types) {
     return node.parent == null || !types.includes(node.parent.type);
@@ -24529,7 +22546,7 @@ var IsNthChild = class extends QueryPredicateOperator {
   constructor() {
     super(...arguments);
     this.name = "is-nth-child?";
-    this.schema = z.tuple([q.node, q.integer]);
+    this.schema = external_exports.tuple([q.node, q.integer]);
   }
   run({ node }, n) {
     return node.parent?.children.findIndex((n2) => n2.id === node.id) === n;
@@ -24539,35 +22556,22 @@ var HasMultipleChildrenOfType = class extends QueryPredicateOperator {
   constructor() {
     super(...arguments);
     this.name = "has-multiple-children-of-type?";
-    this.schema = z.tuple([q.node, q.string]);
+    this.schema = external_exports.tuple([q.node, q.string]);
   }
   run({ node }, type2) {
     const count2 = node.children.filter((n) => n.type === type2).length;
     return count2 > 1;
   }
 };
-var Match = class extends QueryPredicateOperator {
-  constructor() {
-    super(...arguments);
-    this.name = "match?";
-    this.schema = z.tuple([q.node, q.string]);
-  }
-  run(nodeInfo, pattern) {
-    const { document: document2, range: range3 } = nodeInfo;
-    const regex = new RegExp(pattern, "ds");
-    const text = document2.getText(range3);
-    return regex.test(text);
-  }
-};
 var ChildRange = class extends QueryPredicateOperator {
   constructor() {
     super(...arguments);
     this.name = "child-range!";
-    this.schema = z.union([
-      z.tuple([q.node, q.integer]),
-      z.tuple([q.node, q.integer, q.integer]),
-      z.tuple([q.node, q.integer, q.integer, q.boolean]),
-      z.tuple([q.node, q.integer, q.integer, q.boolean, q.boolean])
+    this.schema = external_exports.union([
+      external_exports.tuple([q.node, q.integer]),
+      external_exports.tuple([q.node, q.integer, q.integer]),
+      external_exports.tuple([q.node, q.integer, q.integer, q.boolean]),
+      external_exports.tuple([q.node, q.integer, q.integer, q.boolean, q.boolean])
     ]);
   }
   run(nodeInfo, startIndex, endIndex, excludeStart, excludeEnd) {
@@ -24590,9 +22594,9 @@ var CharacterRange = class extends QueryPredicateOperator {
   constructor() {
     super(...arguments);
     this.name = "character-range!";
-    this.schema = z.union([
-      z.tuple([q.node, q.integer]),
-      z.tuple([q.node, q.integer, q.integer])
+    this.schema = external_exports.union([
+      external_exports.tuple([q.node, q.integer]),
+      external_exports.tuple([q.node, q.integer, q.integer])
     ]);
   }
   run(nodeInfo, startOffset, endOffset) {
@@ -24607,7 +22611,7 @@ var ShrinkToMatch = class extends QueryPredicateOperator {
   constructor() {
     super(...arguments);
     this.name = "shrink-to-match!";
-    this.schema = z.tuple([q.node, q.string]);
+    this.schema = external_exports.tuple([q.node, q.string]);
   }
   run(nodeInfo, pattern) {
     const { document: document2, range: range3 } = nodeInfo;
@@ -24625,11 +22629,48 @@ var ShrinkToMatch = class extends QueryPredicateOperator {
     return true;
   }
 };
+var GrowToNamedSiblings = class extends QueryPredicateOperator {
+  constructor() {
+    super(...arguments);
+    this.name = "grow-to-named-siblings!";
+    this.schema = external_exports.union([external_exports.tuple([q.node]), external_exports.tuple([q.node, q.string])]);
+  }
+  run(nodeInfo, notText) {
+    const { node, range: range3, document: document2 } = nodeInfo;
+    if (node.parent == null) {
+      throw Error("Node has no parent");
+    }
+    const { children } = node.parent;
+    const nodeIndex = children.findIndex((n) => n.id === node.id);
+    let endPosition = null;
+    if (nodeIndex === -1) {
+      throw Error("Node not found in parent");
+    }
+    for (let i2 = nodeIndex + 1; i2 < children.length; ++i2) {
+      const child = children[i2];
+      if (!child.isNamed) {
+        break;
+      }
+      const childRange = makeRangeFromPositions(
+        child.startPosition,
+        child.endPosition
+      );
+      if (notText != null && notText === document2.getText(childRange)) {
+        break;
+      }
+      endPosition = childRange.end;
+    }
+    if (endPosition != null) {
+      nodeInfo.range = new Range(range3.start, endPosition);
+    }
+    return true;
+  }
+};
 var TrimEnd = class extends QueryPredicateOperator {
   constructor() {
     super(...arguments);
     this.name = "trim-end!";
-    this.schema = z.tuple([q.node]);
+    this.schema = external_exports.tuple([q.node]);
   }
   run(nodeInfo) {
     const { document: document2, range: range3 } = nodeInfo;
@@ -24644,17 +22685,32 @@ var TrimEnd = class extends QueryPredicateOperator {
     return true;
   }
 };
+var DocumentRange = class extends QueryPredicateOperator {
+  constructor() {
+    super(...arguments);
+    this.name = "document-range!";
+    this.schema = external_exports.tuple([q.node]).rest(q.node);
+  }
+  run(...nodeInfos) {
+    for (const nodeInfo of nodeInfos) {
+      nodeInfo.range = nodeInfo.document.range;
+    }
+    return true;
+  }
+};
 var AllowMultiple = class extends QueryPredicateOperator {
   constructor() {
     super(...arguments);
     this.name = "allow-multiple!";
-    this.schema = z.tuple([q.node]);
+    this.schema = external_exports.tuple([q.node]).rest(q.node);
   }
   allowMissingNode() {
     return true;
   }
-  run(nodeInfo) {
-    nodeInfo.allowMultiple = true;
+  run(...nodeInfos) {
+    for (const nodeInfo of nodeInfos) {
+      nodeInfo.allowMultiple = true;
+    }
     return true;
   }
 };
@@ -24662,7 +22718,7 @@ var Log = class extends QueryPredicateOperator {
   constructor() {
     super(...arguments);
     this.name = "log!";
-    this.schema = z.tuple([q.node]);
+    this.schema = external_exports.tuple([q.node]);
   }
   run(nodeInfo) {
     console.log(`#log!: ${nodeInfo.name}@${nodeInfo.range}`);
@@ -24673,7 +22729,7 @@ var InsertionDelimiter = class extends QueryPredicateOperator {
   constructor() {
     super(...arguments);
     this.name = "insertion-delimiter!";
-    this.schema = z.tuple([q.node, q.string]);
+    this.schema = external_exports.tuple([q.node, q.string]);
   }
   run(nodeInfo, insertionDelimiter) {
     nodeInfo.insertionDelimiter = insertionDelimiter;
@@ -24684,27 +22740,47 @@ var SingleOrMultilineDelimiter = class extends QueryPredicateOperator {
   constructor() {
     super(...arguments);
     this.name = "single-or-multi-line-delimiter!";
-    this.schema = z.tuple([q.node, q.node, q.string, q.string]);
+    this.schema = external_exports.tuple([q.node, q.node, q.string, q.string]);
   }
   run(nodeInfo, conditionNodeInfo, insertionDelimiterConsequence, insertionDelimiterAlternative) {
     nodeInfo.insertionDelimiter = conditionNodeInfo.range.isSingleLine ? insertionDelimiterConsequence : insertionDelimiterAlternative;
     return true;
   }
 };
+var EmptySingleMultiDelimiter = class extends QueryPredicateOperator {
+  constructor() {
+    super(...arguments);
+    this.name = "empty-single-multi-delimiter!";
+    this.schema = external_exports.tuple([q.node, q.node, q.string, q.string, q.string]);
+  }
+  run(nodeInfo, conditionNodeInfo, insertionDelimiterEmpty, insertionDelimiterSingleLine, insertionDelimiterMultiline) {
+    const isEmpty = !conditionNodeInfo.node.children.some(
+      (child) => child.isNamed
+    );
+    nodeInfo.insertionDelimiter = isEmpty ? insertionDelimiterEmpty : conditionNodeInfo.range.isSingleLine ? insertionDelimiterSingleLine : insertionDelimiterMultiline;
+    return true;
+  }
+};
 var queryPredicateOperators = [
   new Log(),
+  new Even(),
+  new Odd(),
+  new Text(),
+  new Type2(),
   new NotType(),
   new TrimEnd(),
+  new DocumentRange(),
   new NotParentType(),
   new IsNthChild(),
   new ChildRange(),
   new CharacterRange(),
   new ShrinkToMatch(),
+  new GrowToNamedSiblings(),
   new AllowMultiple(),
   new InsertionDelimiter(),
   new SingleOrMultilineDelimiter(),
-  new HasMultipleChildrenOfType(),
-  new Match()
+  new EmptySingleMultiDelimiter(),
+  new HasMultipleChildrenOfType()
 ];
 
 // ../cursorless-engine/src/languages/TreeSitterQuery/parsePredicates.ts
@@ -24884,7 +22960,7 @@ var TreeSitterQuery = class _TreeSitterQuery {
   }
   createMutableQueryMatch(document2, match) {
     return {
-      patternIdx: match.pattern,
+      patternIdx: match.patternIndex,
       captures: match.captures.map(({ name: name2, node }) => ({
         name: name2,
         node,
@@ -24948,13 +23024,19 @@ var TreeSitterQuery = class _TreeSitterQuery {
 
 // ../cursorless-engine/src/languages/TreeSitterQuery/validateQueryCaptures.ts
 var wildcard = "_";
-var captureNames = [wildcard, ...simpleScopeTypeTypes];
+var captureNames = [wildcard, "interior", ...simpleScopeTypeTypes];
 var positionRelationships = ["prefix", "leading", "trailing"];
-var positionSuffixes = ["startOf", "endOf"];
+var positionSuffixes = [
+  "startOf",
+  "endOf",
+  "start.startOf",
+  "start.endOf",
+  "end.startOf",
+  "end.endOf"
+];
 var rangeRelationships = [
   "domain",
   "removal",
-  "interior",
   "iteration",
   "iteration.domain"
 ];
@@ -24987,7 +23069,7 @@ for (const captureName of captureNames) {
     }
   }
 }
-var capturePattern = new RegExp(`^(?!;;).*@([\\w.]*)`, "gm");
+var capturePattern = /^(?!;;).*(?<!"\w*)@([\w.]*)/gm;
 function validateQueryCaptures(file, rawQuery) {
   const matches = rawQuery.matchAll(capturePattern);
   const errors2 = [];
@@ -25041,7 +23123,12 @@ var LanguageDefinition = class _LanguageDefinition {
     if (!await treeSitter.loadLanguage(languageId)) {
       return void 0;
     }
-    const rawQuery = treeSitter.getLanguage(languageId).query(rawLanguageQueryString);
+    const rawQuery = treeSitter.createQuery(languageId, rawLanguageQueryString);
+    if (rawQuery == null) {
+      throw Error(
+        `Could not create Tree sitter query for language ${languageId}`
+      );
+    }
     const query = TreeSitterQuery.create(languageId, treeSitter, rawQuery);
     return new _LanguageDefinition(query);
   }
@@ -25267,10 +23354,10 @@ var CascadingStage = class {
     }
     return this.nestedStages_;
   }
-  run(target) {
+  run(target, options2) {
     for (const nestedStage of this.nestedStages) {
       try {
-        return nestedStage.run(target);
+        return nestedStage.run(target, options2);
       } catch (_error) {
         continue;
       }
@@ -25286,10 +23373,10 @@ var ConditionalModifierBaseStage = class {
     this.nestedModifier = nestedModifier;
     this.suppressErrors = false;
   }
-  run(target) {
+  run(target, options2) {
     if (this.shouldModify(target)) {
       try {
-        return this.nestedStage.run(target).map((newTarget) => newTarget.withThatTarget(target));
+        return this.nestedStage.run(target, options2).map((newTarget) => newTarget.withThatTarget(target));
       } catch (ex) {
         if (!this.suppressErrors) {
           throw ex;
@@ -25359,7 +23446,7 @@ function createContinuousRangeTarget(isReversed, startTarget, endTarget, include
       return richTarget;
     }
   }
-  if (startTarget.isLine && endTarget.isLine) {
+  if (startTarget.textualType === "line" && endTarget.textualType === "line") {
     return new LineTarget({
       editor: startTarget.editor,
       isReversed,
@@ -25381,7 +23468,7 @@ function createContinuousRangeTarget(isReversed, startTarget, endTarget, include
       includeStart,
       includeEnd
     ),
-    isToken: includeStart && includeEnd && startTarget.isToken && endTarget.isToken
+    textualType: includeStart && includeEnd && startTarget.textualType === "token" && endTarget.textualType === "token" ? "token" : "character"
   });
 }
 
@@ -25490,9 +23577,9 @@ function getContainingScopeTarget(target, scopeHandler, ancestorIndex = 0) {
   }
   return constructScopeRangeTarget(isReversed, startScope, endScope);
 }
-function expandFromPosition(scopeHandler, editor, position, direction, ancestorIndex, allowAdjacentScopes = false) {
+function expandFromPosition(scopeHandler, editor, position, direction2, ancestorIndex, allowAdjacentScopes = false) {
   let nextAncestorIndex = 0;
-  for (const scope of scopeHandler.generateScopes(editor, position, direction, {
+  for (const scope of scopeHandler.generateScopes(editor, position, direction2, {
     containment: "required",
     allowAdjacentScopes
   })) {
@@ -25518,7 +23605,7 @@ var ContainingScopeStage = class {
       target.editor.document.languageId
     );
     if (scopeHandler == null) {
-      return this.modifierStageFactory.getLegacyScopeStage(this.modifier).run(target);
+      throw new NoContainingScopeError(scopeType.type);
     }
     const containingScopes = getContainingScopeTarget(
       target,
@@ -25526,7 +23613,7 @@ var ContainingScopeStage = class {
       ancestorIndex
     );
     if (containingScopes == null) {
-      throw new NoContainingScopeError(this.modifier.scopeType.type);
+      throw new NoContainingScopeError(scopeType.type);
     }
     return containingScopes;
   }
@@ -25539,7 +23626,7 @@ var EveryScopeStage = class {
     this.scopeHandlerFactory = scopeHandlerFactory;
     this.modifier = modifier;
   }
-  run(target) {
+  run(target, options2) {
     const { scopeType } = this.modifier;
     const { editor, isReversed } = target;
     const scopeHandler = this.scopeHandlerFactory.maybeCreate(
@@ -25547,7 +23634,7 @@ var EveryScopeStage = class {
       editor.document.languageId
     );
     if (scopeHandler == null) {
-      return this.modifierStageFactory.getLegacyScopeStage(this.modifier).run(target);
+      throw new NoContainingScopeError(scopeType.type);
     }
     let scopes;
     if (target.hasExplicitRange) {
@@ -25556,7 +23643,7 @@ var EveryScopeStage = class {
         editor,
         target.contentRange
       );
-      if (scopes.length === 1 && scopes[0].domain.contains(target.contentRange)) {
+      if (scopes.length === 1 && scopes[0].domain.contains(target.contentRange) && !target.hasExplicitScopeType && !options2.multipleTargets) {
         scopes = void 0;
       }
     }
@@ -25784,6 +23871,7 @@ var TargetPipeline = class {
   processPrimitiveTarget(targetDescriptor) {
     let markStage;
     let targetModifierStages;
+    let automaticTokenExpansionBefore = false;
     if (targetDescriptor.type === "implicit") {
       markStage = new ImplicitStage();
       targetModifierStages = [];
@@ -25793,35 +23881,61 @@ var TargetPipeline = class {
         this.modifierStageFactory,
         targetDescriptor.modifiers
       );
+      automaticTokenExpansionBefore = doAutomaticTokenExpansionBefore(targetDescriptor);
     }
     const markOutputTargets = markStage.run();
+    const [preStages, postStages] = this.getPreAndPostStages(
+      automaticTokenExpansionBefore
+    );
     const modifierStages = [
+      ...preStages,
       ...targetModifierStages,
       ...this.opts.actionFinalStages,
-      // This performs auto-expansion to token when you say eg "take this" with an
-      // empty selection
-      ...this.opts.noAutomaticTokenExpansion ? [] : [new ContainingTokenIfUntypedEmptyStage(this.modifierStageFactory)]
+      ...postStages
     ];
     return processModifierStages(modifierStages, markOutputTargets);
   }
+  getPreAndPostStages(automaticTokenExpansionBefore) {
+    if (this.opts.noAutomaticTokenExpansion) {
+      return [[], []];
+    }
+    const stage = new ContainingTokenIfUntypedEmptyStage(
+      this.modifierStageFactory
+    );
+    if (automaticTokenExpansionBefore) {
+      return [[stage], []];
+    }
+    return [[], [stage]];
+  }
 };
+function doAutomaticTokenExpansionBefore(targetDescriptor) {
+  return targetDescriptor.modifiers.length > 0 && targetDescriptor.modifiers.every(
+    ({ type: type2 }) => type2 === "startOf" || type2 === "endOf"
+  );
+}
 function getModifierStagesFromTargetModifiers(modifierStageFactory, targetModifiers) {
   return targetModifiers.map(modifierStageFactory.create).reverse();
 }
 function processModifierStages(modifierStages, targets) {
   modifierStages.forEach((stage) => {
-    targets = targets.flatMap((target) => stage.run(target));
+    const options2 = {
+      multipleTargets: targets.length > 1
+    };
+    targets = targets.flatMap((target) => stage.run(target, options2));
   });
   return targets;
 }
-function getExcludedScope(modifierStageFactory, target, scopeType, direction) {
+function getExcludedScope(modifierStageFactory, target, scopeType, direction2) {
+  const options2 = {
+    multipleTargets: false
+  };
   return modifierStageFactory.create({
     type: "relativeScope",
     scopeType,
-    direction,
+    direction: direction2,
     length: 1,
     offset: 1
-  }).run(target)[0];
+  }).run(target, options2)[0];
 }
 function calcIsReversed(anchor, active) {
   if (anchor.contentRange.start.isAfter(active.contentRange.start)) {
@@ -25839,13 +23953,13 @@ function uniqTargets(array) {
     (a) => a.contentRange.concise()
   );
 }
-function ensureSingleEditor(anchorTarget, activeTarget) {
+function ensureSingleEditor2(anchorTarget, activeTarget) {
   if (anchorTarget.editor !== activeTarget.editor) {
     throw new Error("Cannot form range between targets in different editors");
   }
 }
 function targetsToContinuousTarget(anchorTarget, activeTarget, excludeAnchor = false, excludeActive = false) {
-  ensureSingleEditor(anchorTarget, activeTarget);
+  ensureSingleEditor2(anchorTarget, activeTarget);
   const isReversed = calcIsReversed(anchorTarget, activeTarget);
   const startTarget = isReversed ? activeTarget : anchorTarget;
   const endTarget = isReversed ? anchorTarget : activeTarget;
@@ -25860,7 +23974,7 @@ function targetsToContinuousTarget(anchorTarget, activeTarget, excludeAnchor = f
   );
 }
 function targetsToVerticalTarget(anchorTarget, activeTarget, excludeAnchor, excludeActive) {
-  ensureSingleEditor(anchorTarget, activeTarget);
+  ensureSingleEditor2(anchorTarget, activeTarget);
   const isReversed = calcIsReversed(anchorTarget, activeTarget);
   const delta = isReversed ? -1 : 1;
   const anchorPosition = isReversed ? anchorTarget.contentRange.start : anchorTarget.contentRange.end;
@@ -25896,31 +24010,10 @@ var HeadTailStage = class {
     this.modifier = modifier;
   }
   run(target) {
-    const modifiers = this.modifier.modifiers ?? [
-      {
-        type: "containingScope",
-        scopeType: {
-          type: "oneOf",
-          scopeTypes: [
-            {
-              type: "line"
-            },
-            {
-              type: "surroundingPairInterior",
-              delimiter: "any",
-              requireSingleLine: true
-            }
-          ]
-        }
-      }
-    ];
-    const modifierStages = getModifierStagesFromTargetModifiers(
-      this.modifierStageFactory,
-      modifiers
-    );
+    const modifierStages = this.getModifierStages();
     const modifiedTargets = processModifierStages(modifierStages, [target]);
+    const isHead = this.modifier.type === "extendThroughStartOf";
     return modifiedTargets.map((modifiedTarget) => {
-      const isHead = this.modifier.type === "extendThroughStartOf";
       return new HeadTailTarget({
         editor: target.editor,
         isReversed: isHead,
@@ -25930,22 +24023,77 @@ var HeadTailStage = class {
       });
     });
   }
+  getModifierStages() {
+    if (this.modifier.modifiers != null) {
+      return getModifierStagesFromTargetModifiers(
+        this.modifierStageFactory,
+        this.modifier.modifiers
+      );
+    }
+    return [new BoundedLineStage(this.modifierStageFactory, this.modifier)];
+  }
+};
+var BoundedLineStage = class {
+  constructor(modifierStageFactory, modifier) {
+    this.modifierStageFactory = modifierStageFactory;
+    this.modifier = modifier;
+  }
+  run(target, options2) {
+    const line = this.getContainingLine(target, options2);
+    const pairInterior = this.getContainingPairInterior(target, options2);
+    const intersection = pairInterior != null ? line.contentRange.intersection(pairInterior.contentRange) : null;
+    if (intersection == null || intersection.isEmpty) {
+      return [line];
+    }
+    return [
+      new PlainTarget({
+        editor: target.editor,
+        isReversed: target.isReversed,
+        contentRange: intersection
+      })
+    ];
+  }
+  getContainingPairInterior(target, options2) {
+    try {
+      return this.getContaining(target, options2, {
+        type: "surroundingPairInterior",
+        delimiter: "any"
+      })[0];
+    } catch (error) {
+      if (error instanceof NoContainingScopeError) {
+        return void 0;
+      }
+      throw error;
+    }
+  }
+  getContainingLine(target, options2) {
+    return this.getContaining(target, options2, {
+      type: "line"
+    })[0];
+  }
+  getContaining(target, options2, scopeType) {
+    return this.modifierStageFactory.create({ type: "containingScope", scopeType }).run(target, options2);
+  }
 };
 
 // ../cursorless-engine/src/processTargets/modifiers/listUtils.ts
 var OutOfRangeError = class extends Error {
-  constructor() {
-    super("Scope index out of range");
+  constructor(scopeType, index) {
+    const numberStr = index != null ? ` #${index + 1}` : "";
+    super(`Scope '${scopeType.type}'${numberStr} is out of range`);
     this.name = "OutOfRangeError";
   }
 };
-function sliceStrict(targets, startIndex, endIndex) {
-  assertIndices(targets, startIndex, endIndex);
+function sliceStrict(scopeType, targets, startIndex, endIndex) {
+  assertIndices(scopeType, targets, startIndex, endIndex);
   return targets.slice(startIndex, endIndex + 1);
 }
-function assertIndices(targets, startIndex, endIndex) {
-  if (startIndex < 0 || endIndex >= targets.length) {
-    throw new OutOfRangeError();
+function assertIndices(scopeType, targets, startIndex, endIndex) {
+  if (startIndex < 0 || startIndex >= targets.length) {
+    throw new OutOfRangeError(scopeType, startIndex);
+  }
+  if (endIndex < 0 || endIndex >= targets.length) {
+    throw new OutOfRangeError(scopeType, endIndex);
   }
 }
 
@@ -25956,34 +24104,36 @@ var InstanceStage = class {
     this.storedTargets = storedTargets;
     this.modifier = modifier;
   }
-  run(inputTarget) {
+  run(inputTarget, options2) {
     const target = new ContainingTokenIfUntypedEmptyStage(
       this.modifierStageFactory
-    ).run(inputTarget)[0];
+    ).run(inputTarget, options2)[0];
     switch (this.modifier.type) {
       case "everyScope":
-        return this.handleEveryScope(target);
+        return this.handleEveryScope(target, options2);
       case "ordinalScope":
-        return this.handleOrdinalScope(target, this.modifier);
+        return this.handleOrdinalScope(target, options2, this.modifier);
       case "relativeScope":
-        return this.handleRelativeScope(target, this.modifier);
+        return this.handleRelativeScope(target, options2, this.modifier);
       default:
         throw Error(`${this.modifier.type} instance scope not supported`);
     }
   }
-  handleEveryScope(target) {
+  handleEveryScope(target, options2) {
     return Array.from(
       flatmap(
         this.getEveryRanges(target),
-        ([editor, searchRange]) => this.getTargetIterable(target, editor, searchRange, "forward")
+        ([editor, searchRange]) => this.getTargetIterable(target, options2, editor, searchRange, "forward")
       )
     );
   }
-  handleOrdinalScope(target, { start: start2, length }) {
+  handleOrdinalScope(target, options2, { start: start2, length, scopeType }) {
     return this.getEveryRanges(target).flatMap(
       ([editor, searchRange]) => takeFromOffset(
+        scopeType,
         this.getTargetIterable(
           target,
+          options2,
           editor,
           searchRange,
           start2 >= 0 ? "forward" : "backward"
@@ -25993,13 +24143,13 @@ var InstanceStage = class {
       )
     );
   }
-  handleRelativeScope(target, { direction, offset, length }) {
+  handleRelativeScope(target, options2, { direction: direction2, offset, length, scopeType }) {
     const referenceTargets = this.storedTargets.get("instanceReference") ?? [
       target
     ];
     return referenceTargets.flatMap((referenceTarget) => {
       const { editor } = referenceTarget;
-      const iterationRange = direction === "forward" ? new Range(
+      const iterationRange = direction2 === "forward" ? new Range(
         offset === 0 ? referenceTarget.contentRange.start : referenceTarget.contentRange.end,
         editor.document.range.end
       ) : new Range(
@@ -26007,7 +24157,14 @@ var InstanceStage = class {
         offset === 0 ? referenceTarget.contentRange.end : referenceTarget.contentRange.start
       );
       return takeFromOffset(
-        this.getTargetIterable(target, editor, iterationRange, direction),
+        scopeType,
+        this.getTargetIterable(
+          target,
+          options2,
+          editor,
+          iterationRange,
+          direction2
+        ),
         offset === 0 ? 0 : offset - 1,
         length
       );
@@ -26018,19 +24175,19 @@ var InstanceStage = class {
   }) {
     return this.storedTargets.get("instanceReference")?.map(({ editor, contentRange }) => [editor, contentRange]) ?? [[targetEditor, targetEditor.document.range]];
   }
-  getTargetIterable(target, editor, searchRange, direction) {
+  getTargetIterable(target, options2, editor, searchRange, direction2) {
     const iterable = imap(
       generateMatchesInRange(
         new RegExp(escapeRegExp_default(target.contentText), "g"),
         editor,
         searchRange,
-        direction
+        direction2
       ),
       (range3) => new PlainTarget({
         contentRange: range3,
         editor,
         isReversed: false,
-        isToken: false
+        textualType: "character"
       })
     );
     const filterScopeType = getFilterScopeType(target);
@@ -26042,7 +24199,10 @@ var InstanceStage = class {
       return ifilter(
         imap(iterable, (target2) => {
           try {
-            const containingScope = containingScopeModifier2.run(target2);
+            const containingScope = containingScopeModifier2.run(
+              target2,
+              options2
+            );
             if (containingScope.length === 1 && containingScope[0].contentRange.isRangeEqual(target2.contentRange)) {
               return containingScope[0];
             }
@@ -26058,35 +24218,43 @@ var InstanceStage = class {
   }
 };
 function getFilterScopeType(target) {
-  if (target.isLine) {
-    return { type: "line" };
+  switch (target.textualType) {
+    case "line":
+    case "token":
+    case "word":
+      return { type: target.textualType };
+    default:
+      return null;
   }
-  if (target.isToken) {
-    return { type: "token" };
-  }
-  if (target.isWord) {
-    return { type: "word" };
-  }
-  return null;
 }
-function takeFromOffset(iterable, offset, count2) {
+function takeFromOffset(scopeType, iterable, offset, count2) {
   Array.from(itake(offset, iterable));
   const items = Array.from(itake(count2, iterable));
   if (items.length < count2) {
-    throw new OutOfRangeError();
+    throw new OutOfRangeError(scopeType, offset + count2 - 1);
   }
   return items;
 }
 
 // ../cursorless-engine/src/processTargets/modifiers/InteriorStage.ts
 var InteriorOnlyStage = class {
-  constructor(modifierStageFactory, modifier) {
-    this.modifierStageFactory = modifierStageFactory;
+  constructor(modifierHandlerFactory, modifier) {
+    this.modifierHandlerFactory = modifierHandlerFactory;
     this.modifier = modifier;
-    this.containingSurroundingPairIfNoInteriorStage = getContainingSurroundingPairIfNoInteriorStage(this.modifierStageFactory);
   }
-  run(target) {
-    return this.containingSurroundingPairIfNoInteriorStage.run(target).flatMap((target2) => target2.getInterior());
+  run(target, options2) {
+    const interior = target.getInterior();
+    if (interior != null) {
+      return interior;
+    }
+    const containingModifier = this.modifierHandlerFactory.create({
+      type: "containingScope",
+      scopeType: {
+        type: "interior",
+        explicitScopeType: target.hasExplicitScopeType
+      }
+    });
+    return containingModifier.run(target, options2);
   }
 };
 var ExcludeInteriorStage = class {
@@ -26095,20 +24263,10 @@ var ExcludeInteriorStage = class {
     this.modifier = modifier;
     this.containingSurroundingPairIfNoBoundaryStage = getContainingSurroundingPairIfNoBoundaryStage(this.modifierStageFactory);
   }
-  run(target) {
-    return this.containingSurroundingPairIfNoBoundaryStage.run(target).flatMap((target2) => target2.getBoundary());
+  run(target, options2) {
+    return this.containingSurroundingPairIfNoBoundaryStage.run(target, options2).flatMap((target2) => target2.getBoundary());
   }
 };
-function getContainingSurroundingPairIfNoInteriorStage(modifierStageFactory) {
-  return new ModifyIfConditionStage(
-    modifierStageFactory,
-    {
-      type: "containingScope",
-      scopeType: { type: "surroundingPair", delimiter: "any" }
-    },
-    (target) => target.getInterior() == null
-  );
-}
 function getContainingSurroundingPairIfNoBoundaryStage(modifierStageFactory) {
   return new ModifyIfConditionStage(
     modifierStageFactory,
@@ -26148,8 +24306,8 @@ var LeadingStage = class {
     this.modifierStageFactory = modifierStageFactory;
     this.modifier = modifier;
   }
-  run(target) {
-    return this.modifierStageFactory.create(containingTokenIfUntypedModifier).run(target).map((target2) => {
+  run(target, options2) {
+    return this.modifierStageFactory.create(containingTokenIfUntypedModifier).run(target, options2).map((target2) => {
       const leading = target2.getLeadingDelimiterTarget();
       if (leading == null) {
         throw new NoDelimiterError("leading");
@@ -26163,8 +24321,8 @@ var TrailingStage = class {
     this.modifierStageFactory = modifierStageFactory;
     this.modifier = modifier;
   }
-  run(target) {
-    return this.modifierStageFactory.create(containingTokenIfUntypedModifier).run(target).map((target2) => {
+  run(target, options2) {
+    return this.modifierStageFactory.create(containingTokenIfUntypedModifier).run(target, options2).map((target2) => {
       const trailing = target2.getTrailingDelimiterTarget();
       if (trailing == null) {
         throw new NoDelimiterError("trailing");
@@ -26175,8 +24333,8 @@ var TrailingStage = class {
 };
 
 // ../cursorless-engine/src/processTargets/modifiers/targetSequenceUtils.ts
-function createRangeTargetFromIndices(isReversed, targets, startIndex, endIndex) {
-  assertIndices(targets, startIndex, endIndex);
+function createRangeTargetFromIndices(scopeType, isReversed, targets, startIndex, endIndex) {
+  assertIndices(scopeType, targets, startIndex, endIndex);
   if (startIndex === endIndex) {
     return targets[startIndex];
   }
@@ -26188,12 +24346,12 @@ function createRangeTargetFromIndices(isReversed, targets, startIndex, endIndex)
     true
   );
 }
-function getEveryScopeTargets(modifierStageFactory, target, scopeType) {
+function getEveryScopeTargets(modifierStageFactory, target, options2, scopeType) {
   const containingStage = modifierStageFactory.create({
     type: "everyScope",
     scopeType
   });
-  return containingStage.run(target);
+  return containingStage.run(target, options2);
 }
 
 // ../cursorless-engine/src/processTargets/modifiers/OrdinalScopeStage.ts
@@ -26202,19 +24360,26 @@ var OrdinalScopeStage = class {
     this.modifierStageFactory = modifierStageFactory;
     this.modifier = modifier;
   }
-  run(target) {
+  run(target, options2) {
     const targets = getEveryScopeTargets(
       this.modifierStageFactory,
       target,
+      options2,
       this.modifier.scopeType
     );
     const startIndex = this.modifier.start + (this.modifier.start < 0 ? targets.length : 0);
     const endIndex = startIndex + this.modifier.length - 1;
     if (this.modifier.isEvery) {
-      return sliceStrict(targets, startIndex, endIndex);
+      return sliceStrict(
+        this.modifier.scopeType,
+        targets,
+        startIndex,
+        endIndex
+      );
     }
     return [
       createRangeTargetFromIndices(
+        this.modifier.scopeType,
         target.isReversed,
         targets,
         startIndex,
@@ -26233,7 +24398,7 @@ var PositionStage = class {
       contentRange: this.getContentRange(target.contentRange)
     };
     return [
-      target.isRaw ? new RawSelectionTarget(parameters) : new PlainTarget({ ...parameters, isToken: false })
+      target.isRaw ? new RawSelectionTarget(parameters) : new PlainTarget({ ...parameters, textualType: "character" })
     ];
   }
 };
@@ -26327,11 +24492,11 @@ var RangeModifierStage = class {
     this.modifierStageFactory = modifierStageFactory;
     this.modifier = modifier;
   }
-  run(target) {
+  run(target, options2) {
     const anchorStage = this.modifierStageFactory.create(this.modifier.anchor);
     const activeStage = this.modifierStageFactory.create(this.modifier.active);
-    const anchorTargets = anchorStage.run(target);
-    const activeTargets = activeStage.run(target);
+    const anchorTargets = anchorStage.run(target, options2);
+    const activeTargets = activeStage.run(target, options2);
     if (anchorTargets.length !== 1 || activeTargets.length !== 1) {
       throw new Error("Expected single anchor and active target");
     }
@@ -26373,10 +24538,11 @@ var TooFewScopesError = class extends Error {
 };
 
 // ../cursorless-engine/src/processTargets/modifiers/relativeScopeLegacy.ts
-function runLegacy(modifierStageFactory, modifier, target) {
+function runLegacy(modifierStageFactory, modifier, target, options2) {
   const targets = getEveryScopeTargets(
     modifierStageFactory,
     createTargetWithoutExplicitRange(target),
+    options2,
     modifier.scopeType
   );
   const containingIndices = getContainingIndices(target.contentRange, targets);
@@ -26401,6 +24567,7 @@ function calculateIndicesAndCreateTarget(modifier, target, targets, containingIn
   const endIndex = Math.max(proximalIndex, distalIndex);
   return [
     createRangeTargetFromIndices(
+      modifier.scopeType,
       target.isReversed,
       targets,
       startIndex,
@@ -26418,7 +24585,7 @@ function computeProximalIndex(modifier, inputTargetRange, targets, isForward, co
       (t) => t.contentRange.start.isBefore(inputTargetRange.start)
     );
     if (adjacentTargetIndex === -1) {
-      throw new OutOfRangeError();
+      throw new OutOfRangeError(modifier.scopeType);
     }
     if (includeIntersectingScopes) {
       return adjacentTargetIndex;
@@ -26477,19 +24644,27 @@ var RelativeScopeStage = class {
     this.scopeHandlerFactory = scopeHandlerFactory;
     this.modifier = modifier;
   }
-  run(target) {
+  run(target, options2) {
     const scopeHandler = this.scopeHandlerFactory.maybeCreate(
       this.modifier.scopeType,
       target.editor.document.languageId
     );
     if (scopeHandler == null) {
-      return runLegacy(this.modifierStageFactory, this.modifier, target);
+      return runLegacy(
+        this.modifierStageFactory,
+        this.modifier,
+        target,
+        options2
+      );
     }
     const scopes = Array.from(
       this.modifier.offset === 0 ? generateScopesInclusive(scopeHandler, target, this.modifier) : generateScopesExclusive(scopeHandler, target, this.modifier)
     );
     if (scopes.length < this.modifier.length) {
-      throw new OutOfRangeError();
+      throw new OutOfRangeError(
+        this.modifier.scopeType,
+        this.modifier.offset + this.modifier.length - 1
+      );
     }
     const { isReversed } = target;
     if (this.modifier.isEvery) {
@@ -26504,12 +24679,12 @@ var RelativeScopeStage = class {
 };
 function generateScopesInclusive(scopeHandler, target, modifier) {
   const { editor, contentRange } = target;
-  const { length: desiredScopeCount, direction } = modifier;
+  const { length: desiredScopeCount, direction: direction2 } = modifier;
   const initialRange = getPreferredScopeTouchingPosition(
     scopeHandler,
     editor,
-    direction === "forward" ? contentRange.start : contentRange.end,
-    direction
+    direction2 === "forward" ? contentRange.start : contentRange.end,
+    direction2
   )?.domain;
   if (initialRange == null) {
     throw new NoContainingScopeError(modifier.scopeType.type);
@@ -26518,8 +24693,8 @@ function generateScopesInclusive(scopeHandler, target, modifier) {
     desiredScopeCount,
     scopeHandler.generateScopes(
       editor,
-      direction === "forward" ? initialRange.start : initialRange.end,
-      direction,
+      direction2 === "forward" ? initialRange.start : initialRange.end,
+      direction2,
       {
         skipAncestorScopes: true
       }
@@ -26528,11 +24703,11 @@ function generateScopesInclusive(scopeHandler, target, modifier) {
 }
 function generateScopesExclusive(scopeHandler, target, modifier) {
   const { editor, contentRange: inputRange } = target;
-  const { length: desiredScopeCount, direction, offset } = modifier;
-  const initialPosition = direction === "forward" ? inputRange.end : inputRange.start;
+  const { length: desiredScopeCount, direction: direction2, offset } = modifier;
+  const initialPosition = direction2 === "forward" ? inputRange.end : inputRange.start;
   const containment = inputRange.isEmpty ? "disallowed" : "disallowedIfStrict";
   return islice(
-    scopeHandler.generateScopes(editor, initialPosition, direction, {
+    scopeHandler.generateScopes(editor, initialPosition, direction2, {
       containment,
       skipAncestorScopes: true
     }),
@@ -26556,1146 +24731,6 @@ var VisibleStage = class {
     );
   }
 };
-
-// ../cursorless-engine/src/util/nodeFinders.ts
-function chainedNodeFinder(...nodeFinders) {
-  return (node) => {
-    let currentNode = node;
-    for (const nodeFinder of nodeFinders) {
-      currentNode = nodeFinder(currentNode);
-      if (currentNode == null) {
-        return null;
-      }
-    }
-    return currentNode;
-  };
-}
-function ancestorChainNodeFinder(nodeToReturn, ...nodeFinders) {
-  return (node) => {
-    let currentNode = node;
-    const nodeList = [];
-    const nodeFindersReversed = [...nodeFinders].reverse();
-    for (const nodeFinder of nodeFindersReversed) {
-      if (currentNode == null) {
-        return null;
-      }
-      currentNode = nodeFinder(currentNode);
-      if (currentNode == null) {
-        return null;
-      }
-      nodeList.push(currentNode);
-      currentNode = currentNode.parent ?? null;
-    }
-    return nodeList.reverse()[nodeToReturn];
-  };
-}
-var toPosition = (point) => new Position(point.row, point.column);
-var argumentNodeFinder = (...parentTypes) => {
-  const left = ["(", "{", "[", "<"];
-  const right = [")", "}", "]", ">"];
-  const delimiters = left.concat(right);
-  const isType = (node, typeNames) => node != null && typeNames.includes(node.type);
-  const isOk = (node) => node != null && !isType(node, delimiters);
-  return (node, selection) => {
-    let resultNode;
-    const { start: start2, end } = selection;
-    if (isType(node.parent, parentTypes)) {
-      if (isType(node, left)) {
-        resultNode = node.nextNamedSibling;
-      } else if (isType(node, right)) {
-        resultNode = node.previousNamedSibling;
-      } else if (node.type === ",") {
-        resultNode = end.isBeforeOrEqual(toPosition(node.startPosition)) ? node.previousNamedSibling : node.nextNamedSibling;
-      } else {
-        resultNode = node;
-      }
-      return isOk(resultNode) ? resultNode : null;
-    } else if (isType(node, parentTypes)) {
-      const children = [...node.children];
-      const childRight = children.find(
-        ({ startPosition }) => toPosition(startPosition).isAfterOrEqual(end)
-      ) ?? null;
-      if (isOk(childRight)) {
-        return childRight;
-      }
-      children.reverse();
-      const childLeft = children.find(
-        ({ endPosition }) => toPosition(endPosition).isBeforeOrEqual(start2)
-      ) ?? null;
-      if (isOk(childLeft)) {
-        return childLeft;
-      }
-    }
-    return null;
-  };
-};
-function patternFinder(...patterns) {
-  const parsedPatterns = parsePatternStrings(patterns);
-  return (node) => {
-    for (const pattern of parsedPatterns) {
-      const match = tryPatternMatch(node, pattern);
-      if (match != null) {
-        return match;
-      }
-    }
-    return null;
-  };
-}
-function parsePatternStrings(patternStrings) {
-  return patternStrings.map(
-    (patternString) => patternString.split(".").map((pattern) => new Pattern(pattern))
-  );
-}
-function tryPatternMatch(node, patterns) {
-  let result = searchNodeAscending(node, patterns);
-  if (!result && patterns.length > 1) {
-    result = searchNodeDescending(node, patterns);
-  }
-  let resultNode = null;
-  let resultPattern;
-  if (result != null) {
-    [resultNode, resultPattern] = result;
-  }
-  if (resultNode != null && resultPattern != null && resultPattern.fields != null) {
-    resultPattern.fields.forEach((field) => {
-      resultNode = (field.isIndex ? resultNode?.namedChild(field.value) : resultNode?.childForFieldName(field.value)) ?? null;
-    });
-  }
-  return resultNode;
-}
-function searchNodeAscending(node, patterns) {
-  let result = null;
-  let currentNode = node;
-  for (let i2 = patterns.length - 1; i2 > -1; --i2) {
-    const pattern = patterns[i2];
-    if (currentNode == null || !pattern.typeEquals(currentNode)) {
-      if (pattern.isOptional) {
-        continue;
-      }
-      return null;
-    }
-    if (!result || !result[1].isImportant) {
-      result = [currentNode, pattern];
-    }
-    currentNode = currentNode.parent;
-  }
-  return result;
-}
-function searchNodeDescending(node, patterns) {
-  let result = null;
-  let currentNode = node;
-  for (let i2 = 0; i2 < patterns.length; ++i2) {
-    const pattern = patterns[i2];
-    if (currentNode == null || !pattern.typeEquals(currentNode)) {
-      if (pattern.isOptional) {
-        continue;
-      }
-      return null;
-    }
-    if (!result || pattern.isImportant) {
-      result = [currentNode, pattern];
-    }
-    if (i2 + 1 < patterns.length) {
-      const children = currentNode.namedChildren.filter(
-        (node2) => patterns[i2 + 1].typeEquals(node2)
-      );
-      currentNode = children.length === 1 ? children[0] : null;
-    }
-  }
-  return result;
-}
-var Pattern = class {
-  constructor(pattern) {
-    this.anyType = false;
-    this.notType = false;
-    this.type = pattern.match(/^[\w*~]+/)[0];
-    if (this.type === "*") {
-      this.anyType = true;
-    } else if (this.type.startsWith("~")) {
-      this.type = this.type.slice(1);
-      this.notType = true;
-    }
-    this.isImportant = pattern.indexOf("!") > -1;
-    this.isOptional = pattern.indexOf("?") > -1;
-    this.fields = [...pattern.matchAll(/(?<=\[).+?(?=\])/g)].map((m) => m[0]).map((field) => {
-      if (/\d+/.test(field)) {
-        return {
-          isIndex: true,
-          value: Number(field)
-        };
-      }
-      return {
-        isIndex: false,
-        value: field
-      };
-    });
-  }
-  typeEquals(node) {
-    if (this.anyType) {
-      return true;
-    }
-    if (this.notType) {
-      return this.type !== node.type;
-    }
-    return this.type === node.type;
-  }
-};
-
-// ../cursorless-engine/src/util/nodeMatchers.ts
-function matcher(finder, selector = simpleSelectionExtractor) {
-  return function(selection, node) {
-    const targetNode = finder(node, selection.selection);
-    return targetNode != null ? [
-      {
-        node: targetNode,
-        selection: selector(selection.editor, targetNode)
-      }
-    ] : null;
-  };
-}
-function chainedMatcher(finders, selector = simpleSelectionExtractor) {
-  const nodeFinder = chainedNodeFinder(...finders);
-  return function(selection, initialNode) {
-    const returnNode = nodeFinder(initialNode);
-    if (returnNode == null) {
-      return null;
-    }
-    return [
-      {
-        node: returnNode,
-        selection: selector(selection.editor, returnNode)
-      }
-    ];
-  };
-}
-function ancestorChainNodeMatcher(nodeFinders, nodeToReturn = 0, selector = simpleSelectionExtractor) {
-  return matcher(
-    ancestorChainNodeFinder(nodeToReturn, ...nodeFinders),
-    selector
-  );
-}
-function patternMatcher(...patterns) {
-  return matcher(patternFinder(...patterns));
-}
-function argumentMatcher(...parentTypes) {
-  return matcher(
-    argumentNodeFinder(...parentTypes),
-    argumentSelectionExtractor()
-  );
-}
-function conditionMatcher(...patterns) {
-  return matcher(patternFinder(...patterns), unwrapSelectionExtractor);
-}
-function leadingMatcher(patterns, delimiters = []) {
-  return matcher(
-    patternFinder(...patterns),
-    selectWithLeadingDelimiter(...delimiters)
-  );
-}
-function trailingMatcher(patterns, delimiters = []) {
-  return matcher(
-    patternFinder(...patterns),
-    selectWithTrailingDelimiter(...delimiters)
-  );
-}
-function cascadingMatcher(...matchers2) {
-  return (selection, node) => {
-    for (const matcher2 of matchers2) {
-      const match = matcher2(selection, node);
-      if (match != null) {
-        return match;
-      }
-    }
-    return null;
-  };
-}
-function notSupported(scopeTypeType) {
-  return (_selection, _node) => {
-    throw new Error(`Node type '${scopeTypeType}' not supported`);
-  };
-}
-function createPatternMatchers(nodeMatchers7) {
-  return Object.freeze(
-    Object.fromEntries(
-      unsafeKeys(nodeMatchers7).map((scopeType) => {
-        const matcher2 = nodeMatchers7[scopeType];
-        if (Array.isArray(matcher2)) {
-          return [scopeType, patternMatcher(...matcher2)];
-        } else if (typeof matcher2 === "string") {
-          return [scopeType, patternMatcher(matcher2)];
-        } else {
-          return [scopeType, matcher2];
-        }
-      })
-    )
-  );
-}
-
-// ../cursorless-engine/src/util/treeSitterUtils.ts
-function getChildNodesForFieldName(node, fieldName) {
-  const treeCursor = node.walk();
-  treeCursor.gotoFirstChild();
-  const ret = [];
-  let hasNext = true;
-  while (hasNext) {
-    if (treeCursor.currentFieldName === fieldName) {
-      ret.push(treeCursor.currentNode);
-    }
-    hasNext = treeCursor.gotoNextSibling();
-  }
-  return ret;
-}
-
-// ../cursorless-engine/src/languages/clojure.ts
-function parityNodeFinder(parentFinder, parity) {
-  return indexNodeFinder(
-    parentFinder,
-    (nodeIndex) => Math.floor(nodeIndex / 2) * 2 + parity
-  );
-}
-function mapParityNodeFinder(parity) {
-  return parityNodeFinder(patternFinder("map_lit"), parity);
-}
-function indexNodeFinder(parentFinder, indexTransform) {
-  return (node) => {
-    const parent = node.parent;
-    if (parent == null || parentFinder(parent) == null) {
-      return null;
-    }
-    const valueNodes = getValueNodes(parent);
-    const nodeIndex = valueNodes.findIndex(({ id: id2 }) => id2 === node.id);
-    if (nodeIndex === -1) {
-      return null;
-    }
-    const desiredIndex = indexTransform(nodeIndex);
-    if (desiredIndex === -1) {
-      return null;
-    }
-    return valueNodes[desiredIndex];
-  };
-}
-var getValueNodes = (node) => getChildNodesForFieldName(node, "value");
-var functionCallPattern = "~quoting_lit.list_lit!";
-var functionCallFinder = patternFinder(functionCallPattern);
-function functionNameBasedFinder(...names) {
-  return (node) => {
-    const functionCallNode = functionCallFinder(node);
-    if (functionCallNode == null) {
-      return null;
-    }
-    const functionNode = getValueNodes(functionCallNode)[0];
-    return names.includes(functionNode?.text) ? functionCallNode : null;
-  };
-}
-function functionNameBasedMatcher(...names) {
-  return matcher(functionNameBasedFinder(...names));
-}
-var functionFinder = functionNameBasedFinder("defn", "defmacro");
-var functionNameMatcher = chainedMatcher([
-  functionFinder,
-  (functionNode) => getValueNodes(functionNode)[1]
-]);
-var ifStatementFinder = functionNameBasedFinder(
-  "if",
-  "if-let",
-  "when",
-  "when-let"
-);
-var ifStatementMatcher = matcher(ifStatementFinder);
-var nodeMatchers = {
-  collectionKey: matcher(mapParityNodeFinder(0)),
-  value: matcher(mapParityNodeFinder(1)),
-  // FIXME: Handle formal parameters
-  argumentOrParameter: matcher(
-    indexNodeFinder(
-      patternFinder(functionCallPattern),
-      (nodeIndex) => nodeIndex !== 0 ? nodeIndex : -1
-    )
-  ),
-  functionCall: functionCallPattern,
-  functionCallee: chainedMatcher([
-    functionCallFinder,
-    (functionNode) => getValueNodes(functionNode)[0]
-  ]),
-  namedFunction: matcher(functionFinder),
-  functionName: functionNameMatcher,
-  // FIXME: Handle `let` declarations, defs, etc
-  name: functionNameMatcher,
-  anonymousFunction: cascadingMatcher(
-    functionNameBasedMatcher("fn"),
-    patternMatcher("anon_fn_lit")
-  ),
-  ifStatement: ifStatementMatcher,
-  condition: chainedMatcher([
-    ifStatementFinder,
-    (node) => getValueNodes(node)[1]
-  ])
-};
-var clojure_default = createPatternMatchers(nodeMatchers);
-
-// ../cursorless-engine/src/languages/latex.ts
-var COMMANDS = [
-  "command",
-  "displayed_equation",
-  "inline_formula",
-  "math_set",
-  "block_comment",
-  "package_include",
-  "class_include",
-  "latex_include",
-  "biblatex_include",
-  "bibtex_include",
-  "graphics_include",
-  "svg_include",
-  "inkscape_include",
-  "verbatim_include",
-  "import_include",
-  "caption",
-  "citation",
-  "label_definition",
-  "label_reference",
-  "label_reference_range",
-  "label_number",
-  "new_command_definition",
-  "old_command_definition",
-  "let_command_definition",
-  "environment_definition",
-  "glossary_entry_definition",
-  "glossary_entry_reference",
-  "acronym_definition",
-  "acronym_reference",
-  "theorem_definition",
-  "color_definition",
-  "color_set_definition",
-  "color_reference",
-  "tikz_library_import"
-];
-var GROUPS = [
-  "curly_group",
-  "curly_group_text",
-  "curly_group_text_list",
-  "curly_group_path",
-  "curly_group_path_list",
-  "curly_group_command_name",
-  "curly_group_key_value",
-  "curly_group_glob_pattern",
-  "curly_group_impl",
-  "brack_group",
-  "brack_group_text",
-  "brack_group_argc",
-  "brack_group_key_value",
-  "mixed_group"
-];
-var SECTIONING = [
-  "subparagraph",
-  "paragraph",
-  "subsubsection",
-  "subsection",
-  "section",
-  "chapter",
-  "part"
-];
-var sectioningText = SECTIONING.map((s) => `${s}[text]`);
-var sectioningCommand = SECTIONING.map((s) => `${s}[command]`);
-function unwrapGroupParens(editor, node) {
-  return {
-    selection: new Selection(
-      editor.document.positionAt(node.startIndex + 1),
-      editor.document.positionAt(node.endIndex - 1)
-    ),
-    context: {
-      removalRange: new Selection(
-        editor.document.positionAt(node.startIndex),
-        editor.document.positionAt(node.endIndex)
-      )
-    }
-  };
-}
-function extendToNamedSiblingIfExists(editor, node) {
-  const startIndex = node.startIndex;
-  let endIndex = node.endIndex;
-  const sibling = node.nextNamedSibling;
-  if (sibling != null && sibling.isNamed) {
-    endIndex = sibling.endIndex;
-  }
-  return {
-    selection: new Selection(
-      editor.document.positionAt(startIndex),
-      editor.document.positionAt(endIndex)
-    ),
-    context: {}
-  };
-}
-var nodeMatchers2 = {
-  argumentOrParameter: cascadingMatcher(
-    ancestorChainNodeMatcher(
-      [patternFinder(...COMMANDS), patternFinder(...GROUPS)],
-      1,
-      unwrapGroupParens
-    ),
-    matcher(
-      patternFinder("begin[name]", "end[name]", ...sectioningText),
-      unwrapGroupParens
-    )
-  ),
-  functionCall: cascadingMatcher(
-    matcher(patternFinder(...COMMANDS, "begin", "end")),
-    matcher(patternFinder(...sectioningCommand), extendToNamedSiblingIfExists)
-  ),
-  name: cascadingMatcher(
-    matcher(patternFinder(...sectioningText), unwrapGroupParens),
-    patternMatcher("begin[name][text]", "end[name][text]")
-  )
-};
-var latex_default = createPatternMatchers(nodeMatchers2);
-
-// ../cursorless-engine/src/languages/ruby.ts
-var STATEMENT_TYPES = [
-  "alias",
-  "begin_block",
-  "end_block",
-  "if_modifier",
-  "rescue_modifier",
-  "undef",
-  "unless_modifier",
-  "until_modifier",
-  "while_modifier"
-];
-var EXPRESSION_TYPES = [
-  "array",
-  "assignment",
-  "begin",
-  "binary",
-  "break",
-  "call",
-  "case",
-  "case_match",
-  "chained_string",
-  "character",
-  "class",
-  "class_variable",
-  "complex",
-  "conditional",
-  "constant",
-  "delimited_symbol",
-  "element_reference",
-  "false",
-  "float",
-  "for",
-  "global_variable",
-  "hash",
-  "heredoc_beginning",
-  "identifier",
-  "if",
-  "instance_variable",
-  "integer",
-  "lambda",
-  "method",
-  "module",
-  "next",
-  "nil",
-  "operator_assignment",
-  "parenthesized_statements",
-  "range",
-  "rational",
-  "redo",
-  "regex",
-  "retry",
-  "return",
-  "scope_resolution",
-  "self",
-  "simple_symbol",
-  "singleton_class",
-  "singleton_method",
-  "string",
-  "string_array",
-  "subshell",
-  "super",
-  "symbol_array",
-  "true",
-  "unary",
-  "unless",
-  "until",
-  "while",
-  "yield"
-];
-var EXPRESSION_STATEMENT_PARENT_TYPES = [
-  "begin_block",
-  "begin",
-  "block_body",
-  "block",
-  "body_statement",
-  "do_block",
-  "do",
-  "else",
-  "end_block",
-  "ensure",
-  "heredoc_beginning",
-  "interpolation",
-  "lambda",
-  "method",
-  "parenthesized_statements",
-  "program",
-  "singleton_class",
-  "singleton_method",
-  "then"
-];
-var assignmentOperators = [
-  "=",
-  "+=",
-  "-=",
-  "*=",
-  "**=",
-  "/=",
-  "||=",
-  "|=",
-  "&&=",
-  "&=",
-  "%=",
-  ">>=",
-  "<<=",
-  "^="
-];
-var mapKeyValueSeparators = [":", "=>"];
-function blockFinder(node) {
-  if (node.type !== "call") {
-    return null;
-  }
-  const receiver = node.childForFieldName("receiver");
-  const method = node.childForFieldName("method");
-  const block = node.childForFieldName("block");
-  if (receiver?.text === "Proc" && method?.text === "new" || receiver == null && method?.text === "lambda") {
-    return node;
-  }
-  return block;
-}
-var nodeMatchers3 = {
-  statement: cascadingMatcher(
-    patternMatcher(...STATEMENT_TYPES),
-    ancestorChainNodeMatcher(
-      [
-        patternFinder(...EXPRESSION_STATEMENT_PARENT_TYPES),
-        patternFinder(...EXPRESSION_TYPES)
-      ],
-      1
-    )
-  ),
-  anonymousFunction: cascadingMatcher(
-    patternMatcher("lambda", "do_block"),
-    matcher(blockFinder)
-  ),
-  condition: conditionMatcher("*[condition]"),
-  argumentOrParameter: argumentMatcher(
-    "lambda_parameters",
-    "method_parameters",
-    "block_parameters",
-    "argument_list"
-  ),
-  collectionKey: trailingMatcher(["pair[key]"], [":"]),
-  value: leadingMatcher(
-    [
-      "pair[value]",
-      "assignment[right]",
-      "operator_assignment[right]",
-      "return.argument_list!"
-    ],
-    assignmentOperators.concat(mapKeyValueSeparators)
-  )
-};
-var patternMatchers = createPatternMatchers(nodeMatchers3);
-
-// ../cursorless-engine/src/languages/elseIfExtractor.ts
-function elseIfExtractor() {
-  const contentRangeExtractor = childRangeSelector(["else_clause"], [], {
-    includeUnnamedChildren: true
-  });
-  return function(editor, node) {
-    const contentRange = contentRangeExtractor(editor, node);
-    const parent = node.parent;
-    if (parent?.type !== "else_clause") {
-      const alternative = node.childForFieldName("alternative");
-      if (alternative == null) {
-        return contentRange;
-      }
-      const { selection: selection2 } = contentRange;
-      return {
-        selection: selection2,
-        context: {
-          removalRange: new Selection(
-            selection2.start,
-            positionFromPoint(alternative.namedChild(0).startPosition)
-          )
-        }
-      };
-    }
-    const { selection } = contentRange;
-    return {
-      selection: new Selection(
-        positionFromPoint(parent.child(0).startPosition),
-        selection.end
-      ),
-      context: {}
-    };
-  };
-}
-function elseExtractor(ifNodeType) {
-  const nestedElseIfExtractor = elseIfExtractor();
-  return function(editor, node) {
-    return node.namedChild(0).type === ifNodeType ? nestedElseIfExtractor(editor, node.namedChild(0)) : simpleSelectionExtractor(editor, node);
-  };
-}
-
-// ../cursorless-engine/src/languages/rust.ts
-var STATEMENT_TYPES2 = [
-  "associated_type",
-  "attribute_item",
-  "const_item",
-  "empty_statement",
-  "enum_item",
-  "extern_crate_declaration",
-  "foreign_mod_item",
-  "impl_item",
-  "inner_attribute_item",
-  "let_declaration",
-  "macro_definition",
-  "macro_invocation",
-  "function_item",
-  "function_signature_item",
-  "mod_item",
-  "static_item",
-  "struct_item",
-  "trait_item",
-  "type_item",
-  "union_item",
-  "use_declaration",
-  "expression_statement"
-];
-var STATEMENT_PARENT_TYPES = ["source_file", "block", "declaration_list"];
-function implItemTypeFinder(node) {
-  if (node.parent?.type === "impl_item" && node.parent?.childForFieldName("type")?.equals(node)) {
-    return node;
-  }
-  return null;
-}
-function traitBoundExtractor(editor, node) {
-  return {
-    selection: makeNodePairSelection(node.children[1], node.lastNamedChild),
-    context: {
-      leadingDelimiterRange: makeRangeFromPositions(
-        node.children[0].startPosition,
-        node.children[1].startPosition
-      )
-    }
-  };
-}
-function returnValueFinder(node) {
-  if (node.type !== "block") {
-    return null;
-  }
-  const { lastNamedChild } = node;
-  if (lastNamedChild == null) {
-    return null;
-  }
-  if (lastNamedChild.type === "expression_statement") {
-    const expression = lastNamedChild.child(0);
-    if (expression.type === "return_expression") {
-      return expression.child(1);
-    }
-    return null;
-  }
-  if (STATEMENT_TYPES2.includes(lastNamedChild.type)) {
-    return null;
-  }
-  if (lastNamedChild.type === "return_expression") {
-    return lastNamedChild.child(1);
-  }
-  return lastNamedChild;
-}
-var nodeMatchers4 = {
-  statement: ancestorChainNodeMatcher(
-    [
-      patternFinder(...STATEMENT_PARENT_TYPES),
-      patternFinder(...STATEMENT_TYPES2)
-    ],
-    1
-  ),
-  condition: cascadingMatcher(
-    patternMatcher("while_expression[condition]", "if_expression[condition]"),
-    matcher(
-      patternFinder("while_let_expression", "if_let_expression"),
-      childRangeSelector(["while", "if", "block"], [], {
-        includeUnnamedChildren: true
-      })
-    ),
-    leadingMatcher(["*.match_pattern![condition]"], ["if"])
-  ),
-  type: cascadingMatcher(
-    leadingMatcher(
-      [
-        "let_declaration[type]",
-        "parameter[type]",
-        "field_declaration[type]",
-        "const_item[type]"
-      ],
-      [":"]
-    ),
-    matcher(
-      patternFinder(
-        "constrained_type_parameter[bounds]",
-        "where_predicate[bounds]"
-      ),
-      traitBoundExtractor
-    ),
-    leadingMatcher(["function_item[return_type]"], ["->"]),
-    matcher(implItemTypeFinder),
-    patternMatcher(
-      "struct_item",
-      "trait_item",
-      "impl_item",
-      "array_type[element]"
-    )
-  ),
-  argumentOrParameter: argumentMatcher(
-    "arguments",
-    "parameters",
-    "meta_arguments",
-    "type_parameters",
-    "ordered_field_declaration_list"
-  ),
-  collectionKey: cascadingMatcher(
-    trailingMatcher(["field_initializer[name]", "field_pattern[name]"], [":"])
-  ),
-  name: cascadingMatcher(
-    patternMatcher(
-      "let_declaration.identifier!",
-      "parameter.identifier!",
-      "function_item[name]",
-      "struct_item[name]",
-      "enum_item[name]",
-      "enum_variant[name]",
-      "trait_item[name]",
-      "const_item[name]",
-      "meta_item.identifier!",
-      "let_declaration[pattern]",
-      "constrained_type_parameter[left]",
-      "where_predicate[left]",
-      "field_declaration[name]"
-    ),
-    trailingMatcher(["field_initializer[name]", "field_pattern[name]"], [":"])
-  ),
-  value: cascadingMatcher(
-    leadingMatcher(["let_declaration[value]"], ["="]),
-    leadingMatcher(
-      ["field_initializer[value]", "field_pattern[pattern]"],
-      [":"]
-    ),
-    patternMatcher("meta_item[value]", "const_item[value]"),
-    matcher(returnValueFinder)
-  ),
-  attribute: trailingMatcher(["mutable_specifier", "attribute_item"]),
-  branch: cascadingMatcher(
-    patternMatcher("match_arm"),
-    matcher(patternFinder("else_clause"), elseExtractor("if_expression")),
-    matcher(patternFinder("if_expression"), elseIfExtractor())
-  )
-};
-var rust_default = createPatternMatchers(nodeMatchers4);
-
-// ../cursorless-engine/src/languages/scala.ts
-var nodeMatchers5 = {
-  argumentOrParameter: argumentMatcher(
-    "arguments",
-    "parameters",
-    "class_parameters",
-    "bindings"
-  ),
-  branch: matcher(
-    patternFinder("case_clause"),
-    childRangeSelector([], [], {
-      includeUnnamedChildren: true
-    })
-  ),
-  // *[type] does not work here because while we want most of these we don't want "compound" types,
-  // eg `generic_type[type]`, because that will grab just the inner generic (the String of List[String])
-  // and as a rule we want to grab entire type definitions.
-  type: leadingMatcher(
-    [
-      "upper_bound[type]",
-      "lower_bound[type]",
-      "view_bound[type]",
-      "context_bound[type]",
-      "val_definition[type]",
-      "val_declaration[type]",
-      "var_definition[type]",
-      "var_declaration[type]",
-      "type_definition",
-      "extends_clause[type]",
-      "class_parameter[type]",
-      "parameter[type]",
-      "function_definition[return_type]",
-      "typed_pattern[type]",
-      "binding[type]"
-    ],
-    [":"]
-  ),
-  value: leadingMatcher(
-    ["*[value]", "*[default_value]", "type_definition[type]"],
-    ["="]
-  ),
-  condition: conditionMatcher("*[condition]")
-  // Scala features unsupported in Cursorless terminology
-  //  - Pattern matching
-  // Cursorless terminology not yet supported in this Scala implementation
-  /*
-    lists and maps basic definition are just function calls to constructors, eg List(1,2,3,4)
-    These types are also basically arbitrary, so we can't really hard-code them
-    There is also fancy list style: val foo = 1 :: (2 :: (3 :: Nil)) // List(1,2,3)
-  */
-  // list: 'call_expression',
-  // map: 'call_expression',
-  /* infix_expression, key on left, item on right, operator = "->"
-    // collectionItem: "???"
-    // collectionKey: "???",
-  
-    /* "foo".r <-, value of type field_expression, value of type string, field of type identifier = "r",
-    // regularExpression: "???",
-  
-    /*
-      none of this stuff is defined well in the tree sitter (it's all just infix expressions etc),
-      and native XML/HTML is deprecated in Scala 3
-    */
-  // attribute: "???",
-  // xmlElement: "???",
-  // xmlStartTag: "???",
-  // xmlEndTag: "???",
-  // xmlBothTags: "???",
-};
-var scala_default = createPatternMatchers(nodeMatchers5);
-
-// ../cursorless-engine/src/languages/scss.ts
-var STATEMENT_TYPES3 = [
-  "apply_statement",
-  "at_rule",
-  "charset_statement",
-  "debug_statement",
-  "each_statement",
-  "error_statement",
-  "for_statement",
-  "forward_statement",
-  "function_statement",
-  "if_statement",
-  "import_statement",
-  "include_statement",
-  "keyframes_statement",
-  "media_statement",
-  "mixin_statement",
-  "namespace_statement",
-  "placeholder",
-  "rule_set",
-  "supports_statement",
-  "use_statement",
-  "warn_statement",
-  "while_statement"
-];
-function isArgumentListDelimiter(node) {
-  return [",", "(", ")"].includes(node.type) || isAtDelimiter(node);
-}
-function isAtDelimiter(node) {
-  return node.type === "plain_value" && node.text === "at";
-}
-function findAdjacentArgValues(siblingFunc) {
-  return (node) => {
-    if (isAtDelimiter(node) || node.type === ",") {
-      node = node.previousSibling;
-    }
-    let nextPossibleRange = siblingFunc(node);
-    while (nextPossibleRange && !isArgumentListDelimiter(nextPossibleRange)) {
-      node = nextPossibleRange;
-      nextPossibleRange = siblingFunc(nextPossibleRange);
-    }
-    return node;
-  };
-}
-function unitMatcher(selection, node) {
-  if (node.type !== "declaration") {
-    return null;
-  }
-  return node.descendantsOfType("unit").map((n) => ({
-    node: n,
-    selection: simpleSelectionExtractor(selection.editor, n)
-  }));
-}
-var nodeMatchers6 = {
-  condition: conditionMatcher("condition"),
-  statement: cascadingMatcher(
-    patternMatcher(...STATEMENT_TYPES3),
-    matcher(
-      patternFinder("attribute_selector"),
-      childRangeSelector([], ["attribute_name", "string_value"])
-    )
-  ),
-  argumentOrParameter: cascadingMatcher(
-    matcher(
-      patternFinder("arguments.*!", "parameters.*!"),
-      delimitedSelector(
-        (node) => isArgumentListDelimiter(node),
-        ", ",
-        findAdjacentArgValues((node) => node.previousSibling),
-        findAdjacentArgValues((node) => node.nextSibling)
-      )
-    )
-  ),
-  collectionKey: trailingMatcher(["declaration.property_name!"], [":"]),
-  value: cascadingMatcher(
-    matcher(
-      patternFinder("declaration"),
-      childRangeSelector(["property_name", "variable_name"])
-    ),
-    matcher(
-      patternFinder("include_statement", "namespace_statement"),
-      childRangeSelector()
-    ),
-    patternMatcher(
-      "return_statement.*!",
-      "import_statement.*!",
-      "attribute_selector.plain_value!",
-      "attribute_selector.string_value!",
-      "parameter.default_value!"
-    )
-  ),
-  unit: cascadingMatcher(patternMatcher("integer_value.unit!"), unitMatcher)
-};
-var patternMatchers2 = createPatternMatchers(nodeMatchers6);
-
-// ../cursorless-engine/src/languages/getNodeMatcher.ts
-function getNodeMatcher(languageId, scopeTypeType, includeSiblings) {
-  const matchers2 = languageMatchers[languageId];
-  if (matchers2 == null) {
-    throw new UnsupportedLanguageError(languageId);
-  }
-  const matcher2 = matchers2[scopeTypeType];
-  if (matcher2 == null) {
-    return notSupported(scopeTypeType);
-  }
-  if (includeSiblings) {
-    return matcherIncludeSiblings(matcher2);
-  }
-  return matcher2;
-}
-var languageMatchers = {
-  clojure: clojure_default,
-  css: patternMatchers2,
-  latex: latex_default,
-  ruby: patternMatchers,
-  rust: rust_default,
-  scala: scala_default,
-  scss: patternMatchers2
-};
-function matcherIncludeSiblings(matcher2) {
-  return (selection, node) => {
-    let matches = matcher2(selection, node);
-    if (matches == null) {
-      return null;
-    }
-    matches = matches.flatMap(
-      (match) => iterateNearestIterableAncestor(
-        match.node,
-        selectionWithEditorFromRange(selection, match.selection.selection),
-        matcher2
-      )
-    );
-    if (matches.length > 0) {
-      return matches;
-    }
-    return null;
-  };
-}
-function iterateNearestIterableAncestor(node, selection, nodeMatcher) {
-  let parent = node.parent;
-  while (parent != null) {
-    const matches = parent.namedChildren.flatMap((sibling) => nodeMatcher(selection, sibling)).filter((match) => match != null);
-    if (matches.length > 0) {
-      return matches;
-    }
-    parent = parent.parent;
-  }
-  return [];
-}
-
-// ../cursorless-engine/src/processTargets/modifiers/scopeTypeStages/LegacyContainingSyntaxScopeStage.ts
-var LegacyContainingSyntaxScopeStage = class {
-  constructor(languageDefinitions, modifier) {
-    this.languageDefinitions = languageDefinitions;
-    this.modifier = modifier;
-  }
-  run(target) {
-    const nodeMatcher = getNodeMatcher(
-      target.editor.document.languageId,
-      this.modifier.scopeType.type,
-      this.modifier.type === "everyScope"
-    );
-    const node = this.languageDefinitions.getNodeAtLocation(
-      target.editor.document,
-      target.contentRange
-    );
-    if (node == null) {
-      throw new NoContainingScopeError(this.modifier.scopeType.type);
-    }
-    const scopeNodes = findNearestContainingAncestorNode(node, nodeMatcher, {
-      editor: target.editor,
-      selection: new Selection(
-        target.contentRange.start,
-        target.contentRange.end
-      )
-    });
-    if (scopeNodes == null) {
-      throw new NoContainingScopeError(this.modifier.scopeType.type);
-    }
-    return scopeNodes.map((scope) => {
-      const {
-        containingListDelimiter,
-        leadingDelimiterRange,
-        trailingDelimiterRange,
-        removalRange,
-        interiorRange
-      } = scope.context;
-      if (removalRange != null && (leadingDelimiterRange != null || trailingDelimiterRange != null)) {
-        throw Error(
-          "Removal range is mutually exclusive with leading or trailing delimiter range"
-        );
-      }
-      const { editor, selection: contentSelection } = scope.selection;
-      return new ScopeTypeTarget({
-        scopeTypeType: this.modifier.scopeType.type,
-        editor,
-        isReversed: target.isReversed,
-        contentRange: contentSelection,
-        removalRange,
-        interiorRange,
-        insertionDelimiter: containingListDelimiter,
-        leadingDelimiterRange,
-        trailingDelimiterRange
-      });
-    });
-  }
-};
-function findNearestContainingAncestorNode(startNode, nodeMatcher, selection) {
-  let node = startNode;
-  while (node != null) {
-    const matches = nodeMatcher(selection, node);
-    if (matches != null) {
-      return matches.map((match) => match.selection).map((matchedSelection) => ({
-        selection: selectionWithEditorFromRange(
-          selection,
-          matchedSelection.selection
-        ),
-        context: matchedSelection.context
-      }));
-    }
-    node = node.parent;
-  }
-  return null;
-}
 
 // ../cursorless-engine/src/processTargets/ModifierStageFactoryImpl.ts
 var ModifierStageFactoryImpl = class {
@@ -27772,28 +24807,6 @@ var ModifierStageFactoryImpl = class {
         const { type: type2 } = modifier;
         throw new Error(`Unknown modifier: ${type2}`);
       }
-    }
-  }
-  /**
-   * Any scope type that has not been fully migrated to the new
-   * {@link ScopeHandler} setup should have a branch in this `switch` statement.
-   * Once the scope type is fully migrated, remove the branch and the legacy
-   * modifier stage.
-   *
-   * Note that it is possible for a scope type to be partially migrated.  For
-   * example, we could support modern scope handlers for a certain scope type in
-   * Ruby, but not yet in Python.
-   *
-   * @param modifier The modifier for which to get the modifier stage
-   * @returns A scope stage implementing the modifier for the given scope type
-   */
-  getLegacyScopeStage(modifier) {
-    switch (modifier.scopeType.type) {
-      default:
-        return new LegacyContainingSyntaxScopeStage(
-          this.languageDefinitions,
-          modifier
-        );
     }
   }
 };
@@ -27930,85 +24943,6 @@ async function performEditsAndUpdateFullSelectionInfos(rangeUpdater, editor, edi
     func2,
     editor.document,
     originalSelectionInfos
-  );
-}
-
-// ../cursorless-engine/src/util/targetUtils.ts
-function ensureSingleEditor2(targets) {
-  if (targets.length === 0) {
-    throw new Error("Require at least one target with this action");
-  }
-  const editors = targets.map((target) => target.editor);
-  if (new Set(editors).size > 1) {
-    throw new Error("Can only have one editor with this action");
-  }
-  return editors[0];
-}
-function ensureSingleTarget2(targets) {
-  if (targets.length !== 1) {
-    throw new Error("Can only have one target with this action");
-  }
-  return targets[0];
-}
-async function runForEachEditor(targets, getEditor2, func2) {
-  return Promise.all(
-    groupForEachEditor(targets, getEditor2).map(
-      ([editor, editorTargets]) => func2(editor, editorTargets)
-    )
-  );
-}
-async function runOnTargetsForEachEditor(targets, func2) {
-  return runForEachEditor(targets, (target) => target.editor, func2);
-}
-async function runOnTargetsForEachEditorSequentially(targets, func2) {
-  const editorGroups = groupForEachEditor(targets, (target) => target.editor);
-  const result = [];
-  for (const [editor, targets2] of editorGroups) {
-    result.push(await func2(editor, targets2));
-  }
-  return result;
-}
-function groupTargetsForEachEditor(targets) {
-  return groupForEachEditor(targets, (target) => target.editor);
-}
-function groupForEachEditor(targets, getEditor2) {
-  const getDocumentUri = (target) => getEditor2(target).document.uri;
-  const editorMap = groupBy(targets, getDocumentUri);
-  return Array.from(editorMap.values(), (editorTargets) => {
-    const editor = getEditor2(editorTargets[0]);
-    return [editor, editorTargets];
-  });
-}
-function getContentRange2(target) {
-  return target.contentRange;
-}
-function createThatMark(targets, ranges) {
-  const thatMark = ranges != null ? zip_default(targets, ranges).map(([target, range3]) => ({
-    editor: target.editor,
-    selection: target?.isReversed ? new Selection(range3.end, range3.start) : new Selection(range3.start, range3.end)
-  })) : targets.map((target) => ({
-    editor: target.editor,
-    selection: target.contentSelection
-  }));
-  return thatMark;
-}
-function toGeneralizedRange(target) {
-  const range3 = target.contentRange;
-  return target.isLine ? toLineRange(range3) : toCharacterRange(range3);
-}
-function flashTargets(ide2, targets, style, getRange = getContentRange2) {
-  return ide2.flashRanges(
-    targets.map((target) => {
-      const range3 = getRange(target);
-      if (range3 == null) {
-        return null;
-      }
-      return {
-        editor: target.editor,
-        range: target.isLine ? toLineRange(range3) : toCharacterRange(range3),
-        style
-      };
-    }).filter((flash) => flash != null)
   );
 }
 
@@ -28244,7 +25178,12 @@ var BringMoveSwap = class {
     });
   }
   async decorateThatMark(thatMark) {
-    const getRange = (target) => thatMark.find((t) => t.target === target).selection;
+    const getRange = (target) => {
+      return toGeneralizedRange(
+        target,
+        thatMark.find((t) => t.target === target).selection
+      );
+    };
     return Promise.all([
       flashTargets(
         ide(),
@@ -28278,8 +25217,7 @@ var Bring = class extends BringMoveSwap {
     super(rangeUpdater, "bring");
     this.decoration = {
       sourceStyle: "referenced" /* referenced */,
-      destinationStyle: "pendingModification0" /* pendingModification0 */,
-      getSourceRangeCallback: getContentRange2
+      destinationStyle: "pendingModification0" /* pendingModification0 */
     };
     this.run = this.run.bind(this);
   }
@@ -28324,8 +25262,7 @@ var Swap = class extends BringMoveSwap {
     super(rangeUpdater, "swap");
     this.decoration = {
       sourceStyle: "pendingModification1" /* pendingModification1 */,
-      destinationStyle: "pendingModification0" /* pendingModification0 */,
-      getSourceRangeCallback: getContentRange2
+      destinationStyle: "pendingModification0" /* pendingModification0 */
     };
     this.run = this.run.bind(this);
   }
@@ -28370,7 +25307,7 @@ var Call = class {
     this.run = this.run.bind(this);
   }
   async run(callees, args2) {
-    ensureSingleTarget2(callees);
+    ensureSingleTarget(callees);
     const { returnValue: texts } = await this.actions.getText.run(callees, {
       showDecorations: false
     });
@@ -28386,7 +25323,7 @@ var Clear = class {
     this.run = this.run.bind(this);
   }
   async run(targets) {
-    const editor = ensureSingleEditor2(targets);
+    const editor = ensureSingleEditor(targets);
     const plainTargets = targets.map(
       (target) => new PlainTarget({
         editor: target.editor,
@@ -28424,10 +25361,10 @@ var CallbackAction = class {
       await flashTargets(ide(), targets, "referenced" /* referenced */);
     }
     if (options2.ensureSingleEditor) {
-      ensureSingleEditor2(targets);
+      ensureSingleEditor(targets);
     }
     if (options2.ensureSingleTarget) {
-      ensureSingleTarget2(targets);
+      ensureSingleTarget(targets);
     }
     const originalEditor = ide().activeEditableTextEditor;
     const runOnTargets = options2.setSelection ? runOnTargetsForEachEditorSequentially : runOnTargetsForEachEditor;
@@ -28606,6 +25543,34 @@ var ExtractVariable = class extends SimpleIdeCommandAction {
     this.restoreSelection = false;
   }
 };
+var GitAccept = class extends SimpleIdeCommandAction {
+  constructor() {
+    super(...arguments);
+    this.command = "gitAccept";
+    this.ensureSingleTarget = true;
+  }
+};
+var GitRevert = class extends SimpleIdeCommandAction {
+  constructor() {
+    super(...arguments);
+    this.command = "gitRevert";
+    this.ensureSingleTarget = true;
+  }
+};
+var GitStage = class extends SimpleIdeCommandAction {
+  constructor() {
+    super(...arguments);
+    this.command = "gitStage";
+    this.ensureSingleTarget = true;
+  }
+};
+var GitUnstage = class extends SimpleIdeCommandAction {
+  constructor() {
+    super(...arguments);
+    this.command = "gitUnstage";
+    this.ensureSingleTarget = true;
+  }
+};
 function callback(editor, ranges, command) {
   switch (command) {
     // Multi target actions
@@ -28640,6 +25605,14 @@ function callback(editor, ranges, command) {
       return editor.showDebugHover(ranges?.[0]);
     case "extractVariable":
       return editor.extractVariable(ranges?.[0]);
+    case "gitAccept":
+      return editor.gitAccept(ranges?.[0]);
+    case "gitRevert":
+      return editor.gitRevert(ranges?.[0]);
+    case "gitStage":
+      return editor.gitStage(ranges?.[0]);
+    case "gitUnstage":
+      return editor.gitUnstage(ranges?.[0]);
     // Unsupported as simple action
     case "highlight":
       throw Error("Highlight command not supported as simple action");
@@ -28659,12 +25632,7 @@ var CopyToClipboard = class {
       return simpleAction.run(targets, options2);
     }
     if (options2.showDecorations) {
-      await flashTargets(
-        ide(),
-        targets,
-        "referenced" /* referenced */,
-        (target) => target.contentRange
-      );
+      await flashTargets(ide(), targets, "referenced" /* referenced */);
     }
     const text = targets.map((t) => t.contentText).join("\n");
     await ide().clipboard.writeText(text);
@@ -28679,46 +25647,42 @@ var CutToClipboard = class {
     this.run = this.run.bind(this);
   }
   async run(targets) {
-    await ide().flashRanges(
-      targets.flatMap((target) => {
-        const { editor, contentRange } = target;
-        const removalHighlightRange = target.getRemovalHighlightRange();
-        if (target.isLine) {
-          return [
-            {
-              editor,
-              range: toCharacterRange(contentRange),
-              style: "referenced" /* referenced */
-            },
-            {
-              editor,
-              range: toLineRange(removalHighlightRange),
-              style: "pendingDelete" /* pendingDelete */
-            }
-          ];
-        }
-        return [
-          {
-            editor,
-            range: toCharacterRange(contentRange),
-            style: "referenced" /* referenced */
-          },
-          ...getOutsideOverflow(contentRange, removalHighlightRange).map(
-            (overflow) => ({
-              editor,
-              range: toCharacterRange(overflow),
-              style: "pendingDelete" /* pendingDelete */
-            })
-          )
-        ];
-      })
-    );
+    await ide().flashRanges(targets.flatMap(getFlashDescriptors));
     const options2 = { showDecorations: false };
     await this.actions.copyToClipboard.run(targets, options2);
     const { thatTargets } = await this.actions.remove.run(targets, options2);
     return { thatTargets };
   }
 };
+function getFlashDescriptors(target) {
+  const { editor, contentRange } = target;
+  const removalHighlightRange = target.getRemovalHighlightRange();
+  const flashDescriptors = [
+    {
+      editor,
+      range: toCharacterRange(contentRange),
+      style: "referenced" /* referenced */
+    }
+  ];
+  if (removalHighlightRange.type === "line") {
+    flashDescriptors.push({
+      editor,
+      range: removalHighlightRange,
+      style: "pendingDelete" /* pendingDelete */
+    });
+  } else {
+    flashDescriptors.push(
+      ...getOutsideOverflow(contentRange, removalHighlightRange).map(
+        (overflow) => ({
+          editor,
+          range: toCharacterRange(overflow),
+          style: "pendingDelete" /* pendingDelete */
+        })
+      )
+    );
+  }
+  return flashDescriptors;
+}
 function getOutsideOverflow(insideRange, outsideRange) {
   const { start: insideStart, end: insideEnd } = insideRange;
   const { start: outsideStart, end: outsideEnd } = outsideRange;
@@ -28765,7 +25729,7 @@ var SelectionRequiredError = class extends Error {
 // ../cursorless-engine/src/actions/EditNew/runEditTargets.ts
 async function runEditTargets(rangeUpdater, editor, state, useAllDestinations) {
   const destinations = state.destinations.map((destination, index) => {
-    if (useAllDestinations || destination.getEditNewActionType() === "edit") {
+    if (useAllDestinations || state.actionTypes[index] === "edit") {
       return {
         destination,
         index
@@ -28811,6 +25775,7 @@ async function runEditTargets(rangeUpdater, editor, state, useAllDestinations) {
   });
   return {
     destinations: state.destinations,
+    actionTypes: state.actionTypes,
     thatRanges: updatedThatRanges,
     cursorRanges: finalCursorRanges
   };
@@ -28819,7 +25784,7 @@ async function runEditTargets(rangeUpdater, editor, state, useAllDestinations) {
 // ../cursorless-engine/src/actions/EditNew/runInsertLineAfterTargets.ts
 async function runInsertLineAfterTargets({ acceptsLocation }, rangeUpdater, editor, state) {
   const destinations = state.destinations.map((destination, index) => {
-    const actionType = destination.getEditNewActionType();
+    const actionType = state.actionTypes[index];
     if (actionType === "insertLineAfter") {
       return {
         destination,
@@ -28867,6 +25832,7 @@ async function runInsertLineAfterTargets({ acceptsLocation }, rangeUpdater, edit
         destination.target.withContentRange(updatedTargetRanges[index])
       )
     ),
+    actionTypes: state.actionTypes,
     thatRanges: updatedThatRanges,
     cursorRanges
   };
@@ -28874,7 +25840,7 @@ async function runInsertLineAfterTargets({ acceptsLocation }, rangeUpdater, edit
 
 // ../cursorless-engine/src/actions/EditNew/runNotebookCellTargets.ts
 async function runEditNewNotebookCellTargets(actions, destinations) {
-  const destination = ensureSingleTarget2(destinations);
+  const destination = ensureSingleTarget(destinations);
   const editor = ide().getEditableTextEditor(destination.editor);
   const isAbove = destination.insertionMode === "before";
   if (destination.insertionMode === "to") {
@@ -28904,10 +25870,11 @@ var EditNew = class {
       return runEditNewNotebookCellTargets(this.actions, destinations);
     }
     const editableEditor = ide().getEditableTextEditor(
-      ensureSingleEditor2(destinations)
+      ensureSingleEditor(destinations)
     );
     let state = {
       destinations,
+      actionTypes: destinations.map((d) => d.getEditNewActionType()),
       thatRanges: destinations.map(
         ({ target }) => target.thatTarget.contentRange
       ),
@@ -28931,9 +25898,13 @@ var EditNew = class {
       state,
       !useInsertLineAfter
     );
-    const newSelections = state.destinations.map(
-      (destination, index) => state.cursorRanges[index].toSelection(destination.target.isReversed)
-    );
+    const newSelections = state.destinations.map((destination, index) => {
+      const cursorRange = state.cursorRanges[index];
+      if (cursorRange == null) {
+        throw Error("Cursor range is undefined for destination");
+      }
+      return cursorRange.toSelection(destination.target.isReversed);
+    });
     await editableEditor.setSelections(newSelections, { focusEditor: true });
     return {
       thatSelections: createThatMark(
@@ -29005,7 +25976,7 @@ var Find = class {
     this.run = this.run.bind(this);
   }
   async run(targets) {
-    ensureSingleTarget2(targets);
+    ensureSingleTarget(targets);
     const { returnValue, thatTargets } = await this.actions.getText.run(targets);
     const [text] = returnValue;
     let query;
@@ -29034,6 +26005,17 @@ var FindInWorkspace = class extends Find {
   }
 };
 
+// ../cursorless-engine/src/actions/FlashTargets.ts
+var FlashTargets = class {
+  constructor() {
+    this.run = this.run.bind(this);
+  }
+  async run(targets) {
+    await flashTargets(ide(), targets, "referenced" /* referenced */);
+    return { thatTargets: targets };
+  }
+};
+
 // ../cursorless-engine/src/actions/FollowLink.ts
 var FollowLink = class {
   constructor(options2) {
@@ -29041,7 +26023,7 @@ var FollowLink = class {
     this.run = this.run.bind(this);
   }
   async run(targets) {
-    const target = ensureSingleTarget2(targets);
+    const target = ensureSingleTarget(targets);
     await flashTargets(ide(), targets, "referenced" /* referenced */);
     await ide().getEditableTextEditor(target.editor).openLink(target.contentRange, this.options);
     return {
@@ -29050,26 +26032,30 @@ var FollowLink = class {
   }
 };
 
-// ../../node_modules/.pnpm/talon-snippets@1.1.0/node_modules/talon-snippets/lib/esm/parser.js
+// ../../node_modules/.pnpm/talon-snippets@1.3.0/node_modules/talon-snippets/lib/esm/parser.js
 function parseSnippetFile(content) {
-  const documents = content.split(/^---$/m);
-  return documents.map(parseDocument).filter((d) => d != null);
-}
-function parseDocument(text) {
-  const match = text.match(/^-$/m);
-  const contextText = match != null ? text.slice(0, match.index) : text;
-  const bodyText = match != null ? text.slice(match.index + match[0].length) : null;
-  let document2 = parseContext(contextText);
-  if (bodyText != null) {
-    const body2 = parseBody(bodyText);
+  const documentContents = content.split(/^---$/m);
+  const file = { snippets: [] };
+  for (const text of documentContents) {
+    const match = text.match(/^-$/m);
+    const contextText = match != null ? text.slice(0, match.index) : text;
+    const bodyText = match != null ? text.slice(match.index + match[0].length) : null;
+    const body2 = bodyText ? parseBody(bodyText) : null;
+    let context = parseContext(contextText);
     if (body2 != null) {
-      if (document2 == null) {
-        document2 = { variables: [] };
+      if (context == null) {
+        context = { variables: [] };
       }
-      document2.body = body2;
+      const { variables, ...rest } = context;
+      file.snippets.push({ ...rest, body: body2, variables });
+    } else if (context != null) {
+      if (file.header != null || file.snippets.length !== 0) {
+        throw Error("Header snippet must be first in file");
+      }
+      file.header = context;
     }
   }
-  return document2;
+  return file;
 }
 function parseContext(text) {
   const document2 = { variables: [] };
@@ -29082,6 +26068,9 @@ function parseContext(text) {
     switch (key) {
       case "name":
         document2.name = value;
+        break;
+      case "description":
+        document2.description = value;
         break;
       case "phrase":
         document2.phrases = parseVectorValue(value);
@@ -29164,14 +26153,20 @@ function parseVectorValue(value) {
   return value.split("|").map((v) => v.trim());
 }
 
-// ../../node_modules/.pnpm/talon-snippets@1.1.0/node_modules/talon-snippets/lib/esm/serializer.js
-function serializeSnippetFile(snippetDocuments) {
-  const result = snippetDocuments.map((s) => getDocumentText(s)).filter(Boolean).join("\n---\n\n");
+// ../../node_modules/.pnpm/talon-snippets@1.3.0/node_modules/talon-snippets/lib/esm/serializer.js
+function serializeSnippetFile(snippetFile) {
+  const documents = [];
+  if (snippetFile.header != null) {
+    documents.push(getDocumentText(snippetFile.header));
+  }
+  documents.push(...snippetFile.snippets.map(getDocumentText));
+  const result = documents.filter(Boolean).join("\n---\n\n");
   return result ? result + "\n---\n" : "";
 }
 function getDocumentText(document2) {
   const parts2 = [
     getOptionalPairString("name", document2.name),
+    getOptionalPairString("description", document2.description),
     getOptionalPairString("language", document2.languages),
     getOptionalPairString("phrase", document2.phrases),
     getOptionalPairString("insertionScope", document2.insertionScopes)
@@ -29182,7 +26177,7 @@ function getDocumentText(document2) {
     }
     parts2.push(...getSortedVariables(document2.variables));
   }
-  if (document2.body != null) {
+  if ("body" in document2) {
     parts2.push("-", ...document2.body);
   }
   return parts2.join("\n");
@@ -29213,11 +26208,6 @@ function compareVariables(a, b) {
     return -1;
   }
   return a.name.localeCompare(b.name);
-}
-
-// ../../node_modules/.pnpm/talon-snippets@1.1.0/node_modules/talon-snippets/lib/esm/utils.js
-function getHeaderSnippet(snippetDocuments) {
-  return snippetDocuments.length > 0 && snippetDocuments[0].body == null ? snippetDocuments[0] : void 0;
 }
 
 // ../cursorless-engine/src/actions/GenerateSnippet/constructSnippetBody.ts
@@ -29268,14 +26258,19 @@ function editText(text, edits) {
   return output;
 }
 
-// ../cursorless-engine/src/actions/GenerateSnippet/GenerateSnippetCommunity.ts
-var GenerateSnippetCommunity = class {
+// ../cursorless-engine/src/actions/GenerateSnippet/GenerateSnippet.ts
+var GenerateSnippet = class {
   constructor(snippets) {
     this.snippets = snippets;
     this.run = this.run.bind(this);
   }
   async run(targets, directory, snippetName) {
-    const target = ensureSingleTarget2(targets);
+    if (directory == null) {
+      throw new Error(
+        "Directory argument is required for GenerateSnippet action. Please update Cursorless Talon"
+      );
+    }
+    const target = ensureSingleTarget(targets);
     const editor = target.editor;
     void flashTargets(ide(), targets, "referenced" /* referenced */);
     if (snippetName == null) {
@@ -29320,24 +26315,23 @@ var GenerateSnippetCommunity = class {
     ]);
     const snippetLines = constructSnippetBody(snippetBodyText, linePrefix);
     let editableEditor;
-    let snippetDocuments;
+    let snippetFile = { snippets: [] };
     if (ide().runMode === "test") {
       editableEditor = ide().getEditableTextEditor(editor);
-      snippetDocuments = [];
     } else {
       editableEditor = ide().getEditableTextEditor(
         await this.snippets.openNewSnippetFile(snippetName, directory)
       );
-      snippetDocuments = parseSnippetFile(editableEditor.document.getText());
+      snippetFile = parseSnippetFile(editableEditor.document.getText());
     }
     await editableEditor.setSelections([
       editableEditor.document.range.toSelection(false)
     ]);
-    const headerSnippet = getHeaderSnippet(snippetDocuments);
     let currentPlaceholderIndex = 1;
-    const phrases = headerSnippet?.phrases != null ? void 0 : [`${PLACEHOLDER}${currentPlaceholderIndex++}`];
+    const { header } = snippetFile;
+    const phrases = snippetFile.header?.phrases != null ? void 0 : [`${PLACEHOLDER}${currentPlaceholderIndex++}`];
     const createVariable = (variable) => {
-      const hasPhrase = headerSnippet?.variables?.some(
+      const hasPhrase = header?.variables?.some(
         (v) => v.name === variable.name && v.wrapperPhrases != null
       );
       return {
@@ -29346,14 +26340,14 @@ var GenerateSnippetCommunity = class {
       };
     };
     const snippet2 = {
-      name: headerSnippet?.name === snippetName ? void 0 : snippetName,
+      name: header?.name === snippetName ? void 0 : snippetName,
       phrases,
-      languages: getSnippetLanguages(editor, headerSnippet),
+      languages: getSnippetLanguages(editor, header),
       body: snippetLines,
       variables: variables.map(createVariable)
     };
-    snippetDocuments.push(snippet2);
-    const metaSnippetText = serializeSnippetFile(snippetDocuments).replace(/\$/g, "\\$").replaceAll(PLACEHOLDER, "$");
+    snippetFile.snippets.push(snippet2);
+    const metaSnippetText = serializeSnippetFile(snippetFile).replace(/\$/g, "\\$").replaceAll(PLACEHOLDER, "$");
     await editableEditor.insertSnippet(metaSnippetText);
     return {
       thatSelections: targets.map(({ editor: editor2, contentSelection }) => ({
@@ -29377,188 +26371,6 @@ function getsSnippetSelections(editor, range3) {
   return selections;
 }
 var PLACEHOLDER = "PLACEHOLDER_VFA77zcbLD6wXNmfMAay";
-
-// ../cursorless-engine/src/actions/GenerateSnippet/Substituter.ts
-var Substituter = class {
-  constructor() {
-    this.substitutions = [];
-  }
-  /**
-   * Get a random id that can be put into your text body that will then be
-   * replaced by {@link to} when you call {@link makeSubstitutions}.
-   * @param to The string that you'd like to end up in the final document after
-   * replacements
-   * @param isQuoted Use this variable to indicate that in the final text the
-   * variable will end up quoted. This occurs if you use the replacement string
-   * as a stand alone string in a json document and then you serialize it
-   * @returns A unique random id that can be put into the document that will
-   * then be substituted later
-   */
-  addSubstitution(to, isQuoted = false) {
-    const randomId = makeid(10);
-    this.substitutions.push({
-      to,
-      randomId,
-      isQuoted
-    });
-    return randomId;
-  }
-  /**
-   * Performs substitutions on {@link text}, replacing the random ids generated
-   * by {@link addSubstitution} with the values passed in for `to`.
-   * @param text The text to perform substitutions on
-   * @returns The text with variable substituted for the original values you
-   * desired
-   */
-  makeSubstitutions(text) {
-    this.substitutions.forEach(({ to, randomId, isQuoted }) => {
-      const from = isQuoted ? `"${randomId}"` : randomId;
-      text = text.split(from).join(to);
-    });
-    return text;
-  }
-};
-function makeid(length) {
-  let result = "";
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const charactersLength = characters.length;
-  for (let i2 = 0; i2 < length; i2++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
-
-// ../cursorless-engine/src/actions/GenerateSnippet/GenerateSnippetLegacy.ts
-var GenerateSnippetLegacy = class {
-  constructor(snippets) {
-    this.snippets = snippets;
-    this.run = this.run.bind(this);
-  }
-  async run(targets, snippetName) {
-    const target = ensureSingleTarget2(targets);
-    const editor = target.editor;
-    void flashTargets(ide(), targets, "referenced" /* referenced */);
-    if (snippetName == null) {
-      snippetName = await ide().showInputBox({
-        prompt: "Name of snippet",
-        placeHolder: "helloWorld"
-      });
-    }
-    if (snippetName == null) {
-      return {};
-    }
-    let currentPlaceholderIndex = 1;
-    const baseOffset = editor.document.offsetAt(target.contentRange.start);
-    const variables = editor.selections.filter((selection) => target.contentRange.contains(selection)).map((selection, index) => ({
-      offsets: {
-        start: editor.document.offsetAt(selection.start) - baseOffset,
-        end: editor.document.offsetAt(selection.end) - baseOffset
-      },
-      defaultName: `variable${index + 1}`,
-      placeholderIndex: currentPlaceholderIndex++
-    }));
-    const substituter = new Substituter();
-    const linePrefix = editor.document.getText(
-      new Range(
-        target.contentRange.start.with(void 0, 0),
-        target.contentRange.start
-      )
-    );
-    const originalText = editor.document.getText(target.contentRange);
-    const snippetBodyText = editText(originalText, [
-      ...matchAll(originalText, /\$|\\/g, (match) => ({
-        offsets: {
-          start: match.index,
-          end: match.index + match[0].length
-        },
-        text: match[0] === "\\" ? `\\${match[0]}` : `\\\\${match[0]}`
-      })),
-      ...variables.map(({ offsets, defaultName, placeholderIndex }) => ({
-        offsets,
-        // Note that the reason we use the substituter here is primarily so
-        // that the `\` below doesn't get escaped upon conversion to json.
-        text: substituter.addSubstitution(
-          [
-            // This `\$` will end up being a `$` in the final document.  It
-            // indicates the start of a variable in the user snippet.  We need
-            // the `\` so that the meta-snippet doesn't see it as one of its
-            // placeholders.
-            "\\$",
-            // The remaining text here is a placeholder in the meta-snippet
-            // that the user can use to name their snippet variable that will
-            // be in the user snippet.
-            "${",
-            placeholderIndex,
-            ":",
-            defaultName,
-            "}"
-          ].join("")
-        )
-      }))
-    ]);
-    const snippetLines = constructSnippetBody(snippetBodyText, linePrefix);
-    const constructVariableDescriptionEntry = ({
-      placeholderIndex
-    }) => {
-      const key = "$" + placeholderIndex;
-      const value = substituter.addSubstitution(
-        "{$" + currentPlaceholderIndex++ + "}",
-        true
-      );
-      return [key, value];
-    };
-    const snippet2 = {
-      [snippetName]: {
-        definitions: [
-          {
-            scope: {
-              langIds: [editor.document.languageId]
-            },
-            body: snippetLines
-          }
-        ],
-        description: "$" + currentPlaceholderIndex++,
-        variables: variables.length === 0 ? void 0 : Object.fromEntries(
-          variables.map(constructVariableDescriptionEntry)
-        )
-      }
-    };
-    const snippetText = substituter.makeSubstitutions(
-      JSON.stringify(snippet2, null, 2)
-    );
-    const editableEditor = ide().getEditableTextEditor(editor);
-    if (ide().runMode === "test") {
-      await editableEditor.setSelections([
-        editor.document.range.toSelection(false)
-      ]);
-    } else {
-      await this.snippets.openNewSnippetFile(snippetName);
-    }
-    await editableEditor.insertSnippet(snippetText);
-    return {
-      thatSelections: targets.map(({ editor: editor2, contentSelection }) => ({
-        editor: editor2,
-        selection: contentSelection
-      }))
-    };
-  }
-};
-
-// ../cursorless-engine/src/actions/GenerateSnippet/GenerateSnippet.ts
-var GenerateSnippet = class {
-  constructor(snippets) {
-    this.snippets = snippets;
-    this.run = this.run.bind(this);
-  }
-  async run(targets, directory, snippetName) {
-    if (directory == null) {
-      const action2 = new GenerateSnippetLegacy(this.snippets);
-      return action2.run(targets, snippetName);
-    }
-    const action = new GenerateSnippetCommunity(this.snippets);
-    return action.run(targets, directory, snippetName);
-  }
-};
 
 // ../cursorless-engine/src/actions/GetTargets.ts
 var GetTargets = class {
@@ -29588,7 +26400,7 @@ var GetText = class {
       await flashTargets(ide(), targets, "referenced" /* referenced */);
     }
     if (doEnsureSingleTarget) {
-      ensureSingleTarget2(targets);
+      ensureSingleTarget(targets);
     }
     return {
       returnValue: targets.map((target) => target.contentText),
@@ -29618,7 +26430,9 @@ var Highlight = class {
         (editor, targets2) => ide().setHighlightRanges(
           highlightId,
           editor,
-          targets2.map(toGeneralizedRange)
+          targets2.map(
+            (target) => toGeneralizedRange(target, target.contentRange)
+          )
         )
       );
     }
@@ -29911,8 +26725,71 @@ var InsertEmptyLineBelow = class extends InsertEmptyLines {
 function constructChangeEdit(target, insertionMode2) {
   return {
     ...target.toDestination(insertionMode2).constructChangeEdit("", true),
-    isLine: target.isLine
+    isLine: target.textualType === "line"
   };
+}
+
+// ../cursorless-engine/src/core/getPreferredSnippet.ts
+function getPreferredSnippet(snippetDescription, languageId) {
+  if (snippetDescription.type === "named") {
+    throw new Error(
+      "Cursorless snippets are deprecated. Please use community snippets. Update to latest cursorless-talon and say 'cursorless migrate snippets'."
+    );
+  }
+  if (snippetDescription.type === "custom") {
+    return snippetDescription;
+  }
+  const preferredSnippet = tryToFindPreferredSnippet(
+    snippetDescription.snippets,
+    languageId,
+    snippetDescription.fallbackLanguage
+  );
+  if (preferredSnippet == null) {
+    const languages = getUniqueLanguagesString(snippetDescription.snippets);
+    throw new Error(
+      `No snippet available for language '${languageId}'. Available languages: ${languages}`
+    );
+  }
+  return preferredSnippet;
+}
+function getUniqueLanguagesString(snippets) {
+  const languages = new Set(
+    snippets.flatMap((snippet2) => snippet2.languages ?? [])
+  );
+  return Array.from(languages).sort().join(", ");
+}
+function tryToFindPreferredSnippet(snippetDescriptions, languageId, fallbackLanguage) {
+  let snippet2 = findSnippetWithFewestLanguages(
+    snippetDescriptions.filter((snippetDescription) => {
+      return snippetDescription.languages?.includes(languageId);
+    })
+  );
+  if (snippet2 == null && fallbackLanguage != null) {
+    snippet2 = findSnippetWithFewestLanguages(
+      snippetDescriptions.filter((snippetDescription) => {
+        return snippetDescription.languages?.includes(fallbackLanguage);
+      })
+    );
+  }
+  if (snippet2 == null) {
+    snippet2 = snippetDescriptions.find((snippetDescription) => {
+      return snippetDescription.languages == null;
+    });
+  }
+  return snippet2;
+}
+function findSnippetWithFewestLanguages(snippets) {
+  if (snippets.length === 0) {
+    return void 0;
+  }
+  return snippets.reduce((prev, curr) => {
+    if (prev.languages == null || curr.languages == null) {
+      throw Error(
+        "Snippet must have languages defined to find the one with the fewest languages"
+      );
+    }
+    return curr.languages.length < prev.languages.length ? curr : prev;
+  });
 }
 
 // ../cursorless-engine/src/snippets/vendor/vscodeSnippet/snippetParser.ts
@@ -29992,7 +26869,7 @@ var Marker = class {
     this._children = [];
   }
   appendChild(child) {
-    if (child instanceof Text && this._children[this._children.length - 1] instanceof Text) {
+    if (child instanceof Text2 && this._children[this._children.length - 1] instanceof Text2) {
       this._children[this._children.length - 1].value += child.value;
     } else {
       child.parent = this;
@@ -30035,7 +26912,7 @@ var Marker = class {
     return 0;
   }
 };
-var Text = class _Text extends Marker {
+var Text2 = class _Text extends Marker {
   constructor(value) {
     super();
     this.value = value;
@@ -30114,7 +26991,7 @@ var Choice = class _Choice extends Marker {
     this.options = [];
   }
   appendChild(marker) {
-    if (marker instanceof Text) {
+    if (marker instanceof Text2) {
       marker.parent = this;
       this.options.push(marker);
     }
@@ -30258,7 +27135,7 @@ var Variable = class _Variable extends TransformableMarker {
       value = this.transform.resolve(value || "");
     }
     if (value !== void 0) {
-      this._children = [new Text(value)];
+      this._children = [new Text2(value)];
       return true;
     }
     return false;
@@ -30473,7 +27350,7 @@ var SnippetParser = class {
     let value;
     if (value = this._accept(5 /* Backslash */, true)) {
       value = this._accept(0 /* Dollar */, true) || this._accept(4 /* CurlyClose */, true) || this._accept(5 /* Backslash */, true) || value;
-      marker.appendChild(new Text(value));
+      marker.appendChild(new Text2(value));
       return true;
     }
     return false;
@@ -30509,7 +27386,7 @@ var SnippetParser = class {
         if (this._parse(placeholder)) {
           continue;
         }
-        parent.appendChild(new Text("${" + index + ":"));
+        parent.appendChild(new Text2("${" + index + ":"));
         placeholder.children.forEach(parent.appendChild, parent);
         return true;
       }
@@ -30568,7 +27445,7 @@ var SnippetParser = class {
       this._backTo(token);
       return false;
     }
-    parent.appendChild(new Text(values2.join("")));
+    parent.appendChild(new Text2(values2.join("")));
     return true;
   }
   // ${foo:<children>}, ${foo} -> variable
@@ -30589,7 +27466,7 @@ var SnippetParser = class {
         if (this._parse(variable)) {
           continue;
         }
-        parent.appendChild(new Text("${" + name2 + ":"));
+        parent.appendChild(new Text2("${" + name2 + ":"));
         variable.children.forEach(parent.appendChild, parent);
         return true;
       }
@@ -30634,7 +27511,7 @@ var SnippetParser = class {
       let escaped;
       if (escaped = this._accept(5 /* Backslash */, true)) {
         escaped = this._accept(5 /* Backslash */, true) || this._accept(6 /* Forwardslash */, true) || escaped;
-        transform.appendChild(new Text(escaped));
+        transform.appendChild(new Text2(escaped));
         continue;
       }
       if (this._parseFormatString(transform) || this._parseAnything(transform)) {
@@ -30725,7 +27602,7 @@ var SnippetParser = class {
   }
   _parseAnything(marker) {
     if (this._token.type !== 14 /* EOF */) {
-      marker.appendChild(new Text(this._scanner.tokenText(this._token)));
+      marker.appendChild(new Text2(this._scanner.tokenText(this._token)));
       this._accept(void 0);
       return true;
     }
@@ -30769,7 +27646,7 @@ var KnownSnippetVariableNames = Object.freeze({
   "UUID": true
 });
 
-// ../cursorless-engine/src/snippets/snippet.ts
+// ../cursorless-engine/src/snippets/transformSnippetVariables.ts
 function transformSnippetVariables(parsedSnippet, placeholderName, substitutions) {
   let nextPlaceholderIndex = getMaxPlaceholderIndex(parsedSnippet) + 1;
   const placeholderIndexMap = {};
@@ -30779,7 +27656,54 @@ function transformSnippetVariables(parsedSnippet, placeholderName, substitutions
         candidate.name = "TM_SELECTED_TEXT";
       } else if (substitutions != null && Object.prototype.hasOwnProperty.call(substitutions, candidate.name)) {
         candidate.parent.replace(candidate, [
-          new Text(substitutions[candidate.name])
+          new Text2(substitutions[candidate.name])
+        ]);
+      } else if (!KnownSnippetVariableNames[candidate.name]) {
+        let placeholderIndex;
+        if (candidate.name in placeholderIndexMap) {
+          placeholderIndex = placeholderIndexMap[candidate.name];
+        } else {
+          placeholderIndex = nextPlaceholderIndex++;
+          placeholderIndexMap[candidate.name] = placeholderIndex;
+        }
+        const placeholder = new Placeholder(placeholderIndex);
+        candidate.children.forEach((child) => placeholder.appendChild(child));
+        candidate.parent.replace(candidate, [placeholder]);
+      }
+    } else if (candidate instanceof Placeholder) {
+      if (candidate.index.toString() === placeholderName) {
+        candidate.parent.replace(candidate, [new Variable("TM_SELECTED_TEXT")]);
+      } else if (substitutions != null && Object.prototype.hasOwnProperty.call(substitutions, candidate.index)) {
+        candidate.parent.replace(candidate, [
+          new Text2(substitutions[candidate.index])
+        ]);
+      }
+    }
+    return true;
+  });
+}
+function getMaxPlaceholderIndex(parsedSnippet) {
+  let placeholderIndex = 0;
+  parsedSnippet.walk((candidate) => {
+    if (candidate instanceof Placeholder) {
+      placeholderIndex = Math.max(placeholderIndex, candidate.index);
+    }
+    return true;
+  });
+  return placeholderIndex;
+}
+
+// ../cursorless-engine/src/actions/snippetsLegacy/snippet.ts
+function transformSnippetVariables2(parsedSnippet, placeholderName, substitutions) {
+  let nextPlaceholderIndex = getMaxPlaceholderIndex2(parsedSnippet) + 1;
+  const placeholderIndexMap = {};
+  parsedSnippet.walk((candidate) => {
+    if (candidate instanceof Variable) {
+      if (candidate.name === placeholderName) {
+        candidate.name = "TM_SELECTED_TEXT";
+      } else if (substitutions != null && Object.prototype.hasOwnProperty.call(substitutions, candidate.name)) {
+        candidate.parent.replace(candidate, [
+          new Text2(substitutions[candidate.name])
         ]);
       } else if (!KnownSnippetVariableNames[candidate.name]) {
         let placeholderIndex;
@@ -30801,7 +27725,7 @@ function transformSnippetVariables(parsedSnippet, placeholderName, substitutions
     return true;
   });
 }
-function getMaxPlaceholderIndex(parsedSnippet) {
+function getMaxPlaceholderIndex2(parsedSnippet) {
   let placeholderIndex = 0;
   parsedSnippet.walk((candidate) => {
     if (candidate instanceof Placeholder) {
@@ -30830,6 +27754,9 @@ function findMatchingSnippetDefinitionStrict(modifierStageFactory, targets, defi
 }
 function findMatchingSnippetDefinitionForSingleTarget(modifierStageFactory, target, definitions) {
   const languageId = target.editor.document.languageId;
+  const options2 = {
+    multipleTargets: false
+  };
   return definitions.findIndex(({ scope }) => {
     if (scope == null) {
       return true;
@@ -30849,13 +27776,13 @@ function findMatchingSnippetDefinitionForSingleTarget(modifierStageFactory, targ
           let containingTarget = modifierStageFactory.create({
             type: "containingScope",
             scopeType: { type: scopeTypeType }
-          }).run(target)[0];
+          }).run(target, options2)[0];
           if (target.contentRange.isRangeEqual(containingTarget.contentRange)) {
             containingTarget = modifierStageFactory.create({
               type: "containingScope",
               scopeType: { type: scopeTypeType },
               ancestorIndex: 1
-            }).run(target)[0];
+            }).run(target, options2)[0];
           }
           if (matchingTarget == null || matchingTarget.contentRange.contains(containingTarget.contentRange)) {
             matchingTarget = containingTarget;
@@ -30874,8 +27801,45 @@ function findMatchingSnippetDefinitionForSingleTarget(modifierStageFactory, targ
   });
 }
 
-// ../cursorless-engine/src/actions/InsertSnippet.ts
-var InsertSnippet = class {
+// ../cursorless-engine/src/actions/snippetsLegacy/legacySnippetsNotification.ts
+var wasShown = false;
+function showLegacySnippetsNotification() {
+  if (wasShown) {
+    return;
+  }
+  void showWarning(
+    ide().messages,
+    "legacySnippets",
+    "Talon community snippets are now fully supported in Cursorless! Cursorless's experimental snippets are now deprecated, but in most cases we can help you migrate automatically. Update cursorless-talon and say 'cursorless migrate snippets'."
+  );
+  wasShown = true;
+}
+
+// ../cursorless-engine/src/actions/snippetsLegacy/textFormatters.ts
+var textFormatters = {
+  camelCase(tokens2) {
+    if (tokens2.length === 0) {
+      return "";
+    }
+    const [first, ...rest] = tokens2;
+    return first + rest.map(capitalizeToken).join("");
+  },
+  snakeCase(tokens2) {
+    return tokens2.join("_");
+  },
+  upperSnakeCase(tokens2) {
+    return tokens2.map((token) => token.toUpperCase()).join("_");
+  },
+  pascalCase(tokens2) {
+    return tokens2.map(capitalizeToken).join("");
+  }
+};
+function capitalizeToken(token) {
+  return token.length === 0 ? "" : token[0].toUpperCase() + token.substr(1);
+}
+
+// ../cursorless-engine/src/actions/snippetsLegacy/InsertSnippetLegacy.ts
+var InsertSnippetLegacy = class {
   constructor(rangeUpdater, snippets, actions, modifierStageFactory) {
     this.rangeUpdater = rangeUpdater;
     this.snippets = snippets;
@@ -30897,44 +27861,32 @@ var InsertSnippet = class {
     ];
   }
   getScopeTypes(snippetDescription) {
-    if (snippetDescription.type === "named") {
-      const { name: name2 } = snippetDescription;
-      const snippet2 = this.snippets.getSnippetStrict(name2);
-      const scopeTypeTypes = snippet2.insertionScopeTypes;
-      return scopeTypeTypes == null ? [] : scopeTypeTypes.map((scopeTypeType) => ({
-        type: scopeTypeType
-      }));
-    } else {
-      return snippetDescription.scopeTypes ?? [];
-    }
+    const { name: name2 } = snippetDescription;
+    const snippet2 = this.snippets.getSnippetStrict(name2);
+    const scopeTypeTypes = snippet2.insertionScopeTypes;
+    return scopeTypeTypes == null ? [] : scopeTypeTypes.map((scopeTypeType) => ({
+      type: scopeTypeType
+    }));
   }
   getSnippetInfo(snippetDescription, targets) {
-    if (snippetDescription.type === "named") {
-      const { name: name2 } = snippetDescription;
-      const snippet2 = this.snippets.getSnippetStrict(name2);
-      const definition = findMatchingSnippetDefinitionStrict(
-        this.modifierStageFactory,
-        targets,
-        snippet2.definitions
-      );
-      return {
-        body: definition.body.join("\n"),
-        formatSubstitutions(substitutions) {
-          return substitutions == null ? void 0 : formatSubstitutions(snippet2, definition, substitutions);
-        }
-      };
-    } else {
-      return {
-        body: snippetDescription.body,
-        formatSubstitutions(substitutions) {
-          return substitutions;
-        }
-      };
-    }
+    const { name: name2 } = snippetDescription;
+    const snippet2 = this.snippets.getSnippetStrict(name2);
+    const definition = findMatchingSnippetDefinitionStrict(
+      this.modifierStageFactory,
+      targets,
+      snippet2.definitions
+    );
+    return {
+      body: definition.body.join("\n"),
+      formatSubstitutions(substitutions) {
+        return substitutions == null ? void 0 : formatSubstitutions(snippet2, definition, substitutions);
+      }
+    };
   }
   async run(destinations, snippetDescription) {
+    showLegacySnippetsNotification();
     const editor = ide().getEditableTextEditor(
-      ensureSingleEditor2(destinations)
+      ensureSingleEditor(destinations)
     );
     await this.actions.editNew.run(destinations);
     const { body: body2, formatSubstitutions: formatSubstitutions2 } = this.getSnippetInfo(
@@ -30951,7 +27903,7 @@ var InsertSnippet = class {
       )
     );
     const parsedSnippet = this.snippetParser.parse(body2);
-    transformSnippetVariables(
+    transformSnippetVariables2(
       parsedSnippet,
       null,
       formatSubstitutions2(snippetDescription.substitutions)
@@ -30995,6 +27947,82 @@ function formatSubstitutions(snippet2, definition, substitutions) {
   );
 }
 
+// ../cursorless-engine/src/actions/InsertSnippet.ts
+var InsertSnippet = class {
+  constructor(rangeUpdater, snippets, actions, modifierStageFactory) {
+    this.rangeUpdater = rangeUpdater;
+    this.snippets = snippets;
+    this.actions = actions;
+    this.modifierStageFactory = modifierStageFactory;
+    this.snippetParser = new SnippetParser();
+    this.run = this.run.bind(this);
+  }
+  getFinalStages(destinations, snippetDescription) {
+    if (snippetDescription.type === "named") {
+      return this.legacy().getFinalStages(snippetDescription);
+    }
+    const editor = ensureSingleEditor(destinations);
+    const snippet2 = getPreferredSnippet(
+      snippetDescription,
+      editor.document.languageId
+    );
+    const defaultScopeTypes = snippet2.scopeTypes ?? [];
+    return defaultScopeTypes.length === 0 ? [] : [
+      new ModifyIfUntypedExplicitStage(this.modifierStageFactory, {
+        type: "cascading",
+        modifiers: defaultScopeTypes.map((scopeType) => ({
+          type: "containingScope",
+          scopeType
+        }))
+      })
+    ];
+  }
+  async run(destinations, snippetDescription) {
+    if (snippetDescription.type === "named") {
+      return this.legacy().run(destinations, snippetDescription);
+    }
+    const editor = ide().getEditableTextEditor(
+      ensureSingleEditor(destinations)
+    );
+    const snippet2 = getPreferredSnippet(
+      snippetDescription,
+      editor.document.languageId
+    );
+    const parsedSnippet = this.snippetParser.parse(snippet2.body);
+    const substitutions = snippet2.substitutions ?? snippetDescription.substitutions;
+    transformSnippetVariables(parsedSnippet, null, substitutions);
+    const snippetString = parsedSnippet.toTextmateString();
+    await this.actions.editNew.run(destinations);
+    const { editorSelections: updatedThatSelections } = await performEditsAndUpdateSelections({
+      rangeUpdater: this.rangeUpdater,
+      editor,
+      callback: () => editor.insertSnippet(snippetString),
+      preserveCursorSelections: true,
+      selections: {
+        editorSelections: {
+          selections: editor.selections,
+          behavior: 0 /* openOpen */
+        }
+      }
+    });
+    return {
+      thatSelections: updatedThatSelections.map((selection) => ({
+        editor,
+        selection
+      }))
+    };
+  }
+  // DEPRECATED @ 2025-02-01
+  legacy() {
+    return new InsertSnippetLegacy(
+      this.rangeUpdater,
+      this.snippets,
+      this.actions,
+      this.modifierStageFactory
+    );
+  }
+};
+
 // ../cursorless-engine/src/actions/JoinLines.ts
 var JoinLines = class {
   constructor(rangeUpdater, modifierStageFactory) {
@@ -31033,7 +28061,7 @@ var JoinLines = class {
 function getEdits2(editor, targets) {
   const edits = [];
   for (const target of targets) {
-    const targetsEdits = target.joinAs === "line" ? getLineTargetEdits(target) : getTokenTargetEdits(target);
+    const targetsEdits = target.textualType === "token" ? getTokenTargetEdits(target) : getLineTargetEdits(target);
     edits.push(...targetsEdits);
   }
   return edits;
@@ -31085,7 +28113,7 @@ var PasteFromClipboardUsingCommand = class {
   }
   async run(destinations) {
     const editor = ide().getEditableTextEditor(
-      ensureSingleEditor2(destinations)
+      ensureSingleEditor(destinations)
     );
     const originalEditor = ide().activeEditableTextEditor;
     const callbackEdit = async () => {
@@ -31448,10 +28476,11 @@ var SetSelectionBase = class {
     this.run = this.run.bind(this);
   }
   async run(targets) {
-    const editor = ensureSingleEditor2(targets);
+    const editor = ensureSingleEditor(targets);
     const targetSelections = this.getSelections(targets);
     const selections = this.selectionMode === "add" ? editor.selections.concat(targetSelections) : targetSelections;
-    await ide().getEditableTextEditor(editor).setSelections(selections, { focusEditor: true });
+    const highlightWord = this.selectionMode === "set" && selections.length === 1 && selections[0].isEmpty;
+    await ide().getEditableTextEditor(editor).setSelections(selections, { focusEditor: true, highlightWord });
     return {
       thatTargets: targets
     };
@@ -31666,20 +28695,10 @@ var ToggleBreakpoint = class {
     const thatTargets = targets.map(({ thatTarget }) => thatTarget);
     await flashTargets(ide(), thatTargets, "referenced" /* referenced */);
     await runOnTargetsForEachEditor(targets, async (editor, targets2) => {
-      const breakpointDescriptors = targets2.map(
-        (target) => {
-          const range3 = target.contentRange;
-          return target.isLine ? {
-            type: "line",
-            startLine: range3.start.line,
-            endLine: range3.end.line
-          } : {
-            type: "inline",
-            range: range3
-          };
-        }
+      const generalizedRanges = targets2.map(
+        (target) => toGeneralizedRange(target, target.contentRange)
       );
-      await ide().getEditableTextEditor(editor).toggleBreakpoint(breakpointDescriptors);
+      await ide().getEditableTextEditor(editor).toggleBreakpoint(generalizedRanges);
     });
     return {
       thatTargets: targets
@@ -31776,8 +28795,8 @@ var Wrap = class {
   }
 };
 
-// ../cursorless-engine/src/actions/WrapWithSnippet.ts
-var WrapWithSnippet = class {
+// ../cursorless-engine/src/actions/snippetsLegacy/WrapWithSnippetLegacy.ts
+var WrapWithSnippetLegacy = class {
   constructor(rangeUpdater, snippets, modifierStageFactory) {
     this.rangeUpdater = rangeUpdater;
     this.snippets = snippets;
@@ -31801,37 +28820,30 @@ var WrapWithSnippet = class {
     ];
   }
   getScopeType(snippetDescription) {
-    if (snippetDescription.type === "named") {
-      const { name: name2, variableName } = snippetDescription;
-      const snippet2 = this.snippets.getSnippetStrict(name2);
-      const variables = snippet2.variables ?? {};
-      const scopeTypeType = variables[variableName]?.wrapperScopeType;
-      return scopeTypeType == null ? void 0 : {
-        type: scopeTypeType
-      };
-    } else {
-      return snippetDescription.scopeType;
-    }
+    const { name: name2, variableName } = snippetDescription;
+    const snippet2 = this.snippets.getSnippetStrict(name2);
+    const variables = snippet2.variables ?? {};
+    const scopeTypeType = variables[variableName]?.wrapperScopeType;
+    return scopeTypeType == null ? void 0 : {
+      type: scopeTypeType
+    };
   }
   getBody(snippetDescription, targets) {
-    if (snippetDescription.type === "named") {
-      const { name: name2 } = snippetDescription;
-      const snippet2 = this.snippets.getSnippetStrict(name2);
-      const definition = findMatchingSnippetDefinitionStrict(
-        this.modifierStageFactory,
-        targets,
-        snippet2.definitions
-      );
-      return definition.body.join("\n");
-    } else {
-      return snippetDescription.body;
-    }
+    const { name: name2 } = snippetDescription;
+    const snippet2 = this.snippets.getSnippetStrict(name2);
+    const definition = findMatchingSnippetDefinitionStrict(
+      this.modifierStageFactory,
+      targets,
+      snippet2.definitions
+    );
+    return definition.body.join("\n");
   }
   async run(targets, snippetDescription) {
-    const editor = ide().getEditableTextEditor(ensureSingleEditor2(targets));
+    showLegacySnippetsNotification();
+    const editor = ide().getEditableTextEditor(ensureSingleEditor(targets));
     const body2 = this.getBody(snippetDescription, targets);
     const parsedSnippet = this.snippetParser.parse(body2);
-    transformSnippetVariables(parsedSnippet, snippetDescription.variableName);
+    transformSnippetVariables2(parsedSnippet, snippetDescription.variableName);
     const snippetString = parsedSnippet.toTextmateString();
     await flashTargets(ide(), targets, "pendingModification0" /* pendingModification0 */);
     const targetSelections = targets.map((target) => target.contentSelection);
@@ -31851,6 +28863,77 @@ var WrapWithSnippet = class {
         selection
       }))
     };
+  }
+};
+
+// ../cursorless-engine/src/actions/WrapWithSnippet.ts
+var WrapWithSnippet = class {
+  constructor(rangeUpdater, snippets, modifierStageFactory) {
+    this.rangeUpdater = rangeUpdater;
+    this.snippets = snippets;
+    this.modifierStageFactory = modifierStageFactory;
+    this.snippetParser = new SnippetParser();
+    this.run = this.run.bind(this);
+  }
+  getFinalStages(targets, snippetDescription) {
+    if (snippetDescription.type === "named") {
+      return this.legacy().getFinalStages(snippetDescription);
+    }
+    const editor = ensureSingleEditor(targets);
+    const snippet2 = getPreferredSnippet(
+      snippetDescription,
+      editor.document.languageId
+    );
+    if (snippet2.scopeType == null) {
+      return [];
+    }
+    return [
+      new ModifyIfUntypedStage(this.modifierStageFactory, {
+        type: "modifyIfUntyped",
+        modifier: {
+          type: "containingScope",
+          scopeType: snippet2.scopeType
+        }
+      })
+    ];
+  }
+  async run(targets, snippetDescription) {
+    if (snippetDescription.type === "named") {
+      return this.legacy().run(targets, snippetDescription);
+    }
+    const editor = ide().getEditableTextEditor(ensureSingleEditor(targets));
+    const snippet2 = getPreferredSnippet(
+      snippetDescription,
+      editor.document.languageId
+    );
+    const parsedSnippet = this.snippetParser.parse(snippet2.body);
+    transformSnippetVariables(parsedSnippet, snippet2.variableName);
+    const snippetString = parsedSnippet.toTextmateString();
+    await flashTargets(ide(), targets, "pendingModification0" /* pendingModification0 */);
+    const targetSelections = targets.map((target) => target.contentSelection);
+    const { targetSelections: updatedTargetSelections } = await performEditsAndUpdateSelections({
+      rangeUpdater: this.rangeUpdater,
+      editor,
+      callback: () => editor.insertSnippet(snippetString, targetSelections),
+      preserveCursorSelections: true,
+      selections: {
+        targetSelections
+      }
+    });
+    return {
+      thatSelections: updatedTargetSelections.map((selection) => ({
+        editor,
+        selection
+      }))
+    };
+  }
+  // DEPRECATED @ 2025-02-01
+  legacy() {
+    return new WrapWithSnippetLegacy(
+      this.rangeUpdater,
+      this.snippets,
+      this.modifierStageFactory
+    );
   }
 };
 
@@ -31934,110 +29017,105 @@ function updateFloat(isIncrement, text) {
 // ../cursorless-engine/src/actions/Actions.ts
 var Actions = class {
   constructor(treeSitter, snippets, rangeUpdater, modifierStageFactory) {
-    this.treeSitter = treeSitter;
-    this.snippets = snippets;
-    this.rangeUpdater = rangeUpdater;
-    this.modifierStageFactory = modifierStageFactory;
     this.addSelection = new AddSelection();
     this.addSelectionBefore = new AddSelectionBefore();
     this.addSelectionAfter = new AddSelectionAfter();
     this.callAsFunction = new Call(this);
     this.clearAndSetSelection = new Clear(this);
-    this.copyToClipboard = new CopyToClipboard(this, this.rangeUpdater);
+    this.copyToClipboard = new CopyToClipboard(this, rangeUpdater);
     this.cutToClipboard = new CutToClipboard(this);
     this.decrement = new Decrement(this);
     this.deselect = new Deselect();
-    this.editNew = new EditNew(this.rangeUpdater, this);
-    this.editNewLineAfter = new EditNewAfter(
-      this,
-      this.modifierStageFactory
-    );
-    this.editNewLineBefore = new EditNewBefore(
-      this,
-      this.modifierStageFactory
-    );
-    this.executeCommand = new ExecuteCommand(this.rangeUpdater);
-    this.extractVariable = new ExtractVariable(this.rangeUpdater);
+    this.editNew = new EditNew(rangeUpdater, this);
+    this.editNewLineAfter = new EditNewAfter(this, modifierStageFactory);
+    this.editNewLineBefore = new EditNewBefore(this, modifierStageFactory);
+    this.executeCommand = new ExecuteCommand(rangeUpdater);
+    this.extractVariable = new ExtractVariable(rangeUpdater);
     this.findInDocument = new FindInDocument(this);
     this.findInWorkspace = new FindInWorkspace(this);
-    this.foldRegion = new Fold(this.rangeUpdater);
+    this.flashTargets = new FlashTargets();
+    this.foldRegion = new Fold(rangeUpdater);
     this.followLink = new FollowLink({ openAside: false });
     this.followLinkAside = new FollowLink({ openAside: true });
-    this.generateSnippet = new GenerateSnippet(this.snippets);
+    this.generateSnippet = new GenerateSnippet(snippets);
     this.getText = new GetText();
+    this.gitAccept = new GitAccept(rangeUpdater);
+    this.gitRevert = new GitRevert(rangeUpdater);
+    this.gitStage = new GitStage(rangeUpdater);
+    this.gitUnstage = new GitUnstage(rangeUpdater);
     this.highlight = new Highlight();
     this.increment = new Increment(this);
-    this.indentLine = new IndentLine(this.rangeUpdater);
+    this.indentLine = new IndentLine(rangeUpdater);
     this.insertCopyAfter = new CopyContentAfter(
-      this.rangeUpdater,
-      this.modifierStageFactory
+      rangeUpdater,
+      modifierStageFactory
     );
     this.insertCopyBefore = new CopyContentBefore(
-      this.rangeUpdater,
-      this.modifierStageFactory
+      rangeUpdater,
+      modifierStageFactory
     );
     this.insertEmptyLineAfter = new InsertEmptyLineBelow(
-      this.rangeUpdater,
-      this.modifierStageFactory
+      rangeUpdater,
+      modifierStageFactory
     );
     this.insertEmptyLineBefore = new InsertEmptyLineAbove(
-      this.rangeUpdater,
-      this.modifierStageFactory
+      rangeUpdater,
+      modifierStageFactory
     );
     this.insertEmptyLinesAround = new InsertEmptyLinesAround(
-      this.rangeUpdater,
-      this.modifierStageFactory
+      rangeUpdater,
+      modifierStageFactory
     );
     this.insertSnippet = new InsertSnippet(
-      this.rangeUpdater,
-      this.snippets,
+      rangeUpdater,
+      snippets,
       this,
-      this.modifierStageFactory
+      modifierStageFactory
     );
-    this.joinLines = new JoinLines(this.rangeUpdater, this.modifierStageFactory);
-    this.breakLine = new BreakLine(this.rangeUpdater);
-    this.moveToTarget = new Move(this.rangeUpdater);
-    this.outdentLine = new OutdentLine(this.rangeUpdater);
-    this.pasteFromClipboard = new PasteFromClipboard(this.rangeUpdater, this);
+    this.joinLines = new JoinLines(rangeUpdater, modifierStageFactory);
+    this.breakLine = new BreakLine(rangeUpdater);
+    this.moveToTarget = new Move(rangeUpdater);
+    this.outdentLine = new OutdentLine(rangeUpdater);
+    this.pasteFromClipboard = new PasteFromClipboard(rangeUpdater, this);
     this.randomizeTargets = new Random(this);
-    this.remove = new Delete(this.rangeUpdater);
-    this.rename = new Rename(this.rangeUpdater);
-    this.replace = new Replace(this.rangeUpdater);
-    this.replaceWithTarget = new Bring(this.rangeUpdater);
-    this.revealDefinition = new RevealDefinition(this.rangeUpdater);
-    this.revealTypeDefinition = new RevealTypeDefinition(this.rangeUpdater);
+    this.remove = new Delete(rangeUpdater);
+    this.rename = new Rename(rangeUpdater);
+    this.replace = new Replace(rangeUpdater);
+    this.replaceWithTarget = new Bring(rangeUpdater);
+    this.revealDefinition = new RevealDefinition(rangeUpdater);
+    this.revealTypeDefinition = new RevealTypeDefinition(rangeUpdater);
     this.reverseTargets = new Reverse(this);
     this.rewrapWithPairedDelimiter = new Rewrap(
-      this.rangeUpdater,
-      this.modifierStageFactory
+      rangeUpdater,
+      modifierStageFactory
     );
     this.scrollToBottom = new ScrollToBottom();
     this.scrollToCenter = new ScrollToCenter();
     this.scrollToTop = new ScrollToTop();
-    this["private.setKeyboardTarget"] = new SetSpecialTarget("keyboard");
-    this["experimental.setInstanceReference"] = new SetSpecialTarget(
-      "instanceReference"
-    );
     this.setSelection = new SetSelection();
     this.setSelectionAfter = new SetSelectionAfter();
     this.setSelectionBefore = new SetSelectionBefore();
-    this.showDebugHover = new ShowDebugHover(this.rangeUpdater);
-    this.showHover = new ShowHover(this.rangeUpdater);
-    this.showQuickFix = new ShowQuickFix(this.rangeUpdater);
-    this.showReferences = new ShowReferences(this.rangeUpdater);
+    this.showDebugHover = new ShowDebugHover(rangeUpdater);
+    this.showHover = new ShowHover(rangeUpdater);
+    this.showQuickFix = new ShowQuickFix(rangeUpdater);
+    this.showReferences = new ShowReferences(rangeUpdater);
     this.sortTargets = new Sort(this);
-    this.swapTargets = new Swap(this.rangeUpdater);
-    this.toggleLineBreakpoint = new ToggleBreakpoint(this.modifierStageFactory);
-    this.toggleLineComment = new ToggleLineComment(this.rangeUpdater);
-    this.unfoldRegion = new Unfold(this.rangeUpdater);
-    this.wrapWithPairedDelimiter = new Wrap(this.rangeUpdater);
+    this.swapTargets = new Swap(rangeUpdater);
+    this.toggleLineBreakpoint = new ToggleBreakpoint(modifierStageFactory);
+    this.toggleLineComment = new ToggleLineComment(rangeUpdater);
+    this.unfoldRegion = new Unfold(rangeUpdater);
+    this.wrapWithPairedDelimiter = new Wrap(rangeUpdater);
     this.wrapWithSnippet = new WrapWithSnippet(
-      this.rangeUpdater,
-      this.snippets,
-      this.modifierStageFactory
+      rangeUpdater,
+      snippets,
+      modifierStageFactory
     );
-    this["private.showParseTree"] = new ShowParseTree(this.treeSitter);
+    this["experimental.setInstanceReference"] = new SetSpecialTarget(
+      "instanceReference"
+    );
+    this["private.showParseTree"] = new ShowParseTree(treeSitter);
     this["private.getTargets"] = new GetTargets();
+    this["private.setKeyboardTarget"] = new SetSpecialTarget("keyboard");
   }
 };
 
@@ -32060,13 +29138,13 @@ async function getCommandFallback(commandServerApi, runAction, command) {
         return {
           action: "insert",
           modifiers: getModifiersFromDestination(action.destination),
-          text: await getText2(runAction, action.source)
+          text: await getText(runAction, action.source)
         };
       }
       return null;
     case "moveToTarget":
       if (destinationIsSelection(action.destination)) {
-        const text = await getText2(runAction, action.source);
+        const text = await getText(runAction, action.source);
         await remove(runAction, action.source);
         return {
           action: "insert",
@@ -32080,7 +29158,7 @@ async function getCommandFallback(commandServerApi, runAction, command) {
         return {
           action: action.name,
           modifiers: getModifiersFromTarget(action.argument),
-          callee: await getText2(runAction, action.callee)
+          callee: await getText(runAction, action.callee)
         };
       }
       return null;
@@ -32140,13 +29218,10 @@ function getModifiersFromTarget(target) {
     if (target.modifiers != null && target.modifiers.length > 0) {
       return target.modifiers;
     }
-    if (target.mark?.type === "cursor") {
-      return [{ type: "containingTokenIfEmpty" }];
-    }
   }
   return [];
 }
-async function getText2(runAction, target) {
+async function getText(runAction, target) {
   const response = await runAction({ name: "getText", target });
   const texts = response.returnValue;
   return texts.join("\n");
@@ -32520,6 +29595,7 @@ var CommandRunnerImpl = class {
         );
       case "insertSnippet":
         this.finalStages = this.actions.insertSnippet.getFinalStages(
+          this.getDestinations(actionDescriptor.destination),
           actionDescriptor.snippetDescription
         );
         return this.actions.insertSnippet.run(
@@ -32528,6 +29604,7 @@ var CommandRunnerImpl = class {
         );
       case "wrapWithSnippet":
         this.finalStages = this.actions.wrapWithSnippet.getFinalStages(
+          this.getTargets(actionDescriptor.target),
           actionDescriptor.snippetDescription
         );
         return this.actions.wrapWithSnippet.run(
@@ -32895,41 +29972,6 @@ function createCommandRunner(treeSitter, commandServerApi, languageDefinitions, 
   );
 }
 
-// ../cursorless-engine/src/languages/LegacyLanguageId.ts
-var legacyLanguageIds = [
-  "clojure",
-  "css",
-  "latex",
-  "ruby",
-  "rust",
-  "scala",
-  "scss"
-];
-
-// ../cursorless-engine/src/runIntegrationTests.ts
-async function runIntegrationTests(treeSitter, languageDefinitions) {
-  await assertNoScopesBothLegacyAndNew(treeSitter, languageDefinitions);
-}
-async function assertNoScopesBothLegacyAndNew(treeSitter, languageDefinitions) {
-  const errors2 = [];
-  for (const languageId of legacyLanguageIds) {
-    await treeSitter.loadLanguage(languageId);
-    await languageDefinitions.loadLanguage(languageId);
-    unsafeKeys(languageMatchers[languageId] ?? {}).map((scopeTypeType) => {
-      if (languageDefinitions.get(languageId)?.getScopeHandler({
-        type: scopeTypeType
-      }) != null) {
-        errors2.push(
-          `Scope '${scopeTypeType}' defined as both legacy and new for language ${languageId}`
-        );
-      }
-    });
-  }
-  if (errors2.length > 0) {
-    throw Error(errors2.join("\n"));
-  }
-}
-
 // ../cursorless-engine/src/scopeProviders/scopeTypeToString.ts
 function scopeTypeToString(scopeType) {
   if (isSimpleScopeType(scopeType)) {
@@ -33015,6 +30057,7 @@ function isLanguageSpecific(scopeType) {
   switch (scopeType.type) {
     case "string":
     case "argumentOrParameter":
+    case "argumentList":
     case "anonymousFunction":
     case "attribute":
     case "branch":
@@ -33030,6 +30073,7 @@ function isLanguageSpecific(scopeType) {
     case "functionName":
     case "ifStatement":
     case "instance":
+    case "interior":
     case "list":
     case "map":
     case "name":
@@ -33129,7 +30173,7 @@ function getTargetRanges(target) {
   return {
     contentRange: target.contentRange,
     removalRange: target.getRemovalRange(),
-    removalHighlightRange: target.isLine ? toLineRange(target.getRemovalHighlightRange()) : toCharacterRange(target.getRemovalHighlightRange()),
+    removalHighlightRange: target.getRemovalHighlightRange(),
     leadingDelimiter: getOptionalTarget(target.getLeadingDelimiterTarget()),
     trailingDelimiter: getOptionalTarget(target.getTrailingDelimiterTarget()),
     interior: target.getInterior()?.map(getTargetRanges),
@@ -33143,6 +30187,9 @@ function getOptionalTarget(target) {
 
 // ../cursorless-engine/src/scopeProviders/getIterationScopeRanges.ts
 function getIterationScopeRanges(editor, iterationScopeHandler, everyStage, iterationRange, includeIterationNestedTargets) {
+  const options2 = {
+    multipleTargets: true
+  };
   return map2(
     iterationScopeHandler.generateScopes(
       editor,
@@ -33158,15 +30205,17 @@ function getIterationScopeRanges(editor, iterationScopeHandler, everyStage, iter
         domain: scope.domain,
         ranges: scope.getTargets(false).map((target) => ({
           range: target.contentRange,
-          targets: includeIterationNestedTargets ? getEveryScopeLenient(everyStage, target).map(getTargetRanges) : void 0
+          targets: includeIterationNestedTargets ? getEveryScopeLenient(everyStage, target, options2).map(
+            getTargetRanges
+          ) : void 0
         }))
       };
     }
   );
 }
-function getEveryScopeLenient(everyStage, target) {
+function getEveryScopeLenient(everyStage, target, options2) {
   try {
-    return everyStage.run(target);
+    return everyStage.run(target, options2);
   } catch (err2) {
     if (err2.name === "NoContainingScopeError") {
       return [];
@@ -33367,7 +30416,7 @@ var ScopeSupportChecker = class {
       languageId
     );
     if (scopeHandler == null) {
-      return getLegacyScopeSupport(languageId, scopeType);
+      return 2 /* unsupported */;
     }
     return editorContainsScope(editor, scopeHandler) ? 0 /* supportedAndPresentInEditor */ : 1 /* supportedButNotPresentInEditor */;
   }
@@ -33386,14 +30435,14 @@ var ScopeSupportChecker = class {
       languageId
     );
     if (scopeHandler == null) {
-      return getLegacyScopeSupport(languageId, scopeType);
+      return 2 /* unsupported */;
     }
     const iterationScopeHandler = this.scopeHandlerFactory.maybeCreate(
       scopeHandler.iterationScopeType,
       languageId
     );
     if (iterationScopeHandler == null) {
-      return 3 /* unsupported */;
+      return 2 /* unsupported */;
     }
     return editorContainsScope(editor, iterationScopeHandler) ? 0 /* supportedAndPresentInEditor */ : 1 /* supportedButNotPresentInEditor */;
   }
@@ -33402,17 +30451,6 @@ function editorContainsScope(editor, scopeHandler) {
   return !isEmptyIterable(
     scopeHandler.generateScopes(editor, new Position(0, 0), "forward")
   );
-}
-function getLegacyScopeSupport(languageId, scopeType) {
-  switch (scopeType.type) {
-    case "notebookCell":
-      return 3 /* unsupported */;
-    default:
-      if (languageMatchers[languageId]?.[scopeType.type] != null) {
-        return 2 /* supportedLegacy */;
-      }
-      return 3 /* unsupported */;
-  }
 }
 
 // ../cursorless-engine/src/scopeProviders/ScopeSupportWatcher.ts
@@ -33473,11 +30511,11 @@ var ScopeSupportWatcher = class {
   }
   getSupportLevels() {
     const activeTextEditor = ide().activeTextEditor;
-    const getScopeTypeSupport = activeTextEditor == null ? () => 3 /* unsupported */ : (scopeType) => this.scopeSupportChecker.getScopeSupport(
+    const getScopeTypeSupport = activeTextEditor == null ? () => 2 /* unsupported */ : (scopeType) => this.scopeSupportChecker.getScopeSupport(
       activeTextEditor,
       scopeType
     );
-    const getIterationScopeTypeSupport = activeTextEditor == null ? () => 3 /* unsupported */ : (scopeType) => this.scopeSupportChecker.getIterationScopeSupport(
+    const getIterationScopeTypeSupport = activeTextEditor == null ? () => 2 /* unsupported */ : (scopeType) => this.scopeSupportChecker.getIterationScopeSupport(
       activeTextEditor,
       scopeType
     );
@@ -33568,7 +30606,6 @@ async function createCursorlessEngine({
     storedTargets,
     hatTokenMap,
     injectIde,
-    runIntegrationTests: () => runIntegrationTests(treeSitter, languageDefinitions),
     addCommandRunnerDecorator: (decorator) => {
       commandRunnerDecorators.push(decorator);
     }
@@ -33621,11 +30658,3933 @@ var argPositions = {
   $2: new ArgPosition(2)
 };
 
-// src/extension.ts
-var import_web_tree_sitter2 = __toESM(require_tree_sitter(), 1);
+// ../../node_modules/.pnpm/web-tree-sitter@0.25.6/node_modules/web-tree-sitter/tree-sitter.js
+var __defProp2 = Object.defineProperty;
+var __name = (target, value) => __defProp2(target, "name", { value, configurable: true });
+var SIZE_OF_SHORT = 2;
+var SIZE_OF_INT = 4;
+var SIZE_OF_CURSOR = 4 * SIZE_OF_INT;
+var SIZE_OF_NODE = 5 * SIZE_OF_INT;
+var SIZE_OF_POINT = 2 * SIZE_OF_INT;
+var SIZE_OF_RANGE = 2 * SIZE_OF_INT + 2 * SIZE_OF_POINT;
+var ZERO_POINT = { row: 0, column: 0 };
+var INTERNAL = Symbol("INTERNAL");
+function assertInternal(x) {
+  if (x !== INTERNAL) throw new Error("Illegal constructor");
+}
+__name(assertInternal, "assertInternal");
+function isPoint(point) {
+  return !!point && typeof point.row === "number" && typeof point.column === "number";
+}
+__name(isPoint, "isPoint");
+function setModule(module2) {
+  C = module2;
+}
+__name(setModule, "setModule");
+var C;
+var _a;
+var LookaheadIterator = (_a = class {
+  /** @internal */
+  constructor(internal, address, language) {
+    /** @internal */
+    __publicField(this, 0, 0);
+    // Internal handle for WASM
+    /** @internal */
+    __publicField(this, "language");
+    assertInternal(internal);
+    this[0] = address;
+    this.language = language;
+  }
+  /** Get the current symbol of the lookahead iterator. */
+  get currentTypeId() {
+    return C._ts_lookahead_iterator_current_symbol(this[0]);
+  }
+  /** Get the current symbol name of the lookahead iterator. */
+  get currentType() {
+    return this.language.types[this.currentTypeId] || "ERROR";
+  }
+  /** Delete the lookahead iterator, freeing its resources. */
+  delete() {
+    C._ts_lookahead_iterator_delete(this[0]);
+    this[0] = 0;
+  }
+  /**
+   * Reset the lookahead iterator.
+   *
+   * This returns `true` if the language was set successfully and `false`
+   * otherwise.
+   */
+  reset(language, stateId) {
+    if (C._ts_lookahead_iterator_reset(this[0], language[0], stateId)) {
+      this.language = language;
+      return true;
+    }
+    return false;
+  }
+  /**
+   * Reset the lookahead iterator to another state.
+   *
+   * This returns `true` if the iterator was reset to the given state and
+   * `false` otherwise.
+   */
+  resetState(stateId) {
+    return Boolean(C._ts_lookahead_iterator_reset_state(this[0], stateId));
+  }
+  /**
+   * Returns an iterator that iterates over the symbols of the lookahead iterator.
+   *
+   * The iterator will yield the current symbol name as a string for each step
+   * until there are no more symbols to iterate over.
+   */
+  [Symbol.iterator]() {
+    return {
+      next: /* @__PURE__ */ __name(() => {
+        if (C._ts_lookahead_iterator_next(this[0])) {
+          return { done: false, value: this.currentType };
+        }
+        return { done: true, value: "" };
+      }, "next")
+    };
+  }
+}, __name(_a, "LookaheadIterator"), _a);
+function getText2(tree, startIndex, endIndex, startPosition) {
+  const length = endIndex - startIndex;
+  let result = tree.textCallback(startIndex, startPosition);
+  if (result) {
+    startIndex += result.length;
+    while (startIndex < endIndex) {
+      const string2 = tree.textCallback(startIndex, startPosition);
+      if (string2 && string2.length > 0) {
+        startIndex += string2.length;
+        result += string2;
+      } else {
+        break;
+      }
+    }
+    if (startIndex > endIndex) {
+      result = result.slice(0, length);
+    }
+  }
+  return result ?? "";
+}
+__name(getText2, "getText");
+var _a2;
+var Tree = (_a2 = class {
+  /** @internal */
+  constructor(internal, address, language, textCallback) {
+    /** @internal */
+    __publicField(this, 0, 0);
+    // Internal handle for WASM
+    /** @internal */
+    __publicField(this, "textCallback");
+    /** The language that was used to parse the syntax tree. */
+    __publicField(this, "language");
+    assertInternal(internal);
+    this[0] = address;
+    this.language = language;
+    this.textCallback = textCallback;
+  }
+  /** Create a shallow copy of the syntax tree. This is very fast. */
+  copy() {
+    const address = C._ts_tree_copy(this[0]);
+    return new _a2(INTERNAL, address, this.language, this.textCallback);
+  }
+  /** Delete the syntax tree, freeing its resources. */
+  delete() {
+    C._ts_tree_delete(this[0]);
+    this[0] = 0;
+  }
+  /** Get the root node of the syntax tree. */
+  get rootNode() {
+    C._ts_tree_root_node_wasm(this[0]);
+    return unmarshalNode(this);
+  }
+  /**
+   * Get the root node of the syntax tree, but with its position shifted
+   * forward by the given offset.
+   */
+  rootNodeWithOffset(offsetBytes, offsetExtent) {
+    const address = TRANSFER_BUFFER + SIZE_OF_NODE;
+    C.setValue(address, offsetBytes, "i32");
+    marshalPoint(address + SIZE_OF_INT, offsetExtent);
+    C._ts_tree_root_node_with_offset_wasm(this[0]);
+    return unmarshalNode(this);
+  }
+  /**
+   * Edit the syntax tree to keep it in sync with source code that has been
+   * edited.
+   *
+   * You must describe the edit both in terms of byte offsets and in terms of
+   * row/column coordinates.
+   */
+  edit(edit) {
+    marshalEdit(edit);
+    C._ts_tree_edit_wasm(this[0]);
+  }
+  /** Create a new {@link TreeCursor} starting from the root of the tree. */
+  walk() {
+    return this.rootNode.walk();
+  }
+  /**
+   * Compare this old edited syntax tree to a new syntax tree representing
+   * the same document, returning a sequence of ranges whose syntactic
+   * structure has changed.
+   *
+   * For this to work correctly, this syntax tree must have been edited such
+   * that its ranges match up to the new tree. Generally, you'll want to
+   * call this method right after calling one of the [`Parser::parse`]
+   * functions. Call it on the old tree that was passed to parse, and
+   * pass the new tree that was returned from `parse`.
+   */
+  getChangedRanges(other) {
+    if (!(other instanceof _a2)) {
+      throw new TypeError("Argument must be a Tree");
+    }
+    C._ts_tree_get_changed_ranges_wasm(this[0], other[0]);
+    const count2 = C.getValue(TRANSFER_BUFFER, "i32");
+    const buffer = C.getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
+    const result = new Array(count2);
+    if (count2 > 0) {
+      let address = buffer;
+      for (let i2 = 0; i2 < count2; i2++) {
+        result[i2] = unmarshalRange(address);
+        address += SIZE_OF_RANGE;
+      }
+      C._free(buffer);
+    }
+    return result;
+  }
+  /** Get the included ranges that were used to parse the syntax tree. */
+  getIncludedRanges() {
+    C._ts_tree_included_ranges_wasm(this[0]);
+    const count2 = C.getValue(TRANSFER_BUFFER, "i32");
+    const buffer = C.getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
+    const result = new Array(count2);
+    if (count2 > 0) {
+      let address = buffer;
+      for (let i2 = 0; i2 < count2; i2++) {
+        result[i2] = unmarshalRange(address);
+        address += SIZE_OF_RANGE;
+      }
+      C._free(buffer);
+    }
+    return result;
+  }
+}, __name(_a2, "Tree"), _a2);
+var _a3;
+var TreeCursor = (_a3 = class {
+  /** @internal */
+  constructor(internal, tree) {
+    /** @internal */
+    __publicField(this, 0, 0);
+    // Internal handle for WASM
+    /** @internal */
+    __publicField(this, 1, 0);
+    // Internal handle for WASM
+    /** @internal */
+    __publicField(this, 2, 0);
+    // Internal handle for WASM
+    /** @internal */
+    __publicField(this, 3, 0);
+    // Internal handle for WASM
+    /** @internal */
+    __publicField(this, "tree");
+    assertInternal(internal);
+    this.tree = tree;
+    unmarshalTreeCursor(this);
+  }
+  /** Creates a deep copy of the tree cursor. This allocates new memory. */
+  copy() {
+    const copy = new _a3(INTERNAL, this.tree);
+    C._ts_tree_cursor_copy_wasm(this.tree[0]);
+    unmarshalTreeCursor(copy);
+    return copy;
+  }
+  /** Delete the tree cursor, freeing its resources. */
+  delete() {
+    marshalTreeCursor(this);
+    C._ts_tree_cursor_delete_wasm(this.tree[0]);
+    this[0] = this[1] = this[2] = 0;
+  }
+  /** Get the tree cursor's current {@link Node}. */
+  get currentNode() {
+    marshalTreeCursor(this);
+    C._ts_tree_cursor_current_node_wasm(this.tree[0]);
+    return unmarshalNode(this.tree);
+  }
+  /**
+   * Get the numerical field id of this tree cursor's current node.
+   *
+   * See also {@link TreeCursor#currentFieldName}.
+   */
+  get currentFieldId() {
+    marshalTreeCursor(this);
+    return C._ts_tree_cursor_current_field_id_wasm(this.tree[0]);
+  }
+  /** Get the field name of this tree cursor's current node. */
+  get currentFieldName() {
+    return this.tree.language.fields[this.currentFieldId];
+  }
+  /**
+   * Get the depth of the cursor's current node relative to the original
+   * node that the cursor was constructed with.
+   */
+  get currentDepth() {
+    marshalTreeCursor(this);
+    return C._ts_tree_cursor_current_depth_wasm(this.tree[0]);
+  }
+  /**
+   * Get the index of the cursor's current node out of all of the
+   * descendants of the original node that the cursor was constructed with.
+   */
+  get currentDescendantIndex() {
+    marshalTreeCursor(this);
+    return C._ts_tree_cursor_current_descendant_index_wasm(this.tree[0]);
+  }
+  /** Get the type of the cursor's current node. */
+  get nodeType() {
+    return this.tree.language.types[this.nodeTypeId] || "ERROR";
+  }
+  /** Get the type id of the cursor's current node. */
+  get nodeTypeId() {
+    marshalTreeCursor(this);
+    return C._ts_tree_cursor_current_node_type_id_wasm(this.tree[0]);
+  }
+  /** Get the state id of the cursor's current node. */
+  get nodeStateId() {
+    marshalTreeCursor(this);
+    return C._ts_tree_cursor_current_node_state_id_wasm(this.tree[0]);
+  }
+  /** Get the id of the cursor's current node. */
+  get nodeId() {
+    marshalTreeCursor(this);
+    return C._ts_tree_cursor_current_node_id_wasm(this.tree[0]);
+  }
+  /**
+   * Check if the cursor's current node is *named*.
+   *
+   * Named nodes correspond to named rules in the grammar, whereas
+   * *anonymous* nodes correspond to string literals in the grammar.
+   */
+  get nodeIsNamed() {
+    marshalTreeCursor(this);
+    return C._ts_tree_cursor_current_node_is_named_wasm(this.tree[0]) === 1;
+  }
+  /**
+   * Check if the cursor's current node is *missing*.
+   *
+   * Missing nodes are inserted by the parser in order to recover from
+   * certain kinds of syntax errors.
+   */
+  get nodeIsMissing() {
+    marshalTreeCursor(this);
+    return C._ts_tree_cursor_current_node_is_missing_wasm(this.tree[0]) === 1;
+  }
+  /** Get the string content of the cursor's current node. */
+  get nodeText() {
+    marshalTreeCursor(this);
+    const startIndex = C._ts_tree_cursor_start_index_wasm(this.tree[0]);
+    const endIndex = C._ts_tree_cursor_end_index_wasm(this.tree[0]);
+    C._ts_tree_cursor_start_position_wasm(this.tree[0]);
+    const startPosition = unmarshalPoint(TRANSFER_BUFFER);
+    return getText2(this.tree, startIndex, endIndex, startPosition);
+  }
+  /** Get the start position of the cursor's current node. */
+  get startPosition() {
+    marshalTreeCursor(this);
+    C._ts_tree_cursor_start_position_wasm(this.tree[0]);
+    return unmarshalPoint(TRANSFER_BUFFER);
+  }
+  /** Get the end position of the cursor's current node. */
+  get endPosition() {
+    marshalTreeCursor(this);
+    C._ts_tree_cursor_end_position_wasm(this.tree[0]);
+    return unmarshalPoint(TRANSFER_BUFFER);
+  }
+  /** Get the start index of the cursor's current node. */
+  get startIndex() {
+    marshalTreeCursor(this);
+    return C._ts_tree_cursor_start_index_wasm(this.tree[0]);
+  }
+  /** Get the end index of the cursor's current node. */
+  get endIndex() {
+    marshalTreeCursor(this);
+    return C._ts_tree_cursor_end_index_wasm(this.tree[0]);
+  }
+  /**
+   * Move this cursor to the first child of its current node.
+   *
+   * This returns `true` if the cursor successfully moved, and returns
+   * `false` if there were no children.
+   */
+  gotoFirstChild() {
+    marshalTreeCursor(this);
+    const result = C._ts_tree_cursor_goto_first_child_wasm(this.tree[0]);
+    unmarshalTreeCursor(this);
+    return result === 1;
+  }
+  /**
+   * Move this cursor to the last child of its current node.
+   *
+   * This returns `true` if the cursor successfully moved, and returns
+   * `false` if there were no children.
+   *
+   * Note that this function may be slower than
+   * {@link TreeCursor#gotoFirstChild} because it needs to
+   * iterate through all the children to compute the child's position.
+   */
+  gotoLastChild() {
+    marshalTreeCursor(this);
+    const result = C._ts_tree_cursor_goto_last_child_wasm(this.tree[0]);
+    unmarshalTreeCursor(this);
+    return result === 1;
+  }
+  /**
+   * Move this cursor to the parent of its current node.
+   *
+   * This returns `true` if the cursor successfully moved, and returns
+   * `false` if there was no parent node (the cursor was already on the
+   * root node).
+   *
+   * Note that the node the cursor was constructed with is considered the root
+   * of the cursor, and the cursor cannot walk outside this node.
+   */
+  gotoParent() {
+    marshalTreeCursor(this);
+    const result = C._ts_tree_cursor_goto_parent_wasm(this.tree[0]);
+    unmarshalTreeCursor(this);
+    return result === 1;
+  }
+  /**
+   * Move this cursor to the next sibling of its current node.
+   *
+   * This returns `true` if the cursor successfully moved, and returns
+   * `false` if there was no next sibling node.
+   *
+   * Note that the node the cursor was constructed with is considered the root
+   * of the cursor, and the cursor cannot walk outside this node.
+   */
+  gotoNextSibling() {
+    marshalTreeCursor(this);
+    const result = C._ts_tree_cursor_goto_next_sibling_wasm(this.tree[0]);
+    unmarshalTreeCursor(this);
+    return result === 1;
+  }
+  /**
+   * Move this cursor to the previous sibling of its current node.
+   *
+   * This returns `true` if the cursor successfully moved, and returns
+   * `false` if there was no previous sibling node.
+   *
+   * Note that this function may be slower than
+   * {@link TreeCursor#gotoNextSibling} due to how node
+   * positions are stored. In the worst case, this will need to iterate
+   * through all the children up to the previous sibling node to recalculate
+   * its position. Also note that the node the cursor was constructed with is
+   * considered the root of the cursor, and the cursor cannot walk outside this node.
+   */
+  gotoPreviousSibling() {
+    marshalTreeCursor(this);
+    const result = C._ts_tree_cursor_goto_previous_sibling_wasm(this.tree[0]);
+    unmarshalTreeCursor(this);
+    return result === 1;
+  }
+  /**
+   * Move the cursor to the node that is the nth descendant of
+   * the original node that the cursor was constructed with, where
+   * zero represents the original node itself.
+   */
+  gotoDescendant(goalDescendantIndex) {
+    marshalTreeCursor(this);
+    C._ts_tree_cursor_goto_descendant_wasm(this.tree[0], goalDescendantIndex);
+    unmarshalTreeCursor(this);
+  }
+  /**
+   * Move this cursor to the first child of its current node that contains or
+   * starts after the given byte offset.
+   *
+   * This returns `true` if the cursor successfully moved to a child node, and returns
+   * `false` if no such child was found.
+   */
+  gotoFirstChildForIndex(goalIndex) {
+    marshalTreeCursor(this);
+    C.setValue(TRANSFER_BUFFER + SIZE_OF_CURSOR, goalIndex, "i32");
+    const result = C._ts_tree_cursor_goto_first_child_for_index_wasm(this.tree[0]);
+    unmarshalTreeCursor(this);
+    return result === 1;
+  }
+  /**
+   * Move this cursor to the first child of its current node that contains or
+   * starts after the given byte offset.
+   *
+   * This returns the index of the child node if one was found, and returns
+   * `null` if no such child was found.
+   */
+  gotoFirstChildForPosition(goalPosition) {
+    marshalTreeCursor(this);
+    marshalPoint(TRANSFER_BUFFER + SIZE_OF_CURSOR, goalPosition);
+    const result = C._ts_tree_cursor_goto_first_child_for_position_wasm(this.tree[0]);
+    unmarshalTreeCursor(this);
+    return result === 1;
+  }
+  /**
+   * Re-initialize this tree cursor to start at the original node that the
+   * cursor was constructed with.
+   */
+  reset(node) {
+    marshalNode(node);
+    marshalTreeCursor(this, TRANSFER_BUFFER + SIZE_OF_NODE);
+    C._ts_tree_cursor_reset_wasm(this.tree[0]);
+    unmarshalTreeCursor(this);
+  }
+  /**
+   * Re-initialize a tree cursor to the same position as another cursor.
+   *
+   * Unlike {@link TreeCursor#reset}, this will not lose parent
+   * information and allows reusing already created cursors.
+   */
+  resetTo(cursor) {
+    marshalTreeCursor(this, TRANSFER_BUFFER);
+    marshalTreeCursor(cursor, TRANSFER_BUFFER + SIZE_OF_CURSOR);
+    C._ts_tree_cursor_reset_to_wasm(this.tree[0], cursor.tree[0]);
+    unmarshalTreeCursor(this);
+  }
+}, __name(_a3, "TreeCursor"), _a3);
+var _a4;
+var Node = (_a4 = class {
+  /** @internal */
+  constructor(internal, {
+    id: id2,
+    tree,
+    startIndex,
+    startPosition,
+    other
+  }) {
+    /** @internal */
+    __publicField(this, 0, 0);
+    // Internal handle for WASM
+    /** @internal */
+    __publicField(this, "_children");
+    /** @internal */
+    __publicField(this, "_namedChildren");
+    /**
+     * The numeric id for this node that is unique.
+     *
+     * Within a given syntax tree, no two nodes have the same id. However:
+     *
+     * * If a new tree is created based on an older tree, and a node from the old tree is reused in
+     *   the process, then that node will have the same id in both trees.
+     *
+     * * A node not marked as having changes does not guarantee it was reused.
+     *
+     * * If a node is marked as having changed in the old tree, it will not be reused.
+     */
+    __publicField(this, "id");
+    /** The byte index where this node starts. */
+    __publicField(this, "startIndex");
+    /** The position where this node starts. */
+    __publicField(this, "startPosition");
+    /** The tree that this node belongs to. */
+    __publicField(this, "tree");
+    assertInternal(internal);
+    this[0] = other;
+    this.id = id2;
+    this.tree = tree;
+    this.startIndex = startIndex;
+    this.startPosition = startPosition;
+  }
+  /** Get this node's type as a numerical id. */
+  get typeId() {
+    marshalNode(this);
+    return C._ts_node_symbol_wasm(this.tree[0]);
+  }
+  /**
+   * Get the node's type as a numerical id as it appears in the grammar,
+   * ignoring aliases.
+   */
+  get grammarId() {
+    marshalNode(this);
+    return C._ts_node_grammar_symbol_wasm(this.tree[0]);
+  }
+  /** Get this node's type as a string. */
+  get type() {
+    return this.tree.language.types[this.typeId] || "ERROR";
+  }
+  /**
+   * Get this node's symbol name as it appears in the grammar, ignoring
+   * aliases as a string.
+   */
+  get grammarType() {
+    return this.tree.language.types[this.grammarId] || "ERROR";
+  }
+  /**
+   * Check if this node is *named*.
+   *
+   * Named nodes correspond to named rules in the grammar, whereas
+   * *anonymous* nodes correspond to string literals in the grammar.
+   */
+  get isNamed() {
+    marshalNode(this);
+    return C._ts_node_is_named_wasm(this.tree[0]) === 1;
+  }
+  /**
+   * Check if this node is *extra*.
+   *
+   * Extra nodes represent things like comments, which are not required
+   * by the grammar, but can appear anywhere.
+   */
+  get isExtra() {
+    marshalNode(this);
+    return C._ts_node_is_extra_wasm(this.tree[0]) === 1;
+  }
+  /**
+   * Check if this node represents a syntax error.
+   *
+   * Syntax errors represent parts of the code that could not be incorporated
+   * into a valid syntax tree.
+   */
+  get isError() {
+    marshalNode(this);
+    return C._ts_node_is_error_wasm(this.tree[0]) === 1;
+  }
+  /**
+   * Check if this node is *missing*.
+   *
+   * Missing nodes are inserted by the parser in order to recover from
+   * certain kinds of syntax errors.
+   */
+  get isMissing() {
+    marshalNode(this);
+    return C._ts_node_is_missing_wasm(this.tree[0]) === 1;
+  }
+  /** Check if this node has been edited. */
+  get hasChanges() {
+    marshalNode(this);
+    return C._ts_node_has_changes_wasm(this.tree[0]) === 1;
+  }
+  /**
+   * Check if this node represents a syntax error or contains any syntax
+   * errors anywhere within it.
+   */
+  get hasError() {
+    marshalNode(this);
+    return C._ts_node_has_error_wasm(this.tree[0]) === 1;
+  }
+  /** Get the byte index where this node ends. */
+  get endIndex() {
+    marshalNode(this);
+    return C._ts_node_end_index_wasm(this.tree[0]);
+  }
+  /** Get the position where this node ends. */
+  get endPosition() {
+    marshalNode(this);
+    C._ts_node_end_point_wasm(this.tree[0]);
+    return unmarshalPoint(TRANSFER_BUFFER);
+  }
+  /** Get the string content of this node. */
+  get text() {
+    return getText2(this.tree, this.startIndex, this.endIndex, this.startPosition);
+  }
+  /** Get this node's parse state. */
+  get parseState() {
+    marshalNode(this);
+    return C._ts_node_parse_state_wasm(this.tree[0]);
+  }
+  /** Get the parse state after this node. */
+  get nextParseState() {
+    marshalNode(this);
+    return C._ts_node_next_parse_state_wasm(this.tree[0]);
+  }
+  /** Check if this node is equal to another node. */
+  equals(other) {
+    return this.tree === other.tree && this.id === other.id;
+  }
+  /**
+   * Get the node's child at the given index, where zero represents the first child.
+   *
+   * This method is fairly fast, but its cost is technically log(n), so if
+   * you might be iterating over a long list of children, you should use
+   * {@link Node#children} instead.
+   */
+  child(index) {
+    marshalNode(this);
+    C._ts_node_child_wasm(this.tree[0], index);
+    return unmarshalNode(this.tree);
+  }
+  /**
+   * Get this node's *named* child at the given index.
+   *
+   * See also {@link Node#isNamed}.
+   * This method is fairly fast, but its cost is technically log(n), so if
+   * you might be iterating over a long list of children, you should use
+   * {@link Node#namedChildren} instead.
+   */
+  namedChild(index) {
+    marshalNode(this);
+    C._ts_node_named_child_wasm(this.tree[0], index);
+    return unmarshalNode(this.tree);
+  }
+  /**
+   * Get this node's child with the given numerical field id.
+   *
+   * See also {@link Node#childForFieldName}. You can
+   * convert a field name to an id using {@link Language#fieldIdForName}.
+   */
+  childForFieldId(fieldId) {
+    marshalNode(this);
+    C._ts_node_child_by_field_id_wasm(this.tree[0], fieldId);
+    return unmarshalNode(this.tree);
+  }
+  /**
+   * Get the first child with the given field name.
+   *
+   * If multiple children may have the same field name, access them using
+   * {@link Node#childrenForFieldName}.
+   */
+  childForFieldName(fieldName) {
+    const fieldId = this.tree.language.fields.indexOf(fieldName);
+    if (fieldId !== -1) return this.childForFieldId(fieldId);
+    return null;
+  }
+  /** Get the field name of this node's child at the given index. */
+  fieldNameForChild(index) {
+    marshalNode(this);
+    const address = C._ts_node_field_name_for_child_wasm(this.tree[0], index);
+    if (!address) return null;
+    return C.AsciiToString(address);
+  }
+  /** Get the field name of this node's named child at the given index. */
+  fieldNameForNamedChild(index) {
+    marshalNode(this);
+    const address = C._ts_node_field_name_for_named_child_wasm(this.tree[0], index);
+    if (!address) return null;
+    return C.AsciiToString(address);
+  }
+  /**
+   * Get an array of this node's children with a given field name.
+   *
+   * See also {@link Node#children}.
+   */
+  childrenForFieldName(fieldName) {
+    const fieldId = this.tree.language.fields.indexOf(fieldName);
+    if (fieldId !== -1 && fieldId !== 0) return this.childrenForFieldId(fieldId);
+    return [];
+  }
+  /**
+    * Get an array of this node's children with a given field id.
+    *
+    * See also {@link Node#childrenForFieldName}.
+    */
+  childrenForFieldId(fieldId) {
+    marshalNode(this);
+    C._ts_node_children_by_field_id_wasm(this.tree[0], fieldId);
+    const count2 = C.getValue(TRANSFER_BUFFER, "i32");
+    const buffer = C.getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
+    const result = new Array(count2);
+    if (count2 > 0) {
+      let address = buffer;
+      for (let i2 = 0; i2 < count2; i2++) {
+        result[i2] = unmarshalNode(this.tree, address);
+        address += SIZE_OF_NODE;
+      }
+      C._free(buffer);
+    }
+    return result;
+  }
+  /** Get the node's first child that contains or starts after the given byte offset. */
+  firstChildForIndex(index) {
+    marshalNode(this);
+    const address = TRANSFER_BUFFER + SIZE_OF_NODE;
+    C.setValue(address, index, "i32");
+    C._ts_node_first_child_for_byte_wasm(this.tree[0]);
+    return unmarshalNode(this.tree);
+  }
+  /** Get the node's first named child that contains or starts after the given byte offset. */
+  firstNamedChildForIndex(index) {
+    marshalNode(this);
+    const address = TRANSFER_BUFFER + SIZE_OF_NODE;
+    C.setValue(address, index, "i32");
+    C._ts_node_first_named_child_for_byte_wasm(this.tree[0]);
+    return unmarshalNode(this.tree);
+  }
+  /** Get this node's number of children. */
+  get childCount() {
+    marshalNode(this);
+    return C._ts_node_child_count_wasm(this.tree[0]);
+  }
+  /**
+   * Get this node's number of *named* children.
+   *
+   * See also {@link Node#isNamed}.
+   */
+  get namedChildCount() {
+    marshalNode(this);
+    return C._ts_node_named_child_count_wasm(this.tree[0]);
+  }
+  /** Get this node's first child. */
+  get firstChild() {
+    return this.child(0);
+  }
+  /**
+   * Get this node's first named child.
+   *
+   * See also {@link Node#isNamed}.
+   */
+  get firstNamedChild() {
+    return this.namedChild(0);
+  }
+  /** Get this node's last child. */
+  get lastChild() {
+    return this.child(this.childCount - 1);
+  }
+  /**
+   * Get this node's last named child.
+   *
+   * See also {@link Node#isNamed}.
+   */
+  get lastNamedChild() {
+    return this.namedChild(this.namedChildCount - 1);
+  }
+  /**
+   * Iterate over this node's children.
+   *
+   * If you're walking the tree recursively, you may want to use the
+   * {@link TreeCursor} APIs directly instead.
+   */
+  get children() {
+    if (!this._children) {
+      marshalNode(this);
+      C._ts_node_children_wasm(this.tree[0]);
+      const count2 = C.getValue(TRANSFER_BUFFER, "i32");
+      const buffer = C.getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
+      this._children = new Array(count2);
+      if (count2 > 0) {
+        let address = buffer;
+        for (let i2 = 0; i2 < count2; i2++) {
+          this._children[i2] = unmarshalNode(this.tree, address);
+          address += SIZE_OF_NODE;
+        }
+        C._free(buffer);
+      }
+    }
+    return this._children;
+  }
+  /**
+   * Iterate over this node's named children.
+   *
+   * See also {@link Node#children}.
+   */
+  get namedChildren() {
+    if (!this._namedChildren) {
+      marshalNode(this);
+      C._ts_node_named_children_wasm(this.tree[0]);
+      const count2 = C.getValue(TRANSFER_BUFFER, "i32");
+      const buffer = C.getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
+      this._namedChildren = new Array(count2);
+      if (count2 > 0) {
+        let address = buffer;
+        for (let i2 = 0; i2 < count2; i2++) {
+          this._namedChildren[i2] = unmarshalNode(this.tree, address);
+          address += SIZE_OF_NODE;
+        }
+        C._free(buffer);
+      }
+    }
+    return this._namedChildren;
+  }
+  /**
+   * Get the descendants of this node that are the given type, or in the given types array.
+   *
+   * The types array should contain node type strings, which can be retrieved from {@link Language#types}.
+   *
+   * Additionally, a `startPosition` and `endPosition` can be passed in to restrict the search to a byte range.
+   */
+  descendantsOfType(types, startPosition = ZERO_POINT, endPosition = ZERO_POINT) {
+    if (!Array.isArray(types)) types = [types];
+    const symbols2 = [];
+    const typesBySymbol = this.tree.language.types;
+    for (const node_type of types) {
+      if (node_type == "ERROR") {
+        symbols2.push(65535);
+      }
+    }
+    for (let i2 = 0, n = typesBySymbol.length; i2 < n; i2++) {
+      if (types.includes(typesBySymbol[i2])) {
+        symbols2.push(i2);
+      }
+    }
+    const symbolsAddress = C._malloc(SIZE_OF_INT * symbols2.length);
+    for (let i2 = 0, n = symbols2.length; i2 < n; i2++) {
+      C.setValue(symbolsAddress + i2 * SIZE_OF_INT, symbols2[i2], "i32");
+    }
+    marshalNode(this);
+    C._ts_node_descendants_of_type_wasm(
+      this.tree[0],
+      symbolsAddress,
+      symbols2.length,
+      startPosition.row,
+      startPosition.column,
+      endPosition.row,
+      endPosition.column
+    );
+    const descendantCount = C.getValue(TRANSFER_BUFFER, "i32");
+    const descendantAddress = C.getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
+    const result = new Array(descendantCount);
+    if (descendantCount > 0) {
+      let address = descendantAddress;
+      for (let i2 = 0; i2 < descendantCount; i2++) {
+        result[i2] = unmarshalNode(this.tree, address);
+        address += SIZE_OF_NODE;
+      }
+    }
+    C._free(descendantAddress);
+    C._free(symbolsAddress);
+    return result;
+  }
+  /** Get this node's next sibling. */
+  get nextSibling() {
+    marshalNode(this);
+    C._ts_node_next_sibling_wasm(this.tree[0]);
+    return unmarshalNode(this.tree);
+  }
+  /** Get this node's previous sibling. */
+  get previousSibling() {
+    marshalNode(this);
+    C._ts_node_prev_sibling_wasm(this.tree[0]);
+    return unmarshalNode(this.tree);
+  }
+  /**
+   * Get this node's next *named* sibling.
+   *
+   * See also {@link Node#isNamed}.
+   */
+  get nextNamedSibling() {
+    marshalNode(this);
+    C._ts_node_next_named_sibling_wasm(this.tree[0]);
+    return unmarshalNode(this.tree);
+  }
+  /**
+   * Get this node's previous *named* sibling.
+   *
+   * See also {@link Node#isNamed}.
+   */
+  get previousNamedSibling() {
+    marshalNode(this);
+    C._ts_node_prev_named_sibling_wasm(this.tree[0]);
+    return unmarshalNode(this.tree);
+  }
+  /** Get the node's number of descendants, including one for the node itself. */
+  get descendantCount() {
+    marshalNode(this);
+    return C._ts_node_descendant_count_wasm(this.tree[0]);
+  }
+  /**
+   * Get this node's immediate parent.
+   * Prefer {@link Node#childWithDescendant} for iterating over this node's ancestors.
+   */
+  get parent() {
+    marshalNode(this);
+    C._ts_node_parent_wasm(this.tree[0]);
+    return unmarshalNode(this.tree);
+  }
+  /**
+   * Get the node that contains `descendant`.
+   *
+   * Note that this can return `descendant` itself.
+   */
+  childWithDescendant(descendant) {
+    marshalNode(this);
+    marshalNode(descendant, 1);
+    C._ts_node_child_with_descendant_wasm(this.tree[0]);
+    return unmarshalNode(this.tree);
+  }
+  /** Get the smallest node within this node that spans the given byte range. */
+  descendantForIndex(start2, end = start2) {
+    if (typeof start2 !== "number" || typeof end !== "number") {
+      throw new Error("Arguments must be numbers");
+    }
+    marshalNode(this);
+    const address = TRANSFER_BUFFER + SIZE_OF_NODE;
+    C.setValue(address, start2, "i32");
+    C.setValue(address + SIZE_OF_INT, end, "i32");
+    C._ts_node_descendant_for_index_wasm(this.tree[0]);
+    return unmarshalNode(this.tree);
+  }
+  /** Get the smallest named node within this node that spans the given byte range. */
+  namedDescendantForIndex(start2, end = start2) {
+    if (typeof start2 !== "number" || typeof end !== "number") {
+      throw new Error("Arguments must be numbers");
+    }
+    marshalNode(this);
+    const address = TRANSFER_BUFFER + SIZE_OF_NODE;
+    C.setValue(address, start2, "i32");
+    C.setValue(address + SIZE_OF_INT, end, "i32");
+    C._ts_node_named_descendant_for_index_wasm(this.tree[0]);
+    return unmarshalNode(this.tree);
+  }
+  /** Get the smallest node within this node that spans the given point range. */
+  descendantForPosition(start2, end = start2) {
+    if (!isPoint(start2) || !isPoint(end)) {
+      throw new Error("Arguments must be {row, column} objects");
+    }
+    marshalNode(this);
+    const address = TRANSFER_BUFFER + SIZE_OF_NODE;
+    marshalPoint(address, start2);
+    marshalPoint(address + SIZE_OF_POINT, end);
+    C._ts_node_descendant_for_position_wasm(this.tree[0]);
+    return unmarshalNode(this.tree);
+  }
+  /** Get the smallest named node within this node that spans the given point range. */
+  namedDescendantForPosition(start2, end = start2) {
+    if (!isPoint(start2) || !isPoint(end)) {
+      throw new Error("Arguments must be {row, column} objects");
+    }
+    marshalNode(this);
+    const address = TRANSFER_BUFFER + SIZE_OF_NODE;
+    marshalPoint(address, start2);
+    marshalPoint(address + SIZE_OF_POINT, end);
+    C._ts_node_named_descendant_for_position_wasm(this.tree[0]);
+    return unmarshalNode(this.tree);
+  }
+  /**
+   * Create a new {@link TreeCursor} starting from this node.
+   *
+   * Note that the given node is considered the root of the cursor,
+   * and the cursor cannot walk outside this node.
+   */
+  walk() {
+    marshalNode(this);
+    C._ts_tree_cursor_new_wasm(this.tree[0]);
+    return new TreeCursor(INTERNAL, this.tree);
+  }
+  /**
+   * Edit this node to keep it in-sync with source code that has been edited.
+   *
+   * This function is only rarely needed. When you edit a syntax tree with
+   * the {@link Tree#edit} method, all of the nodes that you retrieve from
+   * the tree afterward will already reflect the edit. You only need to
+   * use {@link Node#edit} when you have a specific {@link Node} instance that
+   * you want to keep and continue to use after an edit.
+   */
+  edit(edit) {
+    if (this.startIndex >= edit.oldEndIndex) {
+      this.startIndex = edit.newEndIndex + (this.startIndex - edit.oldEndIndex);
+      let subbedPointRow;
+      let subbedPointColumn;
+      if (this.startPosition.row > edit.oldEndPosition.row) {
+        subbedPointRow = this.startPosition.row - edit.oldEndPosition.row;
+        subbedPointColumn = this.startPosition.column;
+      } else {
+        subbedPointRow = 0;
+        subbedPointColumn = this.startPosition.column;
+        if (this.startPosition.column >= edit.oldEndPosition.column) {
+          subbedPointColumn = this.startPosition.column - edit.oldEndPosition.column;
+        }
+      }
+      if (subbedPointRow > 0) {
+        this.startPosition.row += subbedPointRow;
+        this.startPosition.column = subbedPointColumn;
+      } else {
+        this.startPosition.column += subbedPointColumn;
+      }
+    } else if (this.startIndex > edit.startIndex) {
+      this.startIndex = edit.newEndIndex;
+      this.startPosition.row = edit.newEndPosition.row;
+      this.startPosition.column = edit.newEndPosition.column;
+    }
+  }
+  /** Get the S-expression representation of this node. */
+  toString() {
+    marshalNode(this);
+    const address = C._ts_node_to_string_wasm(this.tree[0]);
+    const result = C.AsciiToString(address);
+    C._free(address);
+    return result;
+  }
+}, __name(_a4, "Node"), _a4);
+function unmarshalCaptures(query, tree, address, patternIndex, result) {
+  for (let i2 = 0, n = result.length; i2 < n; i2++) {
+    const captureIndex = C.getValue(address, "i32");
+    address += SIZE_OF_INT;
+    const node = unmarshalNode(tree, address);
+    address += SIZE_OF_NODE;
+    result[i2] = { patternIndex, name: query.captureNames[captureIndex], node };
+  }
+  return address;
+}
+__name(unmarshalCaptures, "unmarshalCaptures");
+function marshalNode(node, index = 0) {
+  let address = TRANSFER_BUFFER + index * SIZE_OF_NODE;
+  C.setValue(address, node.id, "i32");
+  address += SIZE_OF_INT;
+  C.setValue(address, node.startIndex, "i32");
+  address += SIZE_OF_INT;
+  C.setValue(address, node.startPosition.row, "i32");
+  address += SIZE_OF_INT;
+  C.setValue(address, node.startPosition.column, "i32");
+  address += SIZE_OF_INT;
+  C.setValue(address, node[0], "i32");
+}
+__name(marshalNode, "marshalNode");
+function unmarshalNode(tree, address = TRANSFER_BUFFER) {
+  const id2 = C.getValue(address, "i32");
+  address += SIZE_OF_INT;
+  if (id2 === 0) return null;
+  const index = C.getValue(address, "i32");
+  address += SIZE_OF_INT;
+  const row = C.getValue(address, "i32");
+  address += SIZE_OF_INT;
+  const column = C.getValue(address, "i32");
+  address += SIZE_OF_INT;
+  const other = C.getValue(address, "i32");
+  const result = new Node(INTERNAL, {
+    id: id2,
+    tree,
+    startIndex: index,
+    startPosition: { row, column },
+    other
+  });
+  return result;
+}
+__name(unmarshalNode, "unmarshalNode");
+function marshalTreeCursor(cursor, address = TRANSFER_BUFFER) {
+  C.setValue(address + 0 * SIZE_OF_INT, cursor[0], "i32");
+  C.setValue(address + 1 * SIZE_OF_INT, cursor[1], "i32");
+  C.setValue(address + 2 * SIZE_OF_INT, cursor[2], "i32");
+  C.setValue(address + 3 * SIZE_OF_INT, cursor[3], "i32");
+}
+__name(marshalTreeCursor, "marshalTreeCursor");
+function unmarshalTreeCursor(cursor) {
+  cursor[0] = C.getValue(TRANSFER_BUFFER + 0 * SIZE_OF_INT, "i32");
+  cursor[1] = C.getValue(TRANSFER_BUFFER + 1 * SIZE_OF_INT, "i32");
+  cursor[2] = C.getValue(TRANSFER_BUFFER + 2 * SIZE_OF_INT, "i32");
+  cursor[3] = C.getValue(TRANSFER_BUFFER + 3 * SIZE_OF_INT, "i32");
+}
+__name(unmarshalTreeCursor, "unmarshalTreeCursor");
+function marshalPoint(address, point) {
+  C.setValue(address, point.row, "i32");
+  C.setValue(address + SIZE_OF_INT, point.column, "i32");
+}
+__name(marshalPoint, "marshalPoint");
+function unmarshalPoint(address) {
+  const result = {
+    row: C.getValue(address, "i32") >>> 0,
+    column: C.getValue(address + SIZE_OF_INT, "i32") >>> 0
+  };
+  return result;
+}
+__name(unmarshalPoint, "unmarshalPoint");
+function marshalRange(address, range3) {
+  marshalPoint(address, range3.startPosition);
+  address += SIZE_OF_POINT;
+  marshalPoint(address, range3.endPosition);
+  address += SIZE_OF_POINT;
+  C.setValue(address, range3.startIndex, "i32");
+  address += SIZE_OF_INT;
+  C.setValue(address, range3.endIndex, "i32");
+  address += SIZE_OF_INT;
+}
+__name(marshalRange, "marshalRange");
+function unmarshalRange(address) {
+  const result = {};
+  result.startPosition = unmarshalPoint(address);
+  address += SIZE_OF_POINT;
+  result.endPosition = unmarshalPoint(address);
+  address += SIZE_OF_POINT;
+  result.startIndex = C.getValue(address, "i32") >>> 0;
+  address += SIZE_OF_INT;
+  result.endIndex = C.getValue(address, "i32") >>> 0;
+  return result;
+}
+__name(unmarshalRange, "unmarshalRange");
+function marshalEdit(edit, address = TRANSFER_BUFFER) {
+  marshalPoint(address, edit.startPosition);
+  address += SIZE_OF_POINT;
+  marshalPoint(address, edit.oldEndPosition);
+  address += SIZE_OF_POINT;
+  marshalPoint(address, edit.newEndPosition);
+  address += SIZE_OF_POINT;
+  C.setValue(address, edit.startIndex, "i32");
+  address += SIZE_OF_INT;
+  C.setValue(address, edit.oldEndIndex, "i32");
+  address += SIZE_OF_INT;
+  C.setValue(address, edit.newEndIndex, "i32");
+  address += SIZE_OF_INT;
+}
+__name(marshalEdit, "marshalEdit");
+function unmarshalLanguageMetadata(address) {
+  const result = {};
+  result.major_version = C.getValue(address, "i32");
+  address += SIZE_OF_INT;
+  result.minor_version = C.getValue(address, "i32");
+  address += SIZE_OF_INT;
+  result.field_count = C.getValue(address, "i32");
+  return result;
+}
+__name(unmarshalLanguageMetadata, "unmarshalLanguageMetadata");
+var PREDICATE_STEP_TYPE_CAPTURE = 1;
+var PREDICATE_STEP_TYPE_STRING = 2;
+var QUERY_WORD_REGEX = /[\w-]+/g;
+var CaptureQuantifier = {
+  Zero: 0,
+  ZeroOrOne: 1,
+  ZeroOrMore: 2,
+  One: 3,
+  OneOrMore: 4
+};
+var isCaptureStep = /* @__PURE__ */ __name((step) => step.type === "capture", "isCaptureStep");
+var isStringStep = /* @__PURE__ */ __name((step) => step.type === "string", "isStringStep");
+var QueryErrorKind = {
+  Syntax: 1,
+  NodeName: 2,
+  FieldName: 3,
+  CaptureName: 4,
+  PatternStructure: 5
+};
+var _a5;
+var QueryError = (_a5 = class extends Error {
+  constructor(kind, info2, index, length) {
+    super(_a5.formatMessage(kind, info2));
+    this.kind = kind;
+    this.info = info2;
+    this.index = index;
+    this.length = length;
+    this.name = "QueryError";
+  }
+  /** Formats an error message based on the error kind and info */
+  static formatMessage(kind, info2) {
+    switch (kind) {
+      case QueryErrorKind.NodeName:
+        return `Bad node name '${info2.word}'`;
+      case QueryErrorKind.FieldName:
+        return `Bad field name '${info2.word}'`;
+      case QueryErrorKind.CaptureName:
+        return `Bad capture name @${info2.word}`;
+      case QueryErrorKind.PatternStructure:
+        return `Bad pattern structure at offset ${info2.suffix}`;
+      case QueryErrorKind.Syntax:
+        return `Bad syntax at offset ${info2.suffix}`;
+    }
+  }
+}, __name(_a5, "QueryError"), _a5);
+function parseAnyPredicate(steps, index, operator, textPredicates) {
+  if (steps.length !== 3) {
+    throw new Error(
+      `Wrong number of arguments to \`#${operator}\` predicate. Expected 2, got ${steps.length - 1}`
+    );
+  }
+  if (!isCaptureStep(steps[1])) {
+    throw new Error(
+      `First argument of \`#${operator}\` predicate must be a capture. Got "${steps[1].value}"`
+    );
+  }
+  const isPositive = operator === "eq?" || operator === "any-eq?";
+  const matchAll2 = !operator.startsWith("any-");
+  if (isCaptureStep(steps[2])) {
+    const captureName1 = steps[1].name;
+    const captureName2 = steps[2].name;
+    textPredicates[index].push((captures) => {
+      const nodes1 = [];
+      const nodes2 = [];
+      for (const c of captures) {
+        if (c.name === captureName1) nodes1.push(c.node);
+        if (c.name === captureName2) nodes2.push(c.node);
+      }
+      const compare = /* @__PURE__ */ __name((n1, n2, positive) => {
+        return positive ? n1.text === n2.text : n1.text !== n2.text;
+      }, "compare");
+      return matchAll2 ? nodes1.every((n1) => nodes2.some((n2) => compare(n1, n2, isPositive))) : nodes1.some((n1) => nodes2.some((n2) => compare(n1, n2, isPositive)));
+    });
+  } else {
+    const captureName = steps[1].name;
+    const stringValue = steps[2].value;
+    const matches = /* @__PURE__ */ __name((n) => n.text === stringValue, "matches");
+    const doesNotMatch = /* @__PURE__ */ __name((n) => n.text !== stringValue, "doesNotMatch");
+    textPredicates[index].push((captures) => {
+      const nodes = [];
+      for (const c of captures) {
+        if (c.name === captureName) nodes.push(c.node);
+      }
+      const test = isPositive ? matches : doesNotMatch;
+      return matchAll2 ? nodes.every(test) : nodes.some(test);
+    });
+  }
+}
+__name(parseAnyPredicate, "parseAnyPredicate");
+function parseMatchPredicate(steps, index, operator, textPredicates) {
+  if (steps.length !== 3) {
+    throw new Error(
+      `Wrong number of arguments to \`#${operator}\` predicate. Expected 2, got ${steps.length - 1}.`
+    );
+  }
+  if (steps[1].type !== "capture") {
+    throw new Error(
+      `First argument of \`#${operator}\` predicate must be a capture. Got "${steps[1].value}".`
+    );
+  }
+  if (steps[2].type !== "string") {
+    throw new Error(
+      `Second argument of \`#${operator}\` predicate must be a string. Got @${steps[2].name}.`
+    );
+  }
+  const isPositive = operator === "match?" || operator === "any-match?";
+  const matchAll2 = !operator.startsWith("any-");
+  const captureName = steps[1].name;
+  const regex = new RegExp(steps[2].value);
+  textPredicates[index].push((captures) => {
+    const nodes = [];
+    for (const c of captures) {
+      if (c.name === captureName) nodes.push(c.node.text);
+    }
+    const test = /* @__PURE__ */ __name((text, positive) => {
+      return positive ? regex.test(text) : !regex.test(text);
+    }, "test");
+    if (nodes.length === 0) return !isPositive;
+    return matchAll2 ? nodes.every((text) => test(text, isPositive)) : nodes.some((text) => test(text, isPositive));
+  });
+}
+__name(parseMatchPredicate, "parseMatchPredicate");
+function parseAnyOfPredicate(steps, index, operator, textPredicates) {
+  if (steps.length < 2) {
+    throw new Error(
+      `Wrong number of arguments to \`#${operator}\` predicate. Expected at least 1. Got ${steps.length - 1}.`
+    );
+  }
+  if (steps[1].type !== "capture") {
+    throw new Error(
+      `First argument of \`#${operator}\` predicate must be a capture. Got "${steps[1].value}".`
+    );
+  }
+  const isPositive = operator === "any-of?";
+  const captureName = steps[1].name;
+  const stringSteps = steps.slice(2);
+  if (!stringSteps.every(isStringStep)) {
+    throw new Error(
+      `Arguments to \`#${operator}\` predicate must be strings.".`
+    );
+  }
+  const values2 = stringSteps.map((s) => s.value);
+  textPredicates[index].push((captures) => {
+    const nodes = [];
+    for (const c of captures) {
+      if (c.name === captureName) nodes.push(c.node.text);
+    }
+    if (nodes.length === 0) return !isPositive;
+    return nodes.every((text) => values2.includes(text)) === isPositive;
+  });
+}
+__name(parseAnyOfPredicate, "parseAnyOfPredicate");
+function parseIsPredicate(steps, index, operator, assertedProperties, refutedProperties) {
+  if (steps.length < 2 || steps.length > 3) {
+    throw new Error(
+      `Wrong number of arguments to \`#${operator}\` predicate. Expected 1 or 2. Got ${steps.length - 1}.`
+    );
+  }
+  if (!steps.every(isStringStep)) {
+    throw new Error(
+      `Arguments to \`#${operator}\` predicate must be strings.".`
+    );
+  }
+  const properties = operator === "is?" ? assertedProperties : refutedProperties;
+  if (!properties[index]) properties[index] = {};
+  properties[index][steps[1].value] = steps[2]?.value ?? null;
+}
+__name(parseIsPredicate, "parseIsPredicate");
+function parseSetDirective(steps, index, setProperties) {
+  if (steps.length < 2 || steps.length > 3) {
+    throw new Error(`Wrong number of arguments to \`#set!\` predicate. Expected 1 or 2. Got ${steps.length - 1}.`);
+  }
+  if (!steps.every(isStringStep)) {
+    throw new Error(`Arguments to \`#set!\` predicate must be strings.".`);
+  }
+  if (!setProperties[index]) setProperties[index] = {};
+  setProperties[index][steps[1].value] = steps[2]?.value ?? null;
+}
+__name(parseSetDirective, "parseSetDirective");
+function parsePattern(index, stepType, stepValueId, captureNames2, stringValues, steps, textPredicates, predicates, setProperties, assertedProperties, refutedProperties) {
+  if (stepType === PREDICATE_STEP_TYPE_CAPTURE) {
+    const name2 = captureNames2[stepValueId];
+    steps.push({ type: "capture", name: name2 });
+  } else if (stepType === PREDICATE_STEP_TYPE_STRING) {
+    steps.push({ type: "string", value: stringValues[stepValueId] });
+  } else if (steps.length > 0) {
+    if (steps[0].type !== "string") {
+      throw new Error("Predicates must begin with a literal value");
+    }
+    const operator = steps[0].value;
+    switch (operator) {
+      case "any-not-eq?":
+      case "not-eq?":
+      case "any-eq?":
+      case "eq?":
+        parseAnyPredicate(steps, index, operator, textPredicates);
+        break;
+      case "any-not-match?":
+      case "not-match?":
+      case "any-match?":
+      case "match?":
+        parseMatchPredicate(steps, index, operator, textPredicates);
+        break;
+      case "not-any-of?":
+      case "any-of?":
+        parseAnyOfPredicate(steps, index, operator, textPredicates);
+        break;
+      case "is?":
+      case "is-not?":
+        parseIsPredicate(steps, index, operator, assertedProperties, refutedProperties);
+        break;
+      case "set!":
+        parseSetDirective(steps, index, setProperties);
+        break;
+      default:
+        predicates[index].push({ operator, operands: steps.slice(1) });
+    }
+    steps.length = 0;
+  }
+}
+__name(parsePattern, "parsePattern");
+var _a6;
+var Query = (_a6 = class {
+  /**
+   * Create a new query from a string containing one or more S-expression
+   * patterns.
+   *
+   * The query is associated with a particular language, and can only be run
+   * on syntax nodes parsed with that language. References to Queries can be
+   * shared between multiple threads.
+   *
+   * @link {@see https://tree-sitter.github.io/tree-sitter/using-parsers/queries}
+   */
+  constructor(language, source) {
+    /** @internal */
+    __publicField(this, 0, 0);
+    // Internal handle for WASM
+    /** @internal */
+    __publicField(this, "exceededMatchLimit");
+    /** @internal */
+    __publicField(this, "textPredicates");
+    /** The names of the captures used in the query. */
+    __publicField(this, "captureNames");
+    /** The quantifiers of the captures used in the query. */
+    __publicField(this, "captureQuantifiers");
+    /**
+     * The other user-defined predicates associated with the given index.
+     *
+     * This includes predicates with operators other than:
+     * - `match?`
+     * - `eq?` and `not-eq?`
+     * - `any-of?` and `not-any-of?`
+     * - `is?` and `is-not?`
+     * - `set!`
+     */
+    __publicField(this, "predicates");
+    /** The properties for predicates with the operator `set!`. */
+    __publicField(this, "setProperties");
+    /** The properties for predicates with the operator `is?`. */
+    __publicField(this, "assertedProperties");
+    /** The properties for predicates with the operator `is-not?`. */
+    __publicField(this, "refutedProperties");
+    /** The maximum number of in-progress matches for this cursor. */
+    __publicField(this, "matchLimit");
+    const sourceLength = C.lengthBytesUTF8(source);
+    const sourceAddress = C._malloc(sourceLength + 1);
+    C.stringToUTF8(source, sourceAddress, sourceLength + 1);
+    const address = C._ts_query_new(
+      language[0],
+      sourceAddress,
+      sourceLength,
+      TRANSFER_BUFFER,
+      TRANSFER_BUFFER + SIZE_OF_INT
+    );
+    if (!address) {
+      const errorId = C.getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
+      const errorByte = C.getValue(TRANSFER_BUFFER, "i32");
+      const errorIndex = C.UTF8ToString(sourceAddress, errorByte).length;
+      const suffix = source.slice(errorIndex, errorIndex + 100).split("\n")[0];
+      const word = suffix.match(QUERY_WORD_REGEX)?.[0] ?? "";
+      C._free(sourceAddress);
+      switch (errorId) {
+        case QueryErrorKind.Syntax:
+          throw new QueryError(QueryErrorKind.Syntax, { suffix: `${errorIndex}: '${suffix}'...` }, errorIndex, 0);
+        case QueryErrorKind.NodeName:
+          throw new QueryError(errorId, { word }, errorIndex, word.length);
+        case QueryErrorKind.FieldName:
+          throw new QueryError(errorId, { word }, errorIndex, word.length);
+        case QueryErrorKind.CaptureName:
+          throw new QueryError(errorId, { word }, errorIndex, word.length);
+        case QueryErrorKind.PatternStructure:
+          throw new QueryError(errorId, { suffix: `${errorIndex}: '${suffix}'...` }, errorIndex, 0);
+      }
+    }
+    const stringCount = C._ts_query_string_count(address);
+    const captureCount = C._ts_query_capture_count(address);
+    const patternCount = C._ts_query_pattern_count(address);
+    const captureNames2 = new Array(captureCount);
+    const captureQuantifiers = new Array(patternCount);
+    const stringValues = new Array(stringCount);
+    for (let i2 = 0; i2 < captureCount; i2++) {
+      const nameAddress = C._ts_query_capture_name_for_id(
+        address,
+        i2,
+        TRANSFER_BUFFER
+      );
+      const nameLength = C.getValue(TRANSFER_BUFFER, "i32");
+      captureNames2[i2] = C.UTF8ToString(nameAddress, nameLength);
+    }
+    for (let i2 = 0; i2 < patternCount; i2++) {
+      const captureQuantifiersArray = new Array(captureCount);
+      for (let j = 0; j < captureCount; j++) {
+        const quantifier = C._ts_query_capture_quantifier_for_id(address, i2, j);
+        captureQuantifiersArray[j] = quantifier;
+      }
+      captureQuantifiers[i2] = captureQuantifiersArray;
+    }
+    for (let i2 = 0; i2 < stringCount; i2++) {
+      const valueAddress = C._ts_query_string_value_for_id(
+        address,
+        i2,
+        TRANSFER_BUFFER
+      );
+      const nameLength = C.getValue(TRANSFER_BUFFER, "i32");
+      stringValues[i2] = C.UTF8ToString(valueAddress, nameLength);
+    }
+    const setProperties = new Array(patternCount);
+    const assertedProperties = new Array(patternCount);
+    const refutedProperties = new Array(patternCount);
+    const predicates = new Array(patternCount);
+    const textPredicates = new Array(patternCount);
+    for (let i2 = 0; i2 < patternCount; i2++) {
+      const predicatesAddress = C._ts_query_predicates_for_pattern(address, i2, TRANSFER_BUFFER);
+      const stepCount = C.getValue(TRANSFER_BUFFER, "i32");
+      predicates[i2] = [];
+      textPredicates[i2] = [];
+      const steps = new Array();
+      let stepAddress = predicatesAddress;
+      for (let j = 0; j < stepCount; j++) {
+        const stepType = C.getValue(stepAddress, "i32");
+        stepAddress += SIZE_OF_INT;
+        const stepValueId = C.getValue(stepAddress, "i32");
+        stepAddress += SIZE_OF_INT;
+        parsePattern(
+          i2,
+          stepType,
+          stepValueId,
+          captureNames2,
+          stringValues,
+          steps,
+          textPredicates,
+          predicates,
+          setProperties,
+          assertedProperties,
+          refutedProperties
+        );
+      }
+      Object.freeze(textPredicates[i2]);
+      Object.freeze(predicates[i2]);
+      Object.freeze(setProperties[i2]);
+      Object.freeze(assertedProperties[i2]);
+      Object.freeze(refutedProperties[i2]);
+    }
+    C._free(sourceAddress);
+    this[0] = address;
+    this.captureNames = captureNames2;
+    this.captureQuantifiers = captureQuantifiers;
+    this.textPredicates = textPredicates;
+    this.predicates = predicates;
+    this.setProperties = setProperties;
+    this.assertedProperties = assertedProperties;
+    this.refutedProperties = refutedProperties;
+    this.exceededMatchLimit = false;
+  }
+  /** Delete the query, freeing its resources. */
+  delete() {
+    C._ts_query_delete(this[0]);
+    this[0] = 0;
+  }
+  /**
+   * Iterate over all of the matches in the order that they were found.
+   *
+   * Each match contains the index of the pattern that matched, and a list of
+   * captures. Because multiple patterns can match the same set of nodes,
+   * one match may contain captures that appear *before* some of the
+   * captures from a previous match.
+   *
+   * @param {Node} node - The node to execute the query on.
+   *
+   * @param {QueryOptions} options - Options for query execution.
+   */
+  matches(node, options2 = {}) {
+    const startPosition = options2.startPosition ?? ZERO_POINT;
+    const endPosition = options2.endPosition ?? ZERO_POINT;
+    const startIndex = options2.startIndex ?? 0;
+    const endIndex = options2.endIndex ?? 0;
+    const matchLimit = options2.matchLimit ?? 4294967295;
+    const maxStartDepth = options2.maxStartDepth ?? 4294967295;
+    const timeoutMicros = options2.timeoutMicros ?? 0;
+    const progressCallback = options2.progressCallback;
+    if (typeof matchLimit !== "number") {
+      throw new Error("Arguments must be numbers");
+    }
+    this.matchLimit = matchLimit;
+    if (endIndex !== 0 && startIndex > endIndex) {
+      throw new Error("`startIndex` cannot be greater than `endIndex`");
+    }
+    if (endPosition !== ZERO_POINT && (startPosition.row > endPosition.row || startPosition.row === endPosition.row && startPosition.column > endPosition.column)) {
+      throw new Error("`startPosition` cannot be greater than `endPosition`");
+    }
+    if (progressCallback) {
+      C.currentQueryProgressCallback = progressCallback;
+    }
+    marshalNode(node);
+    C._ts_query_matches_wasm(
+      this[0],
+      node.tree[0],
+      startPosition.row,
+      startPosition.column,
+      endPosition.row,
+      endPosition.column,
+      startIndex,
+      endIndex,
+      matchLimit,
+      maxStartDepth,
+      timeoutMicros
+    );
+    const rawCount = C.getValue(TRANSFER_BUFFER, "i32");
+    const startAddress = C.getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
+    const didExceedMatchLimit = C.getValue(TRANSFER_BUFFER + 2 * SIZE_OF_INT, "i32");
+    const result = new Array(rawCount);
+    this.exceededMatchLimit = Boolean(didExceedMatchLimit);
+    let filteredCount = 0;
+    let address = startAddress;
+    for (let i2 = 0; i2 < rawCount; i2++) {
+      const patternIndex = C.getValue(address, "i32");
+      address += SIZE_OF_INT;
+      const captureCount = C.getValue(address, "i32");
+      address += SIZE_OF_INT;
+      const captures = new Array(captureCount);
+      address = unmarshalCaptures(this, node.tree, address, patternIndex, captures);
+      if (this.textPredicates[patternIndex].every((p) => p(captures))) {
+        result[filteredCount] = { pattern: patternIndex, patternIndex, captures };
+        const setProperties = this.setProperties[patternIndex];
+        result[filteredCount].setProperties = setProperties;
+        const assertedProperties = this.assertedProperties[patternIndex];
+        result[filteredCount].assertedProperties = assertedProperties;
+        const refutedProperties = this.refutedProperties[patternIndex];
+        result[filteredCount].refutedProperties = refutedProperties;
+        filteredCount++;
+      }
+    }
+    result.length = filteredCount;
+    C._free(startAddress);
+    C.currentQueryProgressCallback = null;
+    return result;
+  }
+  /**
+   * Iterate over all of the individual captures in the order that they
+   * appear.
+   *
+   * This is useful if you don't care about which pattern matched, and just
+   * want a single, ordered sequence of captures.
+   *
+   * @param {Node} node - The node to execute the query on.
+   *
+   * @param {QueryOptions} options - Options for query execution.
+   */
+  captures(node, options2 = {}) {
+    const startPosition = options2.startPosition ?? ZERO_POINT;
+    const endPosition = options2.endPosition ?? ZERO_POINT;
+    const startIndex = options2.startIndex ?? 0;
+    const endIndex = options2.endIndex ?? 0;
+    const matchLimit = options2.matchLimit ?? 4294967295;
+    const maxStartDepth = options2.maxStartDepth ?? 4294967295;
+    const timeoutMicros = options2.timeoutMicros ?? 0;
+    const progressCallback = options2.progressCallback;
+    if (typeof matchLimit !== "number") {
+      throw new Error("Arguments must be numbers");
+    }
+    this.matchLimit = matchLimit;
+    if (endIndex !== 0 && startIndex > endIndex) {
+      throw new Error("`startIndex` cannot be greater than `endIndex`");
+    }
+    if (endPosition !== ZERO_POINT && (startPosition.row > endPosition.row || startPosition.row === endPosition.row && startPosition.column > endPosition.column)) {
+      throw new Error("`startPosition` cannot be greater than `endPosition`");
+    }
+    if (progressCallback) {
+      C.currentQueryProgressCallback = progressCallback;
+    }
+    marshalNode(node);
+    C._ts_query_captures_wasm(
+      this[0],
+      node.tree[0],
+      startPosition.row,
+      startPosition.column,
+      endPosition.row,
+      endPosition.column,
+      startIndex,
+      endIndex,
+      matchLimit,
+      maxStartDepth,
+      timeoutMicros
+    );
+    const count2 = C.getValue(TRANSFER_BUFFER, "i32");
+    const startAddress = C.getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
+    const didExceedMatchLimit = C.getValue(TRANSFER_BUFFER + 2 * SIZE_OF_INT, "i32");
+    const result = new Array();
+    this.exceededMatchLimit = Boolean(didExceedMatchLimit);
+    const captures = new Array();
+    let address = startAddress;
+    for (let i2 = 0; i2 < count2; i2++) {
+      const patternIndex = C.getValue(address, "i32");
+      address += SIZE_OF_INT;
+      const captureCount = C.getValue(address, "i32");
+      address += SIZE_OF_INT;
+      const captureIndex = C.getValue(address, "i32");
+      address += SIZE_OF_INT;
+      captures.length = captureCount;
+      address = unmarshalCaptures(this, node.tree, address, patternIndex, captures);
+      if (this.textPredicates[patternIndex].every((p) => p(captures))) {
+        const capture = captures[captureIndex];
+        const setProperties = this.setProperties[patternIndex];
+        capture.setProperties = setProperties;
+        const assertedProperties = this.assertedProperties[patternIndex];
+        capture.assertedProperties = assertedProperties;
+        const refutedProperties = this.refutedProperties[patternIndex];
+        capture.refutedProperties = refutedProperties;
+        result.push(capture);
+      }
+    }
+    C._free(startAddress);
+    C.currentQueryProgressCallback = null;
+    return result;
+  }
+  /** Get the predicates for a given pattern. */
+  predicatesForPattern(patternIndex) {
+    return this.predicates[patternIndex];
+  }
+  /**
+   * Disable a certain capture within a query.
+   *
+   * This prevents the capture from being returned in matches, and also
+   * avoids any resource usage associated with recording the capture.
+   */
+  disableCapture(captureName) {
+    const captureNameLength = C.lengthBytesUTF8(captureName);
+    const captureNameAddress = C._malloc(captureNameLength + 1);
+    C.stringToUTF8(captureName, captureNameAddress, captureNameLength + 1);
+    C._ts_query_disable_capture(this[0], captureNameAddress, captureNameLength);
+    C._free(captureNameAddress);
+  }
+  /**
+   * Disable a certain pattern within a query.
+   *
+   * This prevents the pattern from matching, and also avoids any resource
+   * usage associated with the pattern. This throws an error if the pattern
+   * index is out of bounds.
+   */
+  disablePattern(patternIndex) {
+    if (patternIndex >= this.predicates.length) {
+      throw new Error(
+        `Pattern index is ${patternIndex} but the pattern count is ${this.predicates.length}`
+      );
+    }
+    C._ts_query_disable_pattern(this[0], patternIndex);
+  }
+  /**
+   * Check if, on its last execution, this cursor exceeded its maximum number
+   * of in-progress matches.
+   */
+  didExceedMatchLimit() {
+    return this.exceededMatchLimit;
+  }
+  /** Get the byte offset where the given pattern starts in the query's source. */
+  startIndexForPattern(patternIndex) {
+    if (patternIndex >= this.predicates.length) {
+      throw new Error(
+        `Pattern index is ${patternIndex} but the pattern count is ${this.predicates.length}`
+      );
+    }
+    return C._ts_query_start_byte_for_pattern(this[0], patternIndex);
+  }
+  /** Get the byte offset where the given pattern ends in the query's source. */
+  endIndexForPattern(patternIndex) {
+    if (patternIndex >= this.predicates.length) {
+      throw new Error(
+        `Pattern index is ${patternIndex} but the pattern count is ${this.predicates.length}`
+      );
+    }
+    return C._ts_query_end_byte_for_pattern(this[0], patternIndex);
+  }
+  /** Get the number of patterns in the query. */
+  patternCount() {
+    return C._ts_query_pattern_count(this[0]);
+  }
+  /** Get the index for a given capture name. */
+  captureIndexForName(captureName) {
+    return this.captureNames.indexOf(captureName);
+  }
+  /** Check if a given pattern within a query has a single root node. */
+  isPatternRooted(patternIndex) {
+    return C._ts_query_is_pattern_rooted(this[0], patternIndex) === 1;
+  }
+  /** Check if a given pattern within a query has a single root node. */
+  isPatternNonLocal(patternIndex) {
+    return C._ts_query_is_pattern_non_local(this[0], patternIndex) === 1;
+  }
+  /**
+   * Check if a given step in a query is 'definite'.
+   *
+   * A query step is 'definite' if its parent pattern will be guaranteed to
+   * match successfully once it reaches the step.
+   */
+  isPatternGuaranteedAtStep(byteIndex) {
+    return C._ts_query_is_pattern_guaranteed_at_step(this[0], byteIndex) === 1;
+  }
+}, __name(_a6, "Query"), _a6);
+var LANGUAGE_FUNCTION_REGEX = /^tree_sitter_\w+$/;
+var _a7;
+var Language = (_a7 = class {
+  /** @internal */
+  constructor(internal, address) {
+    /** @internal */
+    __publicField(this, 0, 0);
+    // Internal handle for WASM
+    /**
+     * A list of all node types in the language. The index of each type in this
+     * array is its node type id.
+     */
+    __publicField(this, "types");
+    /**
+     * A list of all field names in the language. The index of each field name in
+     * this array is its field id.
+     */
+    __publicField(this, "fields");
+    assertInternal(internal);
+    this[0] = address;
+    this.types = new Array(C._ts_language_symbol_count(this[0]));
+    for (let i2 = 0, n = this.types.length; i2 < n; i2++) {
+      if (C._ts_language_symbol_type(this[0], i2) < 2) {
+        this.types[i2] = C.UTF8ToString(C._ts_language_symbol_name(this[0], i2));
+      }
+    }
+    this.fields = new Array(C._ts_language_field_count(this[0]) + 1);
+    for (let i2 = 0, n = this.fields.length; i2 < n; i2++) {
+      const fieldName = C._ts_language_field_name_for_id(this[0], i2);
+      if (fieldName !== 0) {
+        this.fields[i2] = C.UTF8ToString(fieldName);
+      } else {
+        this.fields[i2] = null;
+      }
+    }
+  }
+  /**
+   * Gets the name of the language.
+   */
+  get name() {
+    const ptr = C._ts_language_name(this[0]);
+    if (ptr === 0) return null;
+    return C.UTF8ToString(ptr);
+  }
+  /**
+   * @deprecated since version 0.25.0, use {@link Language#abiVersion} instead
+   * Gets the version of the language.
+   */
+  get version() {
+    return C._ts_language_version(this[0]);
+  }
+  /**
+   * Gets the ABI version of the language.
+   */
+  get abiVersion() {
+    return C._ts_language_abi_version(this[0]);
+  }
+  /**
+  * Get the metadata for this language. This information is generated by the
+  * CLI, and relies on the language author providing the correct metadata in
+  * the language's `tree-sitter.json` file.
+  */
+  get metadata() {
+    C._ts_language_metadata(this[0]);
+    const length = C.getValue(TRANSFER_BUFFER, "i32");
+    const address = C.getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
+    if (length === 0) return null;
+    return unmarshalLanguageMetadata(address);
+  }
+  /**
+   * Gets the number of fields in the language.
+   */
+  get fieldCount() {
+    return this.fields.length - 1;
+  }
+  /**
+   * Gets the number of states in the language.
+   */
+  get stateCount() {
+    return C._ts_language_state_count(this[0]);
+  }
+  /**
+   * Get the field id for a field name.
+   */
+  fieldIdForName(fieldName) {
+    const result = this.fields.indexOf(fieldName);
+    return result !== -1 ? result : null;
+  }
+  /**
+   * Get the field name for a field id.
+   */
+  fieldNameForId(fieldId) {
+    return this.fields[fieldId] ?? null;
+  }
+  /**
+   * Get the node type id for a node type name.
+   */
+  idForNodeType(type2, named) {
+    const typeLength = C.lengthBytesUTF8(type2);
+    const typeAddress = C._malloc(typeLength + 1);
+    C.stringToUTF8(type2, typeAddress, typeLength + 1);
+    const result = C._ts_language_symbol_for_name(this[0], typeAddress, typeLength, named ? 1 : 0);
+    C._free(typeAddress);
+    return result || null;
+  }
+  /**
+   * Gets the number of node types in the language.
+   */
+  get nodeTypeCount() {
+    return C._ts_language_symbol_count(this[0]);
+  }
+  /**
+   * Get the node type name for a node type id.
+   */
+  nodeTypeForId(typeId) {
+    const name2 = C._ts_language_symbol_name(this[0], typeId);
+    return name2 ? C.UTF8ToString(name2) : null;
+  }
+  /**
+   * Check if a node type is named.
+   *
+   * @see {@link https://tree-sitter.github.io/tree-sitter/using-parsers/2-basic-parsing.html#named-vs-anonymous-nodes}
+   */
+  nodeTypeIsNamed(typeId) {
+    return C._ts_language_type_is_named_wasm(this[0], typeId) ? true : false;
+  }
+  /**
+   * Check if a node type is visible.
+   */
+  nodeTypeIsVisible(typeId) {
+    return C._ts_language_type_is_visible_wasm(this[0], typeId) ? true : false;
+  }
+  /**
+   * Get the supertypes ids of this language.
+   *
+   * @see {@link https://tree-sitter.github.io/tree-sitter/using-parsers/6-static-node-types.html?highlight=supertype#supertype-nodes}
+   */
+  get supertypes() {
+    C._ts_language_supertypes_wasm(this[0]);
+    const count2 = C.getValue(TRANSFER_BUFFER, "i32");
+    const buffer = C.getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
+    const result = new Array(count2);
+    if (count2 > 0) {
+      let address = buffer;
+      for (let i2 = 0; i2 < count2; i2++) {
+        result[i2] = C.getValue(address, "i16");
+        address += SIZE_OF_SHORT;
+      }
+    }
+    return result;
+  }
+  /**
+   * Get the subtype ids for a given supertype node id.
+   */
+  subtypes(supertype) {
+    C._ts_language_subtypes_wasm(this[0], supertype);
+    const count2 = C.getValue(TRANSFER_BUFFER, "i32");
+    const buffer = C.getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
+    const result = new Array(count2);
+    if (count2 > 0) {
+      let address = buffer;
+      for (let i2 = 0; i2 < count2; i2++) {
+        result[i2] = C.getValue(address, "i16");
+        address += SIZE_OF_SHORT;
+      }
+    }
+    return result;
+  }
+  /**
+   * Get the next state id for a given state id and node type id.
+   */
+  nextState(stateId, typeId) {
+    return C._ts_language_next_state(this[0], stateId, typeId);
+  }
+  /**
+   * Create a new lookahead iterator for this language and parse state.
+   *
+   * This returns `null` if state is invalid for this language.
+   *
+   * Iterating {@link LookaheadIterator} will yield valid symbols in the given
+   * parse state. Newly created lookahead iterators will return the `ERROR`
+   * symbol from {@link LookaheadIterator#currentType}.
+   *
+   * Lookahead iterators can be useful for generating suggestions and improving
+   * syntax error diagnostics. To get symbols valid in an `ERROR` node, use the
+   * lookahead iterator on its first leaf node state. For `MISSING` nodes, a
+   * lookahead iterator created on the previous non-extra leaf node may be
+   * appropriate.
+   */
+  lookaheadIterator(stateId) {
+    const address = C._ts_lookahead_iterator_new(this[0], stateId);
+    if (address) return new LookaheadIterator(INTERNAL, address, this);
+    return null;
+  }
+  /**
+   * @deprecated since version 0.25.0, call `new` on a {@link Query} instead
+   *
+   * Create a new query from a string containing one or more S-expression
+   * patterns.
+   *
+   * The query is associated with a particular language, and can only be run
+   * on syntax nodes parsed with that language. References to Queries can be
+   * shared between multiple threads.
+   *
+   * @link {@see https://tree-sitter.github.io/tree-sitter/using-parsers/queries}
+   */
+  query(source) {
+    console.warn("Language.query is deprecated. Use new Query(language, source) instead.");
+    return new Query(this, source);
+  }
+  /**
+   * Load a language from a WebAssembly module.
+   * The module can be provided as a path to a file or as a buffer.
+   */
+  static async load(input) {
+    let bytes;
+    if (input instanceof Uint8Array) {
+      bytes = Promise.resolve(input);
+    } else {
+      if (globalThis.process?.versions.node) {
+        const fs2 = await import("fs/promises");
+        bytes = fs2.readFile(input);
+      } else {
+        bytes = fetch(input).then((response) => response.arrayBuffer().then((buffer) => {
+          if (response.ok) {
+            return new Uint8Array(buffer);
+          } else {
+            const body2 = new TextDecoder("utf-8").decode(buffer);
+            throw new Error(`Language.load failed with status ${response.status}.
 
-// src/ide/JetbrainsTreeSitter.ts
-var import_web_tree_sitter = __toESM(require_tree_sitter(), 1);
+${body2}`);
+          }
+        }));
+      }
+    }
+    const mod = await C.loadWebAssemblyModule(await bytes, { loadAsync: true });
+    const symbolNames = Object.keys(mod);
+    const functionName = symbolNames.find((key) => LANGUAGE_FUNCTION_REGEX.test(key) && !key.includes("external_scanner_"));
+    if (!functionName) {
+      console.log(`Couldn't find language function in WASM file. Symbols:
+${JSON.stringify(symbolNames, null, 2)}`);
+      throw new Error("Language.load failed: no language function found in WASM file");
+    }
+    const languageAddress = mod[functionName]();
+    return new _a7(INTERNAL, languageAddress);
+  }
+}, __name(_a7, "Language"), _a7);
+var Module2 = (() => {
+  var _scriptName = import.meta.url;
+  return async function(moduleArg = {}) {
+    var moduleRtn;
+    var Module = moduleArg;
+    var readyPromiseResolve, readyPromiseReject;
+    var readyPromise = new Promise((resolve, reject) => {
+      readyPromiseResolve = resolve;
+      readyPromiseReject = reject;
+    });
+    var ENVIRONMENT_IS_WEB = typeof window == "object";
+    var ENVIRONMENT_IS_WORKER = typeof WorkerGlobalScope != "undefined";
+    var ENVIRONMENT_IS_NODE = typeof process == "object" && typeof process.versions == "object" && typeof process.versions.node == "string" && process.type != "renderer";
+    var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER;
+    if (ENVIRONMENT_IS_NODE) {
+      const { createRequire } = await import("module");
+      var require = createRequire(import.meta.url);
+    }
+    Module.currentQueryProgressCallback = null;
+    Module.currentProgressCallback = null;
+    Module.currentLogCallback = null;
+    Module.currentParseCallback = null;
+    var moduleOverrides = Object.assign({}, Module);
+    var arguments_ = [];
+    var thisProgram = "./this.program";
+    var quit_ = /* @__PURE__ */ __name((status, toThrow) => {
+      throw toThrow;
+    }, "quit_");
+    var scriptDirectory = "";
+    function locateFile(path) {
+      if (Module["locateFile"]) {
+        return Module["locateFile"](path, scriptDirectory);
+      }
+      return scriptDirectory + path;
+    }
+    __name(locateFile, "locateFile");
+    var readAsync, readBinary;
+    if (ENVIRONMENT_IS_NODE) {
+      var fs = require("fs");
+      var nodePath = require("path");
+      if (!import.meta.url.startsWith("data:")) {
+        scriptDirectory = nodePath.dirname(require("url").fileURLToPath(import.meta.url)) + "/";
+      }
+      readBinary = /* @__PURE__ */ __name((filename) => {
+        filename = isFileURI(filename) ? new URL(filename) : filename;
+        var ret = fs.readFileSync(filename);
+        return ret;
+      }, "readBinary");
+      readAsync = /* @__PURE__ */ __name(async (filename, binary22 = true) => {
+        filename = isFileURI(filename) ? new URL(filename) : filename;
+        var ret = fs.readFileSync(filename, binary22 ? void 0 : "utf8");
+        return ret;
+      }, "readAsync");
+      if (!Module["thisProgram"] && process.argv.length > 1) {
+        thisProgram = process.argv[1].replace(/\\/g, "/");
+      }
+      arguments_ = process.argv.slice(2);
+      quit_ = /* @__PURE__ */ __name((status, toThrow) => {
+        process.exitCode = status;
+        throw toThrow;
+      }, "quit_");
+    } else if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
+      if (ENVIRONMENT_IS_WORKER) {
+        scriptDirectory = self.location.href;
+      } else if (typeof document != "undefined" && document.currentScript) {
+        scriptDirectory = document.currentScript.src;
+      }
+      if (_scriptName) {
+        scriptDirectory = _scriptName;
+      }
+      if (scriptDirectory.startsWith("blob:")) {
+        scriptDirectory = "";
+      } else {
+        scriptDirectory = scriptDirectory.slice(0, scriptDirectory.replace(/[?#].*/, "").lastIndexOf("/") + 1);
+      }
+      {
+        if (ENVIRONMENT_IS_WORKER) {
+          readBinary = /* @__PURE__ */ __name((url) => {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", url, false);
+            xhr.responseType = "arraybuffer";
+            xhr.send(null);
+            return new Uint8Array(
+              /** @type{!ArrayBuffer} */
+              xhr.response
+            );
+          }, "readBinary");
+        }
+        readAsync = /* @__PURE__ */ __name(async (url) => {
+          if (isFileURI(url)) {
+            return new Promise((resolve, reject) => {
+              var xhr = new XMLHttpRequest();
+              xhr.open("GET", url, true);
+              xhr.responseType = "arraybuffer";
+              xhr.onload = () => {
+                if (xhr.status == 200 || xhr.status == 0 && xhr.response) {
+                  resolve(xhr.response);
+                  return;
+                }
+                reject(xhr.status);
+              };
+              xhr.onerror = reject;
+              xhr.send(null);
+            });
+          }
+          var response = await fetch(url, {
+            credentials: "same-origin"
+          });
+          if (response.ok) {
+            return response.arrayBuffer();
+          }
+          throw new Error(response.status + " : " + response.url);
+        }, "readAsync");
+      }
+    } else {
+    }
+    var out = Module["print"] || console.log.bind(console);
+    var err = Module["printErr"] || console.error.bind(console);
+    Object.assign(Module, moduleOverrides);
+    moduleOverrides = null;
+    if (Module["arguments"]) arguments_ = Module["arguments"];
+    if (Module["thisProgram"]) thisProgram = Module["thisProgram"];
+    var dynamicLibraries = Module["dynamicLibraries"] || [];
+    var wasmBinary = Module["wasmBinary"];
+    var wasmMemory;
+    var ABORT = false;
+    var EXITSTATUS;
+    function assert(condition, text) {
+      if (!condition) {
+        abort(text);
+      }
+    }
+    __name(assert, "assert");
+    var HEAP, HEAP8, HEAPU8, HEAP16, HEAPU16, HEAP32, HEAPU32, HEAPF32, HEAP64, HEAPU64, HEAPF64;
+    var HEAP_DATA_VIEW;
+    var runtimeInitialized = false;
+    var isFileURI = /* @__PURE__ */ __name((filename) => filename.startsWith("file://"), "isFileURI");
+    function updateMemoryViews() {
+      var b = wasmMemory.buffer;
+      Module["HEAP_DATA_VIEW"] = HEAP_DATA_VIEW = new DataView(b);
+      Module["HEAP8"] = HEAP8 = new Int8Array(b);
+      Module["HEAP16"] = HEAP16 = new Int16Array(b);
+      Module["HEAPU8"] = HEAPU8 = new Uint8Array(b);
+      Module["HEAPU16"] = HEAPU16 = new Uint16Array(b);
+      Module["HEAP32"] = HEAP32 = new Int32Array(b);
+      Module["HEAPU32"] = HEAPU32 = new Uint32Array(b);
+      Module["HEAPF32"] = HEAPF32 = new Float32Array(b);
+      Module["HEAPF64"] = HEAPF64 = new Float64Array(b);
+      Module["HEAP64"] = HEAP64 = new BigInt64Array(b);
+      Module["HEAPU64"] = HEAPU64 = new BigUint64Array(b);
+    }
+    __name(updateMemoryViews, "updateMemoryViews");
+    if (Module["wasmMemory"]) {
+      wasmMemory = Module["wasmMemory"];
+    } else {
+      var INITIAL_MEMORY = Module["INITIAL_MEMORY"] || 33554432;
+      wasmMemory = new WebAssembly.Memory({
+        "initial": INITIAL_MEMORY / 65536,
+        // In theory we should not need to emit the maximum if we want "unlimited"
+        // or 4GB of memory, but VMs error on that atm, see
+        // https://github.com/emscripten-core/emscripten/issues/14130
+        // And in the pthreads case we definitely need to emit a maximum. So
+        // always emit one.
+        "maximum": 32768
+      });
+    }
+    updateMemoryViews();
+    var __RELOC_FUNCS__ = [];
+    function preRun() {
+      if (Module["preRun"]) {
+        if (typeof Module["preRun"] == "function") Module["preRun"] = [Module["preRun"]];
+        while (Module["preRun"].length) {
+          addOnPreRun(Module["preRun"].shift());
+        }
+      }
+      callRuntimeCallbacks(onPreRuns);
+    }
+    __name(preRun, "preRun");
+    function initRuntime() {
+      runtimeInitialized = true;
+      callRuntimeCallbacks(__RELOC_FUNCS__);
+      wasmExports["__wasm_call_ctors"]();
+      callRuntimeCallbacks(onPostCtors);
+    }
+    __name(initRuntime, "initRuntime");
+    function preMain() {
+    }
+    __name(preMain, "preMain");
+    function postRun() {
+      if (Module["postRun"]) {
+        if (typeof Module["postRun"] == "function") Module["postRun"] = [Module["postRun"]];
+        while (Module["postRun"].length) {
+          addOnPostRun(Module["postRun"].shift());
+        }
+      }
+      callRuntimeCallbacks(onPostRuns);
+    }
+    __name(postRun, "postRun");
+    var runDependencies = 0;
+    var dependenciesFulfilled = null;
+    function getUniqueRunDependency(id2) {
+      return id2;
+    }
+    __name(getUniqueRunDependency, "getUniqueRunDependency");
+    function addRunDependency(id2) {
+      runDependencies++;
+      Module["monitorRunDependencies"]?.(runDependencies);
+    }
+    __name(addRunDependency, "addRunDependency");
+    function removeRunDependency(id2) {
+      runDependencies--;
+      Module["monitorRunDependencies"]?.(runDependencies);
+      if (runDependencies == 0) {
+        if (dependenciesFulfilled) {
+          var callback2 = dependenciesFulfilled;
+          dependenciesFulfilled = null;
+          callback2();
+        }
+      }
+    }
+    __name(removeRunDependency, "removeRunDependency");
+    function abort(what) {
+      Module["onAbort"]?.(what);
+      what = "Aborted(" + what + ")";
+      err(what);
+      ABORT = true;
+      what += ". Build with -sASSERTIONS for more info.";
+      var e = new WebAssembly.RuntimeError(what);
+      readyPromiseReject(e);
+      throw e;
+    }
+    __name(abort, "abort");
+    var wasmBinaryFile;
+    function findWasmBinary() {
+      if (Module["locateFile"]) {
+        return locateFile("tree-sitter.wasm");
+      }
+      return new URL("tree-sitter.wasm", import.meta.url).href;
+    }
+    __name(findWasmBinary, "findWasmBinary");
+    function getBinarySync(file) {
+      if (file == wasmBinaryFile && wasmBinary) {
+        return new Uint8Array(wasmBinary);
+      }
+      if (readBinary) {
+        return readBinary(file);
+      }
+      throw "both async and sync fetching of the wasm failed";
+    }
+    __name(getBinarySync, "getBinarySync");
+    async function getWasmBinary(binaryFile) {
+      if (!wasmBinary) {
+        try {
+          var response = await readAsync(binaryFile);
+          return new Uint8Array(response);
+        } catch {
+        }
+      }
+      return getBinarySync(binaryFile);
+    }
+    __name(getWasmBinary, "getWasmBinary");
+    async function instantiateArrayBuffer(binaryFile, imports) {
+      try {
+        var binary22 = await getWasmBinary(binaryFile);
+        var instance2 = await WebAssembly.instantiate(binary22, imports);
+        return instance2;
+      } catch (reason) {
+        err(`failed to asynchronously prepare wasm: ${reason}`);
+        abort(reason);
+      }
+    }
+    __name(instantiateArrayBuffer, "instantiateArrayBuffer");
+    async function instantiateAsync(binary22, binaryFile, imports) {
+      if (!binary22 && typeof WebAssembly.instantiateStreaming == "function" && !isFileURI(binaryFile) && !ENVIRONMENT_IS_NODE) {
+        try {
+          var response = fetch(binaryFile, {
+            credentials: "same-origin"
+          });
+          var instantiationResult = await WebAssembly.instantiateStreaming(response, imports);
+          return instantiationResult;
+        } catch (reason) {
+          err(`wasm streaming compile failed: ${reason}`);
+          err("falling back to ArrayBuffer instantiation");
+        }
+      }
+      return instantiateArrayBuffer(binaryFile, imports);
+    }
+    __name(instantiateAsync, "instantiateAsync");
+    function getWasmImports() {
+      return {
+        "env": wasmImports,
+        "wasi_snapshot_preview1": wasmImports,
+        "GOT.mem": new Proxy(wasmImports, GOTHandler),
+        "GOT.func": new Proxy(wasmImports, GOTHandler)
+      };
+    }
+    __name(getWasmImports, "getWasmImports");
+    async function createWasm() {
+      function receiveInstance(instance2, module2) {
+        wasmExports = instance2.exports;
+        wasmExports = relocateExports(wasmExports, 1024);
+        var metadata2 = getDylinkMetadata(module2);
+        if (metadata2.neededDynlibs) {
+          dynamicLibraries = metadata2.neededDynlibs.concat(dynamicLibraries);
+        }
+        mergeLibSymbols(wasmExports, "main");
+        LDSO.init();
+        loadDylibs();
+        __RELOC_FUNCS__.push(wasmExports["__wasm_apply_data_relocs"]);
+        removeRunDependency("wasm-instantiate");
+        return wasmExports;
+      }
+      __name(receiveInstance, "receiveInstance");
+      addRunDependency("wasm-instantiate");
+      function receiveInstantiationResult(result2) {
+        return receiveInstance(result2["instance"], result2["module"]);
+      }
+      __name(receiveInstantiationResult, "receiveInstantiationResult");
+      var info2 = getWasmImports();
+      if (Module["instantiateWasm"]) {
+        return new Promise((resolve, reject) => {
+          Module["instantiateWasm"](info2, (mod, inst) => {
+            receiveInstance(mod, inst);
+            resolve(mod.exports);
+          });
+        });
+      }
+      wasmBinaryFile ?? (wasmBinaryFile = findWasmBinary());
+      try {
+        var result = await instantiateAsync(wasmBinary, wasmBinaryFile, info2);
+        var exports2 = receiveInstantiationResult(result);
+        return exports2;
+      } catch (e) {
+        readyPromiseReject(e);
+        return Promise.reject(e);
+      }
+    }
+    __name(createWasm, "createWasm");
+    var ASM_CONSTS = {};
+    const _ExitStatus = class _ExitStatus {
+      constructor(status) {
+        __publicField(this, "name", "ExitStatus");
+        this.message = `Program terminated with exit(${status})`;
+        this.status = status;
+      }
+    };
+    __name(_ExitStatus, "ExitStatus");
+    let ExitStatus = _ExitStatus;
+    var GOT = {};
+    var currentModuleWeakSymbols = /* @__PURE__ */ new Set([]);
+    var GOTHandler = {
+      get(obj, symName) {
+        var rtn = GOT[symName];
+        if (!rtn) {
+          rtn = GOT[symName] = new WebAssembly.Global({
+            "value": "i32",
+            "mutable": true
+          });
+        }
+        if (!currentModuleWeakSymbols.has(symName)) {
+          rtn.required = true;
+        }
+        return rtn;
+      }
+    };
+    var LE_HEAP_LOAD_F32 = /* @__PURE__ */ __name((byteOffset) => HEAP_DATA_VIEW.getFloat32(byteOffset, true), "LE_HEAP_LOAD_F32");
+    var LE_HEAP_LOAD_F64 = /* @__PURE__ */ __name((byteOffset) => HEAP_DATA_VIEW.getFloat64(byteOffset, true), "LE_HEAP_LOAD_F64");
+    var LE_HEAP_LOAD_I16 = /* @__PURE__ */ __name((byteOffset) => HEAP_DATA_VIEW.getInt16(byteOffset, true), "LE_HEAP_LOAD_I16");
+    var LE_HEAP_LOAD_I32 = /* @__PURE__ */ __name((byteOffset) => HEAP_DATA_VIEW.getInt32(byteOffset, true), "LE_HEAP_LOAD_I32");
+    var LE_HEAP_LOAD_U16 = /* @__PURE__ */ __name((byteOffset) => HEAP_DATA_VIEW.getUint16(byteOffset, true), "LE_HEAP_LOAD_U16");
+    var LE_HEAP_LOAD_U32 = /* @__PURE__ */ __name((byteOffset) => HEAP_DATA_VIEW.getUint32(byteOffset, true), "LE_HEAP_LOAD_U32");
+    var LE_HEAP_STORE_F32 = /* @__PURE__ */ __name((byteOffset, value) => HEAP_DATA_VIEW.setFloat32(byteOffset, value, true), "LE_HEAP_STORE_F32");
+    var LE_HEAP_STORE_F64 = /* @__PURE__ */ __name((byteOffset, value) => HEAP_DATA_VIEW.setFloat64(byteOffset, value, true), "LE_HEAP_STORE_F64");
+    var LE_HEAP_STORE_I16 = /* @__PURE__ */ __name((byteOffset, value) => HEAP_DATA_VIEW.setInt16(byteOffset, value, true), "LE_HEAP_STORE_I16");
+    var LE_HEAP_STORE_I32 = /* @__PURE__ */ __name((byteOffset, value) => HEAP_DATA_VIEW.setInt32(byteOffset, value, true), "LE_HEAP_STORE_I32");
+    var LE_HEAP_STORE_U16 = /* @__PURE__ */ __name((byteOffset, value) => HEAP_DATA_VIEW.setUint16(byteOffset, value, true), "LE_HEAP_STORE_U16");
+    var LE_HEAP_STORE_U32 = /* @__PURE__ */ __name((byteOffset, value) => HEAP_DATA_VIEW.setUint32(byteOffset, value, true), "LE_HEAP_STORE_U32");
+    var callRuntimeCallbacks = /* @__PURE__ */ __name((callbacks) => {
+      while (callbacks.length > 0) {
+        callbacks.shift()(Module);
+      }
+    }, "callRuntimeCallbacks");
+    var onPostRuns = [];
+    var addOnPostRun = /* @__PURE__ */ __name((cb) => onPostRuns.unshift(cb), "addOnPostRun");
+    var onPreRuns = [];
+    var addOnPreRun = /* @__PURE__ */ __name((cb) => onPreRuns.unshift(cb), "addOnPreRun");
+    var UTF8Decoder = typeof TextDecoder != "undefined" ? new TextDecoder() : void 0;
+    var UTF8ArrayToString = /* @__PURE__ */ __name((heapOrArray, idx = 0, maxBytesToRead = NaN) => {
+      var endIdx = idx + maxBytesToRead;
+      var endPtr = idx;
+      while (heapOrArray[endPtr] && !(endPtr >= endIdx)) ++endPtr;
+      if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
+        return UTF8Decoder.decode(heapOrArray.subarray(idx, endPtr));
+      }
+      var str2 = "";
+      while (idx < endPtr) {
+        var u0 = heapOrArray[idx++];
+        if (!(u0 & 128)) {
+          str2 += String.fromCharCode(u0);
+          continue;
+        }
+        var u1 = heapOrArray[idx++] & 63;
+        if ((u0 & 224) == 192) {
+          str2 += String.fromCharCode((u0 & 31) << 6 | u1);
+          continue;
+        }
+        var u2 = heapOrArray[idx++] & 63;
+        if ((u0 & 240) == 224) {
+          u0 = (u0 & 15) << 12 | u1 << 6 | u2;
+        } else {
+          u0 = (u0 & 7) << 18 | u1 << 12 | u2 << 6 | heapOrArray[idx++] & 63;
+        }
+        if (u0 < 65536) {
+          str2 += String.fromCharCode(u0);
+        } else {
+          var ch = u0 - 65536;
+          str2 += String.fromCharCode(55296 | ch >> 10, 56320 | ch & 1023);
+        }
+      }
+      return str2;
+    }, "UTF8ArrayToString");
+    var getDylinkMetadata = /* @__PURE__ */ __name((binary22) => {
+      var offset = 0;
+      var end = 0;
+      function getU8() {
+        return binary22[offset++];
+      }
+      __name(getU8, "getU8");
+      function getLEB() {
+        var ret = 0;
+        var mul = 1;
+        while (1) {
+          var byte = binary22[offset++];
+          ret += (byte & 127) * mul;
+          mul *= 128;
+          if (!(byte & 128)) break;
+        }
+        return ret;
+      }
+      __name(getLEB, "getLEB");
+      function getString() {
+        var len = getLEB();
+        offset += len;
+        return UTF8ArrayToString(binary22, offset - len, len);
+      }
+      __name(getString, "getString");
+      function failIf(condition, message) {
+        if (condition) throw new Error(message);
+      }
+      __name(failIf, "failIf");
+      var name2 = "dylink.0";
+      if (binary22 instanceof WebAssembly.Module) {
+        var dylinkSection = WebAssembly.Module.customSections(binary22, name2);
+        if (dylinkSection.length === 0) {
+          name2 = "dylink";
+          dylinkSection = WebAssembly.Module.customSections(binary22, name2);
+        }
+        failIf(dylinkSection.length === 0, "need dylink section");
+        binary22 = new Uint8Array(dylinkSection[0]);
+        end = binary22.length;
+      } else {
+        var int32View = new Uint32Array(new Uint8Array(binary22.subarray(0, 24)).buffer);
+        var magicNumberFound = int32View[0] == 1836278016 || int32View[0] == 6386541;
+        failIf(!magicNumberFound, "need to see wasm magic number");
+        failIf(binary22[8] !== 0, "need the dylink section to be first");
+        offset = 9;
+        var section_size = getLEB();
+        end = offset + section_size;
+        name2 = getString();
+      }
+      var customSection = {
+        neededDynlibs: [],
+        tlsExports: /* @__PURE__ */ new Set(),
+        weakImports: /* @__PURE__ */ new Set()
+      };
+      if (name2 == "dylink") {
+        customSection.memorySize = getLEB();
+        customSection.memoryAlign = getLEB();
+        customSection.tableSize = getLEB();
+        customSection.tableAlign = getLEB();
+        var neededDynlibsCount = getLEB();
+        for (var i2 = 0; i2 < neededDynlibsCount; ++i2) {
+          var libname = getString();
+          customSection.neededDynlibs.push(libname);
+        }
+      } else {
+        failIf(name2 !== "dylink.0");
+        var WASM_DYLINK_MEM_INFO = 1;
+        var WASM_DYLINK_NEEDED = 2;
+        var WASM_DYLINK_EXPORT_INFO = 3;
+        var WASM_DYLINK_IMPORT_INFO = 4;
+        var WASM_SYMBOL_TLS = 256;
+        var WASM_SYMBOL_BINDING_MASK = 3;
+        var WASM_SYMBOL_BINDING_WEAK = 1;
+        while (offset < end) {
+          var subsectionType = getU8();
+          var subsectionSize = getLEB();
+          if (subsectionType === WASM_DYLINK_MEM_INFO) {
+            customSection.memorySize = getLEB();
+            customSection.memoryAlign = getLEB();
+            customSection.tableSize = getLEB();
+            customSection.tableAlign = getLEB();
+          } else if (subsectionType === WASM_DYLINK_NEEDED) {
+            var neededDynlibsCount = getLEB();
+            for (var i2 = 0; i2 < neededDynlibsCount; ++i2) {
+              libname = getString();
+              customSection.neededDynlibs.push(libname);
+            }
+          } else if (subsectionType === WASM_DYLINK_EXPORT_INFO) {
+            var count2 = getLEB();
+            while (count2--) {
+              var symname = getString();
+              var flags2 = getLEB();
+              if (flags2 & WASM_SYMBOL_TLS) {
+                customSection.tlsExports.add(symname);
+              }
+            }
+          } else if (subsectionType === WASM_DYLINK_IMPORT_INFO) {
+            var count2 = getLEB();
+            while (count2--) {
+              var modname = getString();
+              var symname = getString();
+              var flags2 = getLEB();
+              if ((flags2 & WASM_SYMBOL_BINDING_MASK) == WASM_SYMBOL_BINDING_WEAK) {
+                customSection.weakImports.add(symname);
+              }
+            }
+          } else {
+            offset += subsectionSize;
+          }
+        }
+      }
+      return customSection;
+    }, "getDylinkMetadata");
+    function getValue(ptr, type2 = "i8") {
+      if (type2.endsWith("*")) type2 = "*";
+      switch (type2) {
+        case "i1":
+          return HEAP8[ptr];
+        case "i8":
+          return HEAP8[ptr];
+        case "i16":
+          return LE_HEAP_LOAD_I16((ptr >> 1) * 2);
+        case "i32":
+          return LE_HEAP_LOAD_I32((ptr >> 2) * 4);
+        case "i64":
+          return HEAP64[ptr >> 3];
+        case "float":
+          return LE_HEAP_LOAD_F32((ptr >> 2) * 4);
+        case "double":
+          return LE_HEAP_LOAD_F64((ptr >> 3) * 8);
+        case "*":
+          return LE_HEAP_LOAD_U32((ptr >> 2) * 4);
+        default:
+          abort(`invalid type for getValue: ${type2}`);
+      }
+    }
+    __name(getValue, "getValue");
+    var newDSO = /* @__PURE__ */ __name((name2, handle2, syms) => {
+      var dso = {
+        refcount: Infinity,
+        name: name2,
+        exports: syms,
+        global: true
+      };
+      LDSO.loadedLibsByName[name2] = dso;
+      if (handle2 != void 0) {
+        LDSO.loadedLibsByHandle[handle2] = dso;
+      }
+      return dso;
+    }, "newDSO");
+    var LDSO = {
+      loadedLibsByName: {},
+      loadedLibsByHandle: {},
+      init() {
+        newDSO("__main__", 0, wasmImports);
+      }
+    };
+    var ___heap_base = 78224;
+    var alignMemory = /* @__PURE__ */ __name((size, alignment) => Math.ceil(size / alignment) * alignment, "alignMemory");
+    var getMemory = /* @__PURE__ */ __name((size) => {
+      if (runtimeInitialized) {
+        return _calloc(size, 1);
+      }
+      var ret = ___heap_base;
+      var end = ret + alignMemory(size, 16);
+      ___heap_base = end;
+      GOT["__heap_base"].value = end;
+      return ret;
+    }, "getMemory");
+    var isInternalSym = /* @__PURE__ */ __name((symName) => ["__cpp_exception", "__c_longjmp", "__wasm_apply_data_relocs", "__dso_handle", "__tls_size", "__tls_align", "__set_stack_limits", "_emscripten_tls_init", "__wasm_init_tls", "__wasm_call_ctors", "__start_em_asm", "__stop_em_asm", "__start_em_js", "__stop_em_js"].includes(symName) || symName.startsWith("__em_js__"), "isInternalSym");
+    var uleb128Encode = /* @__PURE__ */ __name((n, target) => {
+      if (n < 128) {
+        target.push(n);
+      } else {
+        target.push(n % 128 | 128, n >> 7);
+      }
+    }, "uleb128Encode");
+    var sigToWasmTypes = /* @__PURE__ */ __name((sig) => {
+      var typeNames = {
+        "i": "i32",
+        "j": "i64",
+        "f": "f32",
+        "d": "f64",
+        "e": "externref",
+        "p": "i32"
+      };
+      var type2 = {
+        parameters: [],
+        results: sig[0] == "v" ? [] : [typeNames[sig[0]]]
+      };
+      for (var i2 = 1; i2 < sig.length; ++i2) {
+        type2.parameters.push(typeNames[sig[i2]]);
+      }
+      return type2;
+    }, "sigToWasmTypes");
+    var generateFuncType = /* @__PURE__ */ __name((sig, target) => {
+      var sigRet = sig.slice(0, 1);
+      var sigParam = sig.slice(1);
+      var typeCodes = {
+        "i": 127,
+        // i32
+        "p": 127,
+        // i32
+        "j": 126,
+        // i64
+        "f": 125,
+        // f32
+        "d": 124,
+        // f64
+        "e": 111
+      };
+      target.push(96);
+      uleb128Encode(sigParam.length, target);
+      for (var i2 = 0; i2 < sigParam.length; ++i2) {
+        target.push(typeCodes[sigParam[i2]]);
+      }
+      if (sigRet == "v") {
+        target.push(0);
+      } else {
+        target.push(1, typeCodes[sigRet]);
+      }
+    }, "generateFuncType");
+    var convertJsFunctionToWasm = /* @__PURE__ */ __name((func2, sig) => {
+      if (typeof WebAssembly.Function == "function") {
+        return new WebAssembly.Function(sigToWasmTypes(sig), func2);
+      }
+      var typeSectionBody = [1];
+      generateFuncType(sig, typeSectionBody);
+      var bytes = [
+        0,
+        97,
+        115,
+        109,
+        // magic ("\0asm")
+        1,
+        0,
+        0,
+        0,
+        // version: 1
+        1
+      ];
+      uleb128Encode(typeSectionBody.length, bytes);
+      bytes.push(...typeSectionBody);
+      bytes.push(
+        2,
+        7,
+        // import section
+        // (import "e" "f" (func 0 (type 0)))
+        1,
+        1,
+        101,
+        1,
+        102,
+        0,
+        0,
+        7,
+        5,
+        // export section
+        // (export "f" (func 0 (type 0)))
+        1,
+        1,
+        102,
+        0,
+        0
+      );
+      var module2 = new WebAssembly.Module(new Uint8Array(bytes));
+      var instance2 = new WebAssembly.Instance(module2, {
+        "e": {
+          "f": func2
+        }
+      });
+      var wrappedFunc = instance2.exports["f"];
+      return wrappedFunc;
+    }, "convertJsFunctionToWasm");
+    var wasmTableMirror = [];
+    var wasmTable = new WebAssembly.Table({
+      "initial": 31,
+      "element": "anyfunc"
+    });
+    var getWasmTableEntry = /* @__PURE__ */ __name((funcPtr) => {
+      var func2 = wasmTableMirror[funcPtr];
+      if (!func2) {
+        if (funcPtr >= wasmTableMirror.length) wasmTableMirror.length = funcPtr + 1;
+        wasmTableMirror[funcPtr] = func2 = wasmTable.get(funcPtr);
+      }
+      return func2;
+    }, "getWasmTableEntry");
+    var updateTableMap = /* @__PURE__ */ __name((offset, count2) => {
+      if (functionsInTableMap) {
+        for (var i2 = offset; i2 < offset + count2; i2++) {
+          var item = getWasmTableEntry(i2);
+          if (item) {
+            functionsInTableMap.set(item, i2);
+          }
+        }
+      }
+    }, "updateTableMap");
+    var functionsInTableMap;
+    var getFunctionAddress = /* @__PURE__ */ __name((func2) => {
+      if (!functionsInTableMap) {
+        functionsInTableMap = /* @__PURE__ */ new WeakMap();
+        updateTableMap(0, wasmTable.length);
+      }
+      return functionsInTableMap.get(func2) || 0;
+    }, "getFunctionAddress");
+    var freeTableIndexes = [];
+    var getEmptyTableSlot = /* @__PURE__ */ __name(() => {
+      if (freeTableIndexes.length) {
+        return freeTableIndexes.pop();
+      }
+      try {
+        wasmTable.grow(1);
+      } catch (err2) {
+        if (!(err2 instanceof RangeError)) {
+          throw err2;
+        }
+        throw "Unable to grow wasm table. Set ALLOW_TABLE_GROWTH.";
+      }
+      return wasmTable.length - 1;
+    }, "getEmptyTableSlot");
+    var setWasmTableEntry = /* @__PURE__ */ __name((idx, func2) => {
+      wasmTable.set(idx, func2);
+      wasmTableMirror[idx] = wasmTable.get(idx);
+    }, "setWasmTableEntry");
+    var addFunction = /* @__PURE__ */ __name((func2, sig) => {
+      var rtn = getFunctionAddress(func2);
+      if (rtn) {
+        return rtn;
+      }
+      var ret = getEmptyTableSlot();
+      try {
+        setWasmTableEntry(ret, func2);
+      } catch (err2) {
+        if (!(err2 instanceof TypeError)) {
+          throw err2;
+        }
+        var wrapped = convertJsFunctionToWasm(func2, sig);
+        setWasmTableEntry(ret, wrapped);
+      }
+      functionsInTableMap.set(func2, ret);
+      return ret;
+    }, "addFunction");
+    var updateGOT = /* @__PURE__ */ __name((exports2, replace) => {
+      for (var symName in exports2) {
+        if (isInternalSym(symName)) {
+          continue;
+        }
+        var value = exports2[symName];
+        GOT[symName] || (GOT[symName] = new WebAssembly.Global({
+          "value": "i32",
+          "mutable": true
+        }));
+        if (replace || GOT[symName].value == 0) {
+          if (typeof value == "function") {
+            GOT[symName].value = addFunction(value);
+          } else if (typeof value == "number") {
+            GOT[symName].value = value;
+          } else {
+            err(`unhandled export type for '${symName}': ${typeof value}`);
+          }
+        }
+      }
+    }, "updateGOT");
+    var relocateExports = /* @__PURE__ */ __name((exports2, memoryBase2, replace) => {
+      var relocated = {};
+      for (var e in exports2) {
+        var value = exports2[e];
+        if (typeof value == "object") {
+          value = value.value;
+        }
+        if (typeof value == "number") {
+          value += memoryBase2;
+        }
+        relocated[e] = value;
+      }
+      updateGOT(relocated, replace);
+      return relocated;
+    }, "relocateExports");
+    var isSymbolDefined = /* @__PURE__ */ __name((symName) => {
+      var existing = wasmImports[symName];
+      if (!existing || existing.stub) {
+        return false;
+      }
+      return true;
+    }, "isSymbolDefined");
+    var dynCall = /* @__PURE__ */ __name((sig, ptr, args2 = []) => {
+      var rtn = getWasmTableEntry(ptr)(...args2);
+      return rtn;
+    }, "dynCall");
+    var stackSave = /* @__PURE__ */ __name(() => _emscripten_stack_get_current(), "stackSave");
+    var stackRestore = /* @__PURE__ */ __name((val) => __emscripten_stack_restore(val), "stackRestore");
+    var createInvokeFunction = /* @__PURE__ */ __name((sig) => (ptr, ...args2) => {
+      var sp = stackSave();
+      try {
+        return dynCall(sig, ptr, args2);
+      } catch (e) {
+        stackRestore(sp);
+        if (e !== e + 0) throw e;
+        _setThrew(1, 0);
+        if (sig[0] == "j") return 0n;
+      }
+    }, "createInvokeFunction");
+    var resolveGlobalSymbol = /* @__PURE__ */ __name((symName, direct = false) => {
+      var sym;
+      if (isSymbolDefined(symName)) {
+        sym = wasmImports[symName];
+      } else if (symName.startsWith("invoke_")) {
+        sym = wasmImports[symName] = createInvokeFunction(symName.split("_")[1]);
+      }
+      return {
+        sym,
+        name: symName
+      };
+    }, "resolveGlobalSymbol");
+    var onPostCtors = [];
+    var addOnPostCtor = /* @__PURE__ */ __name((cb) => onPostCtors.unshift(cb), "addOnPostCtor");
+    var UTF8ToString = /* @__PURE__ */ __name((ptr, maxBytesToRead) => ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead) : "", "UTF8ToString");
+    var loadWebAssemblyModule = /* @__PURE__ */ __name((binary, flags, libName, localScope, handle) => {
+      var metadata = getDylinkMetadata(binary);
+      currentModuleWeakSymbols = metadata.weakImports;
+      function loadModule() {
+        var memAlign = Math.pow(2, metadata.memoryAlign);
+        var memoryBase = metadata.memorySize ? alignMemory(getMemory(metadata.memorySize + memAlign), memAlign) : 0;
+        var tableBase = metadata.tableSize ? wasmTable.length : 0;
+        if (handle) {
+          HEAP8[handle + 8] = 1;
+          LE_HEAP_STORE_U32((handle + 12 >> 2) * 4, memoryBase);
+          LE_HEAP_STORE_I32((handle + 16 >> 2) * 4, metadata.memorySize);
+          LE_HEAP_STORE_U32((handle + 20 >> 2) * 4, tableBase);
+          LE_HEAP_STORE_I32((handle + 24 >> 2) * 4, metadata.tableSize);
+        }
+        if (metadata.tableSize) {
+          wasmTable.grow(metadata.tableSize);
+        }
+        var moduleExports;
+        function resolveSymbol(sym) {
+          var resolved = resolveGlobalSymbol(sym).sym;
+          if (!resolved && localScope) {
+            resolved = localScope[sym];
+          }
+          if (!resolved) {
+            resolved = moduleExports[sym];
+          }
+          return resolved;
+        }
+        __name(resolveSymbol, "resolveSymbol");
+        var proxyHandler = {
+          get(stubs, prop) {
+            switch (prop) {
+              case "__memory_base":
+                return memoryBase;
+              case "__table_base":
+                return tableBase;
+            }
+            if (prop in wasmImports && !wasmImports[prop].stub) {
+              var res = wasmImports[prop];
+              return res;
+            }
+            if (!(prop in stubs)) {
+              var resolved;
+              stubs[prop] = (...args2) => {
+                resolved || (resolved = resolveSymbol(prop));
+                return resolved(...args2);
+              };
+            }
+            return stubs[prop];
+          }
+        };
+        var proxy = new Proxy({}, proxyHandler);
+        var info = {
+          "GOT.mem": new Proxy({}, GOTHandler),
+          "GOT.func": new Proxy({}, GOTHandler),
+          "env": proxy,
+          "wasi_snapshot_preview1": proxy
+        };
+        function postInstantiation(module, instance) {
+          updateTableMap(tableBase, metadata.tableSize);
+          moduleExports = relocateExports(instance.exports, memoryBase);
+          if (!flags.allowUndefined) {
+            reportUndefinedSymbols();
+          }
+          function addEmAsm(addr, body) {
+            var args = [];
+            var arity = 0;
+            for (; arity < 16; arity++) {
+              if (body.indexOf("$" + arity) != -1) {
+                args.push("$" + arity);
+              } else {
+                break;
+              }
+            }
+            args = args.join(",");
+            var func = `(${args}) => { ${body} };`;
+            ASM_CONSTS[start] = eval(func);
+          }
+          __name(addEmAsm, "addEmAsm");
+          if ("__start_em_asm" in moduleExports) {
+            var start = moduleExports["__start_em_asm"];
+            var stop = moduleExports["__stop_em_asm"];
+            while (start < stop) {
+              var jsString = UTF8ToString(start);
+              addEmAsm(start, jsString);
+              start = HEAPU8.indexOf(0, start) + 1;
+            }
+          }
+          function addEmJs(name, cSig, body) {
+            var jsArgs = [];
+            cSig = cSig.slice(1, -1);
+            if (cSig != "void") {
+              cSig = cSig.split(",");
+              for (var i in cSig) {
+                var jsArg = cSig[i].split(" ").pop();
+                jsArgs.push(jsArg.replace("*", ""));
+              }
+            }
+            var func = `(${jsArgs}) => ${body};`;
+            moduleExports[name] = eval(func);
+          }
+          __name(addEmJs, "addEmJs");
+          for (var name in moduleExports) {
+            if (name.startsWith("__em_js__")) {
+              var start = moduleExports[name];
+              var jsString = UTF8ToString(start);
+              var parts = jsString.split("<::>");
+              addEmJs(name.replace("__em_js__", ""), parts[0], parts[1]);
+              delete moduleExports[name];
+            }
+          }
+          var applyRelocs = moduleExports["__wasm_apply_data_relocs"];
+          if (applyRelocs) {
+            if (runtimeInitialized) {
+              applyRelocs();
+            } else {
+              __RELOC_FUNCS__.push(applyRelocs);
+            }
+          }
+          var init = moduleExports["__wasm_call_ctors"];
+          if (init) {
+            if (runtimeInitialized) {
+              init();
+            } else {
+              addOnPostCtor(init);
+            }
+          }
+          return moduleExports;
+        }
+        __name(postInstantiation, "postInstantiation");
+        if (flags.loadAsync) {
+          if (binary instanceof WebAssembly.Module) {
+            var instance = new WebAssembly.Instance(binary, info);
+            return Promise.resolve(postInstantiation(binary, instance));
+          }
+          return WebAssembly.instantiate(binary, info).then((result) => postInstantiation(result.module, result.instance));
+        }
+        var module = binary instanceof WebAssembly.Module ? binary : new WebAssembly.Module(binary);
+        var instance = new WebAssembly.Instance(module, info);
+        return postInstantiation(module, instance);
+      }
+      __name(loadModule, "loadModule");
+      if (flags.loadAsync) {
+        return metadata.neededDynlibs.reduce((chain, dynNeeded) => chain.then(() => loadDynamicLibrary(dynNeeded, flags, localScope)), Promise.resolve()).then(loadModule);
+      }
+      metadata.neededDynlibs.forEach((needed) => loadDynamicLibrary(needed, flags, localScope));
+      return loadModule();
+    }, "loadWebAssemblyModule");
+    var mergeLibSymbols = /* @__PURE__ */ __name((exports2, libName2) => {
+      for (var [sym, exp] of Object.entries(exports2)) {
+        const setImport = /* @__PURE__ */ __name((target) => {
+          if (!isSymbolDefined(target)) {
+            wasmImports[target] = exp;
+          }
+        }, "setImport");
+        setImport(sym);
+        const main_alias = "__main_argc_argv";
+        if (sym == "main") {
+          setImport(main_alias);
+        }
+        if (sym == main_alias) {
+          setImport("main");
+        }
+      }
+    }, "mergeLibSymbols");
+    var asyncLoad = /* @__PURE__ */ __name(async (url) => {
+      var arrayBuffer = await readAsync(url);
+      return new Uint8Array(arrayBuffer);
+    }, "asyncLoad");
+    function loadDynamicLibrary(libName2, flags2 = {
+      global: true,
+      nodelete: true
+    }, localScope2, handle2) {
+      var dso = LDSO.loadedLibsByName[libName2];
+      if (dso) {
+        if (!flags2.global) {
+          if (localScope2) {
+            Object.assign(localScope2, dso.exports);
+          }
+        } else if (!dso.global) {
+          dso.global = true;
+          mergeLibSymbols(dso.exports, libName2);
+        }
+        if (flags2.nodelete && dso.refcount !== Infinity) {
+          dso.refcount = Infinity;
+        }
+        dso.refcount++;
+        if (handle2) {
+          LDSO.loadedLibsByHandle[handle2] = dso;
+        }
+        return flags2.loadAsync ? Promise.resolve(true) : true;
+      }
+      dso = newDSO(libName2, handle2, "loading");
+      dso.refcount = flags2.nodelete ? Infinity : 1;
+      dso.global = flags2.global;
+      function loadLibData() {
+        if (handle2) {
+          var data = LE_HEAP_LOAD_U32((handle2 + 28 >> 2) * 4);
+          var dataSize = LE_HEAP_LOAD_U32((handle2 + 32 >> 2) * 4);
+          if (data && dataSize) {
+            var libData = HEAP8.slice(data, data + dataSize);
+            return flags2.loadAsync ? Promise.resolve(libData) : libData;
+          }
+        }
+        var libFile = locateFile(libName2);
+        if (flags2.loadAsync) {
+          return asyncLoad(libFile);
+        }
+        if (!readBinary) {
+          throw new Error(`${libFile}: file not found, and synchronous loading of external files is not available`);
+        }
+        return readBinary(libFile);
+      }
+      __name(loadLibData, "loadLibData");
+      function getExports() {
+        if (flags2.loadAsync) {
+          return loadLibData().then((libData) => loadWebAssemblyModule(libData, flags2, libName2, localScope2, handle2));
+        }
+        return loadWebAssemblyModule(loadLibData(), flags2, libName2, localScope2, handle2);
+      }
+      __name(getExports, "getExports");
+      function moduleLoaded(exports2) {
+        if (dso.global) {
+          mergeLibSymbols(exports2, libName2);
+        } else if (localScope2) {
+          Object.assign(localScope2, exports2);
+        }
+        dso.exports = exports2;
+      }
+      __name(moduleLoaded, "moduleLoaded");
+      if (flags2.loadAsync) {
+        return getExports().then((exports2) => {
+          moduleLoaded(exports2);
+          return true;
+        });
+      }
+      moduleLoaded(getExports());
+      return true;
+    }
+    __name(loadDynamicLibrary, "loadDynamicLibrary");
+    var reportUndefinedSymbols = /* @__PURE__ */ __name(() => {
+      for (var [symName, entry] of Object.entries(GOT)) {
+        if (entry.value == 0) {
+          var value = resolveGlobalSymbol(symName, true).sym;
+          if (!value && !entry.required) {
+            continue;
+          }
+          if (typeof value == "function") {
+            entry.value = addFunction(value, value.sig);
+          } else if (typeof value == "number") {
+            entry.value = value;
+          } else {
+            throw new Error(`bad export type for '${symName}': ${typeof value}`);
+          }
+        }
+      }
+    }, "reportUndefinedSymbols");
+    var loadDylibs = /* @__PURE__ */ __name(() => {
+      if (!dynamicLibraries.length) {
+        reportUndefinedSymbols();
+        return;
+      }
+      addRunDependency("loadDylibs");
+      dynamicLibraries.reduce((chain, lib) => chain.then(() => loadDynamicLibrary(lib, {
+        loadAsync: true,
+        global: true,
+        nodelete: true,
+        allowUndefined: true
+      })), Promise.resolve()).then(() => {
+        reportUndefinedSymbols();
+        removeRunDependency("loadDylibs");
+      });
+    }, "loadDylibs");
+    var noExitRuntime = Module["noExitRuntime"] || true;
+    function setValue(ptr, value, type2 = "i8") {
+      if (type2.endsWith("*")) type2 = "*";
+      switch (type2) {
+        case "i1":
+          HEAP8[ptr] = value;
+          break;
+        case "i8":
+          HEAP8[ptr] = value;
+          break;
+        case "i16":
+          LE_HEAP_STORE_I16((ptr >> 1) * 2, value);
+          break;
+        case "i32":
+          LE_HEAP_STORE_I32((ptr >> 2) * 4, value);
+          break;
+        case "i64":
+          HEAP64[ptr >> 3] = BigInt(value);
+          break;
+        case "float":
+          LE_HEAP_STORE_F32((ptr >> 2) * 4, value);
+          break;
+        case "double":
+          LE_HEAP_STORE_F64((ptr >> 3) * 8, value);
+          break;
+        case "*":
+          LE_HEAP_STORE_U32((ptr >> 2) * 4, value);
+          break;
+        default:
+          abort(`invalid type for setValue: ${type2}`);
+      }
+    }
+    __name(setValue, "setValue");
+    var ___memory_base = new WebAssembly.Global({
+      "value": "i32",
+      "mutable": false
+    }, 1024);
+    var ___stack_pointer = new WebAssembly.Global({
+      "value": "i32",
+      "mutable": true
+    }, 78224);
+    var ___table_base = new WebAssembly.Global({
+      "value": "i32",
+      "mutable": false
+    }, 1);
+    var __abort_js = /* @__PURE__ */ __name(() => abort(""), "__abort_js");
+    __abort_js.sig = "v";
+    var _emscripten_get_now = /* @__PURE__ */ __name(() => performance.now(), "_emscripten_get_now");
+    _emscripten_get_now.sig = "d";
+    var _emscripten_date_now = /* @__PURE__ */ __name(() => Date.now(), "_emscripten_date_now");
+    _emscripten_date_now.sig = "d";
+    var nowIsMonotonic = 1;
+    var checkWasiClock = /* @__PURE__ */ __name((clock_id) => clock_id >= 0 && clock_id <= 3, "checkWasiClock");
+    var INT53_MAX = 9007199254740992;
+    var INT53_MIN = -9007199254740992;
+    var bigintToI53Checked = /* @__PURE__ */ __name((num) => num < INT53_MIN || num > INT53_MAX ? NaN : Number(num), "bigintToI53Checked");
+    function _clock_time_get(clk_id, ignored_precision, ptime) {
+      ignored_precision = bigintToI53Checked(ignored_precision);
+      if (!checkWasiClock(clk_id)) {
+        return 28;
+      }
+      var now;
+      if (clk_id === 0) {
+        now = _emscripten_date_now();
+      } else if (nowIsMonotonic) {
+        now = _emscripten_get_now();
+      } else {
+        return 52;
+      }
+      var nsec = Math.round(now * 1e3 * 1e3);
+      HEAP64[ptime >> 3] = BigInt(nsec);
+      return 0;
+    }
+    __name(_clock_time_get, "_clock_time_get");
+    _clock_time_get.sig = "iijp";
+    var getHeapMax = /* @__PURE__ */ __name(() => (
+      // Stay one Wasm page short of 4GB: while e.g. Chrome is able to allocate
+      // full 4GB Wasm memories, the size will wrap back to 0 bytes in Wasm side
+      // for any code that deals with heap sizes, which would require special
+      // casing all heap size related code to treat 0 specially.
+      2147483648
+    ), "getHeapMax");
+    var growMemory = /* @__PURE__ */ __name((size) => {
+      var b = wasmMemory.buffer;
+      var pages = (size - b.byteLength + 65535) / 65536 | 0;
+      try {
+        wasmMemory.grow(pages);
+        updateMemoryViews();
+        return 1;
+      } catch (e) {
+      }
+    }, "growMemory");
+    var _emscripten_resize_heap = /* @__PURE__ */ __name((requestedSize) => {
+      var oldSize = HEAPU8.length;
+      requestedSize >>>= 0;
+      var maxHeapSize = getHeapMax();
+      if (requestedSize > maxHeapSize) {
+        return false;
+      }
+      for (var cutDown = 1; cutDown <= 4; cutDown *= 2) {
+        var overGrownHeapSize = oldSize * (1 + 0.2 / cutDown);
+        overGrownHeapSize = Math.min(overGrownHeapSize, requestedSize + 100663296);
+        var newSize = Math.min(maxHeapSize, alignMemory(Math.max(requestedSize, overGrownHeapSize), 65536));
+        var replacement = growMemory(newSize);
+        if (replacement) {
+          return true;
+        }
+      }
+      return false;
+    }, "_emscripten_resize_heap");
+    _emscripten_resize_heap.sig = "ip";
+    var _fd_close = /* @__PURE__ */ __name((fd) => 52, "_fd_close");
+    _fd_close.sig = "ii";
+    function _fd_seek(fd, offset, whence, newOffset) {
+      offset = bigintToI53Checked(offset);
+      return 70;
+    }
+    __name(_fd_seek, "_fd_seek");
+    _fd_seek.sig = "iijip";
+    var printCharBuffers = [null, [], []];
+    var printChar = /* @__PURE__ */ __name((stream, curr) => {
+      var buffer = printCharBuffers[stream];
+      if (curr === 0 || curr === 10) {
+        (stream === 1 ? out : err)(UTF8ArrayToString(buffer));
+        buffer.length = 0;
+      } else {
+        buffer.push(curr);
+      }
+    }, "printChar");
+    var flush_NO_FILESYSTEM = /* @__PURE__ */ __name(() => {
+      if (printCharBuffers[1].length) printChar(1, 10);
+      if (printCharBuffers[2].length) printChar(2, 10);
+    }, "flush_NO_FILESYSTEM");
+    var SYSCALLS = {
+      varargs: void 0,
+      getStr(ptr) {
+        var ret = UTF8ToString(ptr);
+        return ret;
+      }
+    };
+    var _fd_write = /* @__PURE__ */ __name((fd, iov, iovcnt, pnum) => {
+      var num = 0;
+      for (var i2 = 0; i2 < iovcnt; i2++) {
+        var ptr = LE_HEAP_LOAD_U32((iov >> 2) * 4);
+        var len = LE_HEAP_LOAD_U32((iov + 4 >> 2) * 4);
+        iov += 8;
+        for (var j = 0; j < len; j++) {
+          printChar(fd, HEAPU8[ptr + j]);
+        }
+        num += len;
+      }
+      LE_HEAP_STORE_U32((pnum >> 2) * 4, num);
+      return 0;
+    }, "_fd_write");
+    _fd_write.sig = "iippp";
+    function _tree_sitter_log_callback(isLexMessage, messageAddress) {
+      if (Module.currentLogCallback) {
+        const message = UTF8ToString(messageAddress);
+        Module.currentLogCallback(message, isLexMessage !== 0);
+      }
+    }
+    __name(_tree_sitter_log_callback, "_tree_sitter_log_callback");
+    function _tree_sitter_parse_callback(inputBufferAddress, index, row, column, lengthAddress) {
+      const INPUT_BUFFER_SIZE = 10 * 1024;
+      const string2 = Module.currentParseCallback(index, {
+        row,
+        column
+      });
+      if (typeof string2 === "string") {
+        setValue(lengthAddress, string2.length, "i32");
+        stringToUTF16(string2, inputBufferAddress, INPUT_BUFFER_SIZE);
+      } else {
+        setValue(lengthAddress, 0, "i32");
+      }
+    }
+    __name(_tree_sitter_parse_callback, "_tree_sitter_parse_callback");
+    function _tree_sitter_progress_callback(currentOffset, hasError) {
+      if (Module.currentProgressCallback) {
+        return Module.currentProgressCallback({
+          currentOffset,
+          hasError
+        });
+      }
+      return false;
+    }
+    __name(_tree_sitter_progress_callback, "_tree_sitter_progress_callback");
+    function _tree_sitter_query_progress_callback(currentOffset) {
+      if (Module.currentQueryProgressCallback) {
+        return Module.currentQueryProgressCallback({
+          currentOffset
+        });
+      }
+      return false;
+    }
+    __name(_tree_sitter_query_progress_callback, "_tree_sitter_query_progress_callback");
+    var runtimeKeepaliveCounter = 0;
+    var keepRuntimeAlive = /* @__PURE__ */ __name(() => noExitRuntime || runtimeKeepaliveCounter > 0, "keepRuntimeAlive");
+    var _proc_exit = /* @__PURE__ */ __name((code) => {
+      EXITSTATUS = code;
+      if (!keepRuntimeAlive()) {
+        Module["onExit"]?.(code);
+        ABORT = true;
+      }
+      quit_(code, new ExitStatus(code));
+    }, "_proc_exit");
+    _proc_exit.sig = "vi";
+    var exitJS = /* @__PURE__ */ __name((status, implicit) => {
+      EXITSTATUS = status;
+      _proc_exit(status);
+    }, "exitJS");
+    var handleException = /* @__PURE__ */ __name((e) => {
+      if (e instanceof ExitStatus || e == "unwind") {
+        return EXITSTATUS;
+      }
+      quit_(1, e);
+    }, "handleException");
+    var lengthBytesUTF8 = /* @__PURE__ */ __name((str2) => {
+      var len = 0;
+      for (var i2 = 0; i2 < str2.length; ++i2) {
+        var c = str2.charCodeAt(i2);
+        if (c <= 127) {
+          len++;
+        } else if (c <= 2047) {
+          len += 2;
+        } else if (c >= 55296 && c <= 57343) {
+          len += 4;
+          ++i2;
+        } else {
+          len += 3;
+        }
+      }
+      return len;
+    }, "lengthBytesUTF8");
+    var stringToUTF8Array = /* @__PURE__ */ __name((str2, heap, outIdx, maxBytesToWrite) => {
+      if (!(maxBytesToWrite > 0)) return 0;
+      var startIdx = outIdx;
+      var endIdx = outIdx + maxBytesToWrite - 1;
+      for (var i2 = 0; i2 < str2.length; ++i2) {
+        var u = str2.charCodeAt(i2);
+        if (u >= 55296 && u <= 57343) {
+          var u1 = str2.charCodeAt(++i2);
+          u = 65536 + ((u & 1023) << 10) | u1 & 1023;
+        }
+        if (u <= 127) {
+          if (outIdx >= endIdx) break;
+          heap[outIdx++] = u;
+        } else if (u <= 2047) {
+          if (outIdx + 1 >= endIdx) break;
+          heap[outIdx++] = 192 | u >> 6;
+          heap[outIdx++] = 128 | u & 63;
+        } else if (u <= 65535) {
+          if (outIdx + 2 >= endIdx) break;
+          heap[outIdx++] = 224 | u >> 12;
+          heap[outIdx++] = 128 | u >> 6 & 63;
+          heap[outIdx++] = 128 | u & 63;
+        } else {
+          if (outIdx + 3 >= endIdx) break;
+          heap[outIdx++] = 240 | u >> 18;
+          heap[outIdx++] = 128 | u >> 12 & 63;
+          heap[outIdx++] = 128 | u >> 6 & 63;
+          heap[outIdx++] = 128 | u & 63;
+        }
+      }
+      heap[outIdx] = 0;
+      return outIdx - startIdx;
+    }, "stringToUTF8Array");
+    var stringToUTF8 = /* @__PURE__ */ __name((str2, outPtr, maxBytesToWrite) => stringToUTF8Array(str2, HEAPU8, outPtr, maxBytesToWrite), "stringToUTF8");
+    var stackAlloc = /* @__PURE__ */ __name((sz) => __emscripten_stack_alloc(sz), "stackAlloc");
+    var stringToUTF8OnStack = /* @__PURE__ */ __name((str2) => {
+      var size = lengthBytesUTF8(str2) + 1;
+      var ret = stackAlloc(size);
+      stringToUTF8(str2, ret, size);
+      return ret;
+    }, "stringToUTF8OnStack");
+    var AsciiToString = /* @__PURE__ */ __name((ptr) => {
+      var str2 = "";
+      while (1) {
+        var ch = HEAPU8[ptr++];
+        if (!ch) return str2;
+        str2 += String.fromCharCode(ch);
+      }
+    }, "AsciiToString");
+    var stringToUTF16 = /* @__PURE__ */ __name((str2, outPtr, maxBytesToWrite) => {
+      maxBytesToWrite ?? (maxBytesToWrite = 2147483647);
+      if (maxBytesToWrite < 2) return 0;
+      maxBytesToWrite -= 2;
+      var startPtr = outPtr;
+      var numCharsToWrite = maxBytesToWrite < str2.length * 2 ? maxBytesToWrite / 2 : str2.length;
+      for (var i2 = 0; i2 < numCharsToWrite; ++i2) {
+        var codeUnit = str2.charCodeAt(i2);
+        LE_HEAP_STORE_I16((outPtr >> 1) * 2, codeUnit);
+        outPtr += 2;
+      }
+      LE_HEAP_STORE_I16((outPtr >> 1) * 2, 0);
+      return outPtr - startPtr;
+    }, "stringToUTF16");
+    var wasmImports = {
+      /** @export */
+      __heap_base: ___heap_base,
+      /** @export */
+      __indirect_function_table: wasmTable,
+      /** @export */
+      __memory_base: ___memory_base,
+      /** @export */
+      __stack_pointer: ___stack_pointer,
+      /** @export */
+      __table_base: ___table_base,
+      /** @export */
+      _abort_js: __abort_js,
+      /** @export */
+      clock_time_get: _clock_time_get,
+      /** @export */
+      emscripten_resize_heap: _emscripten_resize_heap,
+      /** @export */
+      fd_close: _fd_close,
+      /** @export */
+      fd_seek: _fd_seek,
+      /** @export */
+      fd_write: _fd_write,
+      /** @export */
+      memory: wasmMemory,
+      /** @export */
+      tree_sitter_log_callback: _tree_sitter_log_callback,
+      /** @export */
+      tree_sitter_parse_callback: _tree_sitter_parse_callback,
+      /** @export */
+      tree_sitter_progress_callback: _tree_sitter_progress_callback,
+      /** @export */
+      tree_sitter_query_progress_callback: _tree_sitter_query_progress_callback
+    };
+    var wasmExports = await createWasm();
+    var ___wasm_call_ctors = wasmExports["__wasm_call_ctors"];
+    var _malloc = Module["_malloc"] = wasmExports["malloc"];
+    var _calloc = Module["_calloc"] = wasmExports["calloc"];
+    var _realloc = Module["_realloc"] = wasmExports["realloc"];
+    var _free = Module["_free"] = wasmExports["free"];
+    var _memcmp = Module["_memcmp"] = wasmExports["memcmp"];
+    var _ts_language_symbol_count = Module["_ts_language_symbol_count"] = wasmExports["ts_language_symbol_count"];
+    var _ts_language_state_count = Module["_ts_language_state_count"] = wasmExports["ts_language_state_count"];
+    var _ts_language_version = Module["_ts_language_version"] = wasmExports["ts_language_version"];
+    var _ts_language_abi_version = Module["_ts_language_abi_version"] = wasmExports["ts_language_abi_version"];
+    var _ts_language_metadata = Module["_ts_language_metadata"] = wasmExports["ts_language_metadata"];
+    var _ts_language_name = Module["_ts_language_name"] = wasmExports["ts_language_name"];
+    var _ts_language_field_count = Module["_ts_language_field_count"] = wasmExports["ts_language_field_count"];
+    var _ts_language_next_state = Module["_ts_language_next_state"] = wasmExports["ts_language_next_state"];
+    var _ts_language_symbol_name = Module["_ts_language_symbol_name"] = wasmExports["ts_language_symbol_name"];
+    var _ts_language_symbol_for_name = Module["_ts_language_symbol_for_name"] = wasmExports["ts_language_symbol_for_name"];
+    var _strncmp = Module["_strncmp"] = wasmExports["strncmp"];
+    var _ts_language_symbol_type = Module["_ts_language_symbol_type"] = wasmExports["ts_language_symbol_type"];
+    var _ts_language_field_name_for_id = Module["_ts_language_field_name_for_id"] = wasmExports["ts_language_field_name_for_id"];
+    var _ts_lookahead_iterator_new = Module["_ts_lookahead_iterator_new"] = wasmExports["ts_lookahead_iterator_new"];
+    var _ts_lookahead_iterator_delete = Module["_ts_lookahead_iterator_delete"] = wasmExports["ts_lookahead_iterator_delete"];
+    var _ts_lookahead_iterator_reset_state = Module["_ts_lookahead_iterator_reset_state"] = wasmExports["ts_lookahead_iterator_reset_state"];
+    var _ts_lookahead_iterator_reset = Module["_ts_lookahead_iterator_reset"] = wasmExports["ts_lookahead_iterator_reset"];
+    var _ts_lookahead_iterator_next = Module["_ts_lookahead_iterator_next"] = wasmExports["ts_lookahead_iterator_next"];
+    var _ts_lookahead_iterator_current_symbol = Module["_ts_lookahead_iterator_current_symbol"] = wasmExports["ts_lookahead_iterator_current_symbol"];
+    var _ts_parser_delete = Module["_ts_parser_delete"] = wasmExports["ts_parser_delete"];
+    var _ts_parser_reset = Module["_ts_parser_reset"] = wasmExports["ts_parser_reset"];
+    var _ts_parser_set_language = Module["_ts_parser_set_language"] = wasmExports["ts_parser_set_language"];
+    var _ts_parser_timeout_micros = Module["_ts_parser_timeout_micros"] = wasmExports["ts_parser_timeout_micros"];
+    var _ts_parser_set_timeout_micros = Module["_ts_parser_set_timeout_micros"] = wasmExports["ts_parser_set_timeout_micros"];
+    var _ts_parser_set_included_ranges = Module["_ts_parser_set_included_ranges"] = wasmExports["ts_parser_set_included_ranges"];
+    var _ts_query_new = Module["_ts_query_new"] = wasmExports["ts_query_new"];
+    var _ts_query_delete = Module["_ts_query_delete"] = wasmExports["ts_query_delete"];
+    var _iswspace = Module["_iswspace"] = wasmExports["iswspace"];
+    var _iswalnum = Module["_iswalnum"] = wasmExports["iswalnum"];
+    var _ts_query_pattern_count = Module["_ts_query_pattern_count"] = wasmExports["ts_query_pattern_count"];
+    var _ts_query_capture_count = Module["_ts_query_capture_count"] = wasmExports["ts_query_capture_count"];
+    var _ts_query_string_count = Module["_ts_query_string_count"] = wasmExports["ts_query_string_count"];
+    var _ts_query_capture_name_for_id = Module["_ts_query_capture_name_for_id"] = wasmExports["ts_query_capture_name_for_id"];
+    var _ts_query_capture_quantifier_for_id = Module["_ts_query_capture_quantifier_for_id"] = wasmExports["ts_query_capture_quantifier_for_id"];
+    var _ts_query_string_value_for_id = Module["_ts_query_string_value_for_id"] = wasmExports["ts_query_string_value_for_id"];
+    var _ts_query_predicates_for_pattern = Module["_ts_query_predicates_for_pattern"] = wasmExports["ts_query_predicates_for_pattern"];
+    var _ts_query_start_byte_for_pattern = Module["_ts_query_start_byte_for_pattern"] = wasmExports["ts_query_start_byte_for_pattern"];
+    var _ts_query_end_byte_for_pattern = Module["_ts_query_end_byte_for_pattern"] = wasmExports["ts_query_end_byte_for_pattern"];
+    var _ts_query_is_pattern_rooted = Module["_ts_query_is_pattern_rooted"] = wasmExports["ts_query_is_pattern_rooted"];
+    var _ts_query_is_pattern_non_local = Module["_ts_query_is_pattern_non_local"] = wasmExports["ts_query_is_pattern_non_local"];
+    var _ts_query_is_pattern_guaranteed_at_step = Module["_ts_query_is_pattern_guaranteed_at_step"] = wasmExports["ts_query_is_pattern_guaranteed_at_step"];
+    var _ts_query_disable_capture = Module["_ts_query_disable_capture"] = wasmExports["ts_query_disable_capture"];
+    var _ts_query_disable_pattern = Module["_ts_query_disable_pattern"] = wasmExports["ts_query_disable_pattern"];
+    var _ts_tree_copy = Module["_ts_tree_copy"] = wasmExports["ts_tree_copy"];
+    var _ts_tree_delete = Module["_ts_tree_delete"] = wasmExports["ts_tree_delete"];
+    var _ts_init = Module["_ts_init"] = wasmExports["ts_init"];
+    var _ts_parser_new_wasm = Module["_ts_parser_new_wasm"] = wasmExports["ts_parser_new_wasm"];
+    var _ts_parser_enable_logger_wasm = Module["_ts_parser_enable_logger_wasm"] = wasmExports["ts_parser_enable_logger_wasm"];
+    var _ts_parser_parse_wasm = Module["_ts_parser_parse_wasm"] = wasmExports["ts_parser_parse_wasm"];
+    var _ts_parser_included_ranges_wasm = Module["_ts_parser_included_ranges_wasm"] = wasmExports["ts_parser_included_ranges_wasm"];
+    var _ts_language_type_is_named_wasm = Module["_ts_language_type_is_named_wasm"] = wasmExports["ts_language_type_is_named_wasm"];
+    var _ts_language_type_is_visible_wasm = Module["_ts_language_type_is_visible_wasm"] = wasmExports["ts_language_type_is_visible_wasm"];
+    var _ts_language_supertypes_wasm = Module["_ts_language_supertypes_wasm"] = wasmExports["ts_language_supertypes_wasm"];
+    var _ts_language_subtypes_wasm = Module["_ts_language_subtypes_wasm"] = wasmExports["ts_language_subtypes_wasm"];
+    var _ts_tree_root_node_wasm = Module["_ts_tree_root_node_wasm"] = wasmExports["ts_tree_root_node_wasm"];
+    var _ts_tree_root_node_with_offset_wasm = Module["_ts_tree_root_node_with_offset_wasm"] = wasmExports["ts_tree_root_node_with_offset_wasm"];
+    var _ts_tree_edit_wasm = Module["_ts_tree_edit_wasm"] = wasmExports["ts_tree_edit_wasm"];
+    var _ts_tree_included_ranges_wasm = Module["_ts_tree_included_ranges_wasm"] = wasmExports["ts_tree_included_ranges_wasm"];
+    var _ts_tree_get_changed_ranges_wasm = Module["_ts_tree_get_changed_ranges_wasm"] = wasmExports["ts_tree_get_changed_ranges_wasm"];
+    var _ts_tree_cursor_new_wasm = Module["_ts_tree_cursor_new_wasm"] = wasmExports["ts_tree_cursor_new_wasm"];
+    var _ts_tree_cursor_copy_wasm = Module["_ts_tree_cursor_copy_wasm"] = wasmExports["ts_tree_cursor_copy_wasm"];
+    var _ts_tree_cursor_delete_wasm = Module["_ts_tree_cursor_delete_wasm"] = wasmExports["ts_tree_cursor_delete_wasm"];
+    var _ts_tree_cursor_reset_wasm = Module["_ts_tree_cursor_reset_wasm"] = wasmExports["ts_tree_cursor_reset_wasm"];
+    var _ts_tree_cursor_reset_to_wasm = Module["_ts_tree_cursor_reset_to_wasm"] = wasmExports["ts_tree_cursor_reset_to_wasm"];
+    var _ts_tree_cursor_goto_first_child_wasm = Module["_ts_tree_cursor_goto_first_child_wasm"] = wasmExports["ts_tree_cursor_goto_first_child_wasm"];
+    var _ts_tree_cursor_goto_last_child_wasm = Module["_ts_tree_cursor_goto_last_child_wasm"] = wasmExports["ts_tree_cursor_goto_last_child_wasm"];
+    var _ts_tree_cursor_goto_first_child_for_index_wasm = Module["_ts_tree_cursor_goto_first_child_for_index_wasm"] = wasmExports["ts_tree_cursor_goto_first_child_for_index_wasm"];
+    var _ts_tree_cursor_goto_first_child_for_position_wasm = Module["_ts_tree_cursor_goto_first_child_for_position_wasm"] = wasmExports["ts_tree_cursor_goto_first_child_for_position_wasm"];
+    var _ts_tree_cursor_goto_next_sibling_wasm = Module["_ts_tree_cursor_goto_next_sibling_wasm"] = wasmExports["ts_tree_cursor_goto_next_sibling_wasm"];
+    var _ts_tree_cursor_goto_previous_sibling_wasm = Module["_ts_tree_cursor_goto_previous_sibling_wasm"] = wasmExports["ts_tree_cursor_goto_previous_sibling_wasm"];
+    var _ts_tree_cursor_goto_descendant_wasm = Module["_ts_tree_cursor_goto_descendant_wasm"] = wasmExports["ts_tree_cursor_goto_descendant_wasm"];
+    var _ts_tree_cursor_goto_parent_wasm = Module["_ts_tree_cursor_goto_parent_wasm"] = wasmExports["ts_tree_cursor_goto_parent_wasm"];
+    var _ts_tree_cursor_current_node_type_id_wasm = Module["_ts_tree_cursor_current_node_type_id_wasm"] = wasmExports["ts_tree_cursor_current_node_type_id_wasm"];
+    var _ts_tree_cursor_current_node_state_id_wasm = Module["_ts_tree_cursor_current_node_state_id_wasm"] = wasmExports["ts_tree_cursor_current_node_state_id_wasm"];
+    var _ts_tree_cursor_current_node_is_named_wasm = Module["_ts_tree_cursor_current_node_is_named_wasm"] = wasmExports["ts_tree_cursor_current_node_is_named_wasm"];
+    var _ts_tree_cursor_current_node_is_missing_wasm = Module["_ts_tree_cursor_current_node_is_missing_wasm"] = wasmExports["ts_tree_cursor_current_node_is_missing_wasm"];
+    var _ts_tree_cursor_current_node_id_wasm = Module["_ts_tree_cursor_current_node_id_wasm"] = wasmExports["ts_tree_cursor_current_node_id_wasm"];
+    var _ts_tree_cursor_start_position_wasm = Module["_ts_tree_cursor_start_position_wasm"] = wasmExports["ts_tree_cursor_start_position_wasm"];
+    var _ts_tree_cursor_end_position_wasm = Module["_ts_tree_cursor_end_position_wasm"] = wasmExports["ts_tree_cursor_end_position_wasm"];
+    var _ts_tree_cursor_start_index_wasm = Module["_ts_tree_cursor_start_index_wasm"] = wasmExports["ts_tree_cursor_start_index_wasm"];
+    var _ts_tree_cursor_end_index_wasm = Module["_ts_tree_cursor_end_index_wasm"] = wasmExports["ts_tree_cursor_end_index_wasm"];
+    var _ts_tree_cursor_current_field_id_wasm = Module["_ts_tree_cursor_current_field_id_wasm"] = wasmExports["ts_tree_cursor_current_field_id_wasm"];
+    var _ts_tree_cursor_current_depth_wasm = Module["_ts_tree_cursor_current_depth_wasm"] = wasmExports["ts_tree_cursor_current_depth_wasm"];
+    var _ts_tree_cursor_current_descendant_index_wasm = Module["_ts_tree_cursor_current_descendant_index_wasm"] = wasmExports["ts_tree_cursor_current_descendant_index_wasm"];
+    var _ts_tree_cursor_current_node_wasm = Module["_ts_tree_cursor_current_node_wasm"] = wasmExports["ts_tree_cursor_current_node_wasm"];
+    var _ts_node_symbol_wasm = Module["_ts_node_symbol_wasm"] = wasmExports["ts_node_symbol_wasm"];
+    var _ts_node_field_name_for_child_wasm = Module["_ts_node_field_name_for_child_wasm"] = wasmExports["ts_node_field_name_for_child_wasm"];
+    var _ts_node_field_name_for_named_child_wasm = Module["_ts_node_field_name_for_named_child_wasm"] = wasmExports["ts_node_field_name_for_named_child_wasm"];
+    var _ts_node_children_by_field_id_wasm = Module["_ts_node_children_by_field_id_wasm"] = wasmExports["ts_node_children_by_field_id_wasm"];
+    var _ts_node_first_child_for_byte_wasm = Module["_ts_node_first_child_for_byte_wasm"] = wasmExports["ts_node_first_child_for_byte_wasm"];
+    var _ts_node_first_named_child_for_byte_wasm = Module["_ts_node_first_named_child_for_byte_wasm"] = wasmExports["ts_node_first_named_child_for_byte_wasm"];
+    var _ts_node_grammar_symbol_wasm = Module["_ts_node_grammar_symbol_wasm"] = wasmExports["ts_node_grammar_symbol_wasm"];
+    var _ts_node_child_count_wasm = Module["_ts_node_child_count_wasm"] = wasmExports["ts_node_child_count_wasm"];
+    var _ts_node_named_child_count_wasm = Module["_ts_node_named_child_count_wasm"] = wasmExports["ts_node_named_child_count_wasm"];
+    var _ts_node_child_wasm = Module["_ts_node_child_wasm"] = wasmExports["ts_node_child_wasm"];
+    var _ts_node_named_child_wasm = Module["_ts_node_named_child_wasm"] = wasmExports["ts_node_named_child_wasm"];
+    var _ts_node_child_by_field_id_wasm = Module["_ts_node_child_by_field_id_wasm"] = wasmExports["ts_node_child_by_field_id_wasm"];
+    var _ts_node_next_sibling_wasm = Module["_ts_node_next_sibling_wasm"] = wasmExports["ts_node_next_sibling_wasm"];
+    var _ts_node_prev_sibling_wasm = Module["_ts_node_prev_sibling_wasm"] = wasmExports["ts_node_prev_sibling_wasm"];
+    var _ts_node_next_named_sibling_wasm = Module["_ts_node_next_named_sibling_wasm"] = wasmExports["ts_node_next_named_sibling_wasm"];
+    var _ts_node_prev_named_sibling_wasm = Module["_ts_node_prev_named_sibling_wasm"] = wasmExports["ts_node_prev_named_sibling_wasm"];
+    var _ts_node_descendant_count_wasm = Module["_ts_node_descendant_count_wasm"] = wasmExports["ts_node_descendant_count_wasm"];
+    var _ts_node_parent_wasm = Module["_ts_node_parent_wasm"] = wasmExports["ts_node_parent_wasm"];
+    var _ts_node_child_with_descendant_wasm = Module["_ts_node_child_with_descendant_wasm"] = wasmExports["ts_node_child_with_descendant_wasm"];
+    var _ts_node_descendant_for_index_wasm = Module["_ts_node_descendant_for_index_wasm"] = wasmExports["ts_node_descendant_for_index_wasm"];
+    var _ts_node_named_descendant_for_index_wasm = Module["_ts_node_named_descendant_for_index_wasm"] = wasmExports["ts_node_named_descendant_for_index_wasm"];
+    var _ts_node_descendant_for_position_wasm = Module["_ts_node_descendant_for_position_wasm"] = wasmExports["ts_node_descendant_for_position_wasm"];
+    var _ts_node_named_descendant_for_position_wasm = Module["_ts_node_named_descendant_for_position_wasm"] = wasmExports["ts_node_named_descendant_for_position_wasm"];
+    var _ts_node_start_point_wasm = Module["_ts_node_start_point_wasm"] = wasmExports["ts_node_start_point_wasm"];
+    var _ts_node_end_point_wasm = Module["_ts_node_end_point_wasm"] = wasmExports["ts_node_end_point_wasm"];
+    var _ts_node_start_index_wasm = Module["_ts_node_start_index_wasm"] = wasmExports["ts_node_start_index_wasm"];
+    var _ts_node_end_index_wasm = Module["_ts_node_end_index_wasm"] = wasmExports["ts_node_end_index_wasm"];
+    var _ts_node_to_string_wasm = Module["_ts_node_to_string_wasm"] = wasmExports["ts_node_to_string_wasm"];
+    var _ts_node_children_wasm = Module["_ts_node_children_wasm"] = wasmExports["ts_node_children_wasm"];
+    var _ts_node_named_children_wasm = Module["_ts_node_named_children_wasm"] = wasmExports["ts_node_named_children_wasm"];
+    var _ts_node_descendants_of_type_wasm = Module["_ts_node_descendants_of_type_wasm"] = wasmExports["ts_node_descendants_of_type_wasm"];
+    var _ts_node_is_named_wasm = Module["_ts_node_is_named_wasm"] = wasmExports["ts_node_is_named_wasm"];
+    var _ts_node_has_changes_wasm = Module["_ts_node_has_changes_wasm"] = wasmExports["ts_node_has_changes_wasm"];
+    var _ts_node_has_error_wasm = Module["_ts_node_has_error_wasm"] = wasmExports["ts_node_has_error_wasm"];
+    var _ts_node_is_error_wasm = Module["_ts_node_is_error_wasm"] = wasmExports["ts_node_is_error_wasm"];
+    var _ts_node_is_missing_wasm = Module["_ts_node_is_missing_wasm"] = wasmExports["ts_node_is_missing_wasm"];
+    var _ts_node_is_extra_wasm = Module["_ts_node_is_extra_wasm"] = wasmExports["ts_node_is_extra_wasm"];
+    var _ts_node_parse_state_wasm = Module["_ts_node_parse_state_wasm"] = wasmExports["ts_node_parse_state_wasm"];
+    var _ts_node_next_parse_state_wasm = Module["_ts_node_next_parse_state_wasm"] = wasmExports["ts_node_next_parse_state_wasm"];
+    var _ts_query_matches_wasm = Module["_ts_query_matches_wasm"] = wasmExports["ts_query_matches_wasm"];
+    var _ts_query_captures_wasm = Module["_ts_query_captures_wasm"] = wasmExports["ts_query_captures_wasm"];
+    var _memset = Module["_memset"] = wasmExports["memset"];
+    var _memcpy = Module["_memcpy"] = wasmExports["memcpy"];
+    var _memmove = Module["_memmove"] = wasmExports["memmove"];
+    var _iswalpha = Module["_iswalpha"] = wasmExports["iswalpha"];
+    var _iswblank = Module["_iswblank"] = wasmExports["iswblank"];
+    var _iswdigit = Module["_iswdigit"] = wasmExports["iswdigit"];
+    var _iswlower = Module["_iswlower"] = wasmExports["iswlower"];
+    var _iswupper = Module["_iswupper"] = wasmExports["iswupper"];
+    var _iswxdigit = Module["_iswxdigit"] = wasmExports["iswxdigit"];
+    var _memchr = Module["_memchr"] = wasmExports["memchr"];
+    var _strlen = Module["_strlen"] = wasmExports["strlen"];
+    var _strcmp = Module["_strcmp"] = wasmExports["strcmp"];
+    var _strncat = Module["_strncat"] = wasmExports["strncat"];
+    var _strncpy = Module["_strncpy"] = wasmExports["strncpy"];
+    var _towlower = Module["_towlower"] = wasmExports["towlower"];
+    var _towupper = Module["_towupper"] = wasmExports["towupper"];
+    var _setThrew = wasmExports["setThrew"];
+    var __emscripten_stack_restore = wasmExports["_emscripten_stack_restore"];
+    var __emscripten_stack_alloc = wasmExports["_emscripten_stack_alloc"];
+    var _emscripten_stack_get_current = wasmExports["emscripten_stack_get_current"];
+    var ___wasm_apply_data_relocs = wasmExports["__wasm_apply_data_relocs"];
+    Module["setValue"] = setValue;
+    Module["getValue"] = getValue;
+    Module["UTF8ToString"] = UTF8ToString;
+    Module["stringToUTF8"] = stringToUTF8;
+    Module["lengthBytesUTF8"] = lengthBytesUTF8;
+    Module["AsciiToString"] = AsciiToString;
+    Module["stringToUTF16"] = stringToUTF16;
+    Module["loadWebAssemblyModule"] = loadWebAssemblyModule;
+    function callMain(args2 = []) {
+      var entryFunction = resolveGlobalSymbol("main").sym;
+      if (!entryFunction) return;
+      args2.unshift(thisProgram);
+      var argc = args2.length;
+      var argv = stackAlloc((argc + 1) * 4);
+      var argv_ptr = argv;
+      args2.forEach((arg) => {
+        LE_HEAP_STORE_U32((argv_ptr >> 2) * 4, stringToUTF8OnStack(arg));
+        argv_ptr += 4;
+      });
+      LE_HEAP_STORE_U32((argv_ptr >> 2) * 4, 0);
+      try {
+        var ret = entryFunction(argc, argv);
+        exitJS(
+          ret,
+          /* implicit = */
+          true
+        );
+        return ret;
+      } catch (e) {
+        return handleException(e);
+      }
+    }
+    __name(callMain, "callMain");
+    function run(args2 = arguments_) {
+      if (runDependencies > 0) {
+        dependenciesFulfilled = run;
+        return;
+      }
+      preRun();
+      if (runDependencies > 0) {
+        dependenciesFulfilled = run;
+        return;
+      }
+      function doRun() {
+        Module["calledRun"] = true;
+        if (ABORT) return;
+        initRuntime();
+        preMain();
+        readyPromiseResolve(Module);
+        Module["onRuntimeInitialized"]?.();
+        var noInitialRun = Module["noInitialRun"];
+        if (!noInitialRun) callMain(args2);
+        postRun();
+      }
+      __name(doRun, "doRun");
+      if (Module["setStatus"]) {
+        Module["setStatus"]("Running...");
+        setTimeout(() => {
+          setTimeout(() => Module["setStatus"](""), 1);
+          doRun();
+        }, 1);
+      } else {
+        doRun();
+      }
+    }
+    __name(run, "run");
+    if (Module["preInit"]) {
+      if (typeof Module["preInit"] == "function") Module["preInit"] = [Module["preInit"]];
+      while (Module["preInit"].length > 0) {
+        Module["preInit"].pop()();
+      }
+    }
+    run();
+    moduleRtn = readyPromise;
+    return moduleRtn;
+  };
+})();
+var tree_sitter_default = Module2;
+var Module3 = null;
+async function initializeBinding(moduleOptions) {
+  if (!Module3) {
+    Module3 = await tree_sitter_default(moduleOptions);
+  }
+  return Module3;
+}
+__name(initializeBinding, "initializeBinding");
+function checkModule() {
+  return !!Module3;
+}
+__name(checkModule, "checkModule");
+var TRANSFER_BUFFER;
+var LANGUAGE_VERSION;
+var MIN_COMPATIBLE_VERSION;
+var _a8;
+var Parser2 = (_a8 = class {
+  /**
+   * Create a new parser.
+   */
+  constructor() {
+    /** @internal */
+    __publicField(this, 0, 0);
+    // Internal handle for WASM
+    /** @internal */
+    __publicField(this, 1, 0);
+    // Internal handle for WASM
+    /** @internal */
+    __publicField(this, "logCallback", null);
+    /** The parser's current language. */
+    __publicField(this, "language", null);
+    this.initialize();
+  }
+  /**
+   * This must always be called before creating a Parser.
+   *
+   * You can optionally pass in options to configure the WASM module, the most common
+   * one being `locateFile` to help the module find the `.wasm` file.
+   */
+  static async init(moduleOptions) {
+    setModule(await initializeBinding(moduleOptions));
+    TRANSFER_BUFFER = C._ts_init();
+    LANGUAGE_VERSION = C.getValue(TRANSFER_BUFFER, "i32");
+    MIN_COMPATIBLE_VERSION = C.getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
+  }
+  /** @internal */
+  initialize() {
+    if (!checkModule()) {
+      throw new Error("cannot construct a Parser before calling `init()`");
+    }
+    C._ts_parser_new_wasm();
+    this[0] = C.getValue(TRANSFER_BUFFER, "i32");
+    this[1] = C.getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
+  }
+  /** Delete the parser, freeing its resources. */
+  delete() {
+    C._ts_parser_delete(this[0]);
+    C._free(this[1]);
+    this[0] = 0;
+    this[1] = 0;
+  }
+  /**
+   * Set the language that the parser should use for parsing.
+   *
+   * If the language was not successfully assigned, an error will be thrown.
+   * This happens if the language was generated with an incompatible
+   * version of the Tree-sitter CLI. Check the language's version using
+   * {@link Language#version} and compare it to this library's
+   * {@link LANGUAGE_VERSION} and {@link MIN_COMPATIBLE_VERSION} constants.
+   */
+  setLanguage(language) {
+    let address;
+    if (!language) {
+      address = 0;
+      this.language = null;
+    } else if (language.constructor === Language) {
+      address = language[0];
+      const version = C._ts_language_version(address);
+      if (version < MIN_COMPATIBLE_VERSION || LANGUAGE_VERSION < version) {
+        throw new Error(
+          `Incompatible language version ${version}. Compatibility range ${MIN_COMPATIBLE_VERSION} through ${LANGUAGE_VERSION}.`
+        );
+      }
+      this.language = language;
+    } else {
+      throw new Error("Argument must be a Language");
+    }
+    C._ts_parser_set_language(this[0], address);
+    return this;
+  }
+  /**
+   * Parse a slice of UTF8 text.
+   *
+   * @param {string | ParseCallback} callback - The UTF8-encoded text to parse or a callback function.
+   *
+   * @param {Tree | null} [oldTree] - A previous syntax tree parsed from the same document. If the text of the
+   *   document has changed since `oldTree` was created, then you must edit `oldTree` to match
+   *   the new text using {@link Tree#edit}.
+   *
+   * @param {ParseOptions} [options] - Options for parsing the text.
+   *  This can be used to set the included ranges, or a progress callback.
+   *
+   * @returns {Tree | null} A {@link Tree} if parsing succeeded, or `null` if:
+   *  - The parser has not yet had a language assigned with {@link Parser#setLanguage}.
+   *  - The progress callback returned true.
+   */
+  parse(callback2, oldTree, options2) {
+    if (typeof callback2 === "string") {
+      C.currentParseCallback = (index) => callback2.slice(index);
+    } else if (typeof callback2 === "function") {
+      C.currentParseCallback = callback2;
+    } else {
+      throw new Error("Argument must be a string or a function");
+    }
+    if (options2?.progressCallback) {
+      C.currentProgressCallback = options2.progressCallback;
+    } else {
+      C.currentProgressCallback = null;
+    }
+    if (this.logCallback) {
+      C.currentLogCallback = this.logCallback;
+      C._ts_parser_enable_logger_wasm(this[0], 1);
+    } else {
+      C.currentLogCallback = null;
+      C._ts_parser_enable_logger_wasm(this[0], 0);
+    }
+    let rangeCount = 0;
+    let rangeAddress = 0;
+    if (options2?.includedRanges) {
+      rangeCount = options2.includedRanges.length;
+      rangeAddress = C._calloc(rangeCount, SIZE_OF_RANGE);
+      let address = rangeAddress;
+      for (let i2 = 0; i2 < rangeCount; i2++) {
+        marshalRange(address, options2.includedRanges[i2]);
+        address += SIZE_OF_RANGE;
+      }
+    }
+    const treeAddress = C._ts_parser_parse_wasm(
+      this[0],
+      this[1],
+      oldTree ? oldTree[0] : 0,
+      rangeAddress,
+      rangeCount
+    );
+    if (!treeAddress) {
+      C.currentParseCallback = null;
+      C.currentLogCallback = null;
+      C.currentProgressCallback = null;
+      return null;
+    }
+    if (!this.language) {
+      throw new Error("Parser must have a language to parse");
+    }
+    const result = new Tree(INTERNAL, treeAddress, this.language, C.currentParseCallback);
+    C.currentParseCallback = null;
+    C.currentLogCallback = null;
+    C.currentProgressCallback = null;
+    return result;
+  }
+  /**
+   * Instruct the parser to start the next parse from the beginning.
+   *
+   * If the parser previously failed because of a timeout, cancellation,
+   * or callback, then by default, it will resume where it left off on the
+   * next call to {@link Parser#parse} or other parsing functions.
+   * If you don't want to resume, and instead intend to use this parser to
+   * parse some other document, you must call `reset` first.
+   */
+  reset() {
+    C._ts_parser_reset(this[0]);
+  }
+  /** Get the ranges of text that the parser will include when parsing. */
+  getIncludedRanges() {
+    C._ts_parser_included_ranges_wasm(this[0]);
+    const count2 = C.getValue(TRANSFER_BUFFER, "i32");
+    const buffer = C.getValue(TRANSFER_BUFFER + SIZE_OF_INT, "i32");
+    const result = new Array(count2);
+    if (count2 > 0) {
+      let address = buffer;
+      for (let i2 = 0; i2 < count2; i2++) {
+        result[i2] = unmarshalRange(address);
+        address += SIZE_OF_RANGE;
+      }
+      C._free(buffer);
+    }
+    return result;
+  }
+  /**
+   * @deprecated since version 0.25.0, prefer passing a progress callback to {@link Parser#parse}
+   *
+   * Get the duration in microseconds that parsing is allowed to take.
+   *
+   * This is set via {@link Parser#setTimeoutMicros}.
+   */
+  getTimeoutMicros() {
+    return C._ts_parser_timeout_micros(this[0]);
+  }
+  /**
+   * @deprecated since version 0.25.0, prefer passing a progress callback to {@link Parser#parse}
+   *
+   * Set the maximum duration in microseconds that parsing should be allowed
+   * to take before halting.
+   *
+   * If parsing takes longer than this, it will halt early, returning `null`.
+   * See {@link Parser#parse} for more information.
+   */
+  setTimeoutMicros(timeout) {
+    C._ts_parser_set_timeout_micros(this[0], 0, timeout);
+  }
+  /** Set the logging callback that a parser should use during parsing. */
+  setLogger(callback2) {
+    if (!callback2) {
+      this.logCallback = null;
+    } else if (typeof callback2 !== "function") {
+      throw new Error("Logger callback must be a function");
+    } else {
+      this.logCallback = callback2;
+    }
+    return this;
+  }
+  /** Get the parser's current logger. */
+  getLogger() {
+    return this.logCallback;
+  }
+}, __name(_a8, "Parser"), _a8);
 
 // src/ide/pathJoin.ts
 function pathJoin(...segments) {
@@ -33649,24 +34608,29 @@ var JetbrainsTreeSitter = class {
     if (this.getLanguage(document2.languageId)) {
       const parser = this.parsers.get(document2.languageId);
       if (parser) {
-        return parser.parse(document2.getText());
+        const tree = parser.parse(document2.getText());
+        if (!tree) {
+          throw new Error("Failed to parse document");
+        }
+        return tree;
       }
     }
     throw new Error("Language not supported");
   }
   async loadLanguage(languageId) {
-    const parser = new import_web_tree_sitter.default();
+    const parser = new Parser2();
     const filePath = pathJoin(
       this.wasmDirectory,
       `tree-sitter-${languageId}.wasm`
     );
-    const language = await import_web_tree_sitter.default.Language.load(filePath);
+    const language = await Language.load(filePath);
     parser.setLanguage(language);
     this.parsers.set(languageId, parser);
     return true;
   }
   getLanguage(languageId) {
-    return this.parsers.get(languageId)?.getLanguage();
+    const parser = this.parsers.get(languageId);
+    return parser?.language || void 0;
   }
   getNodeAtLocation(document2, range3) {
     const tree = this.getTree(document2);
@@ -33680,7 +34644,22 @@ var JetbrainsTreeSitter = class {
         column: range3.end.character
       }
     );
+    if (!node) {
+      throw new Error("Node not found at location");
+    }
     return node;
+  }
+  createQuery(languageId, source) {
+    const language = this.getLanguage(languageId);
+    if (!language) {
+      return void 0;
+    }
+    try {
+      return new Query(language, source);
+    } catch (error) {
+      console.error(`Failed to create query for language ${languageId}:`, error);
+      return void 0;
+    }
   }
 };
 
@@ -33721,7 +34700,7 @@ var JetbrainsCommandServer = class {
 // src/extension.ts
 async function activate(plugin, wasmDirectory) {
   console.log("activate started");
-  await import_web_tree_sitter2.default.init({
+  await Parser2.init({
     locateFile(scriptName, _scriptDirectory) {
       const fullPath = pathJoin(wasmDirectory, scriptName);
       return fullPath;

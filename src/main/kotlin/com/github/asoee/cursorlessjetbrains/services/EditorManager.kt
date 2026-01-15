@@ -35,7 +35,7 @@ import java.util.*
 import kotlin.time.Duration.Companion.milliseconds
 
 
-class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDisposable: Disposable, cs: CoroutineScope) :
+class EditorManager(private var cursorlessEngine: CursorlessEngine, parentDisposable: Disposable, cs: CoroutineScope) :
     Disposable {
 
     private var hatsEnabled = true
@@ -260,6 +260,8 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         editorIds.remove(editor)
         if (id != null) {
             editorsById.remove(id)
+            // Clean up the debounce flow to prevent memory leak
+            editorDebounce.remove(id)
             dispatchScope.launch {
                 cursorlessEngine.editorClosed(id)
             }
@@ -347,6 +349,16 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
             }
         }
 
+        override fun insertSnippet(editorId: String, snippet: String) {
+            thisLogger().info("Executing insertSnippet $snippet")
+            editorManager.editorsById[editorId]?.let { editor ->
+                editor.project?.let { project ->
+                    val command = InsertSnippetCommand(project, editor, snippet)
+                    service<CommandExecutorService>().execute(command)
+                }
+            }
+        }
+
         override fun revealLine(editorId: String, line: Int, revealAt: String) {
             thisLogger().info("Executing insertLineAfter $line, $revealAt")
             editorManager.editorsById[editorId]?.let { editor ->
@@ -370,6 +382,16 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
                     service<CommandExecutorService>().execute(command)
                 }
                 return
+            }
+        }
+
+        override fun setHighlightRanges(highlightId: String?, editorId: String, ranges: Array<CursorlessGeneralizedRange>) {
+            logger.debug("Executing setHighlightRanges highlightId=$highlightId, editorId=$editorId, ranges=${ranges.size}")
+            editorManager.editorsById[editorId]?.let { editor ->
+                editor.project?.let { project ->
+                    val command = SetHighlightRangesCommand(project, editor, highlightId, ranges.toList())
+                    service<CommandExecutorService>().execute(command)
+                }
             }
         }
 
@@ -426,6 +448,14 @@ class EditorManager(private val cursorlessEngine: CursorlessEngine, parentDispos
         this.editorsById.values.forEach { editor ->
             editorCreated(editor)
         }
+    }
+
+    @Synchronized
+    fun updateEngine(newEngine: CursorlessEngine) {
+        logger.info("Updating CursorlessEngine reference")
+        this.cursorlessEngine = newEngine
+        // Update the callback handler with the new engine's callback
+        newEngine.setCursorlessCallback(CursorlessHandler(this))
     }
 
     fun settingsUpdated(settings: TalonSettings.State) {
