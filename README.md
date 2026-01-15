@@ -56,23 +56,12 @@ community. [They are maintained in this PR](https://github.com/talonhub/communit
 
 ## Installation
 
-- Using the IDE built-in plugin system:
-  
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "cursorless-jetbrains"</kbd> >
-  <kbd>Install</kbd>
-  
-- Using JetBrains Marketplace:
-
-  Go to [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID) and install it by clicking the <kbd>Install to ...</kbd> button in case your IDE is running.
-
-  You can also download the [latest release](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID/versions) from JetBrains Marketplace and install it manually using
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
-
-- Manually:
-
-  Download the [latest release](https://github.com/asoee/cursorless-jetbrains/releases/latest) and install it manually using
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
-
+1. install Talon
+2. install the Community voice command set (https://github.com/talonhub/community)
+3. install the talon side of cursorless: https://www.cursorless.org/docs/user/installation/#installing-the-talon-side
+4. to the same .talon/user folder, clone https://github.com/asoee/cursorless-jetbrains-talon
+5. open JetBrains and install the talon-cursorless-everywhere plugin
+6. maybe(?) restart JetBrains + Talon
 
 ---
 Plugin based on the [IntelliJ Platform Plugin Template][template].
