@@ -1,7 +1,7 @@
 [versions]
 # libraries
 junit = "4.13.2"
-javet = "4.1.7"
+javet = "5.0.3"
 javenode = "0.8.0"
 kotlin = "2.2.21"
 kover = "0.9.1"
