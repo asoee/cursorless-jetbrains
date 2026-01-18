@@ -7,6 +7,11 @@
 - Tighten up javet javascript handling to prevent memory leaks
 - Restart JS engine when close to limit, if GC does not help
 - Limit file size sent to cursorless. Default to 1 Mb, but adjustable from settings.
+- Incorrect language to treesitter mapping caused treesitter to not work for some languages (c-sharp and a few more)
+
+# Changed
+
+- Improved installation instructions
 
 ## [0.0.14] - 2025-09-26
 
