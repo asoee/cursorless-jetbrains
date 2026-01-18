@@ -13,6 +13,7 @@ jobs:
   release:
     name: Publish Plugin
     runs-on: ubuntu-latest
+    environment: plugin-signing
     permissions:
       contents: write
       pull-requests: write
@@ -58,6 +59,18 @@ jobs:
           ./gradlew patchChangelog --release-note="$CHANGELOG"
 
       # Publish the plugin to JetBrains Marketplace (only for full releases, not pre-releases)
+      - name: Verify Secrets
+        if: ${{ github.event.action == 'released' }}
+        env:
+          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+        run: |
+          if [ -n "$PUBLISH_TOKEN" ]; then
+            echo "PUBLISH_TOKEN is set (length: ${#PUBLISH_TOKEN})"
+          else
+            echo "ERROR: PUBLISH_TOKEN is empty or not set"
+            exit 1
+          fi
+
       - name: Publish Plugin
         if: ${{ github.event.action == 'released' }}
         env:
