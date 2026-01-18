@@ -67,28 +67,19 @@ fun editorLanguage(editor: Editor): String? {
     return editorLanguage(psiFile)
 }
 
-fun editorLanguage(psiFile: PsiFile?): String? {
-    val psiLanguage = psiFile?.language?.id?.lowercase()
-
-    // If PSI gives us a real language (not generic text/plaintext), use it
-    if (psiLanguage != null && psiLanguage != "text" && psiLanguage != "plaintext") {
-        return psiLanguage
-    }
-
-    // Fall back to file extension mapping for non-PSI languages
-    val fileName = psiFile?.virtualFile?.name ?: return psiLanguage
-    val extension = fileName.substringAfterLast('.', "").lowercase()
-
-    // Map file extensions to language IDs that Cursorless supports
-    // This list should match the tree-sitter WASM parsers in extraFiles/treesitter/wasm/
-    // When updating, check the upstream Cursorless project for new language support:
-    // - WASM files: packages/cursorless-engine/src/languages/TreeSitterWasmLanguages.ts
-    // - Language queries: packages/cursorless-engine/src/languages/LanguageDefinitions.ts
+/**
+ * Map file extensions to language IDs that Cursorless supports.
+ * This list should match the tree-sitter WASM parsers in extraFiles/treesitter/wasm/
+ * When updating, check the upstream Cursorless project for new language support:
+ * - WASM files: packages/cursorless-engine/src/languages/TreeSitterWasmLanguages.ts
+ * - Language queries: packages/cursorless-engine/src/languages/LanguageDefinitions.ts
+ */
+fun languageForExtension(extension: String): String? {
     return when (extension) {
         "agda" -> "agda"
         "sh", "bash", "zsh" -> "bash"
         "c", "h" -> "c"
-        "cs" -> "c_sharp"
+        "cs" -> "csharp"
         "clj", "cljs", "cljc" -> "clojure"
         "cpp", "cc", "cxx", "c++", "hpp", "hxx", "h++" -> "cpp"
         "css" -> "css"
@@ -127,6 +118,23 @@ fun editorLanguage(psiFile: PsiFile?): String? {
         "tsx" -> "tsx"
         "xml" -> "xml"
         "yaml", "yml" -> "yaml"
-        else -> psiLanguage ?: "plaintext"
+        else -> null
     }
+}
+
+fun editorLanguage(psiFile: PsiFile?): String? {
+    // Use file extension mapping as primary source of truth for Cursorless language IDs
+    // This ensures consistent language names that match tree-sitter parser expectations
+    val fileName = psiFile?.virtualFile?.name
+    if (fileName != null) {
+        val extension = fileName.substringAfterLast('.', "").lowercase()
+        val mappedLanguage = languageForExtension(extension)
+        if (mappedLanguage != null) {
+            return mappedLanguage
+        }
+    }
+
+    // Fall back to PSI language for extensions not in the mapping
+    val psiLanguage = psiFile?.language?.id?.lowercase()
+    return psiLanguage ?: "plaintext"
 }
