@@ -57,14 +57,15 @@ jobs:
         run: |
           ./gradlew patchChangelog --release-note="$CHANGELOG"
 
-      # Publish the plugin to JetBrains Marketplace
-      #      - name: Publish Plugin
-      #        env:
-      #          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
-      #          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
-      #          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-      #          PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
-      #        run: ./gradlew publishPlugin
+      # Publish the plugin to JetBrains Marketplace (only for full releases, not pre-releases)
+      - name: Publish Plugin
+        if: ${{ github.event.action == 'released' }}
+        env:
+          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
+        run: ./gradlew publishPlugin
 
       # Build plugin artifact
       - name: Build Plugin
