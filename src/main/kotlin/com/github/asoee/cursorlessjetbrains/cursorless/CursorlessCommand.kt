@@ -207,6 +207,27 @@ class CursorlessCommand(val command: String, val target: CursorlessTarget) {
             )
         }
 
+        fun takeFunk(source: CursorlessTarget): CommandV7 {
+            return CommandV7(
+                version = 7,
+                spokenFormat = "take funk " + source.spokenForm(),
+                usePrePhraseSnapshot = false,
+                action = SetSelectionActionDescriptor(
+                    target = PartialPrimitiveTargetDescriptor(
+                        mark = DecoratedSymbolMark(
+                            symbolColor = source.color,
+                            character = source.letter
+                        ),
+                        modifiers = listOf(
+                            ContainingScopeModifier(
+                                scopeType = ScopeTypeNamedFunction()
+                            )
+                        )
+                    )
+                )
+            )
+        }
+
         fun wrapWithSnippet(source: CursorlessTarget, spokenForm: String = "if wrap"): CommandV7 {
             return CommandV7(
                 version = 7,

@@ -189,3 +189,13 @@ class ScopeTypeInstance : ScopeType
 data class EveryScopeModifier(
     val scopeType: ScopeType,
 ) : Modifier
+
+@Serializable
+@SerialName("containingScope")
+data class ContainingScopeModifier(
+    val scopeType: ScopeType,
+) : Modifier
+
+@Serializable
+@SerialName("namedFunction")
+class ScopeTypeNamedFunction : ScopeType
