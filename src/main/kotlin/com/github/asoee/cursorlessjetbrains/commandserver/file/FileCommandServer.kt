@@ -4,6 +4,9 @@ import com.github.asoee.cursorlessjetbrains.commands.CommandExecutorService
 import com.github.asoee.cursorlessjetbrains.commands.CommandRegistryService
 import com.github.asoee.cursorlessjetbrains.commands.CommandRequest
 import com.github.asoee.cursorlessjetbrains.javet.ExecutionResult
+import com.intellij.notification.Notification
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notifications
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -109,28 +112,49 @@ class FileCommandServer {
     }
 
     private fun readAndHandleFileRquest(fullPath: Path?, project: Project) {
-        fullPath?.readText().let {
-            logger.info("File content: $it")
-            val request = Json.decodeFromString<CommandServerRequest>(it!!)
-            val result = handleRequest(request, project)
-            if (result.success) {
-                val response = CommandServerResponse(
-                    request.uuid,
-                    emptyArray(),
-                    null,
-                    TalonCommandReponse(result.returnValue),
-                )
-                writeResponse(response)
-            } else {
-                val response = CommandServerResponse(
-                    request.uuid,
-                    emptyArray(),
-                    result.error,
-                    TalonCommandReponse(null),
-                )
+        try {
+            fullPath?.readText().let {
+                logger.info("File content: $it")
+                val request = Json.decodeFromString<CommandServerRequest>(it!!)
+                val result = handleRequest(request, project)
+                if (result.success) {
+                    val response = CommandServerResponse(
+                        request.uuid,
+                        emptyArray(),
+                        null,
+                        TalonCommandReponse(result.returnValue),
+                    )
+                    writeResponse(response)
+                } else {
+                    val response = CommandServerResponse(
+                        request.uuid,
+                        emptyArray(),
+                        result.error,
+                        TalonCommandReponse(null),
+                    )
 
-                writeResponse(response)
+                    writeResponse(response)
+
+                    Notifications.Bus.notify(
+                        Notification(
+                            "vc-idea",
+                            "Cursorless error",
+                            result.error ?: "Unknown error",
+                            NotificationType.WARNING,
+                        )
+                    )
+                }
             }
+        } catch (e: Exception) {
+            logger.error("Failed to process file command", e)
+            Notifications.Bus.notify(
+                Notification(
+                    "vc-idea",
+                    "Cursorless error",
+                    e.message ?: e.toString(),
+                    NotificationType.WARNING,
+                )
+            )
         }
     }
 
@@ -156,7 +180,8 @@ class FileCommandServer {
                 val result = commandExecutorService.execute(command)
                 ExecutionResult(true, JsonPrimitive(result), null)
             } catch (e: Exception) {
-                ExecutionResult(false, null, "Command execution failed: ${e.message}")
+                val message = e.cause?.message ?: e.message ?: e.toString()
+                ExecutionResult(false, null, message)
             }
         } else {
             ExecutionResult(false, null, "Unknown command: ${request.commandId}")

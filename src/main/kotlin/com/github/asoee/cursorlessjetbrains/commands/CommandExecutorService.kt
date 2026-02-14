@@ -18,7 +18,7 @@ class CommandExecutorService {
                 executeOnEDT(command)
             }
         } catch (e: Exception) {
-            thisLogger().error("Exception thrown while executing command: ${command.toString()}", e)
+            thisLogger().warn("Exception thrown while executing command: ${command.toString()}", e)
             throw e
         }
     }
