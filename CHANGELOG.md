@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Fixed
+- Improved UX for invalid commands - show notification instead of throwing exception (@phillco) 
+
+### Changed
+- Updated embedded cursorless
+
 ## [0.0.15] - 2026-01-18
 
 ### Fixed
