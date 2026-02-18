@@ -2,10 +2,14 @@
 
 ## [Unreleased]
 
+## [0.0.16] - 2026-02-18
+
 ### Fixed
+
 - Improved UX for invalid commands - show notification instead of throwing exception (@phillco) 
 
 ### Changed
+
 - Updated embedded cursorless
 
 ## [0.0.15] - 2026-01-18
@@ -189,7 +193,8 @@
 - Communication with talon using both HTTP and file based command server
 - Most voice-code commands added to the plugin
 
-[Unreleased]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.15...HEAD
+[Unreleased]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.16...HEAD
+[0.0.16]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.15...v0.0.16
 [0.0.15]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.14...v0.0.15
 [0.0.14]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.13...v0.0.14
 [0.0.13]: https://github.com/asoee/cursorless-jetbrains/compare/v0.0.12...v0.0.13
