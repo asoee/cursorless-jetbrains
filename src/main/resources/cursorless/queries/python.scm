@@ -42,15 +42,23 @@
   (block) @interior.end.endOf
 )
 
-;;!! a = 25
-;;!      ^^
-;;!   xxxxx
-;;!  ------
+;;!! foo = 0
+;;!  ^^^
+;;!        ^
 (assignment
-  (_) @_.leading.endOf
-  .
-  right: (_) @value
+  left: (_) @name @value.leading.endOf
+  !type
+  right: (_)? @value @name.trailing.end.startOf
 ) @_.domain
+
+;;!! foo: int = 0
+;;!  ^^^
+;;!             ^
+(assignment
+  left: (_) @name
+  type: (_) @name.removal.end.endOf @value.leading.endOf
+  right: (_)? @value @name.removal.end.startOf
+) @_.domain @name.removal.start.startOf
 
 ;; value:
 ;;!! a /= 25
@@ -67,23 +75,17 @@
   right: (_) @value @name.trailing.startOf
 ) @_.domain
 
-;;!! a = 25
-;;!  ^
-;;!  xxxx
-;;!  ------
-;;!! a: int = 25
-;;!  ^
-;;!  xxxxxxxxx
-;;!  -----------
-(assignment
-  left: (_) @name
-  right: (_)? @_.trailing.startOf
-) @_.domain
+;;!! foo(aaa=1, bbb=2)
+;;!      ^^^     ^^^
+(keyword_argument
+  name: (_) @name
+  value: (_) @name.trailing.startOf
+) @name.domain
 
 (_
   name: (_) @name
-  (#not-parent-type? @name function_definition class_definition)
-) @_.domain
+  (#not-parent-type? @name function_definition class_definition keyword_argument)
+) @name.domain
 
 ;;!! def aaa(bbb):
 ;;!          ^^^
@@ -148,20 +150,17 @@
 ;;!           ---------------
 (
   (_
-    (_) @_.leading.endOf
+    (_) @value.leading.endOf
     .
     value: (_) @value
-  ) @_.domain
-  (#not-type? @_.domain subscript)
+  ) @value.domain
+  (#not-type? @value.domain subscript)
 )
 
 ;;!! return 1
 ;;!         ^
 ;;!        xx
 ;;!  --------
-;;
-;; NOTE: in tree-sitter, both "return" and the "1" are children of `return_statement`
-;; but "return" is anonymous whereas "1" is named node, so no need to exclude explicitly
 (return_statement
   (_) @value
 ) @_.domain
@@ -170,92 +169,21 @@
 ;;!        ^
 ;;!       xx
 ;;!  -------
-;;
-;; NOTE: in tree-sitter, both "yield" and the "1" are children of `yield` but
-;; "yield" is anonymous whereas "1" is named node, so no need to exclude
-;; explicitly
 (yield
   (_) @value
 ) @_.domain
 
-;;!! with aaa:
-;;!       ^^^
-;;!  --------
-(
-  (with_statement
-    (with_clause
-      (with_item)? @_.leading.endOf
-      .
-      (with_item
-        value: (_) @value @name
-      )
-      .
-      (with_item)? @_.trailing.startOf
-    )
-  ) @_.domain
-  (#not-type? @value "as_pattern")
-  (#allow-multiple! @value @name)
-)
+;;!! raise foo;
+;;!        ^^^
+(raise_statement
+  (_) @value
+) @value.domain
 
 ;;!! with aaa:
 ;;!       ^^^
-;;!  --------
-(
-  (with_statement
-    (with_clause
-      (with_item)? @_.leading.endOf
-      .
-      (with_item
-        value: (_) @value @name
-      )
-      .
-      (with_item)? @_.trailing.startOf
-    ) @_with_clause
-  )
-  (#not-type? @value "as_pattern")
-  (#has-multiple-children-of-type? @_with_clause "with_item")
-  (#allow-multiple! @value @name)
-)
-
-;;!! with aaa as bbb:
-;;!       ^^^        <~~ value
-;;!              ^^^ <~~ name
-;;!  ----------------
-(
-  (with_statement
-    (with_clause
-      (with_item
-        value: (as_pattern
-          (_) @value @name.leading.endOf
-          alias: (_) @name @value.trailing.startOf
-        )
-      )
-    )
-  ) @_.domain
-  (#allow-multiple! @value @name)
-)
-
-;;!! with aaa as ccc, bbb:
-;;!       ^^^         ^^^
-;;!       ----------  ---
-(
-  (with_statement
-    (with_clause
-      (with_item
-        value: (as_pattern
-          (_) @value @name.leading.endOf
-          alias: (_) @name @value.trailing.startOf
-        )
-      ) @_.domain
-    ) @_with_clause
-  )
-  (#has-multiple-children-of-type? @_with_clause "with_item")
-  (#allow-multiple! @value @name)
-)
-
 (with_statement
-  (with_clause) @name.iteration @value.iteration
-) @name.iteration.domain @value.iteration.domain
+  (with_clause) @name
+) @name.domain
 
 ;;!! lambda str: len(str) > 0
 ;;!              ^^^^^^^^^^^^
@@ -333,8 +261,8 @@
 (
   (class_definition
     name: (_) @name
-  ) @_.domain
-  (#not-parent-type? @_.domain decorated_definition)
+  ) @name.domain
+  (#not-parent-type? @name.domain decorated_definition)
 )
 
 ;;!! @value
@@ -347,7 +275,7 @@
   (class_definition
     name: (_) @name
   )
-) @_.domain
+) @name.domain
 
 (
   (module) @statement.iteration @class.iteration @namedFunction.iteration
@@ -401,12 +329,6 @@
   function: (_) @functionCallee
 ) @_.domain
 
-;;!! match value:
-;;!        ^^^^^
-(match_statement
-  subject: (_) @value
-) @_.domain
-
 ;;!! { "value": 0 }
 ;;!    ^^^^^^^
 ;;!    xxxxxxxxx
@@ -425,6 +347,14 @@
   condition: (_) @condition
 ) @_.domain
 
+;;!! match foo: pass
+;;!        ^^^
+;;!             ^^^^
+(match_statement
+  subject: (_) @value
+  body: (_) @branch.iteration @condition.iteration
+) @value.domain
+
 ;;!! case value:
 ;;!        ^^^^^
 (case_clause
@@ -435,10 +365,6 @@
 ;;!! case 0: pass
 ;;!  ^^^^^^^^^^^^
 (case_clause) @branch
-
-(match_statement
-  body: (_) @branch.iteration @condition.iteration
-) @branch.iteration.domain @condition.iteration.domain
 
 ;;!! 1 if True else 0
 ;;!       ^^^^
@@ -687,14 +613,21 @@
 ;;!  ^^^^^^^^^^^^^^
 (lambda) @anonymousFunction
 
-;;!! lambda a, b: pass
-;;!         ^^^^
+;;!! lambda aaa, bbb: pass
+;;!         ^^^^^^^^
 (lambda
-  (lambda_parameters) @argumentList @argumentOrParameter.iteration
+  (lambda_parameters) @argumentList @argumentOrParameter.iteration @name.iteration
   (#insertion-delimiter! @argumentList ", ")
 ) @argumentList.domain @argumentOrParameter.iteration.domain
 
+;;!! lambda aaa, bbb: pass
+;;!         ^^^  ^^^
+(lambda_parameters
+  (_) @name
+)
+
 ;;!! lambda: pass
+;;!        ><
 (lambda
   .
   "lambda" @argumentList.start.endOf
@@ -732,19 +665,23 @@
   ")" @name.iteration.end.startOf @value.iteration.end.startOf
 )
 
-operators: [
-  "<"
-  "<="
-  ">"
-  ">="
-] @disqualifyDelimiter
+(_
+  operators: [
+    "<"
+    ">"
+    "<="
+    ">="
+  ] @disqualifyDelimiter
+)
 
-operator: [
-  "<<"
-  "<<="
-  ">>"
-  ">>="
-] @disqualifyDelimiter
+(_
+  operator: [
+    "<<"
+    ">>"
+    "<<="
+    ">>="
+  ] @disqualifyDelimiter
+)
 
 (function_definition
   "->" @disqualifyDelimiter

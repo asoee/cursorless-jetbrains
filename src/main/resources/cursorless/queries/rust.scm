@@ -156,6 +156,13 @@
   name: (_) @name
 ) @name.domain
 
+;;!! enum Foo { Bar() }
+;;!             ^^^^^
+(enum_variant
+  name: (_) @functionCallee
+  (ordered_field_declaration_list)
+) @functionCall @functionCallee.domain
+
 ;;!! trait Foo {}
 (trait_item
   name: (_) @name
@@ -207,7 +214,7 @@
 (field_declaration
   name: (_) @name @type.leading.endOf
   type: (_) @type
-) @statement @_.domain
+) @statement @_.domain @name.removal
 
 ;;!! (t: &T, u: &U)
 ;;!   ^      ^
@@ -235,6 +242,13 @@
   (tuple_expression)
 ] @list
 
+;;!! let Foo {bar: baz} = bongo;
+;;!           ^^^^^^^^
+(struct_pattern
+  "{" @map.start @collectionKey.iteration.start.endOf @value.iteration.start.endOf
+  "}" @map.end @collectionKey.iteration.end.startOf @value.iteration.end.startOf
+)
+
 ;;!! match value {}
 (match_expression
   value: (_) @value
@@ -242,7 +256,7 @@
     "{" @branch.iteration.start.endOf @condition.iteration.start.endOf
     "}" @branch.iteration.end.startOf @condition.iteration.end.startOf
   )
-) @value.domain @branch.iteration.domain @condition.iteration.domain
+) @value.domain
 
 ;;!! #[derive(Debug)]
 ;;!  ^^^^^^^^^^^^^^^^
@@ -256,7 +270,7 @@
   (_) @_.trailing.startOf
 ) @_.domain
 
-;;!! let Foo {aaa: 1, bbb: 2}
+;;!! let Foo {aaa: 0, bbb: 1}
 ;;!           ^^^     ^^^
 ;;!                ^       ^
 (field_initializer
@@ -264,7 +278,7 @@
   value: (_) @value @collectionKey.trailing.startOf
 ) @_.domain
 
-;;!! Foo {aaa: 1, bbb: 2}
+;;!! Foo {aaa: 0, bbb: 1}
 ;;!       ^^^     ^^^
 ;;!            ^       ^
 (field_pattern
@@ -272,45 +286,40 @@
   pattern: (_) @value @collectionKey.trailing.startOf
 ) @_.domain
 
-;;!! const foo: u8 = 2;
+;;!! const foo: u8 = 0;
 ;;!                  ^
 (const_item
   name: (_) @name @type.leading.endOf
   type: (_) @type @value.leading.endOf
-  value: (_) @value
-) @_.domain
+  value: (_) @value @name.removal.end.startOf
+) @_.domain @name.removal.start.startOf
 
-;;!! let foo = 2;
+;;!! let foo: i32 = 0;
 ;;!      ^^^
-;;!            ^
-(let_declaration
-  pattern: (_) @name @value.leading.start.endOf
-  .
-  value: (_) @value
-) @_.domain
-
-;;!! let foo: u8 = 2;
-;;!      ^^^
-;;!            ^
+;;!           ^^^
+;;!                 ^
 (let_declaration
   pattern: (_) @name @type.leading.endOf
-  type: (_) @type @value.leading.start.endOf
-  value: (_) @value
-) @_.domain
+  type: (_) @type @value.leading.endOf @name.removal.end.endOf
+  value: (_)? @value @name.removal.end.startOf
+) @_.domain @name.removal.start.startOf
 
-;;!! let foo: u8;
+;;!! let foo = 0;
 ;;!      ^^^
 ;;!            ^
 (let_declaration
-  pattern: (_) @name @type.leading.endOf
-  type: (_) @type
-  !value
-) @_.domain
+  pattern: (_) @name @value.leading.endOf @name.removal.end.endOf
+  !type
+  value: (_)? @value @name.removal.end.startOf
+) @_.domain @name.removal.start.startOf
 
+;;!! foo = 0;
+;;!  ^^^
+;;!        ^
 (expression_statement
-  (assignment_expression
-    left: (_) @name @value.leading.start.endOf
-    right: (_) @value @name.trailing.start.startOf
+  (_
+    left: (_) @name @value.leading.endOf
+    right: (_) @value @name.trailing.startOf
   )
 ) @_.domain
 
@@ -322,7 +331,7 @@
   value: (_) @value
 ) @_.domain
 
-;;!! return 2;
+;;!! return 0;
 ;;!         ^
 (expression_statement
   (return_expression
@@ -371,7 +380,7 @@
 (closure_expression
   body: (_) @value
   (#not-type? @value block)
-)
+) @value.domain
 
 ;;!! while v < 0 {}
 ;;!        ^^^^^
@@ -580,10 +589,12 @@
 ) @_.domain
 
 ;;!! type Foo = Bar;
+;;!       ^^^
+;;!             ^^^
 (type_item
-  name: (_) @value.leading.endOf
-  type: (_) @value
-) @type @value.domain
+  name: (_) @name @value.leading.endOf
+  type: (_) @value @name.removal.end.startOf
+) @type @name.removal.start.startOf @_.domain
 
 ;;!! let foo: Foo<i32, u64>;
 ;;!               ^^^  ^^^
@@ -610,16 +621,18 @@
   type: (_) @type
 ) @_.domain
 
-operator: [
-  "<"
-  "<<"
-  "<<="
-  "<="
-  ">"
-  ">="
-  ">>"
-  ">>="
-] @disqualifyDelimiter
+(_
+  operator: [
+    "<"
+    ">"
+    "<="
+    ">="
+    "<<"
+    ">>"
+    "<<="
+    ">>="
+  ] @disqualifyDelimiter
+)
 (function_item
   "->" @disqualifyDelimiter
 )

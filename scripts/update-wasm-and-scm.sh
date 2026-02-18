@@ -95,12 +95,12 @@ update_wasm_files() {
     echo "Found parser WASM files in: $PARSERS_DIR"
 
     # Create backup of current WASM files
-    if [ -d "$WASM_DIR" ] && [ "$(ls -A "$WASM_DIR" 2>/dev/null)" ]; then
-        echo "Backing up current WASM files..."
-        BACKUP_DIR="$WASM_DIR.backup.$(date +%Y%m%d_%H%M%S)"
-        cp -r "$WASM_DIR" "$BACKUP_DIR"
-        echo "Backup created: $BACKUP_DIR"
-    fi
+#    if [ -d "$WASM_DIR" ] && [ "$(ls -A "$WASM_DIR" 2>/dev/null)" ]; then
+#        echo "Backing up current WASM files..."
+#        BACKUP_DIR="$WASM_DIR.backup.$(date +%Y%m%d_%H%M%S)"
+#        cp -r "$WASM_DIR" "$BACKUP_DIR"
+#        echo "Backup created: $BACKUP_DIR"
+#    fi
 
     # Copy new WASM files
     echo "Copying WASM files to $WASM_DIR..."
@@ -146,12 +146,12 @@ update_scm_files() {
     echo "Found $SOURCE_COUNT SCM files in source directory"
 
     # Create backup of current SCM files
-    if [ -d "$SCM_DIR" ] && [ "$(ls -A "$SCM_DIR" 2>/dev/null)" ]; then
-        echo "Backing up current SCM files..."
-        BACKUP_DIR="$SCM_DIR.backup.$(date +%Y%m%d_%H%M%S)"
-        cp -r "$SCM_DIR" "$BACKUP_DIR"
-        echo "Backup created: $BACKUP_DIR"
-    fi
+#    if [ -d "$SCM_DIR" ] && [ "$(ls -A "$SCM_DIR" 2>/dev/null)" ]; then
+#        echo "Backing up current SCM files..."
+#        BACKUP_DIR="$SCM_DIR.backup.$(date +%Y%m%d_%H%M%S)"
+#        cp -r "$SCM_DIR" "$BACKUP_DIR"
+#        echo "Backup created: $BACKUP_DIR"
+#    fi
 
     # Copy new SCM files
     echo "Copying SCM files from $CURSORLESS_DEV_QUERIES..."

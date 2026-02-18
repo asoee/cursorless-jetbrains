@@ -128,7 +128,7 @@
 ;;!  ^^^   ^
 (enumerator
   name: (_) @name @value.leading.endOf
-  value: (_)? @value
+  value: (_)? @value @name.trailing.startOf
 ) @_.domain
 
 ;;!! void foo();
@@ -172,13 +172,14 @@
   declarator: (_
     !declarator
   ) @name
-) @statement @name.domain
+  .
+) @statement @name.domain @name.removal
 
 (field_declaration
   declarator: (_
     declarator: (_) @name
   )
-) @statement @name.domain
+) @statement @name.domain @name.removal
 
 (initializer_list) @list
 
@@ -202,7 +203,7 @@
   declarator: (_
     !declarator
   ) @name
-) @_.domain
+) @_.domain @name.removal
 
 ;;!! aaa = 0;
 (_
@@ -334,27 +335,24 @@
 )
 
 ;;!! for (int i = 0; i < size; ++i) {}
-;;!  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ;;!                  ^^^^^^^^
 (for_statement
   condition: (_) @condition
-) @branch @_.domain
+) @condition.domain
 
 ;;!! while (true) {}
-;;!  ^^^^^^^^^^^^^^^
 ;;!         ^^^^
 (while_statement
   condition: (_) @condition
   (#child-range! @condition 0 -1 true true)
-) @branch @_.domain
+) @condition.domain
 
 ;;!! do {} while (true);
-;;!  ^^^^^^^^^^^^^^^^^^^
 ;;!               ^^^^
 (do_statement
   condition: (_) @condition
   (#child-range! @condition 0 -1 true true)
-) @branch @_.domain
+) @condition.domain
 
 ;;!! switch (true) {}
 ;;!          ^^^^
@@ -367,7 +365,7 @@
     "{" @branch.iteration.start.endOf @condition.iteration.start.endOf
     "}" @branch.iteration.end.startOf @condition.iteration.end.startOf
   )
-) @_.domain @branch.iteration.domain @condition.iteration.domain
+) @_.domain
 
 ;;!! case 0: break;
 ;;!  ^^^^^^^^^^^^^^
@@ -428,14 +426,16 @@
   (_) @value
 ) @_.domain
 
-operator: [
-  "->"
-  "<"
-  "<<"
-  "<<="
-  "<="
-  ">"
-  ">="
-  ">>"
-  ">>="
-] @disqualifyDelimiter
+(_
+  operator: [
+    "->"
+    "<"
+    "<<"
+    "<<="
+    "<="
+    ">"
+    ">="
+    ">>"
+    ">>="
+  ] @disqualifyDelimiter
+)

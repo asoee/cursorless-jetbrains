@@ -79,12 +79,12 @@
 )
 
 (_
-  ;;!! foo = ...;
-  ;;!  ^^^-------
+  ;;!! foo = 0;
+  ;;!  ^^^
   (field_definition
-    property: (_) @name @value.leading.endOf
-    value: (_)? @value @name.trailing.startOf
-  ) @statement.start @_.domain.start
+    property: (_) @name @name.removal.end.endOf @value.leading.endOf
+    value: (_)? @value @name.trailing.startOf @name.removal.end.startOf
+  ) @statement.start @_.domain.start @name.removal.start.startOf
   .
   ";"? @statement.end @_.domain.end
 )
