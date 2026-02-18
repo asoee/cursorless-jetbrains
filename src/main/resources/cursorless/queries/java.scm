@@ -38,9 +38,10 @@
   ;; "block",
   ;; (declaration) ;; Is a compound of all other declarations
 
-  ;; Disabled on purpose. We have a better definition of this below.
+  ;; Disabled on purpose. We have a better definition of these below.
   ;; (if_statement)
   ;; (enum_declaration)
+  ;; (local_variable_declaration)
 ] @statement
 
 (
@@ -169,10 +170,13 @@
 ;;!  ^^^^^^^^^^
 ;;!! super(1);
 ;;!  ^^^^^^^^
+;;!! FOO(1);
+;;!  ^^^^^^
 [
   (method_invocation)
   (object_creation_expression)
   (explicit_constructor_invocation)
+  (enum_constant)
 ] @functionCall
 
 ;;!! case "0": return "zero";
@@ -189,9 +193,11 @@
 ;;!  ------------------------
 (switch_block_statement_group
   (switch_label
-    (_) @condition
+    .
+    (_) @condition.start
+    (_)? @condition.end
+    .
   )
-  (#allow-multiple! @condition)
 ) @condition.domain
 
 ;;!! case "0" -> "zero";
@@ -199,7 +205,10 @@
 ;;!  -------------------
 (switch_rule
   (switch_label
-    (_) @condition
+    .
+    (_) @condition.start
+    (_)? @condition.end
+    .
   )
 ) @condition.domain
 
@@ -218,12 +227,17 @@
   (#not-type? @_dummy block)
 ) @interior.end.endOf
 
+;;!! switch (value) { }
+;;!          ^^^^^
+;;!                  ^
 (switch_expression
+  condition: (_) @value
+  (#child-range! @value 0 -1 true true)
   body: (_
     "{" @branch.iteration.start.endOf @condition.iteration.start.endOf
     "}" @condition.iteration.end.startOf @branch.iteration.end.startOf
   )
-) @condition.iteration.domain @branch.iteration.domain
+) @value.domain
 
 ;;!! if () {} else {}
 ;;!  ^^^^^^^^^^^^^^^^
@@ -283,31 +297,21 @@
 
 ;;!! for (int i = 0; i < 5; ++i) {}
 ;;!                  ^^^^^
-;;!  ------------------------------
 (for_statement
   condition: (_) @condition
-) @branch @_.domain
+) @condition.domain
 
 ;;!! while (value) {}
 ;;!         ^^^^^
-;;!  ----------------
 (while_statement
   condition: (_) @condition
   (#child-range! @condition 0 -1 true true)
-) @branch @_.domain
+) @condition.domain
 
 (do_statement
   condition: (_) @condition
   (#child-range! @condition 0 -1 true true)
-) @branch @_.domain
-
-;;!! switch (value) {}
-;;!          ^^^^^
-;;!  -----------------
-(switch_expression
-  condition: (_) @value
-  (#child-range! @value 0 -1 true true)
-) @_.domain
+) @condition.domain
 
 ;;!! true ? 0 : 1
 ;;!  ^^^^
@@ -316,6 +320,7 @@
   condition: (_) @condition
   consequence: (_) @branch
 ) @condition.domain @branch.iteration
+
 (ternary_expression
   alternative: (_) @branch
 )
@@ -333,13 +338,6 @@
   "(" @type.iteration.start.endOf @name.iteration.start.endOf
   ")" @type.iteration.end.startOf @name.iteration.end.startOf
 )
-
-;;!! List<String> list = value;
-;;!  ^^^^^^^^^^^^
-;;!  --------------------------
-(local_variable_declaration
-  type: (_) @type
-) @_.domain
 
 ;;!! name = new ArrayList<String>();
 ;;!             ^^^^^^^^^^^^^^^^^
@@ -402,6 +400,13 @@
   (argument_list) @functionCallee.end.startOf
 ) @functionCallee.start.startOf @_.domain
 
+;;!! Foo();
+;;!  ^^^
+;;!  -----
+(enum_constant
+  (argument_list) @functionCallee.end.startOf
+) @functionCallee.start.startOf @_.domain
+
 ;;!! for (int value : values) {}
 ;;!                   ^^^^^^
 ;;!  ---------------------------
@@ -411,38 +416,42 @@
   value: (_) @value
 ) @branch @_.domain
 
-;;!! int value = 0;
-;;!              ^
-;;!           xxxx
-;;!  --------------
-(local_variable_declaration
-  (variable_declarator
-    name: (_) @name @value.leading.endOf
-    value: (_)? @value @name.trailing.startOf
-  )
-) @_.domain
-
-;;!! int value = 0;
+;;!! int foo = 0;
 ;;!  ^^^
-;;!      ^^^^^
-;;!              ^
+;;!      ^^^
+;;!            ^
+(local_variable_declaration
+  type: (_) @type
+  (variable_declarator
+    name: (_) @name @value.leading.endOf @name.removal.end.endOf
+    value: (_)? @value @name.removal.end.startOf
+  )
+) @_.domain @name.removal.start.startOf
+
+;;!! int foo = 0;
+;;!  ^^^
+;;!      ^^^
+;;!            ^
 (field_declaration
   type: (_) @type
   (variable_declarator
-    name: (_) @name @value.leading.endOf
-    value: (_)? @value @name.trailing.startOf
+    name: (_) @name @value.leading.endOf @name.removal.end.endOf
+    value: (_)? @value @name.removal.end.startOf
   )
-) @_.domain
+) @_.domain @name.removal.start.startOf
 
 ;;!! int value;
 ;;!  ^^^
 ;;!      ^^^^^
-(constant_declaration
-  type: (_) @type
-  (variable_declarator
-    name: (_) @name
-  )
-) @_.domain
+(interface_body
+  (constant_declaration
+    type: (_) @type
+    (variable_declarator
+      name: (_) @name @name.removal.end.endOf @value.leading.endOf
+      value: (_)? @value @name.removal.end.startOf
+    )
+  ) @_.domain @name.removal.start.startOf
+)
 
 ;;!! int foo, bar;
 ;;!      ^^^  ^^^
@@ -500,13 +509,14 @@
   (#single-or-multi-line-delimiter! @collectionItem @_dummy ", " ",\n")
 )
 
-(
-  (throws
-    .
-    (_) @collectionItem.iteration.start.startOf
-  ) @collectionItem.iteration.end.endOf
-)
- @collectionItem.iteration.domain
+;;!! throws Exception, IOException
+;;!         ^^^^^^^^^^^^^^^^^^^^^^
+(throws
+  .
+  (_) @collectionItem.iteration.start
+  (_)? @collectionItem.iteration.end
+  .
+) @collectionItem.iteration.domain
 
 ;;!! value = 1;
 ;;!          ^
@@ -520,21 +530,23 @@
   ";"? @_.domain.end
 )
 
-;;!! return value;
-;;!         ^^^^^
-;;!  -------------
-(
-  (return_statement
-    (_) @value
-  ) @_.domain
-)
+;;!! return foo;
+;;!         ^^^
+(return_statement
+  (_) @value
+) @value.domain
 
-;;!! yield value;
-;;!        ^^^^^
-;;!  ------------
+;;!! yield foo;
+;;!        ^^^
 (yield_statement
   (_) @value
-) @_.domain
+) @value.domain
+
+;;!! throw foo;
+;;!        ^^^
+(throw_statement
+  (_) @value
+) @value.domain
 
 ;;!! ((value) -> true)
 ;;!   ^^^^^^^^^^^^^^^
@@ -546,7 +558,7 @@
 (lambda_expression
   body: (_) @value
   (#not-type? @value block)
-) @_.domain
+) @value.domain
 
 ;;!! Map<int, int> foo;
 ;;!      ^^^  ^^^
@@ -639,18 +651,20 @@
   )
 ) @_.domain
 
-operator: [
-  "<"
-  "<<"
-  "<<="
-  "<="
-  ">"
-  ">="
-  ">>"
-  ">>="
-  ">>>"
-  ">>>="
-] @disqualifyDelimiter
+(_
+  operator: [
+    "<"
+    ">"
+    "<="
+    ">="
+    "<<"
+    ">>"
+    "<<="
+    ">>="
+    ">>>"
+    ">>>="
+  ] @disqualifyDelimiter
+)
 (lambda_expression
   "->" @disqualifyDelimiter
 )

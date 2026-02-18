@@ -59,11 +59,14 @@
 
 ;;!! { }
 ;;!   ^
-(_
-  .
-  "{" @interior.start.endOf
-  "}" @interior.end.startOf
-  .
+(
+  (_
+    .
+    "{" @interior.start.endOf
+    "}" @interior.end.startOf
+    .
+  ) @_dummy
+  (#not-type? @_dummy object jsx_expression)
 )
 
 ;; `name` scope without `export`
@@ -86,6 +89,7 @@
     field_definition
     generic_type
     property_signature
+    type_alias_declaration
   )
 )
 
@@ -97,7 +101,7 @@
 
   ;; We have a special case for this one.  Note we don't need to list the other
   ;; special cases from above because they can't be exported
-  (#not-type? @_dummy variable_declarator)
+  (#not-type? @_dummy variable_declarator type_alias_declaration)
 ) @_.domain
 
 ;; Special cases for `(let | const | var) foo = ...;` because the full statement
@@ -117,10 +121,16 @@
     ;;!  ------------------------
     (lexical_declaration
       .
-      (variable_declarator
-        name: (_) @name @name.removal.end.endOf
-        value: (_)? @name.removal.end.startOf
-      )
+      [
+        (variable_declarator
+          name: (_) @name
+          value: (_) @name.removal.end.startOf
+        )
+        (variable_declarator
+          name: (_) @name
+          !value
+        ) @name.removal.end.endOf
+      ]
     )
 
     ;; name:
@@ -137,10 +147,16 @@
     ;; of https://github.com/tree-sitter/tree-sitter/issues/1442#issuecomment-1584628651
     (variable_declaration
       .
-      (variable_declarator
-        name: (_) @name @name.removal.end.endOf
-        value: (_)? @name.removal.end.startOf
-      )
+      [
+        (variable_declarator
+          name: (_) @name
+          value: (_) @name.removal.end.startOf
+        )
+        (variable_declarator
+          name: (_) @name
+          !value
+        ) @name.removal.end.endOf
+      ]
     )
   ] @_.domain @name.removal.start.startOf
   (#not-parent-type? @_.domain export_statement)
@@ -446,8 +462,8 @@
 ;;!                  ^^^^^
 ;;!                          ^
 (object_assignment_pattern
-  left: (_) @name @value.leading.endOf
-  right: (_) @value
+  left: (_) @collectionKey @value.leading.endOf
+  right: (_) @value @collectionKey.trailing.startOf
 ) @_.domain
 
 ;;!! const aaa = {bbb};
@@ -471,6 +487,12 @@
   .
   ";"? @_.domain.end
 )
+
+;;!! throw foo;
+;;!        ^^^
+(throw_statement
+  (_) @value
+) @value.domain
 
 ;;!! str => 0
 ;;!         ^
@@ -518,9 +540,16 @@
   "}" @collectionKey.iteration.end.startOf @value.iteration.end.startOf
 )
 
-;;!! const { aaa: bbb } = ccc;
-;;!               ^^^
-;;!          --------
+;;!! const {aaa: bbb} = ccc;
+;;!         ^^^^^^^^
+(object_pattern
+  "{" @collectionKey.iteration.start.endOf @value.iteration.start.endOf
+  "}" @collectionKey.iteration.end.startOf @value.iteration.end.startOf
+) @_.domain
+
+;;!! const {aaa: bbb} = ccc;
+;;!         ^^^
+;;!              ^^^
 (pair_pattern
   key: (_) @collectionKey @value.leading.endOf
   value: (_) @value @collectionKey.trailing.startOf
@@ -594,7 +623,9 @@
 ;;!  ^^^
 ;;!  -----
 (call_expression
-  function: (_) @functionCallee
+  function: (_) @functionCallee.start
+  (_)? @functionCallee.end
+  arguments: (_)
 ) @_.domain
 
 ;;!! new Foo()
@@ -626,36 +657,35 @@
 ;;!! true ? 0 : 1
 ;;!  ^^^^
 ;;!         ^   ^
-;;! -------------
 (ternary_expression
   condition: (_) @condition
   consequence: (_) @branch
 ) @condition.domain @branch.iteration
+
 (ternary_expression
   alternative: (_) @branch
 )
 
 ;;!! for (let i = 0; i < 2; ++i) {}
 ;;!                  ^^^^^
-;;!  ------------------------------
 (for_statement
   condition: (_) @condition
   (#child-range! @condition 0 -1 false true)
-) @_.domain
+) @condition.domain
 
 ;;!! while (true) {}
 ;;!         ^^^^
 (while_statement
   condition: (_) @condition
   (#child-range! @condition 0 -1 true true)
-) @_.domain
+) @condition.domain
 
 ;;!! do {} while (true);
 ;;!               ^^^^
 (do_statement
   condition: (_) @condition
   (#child-range! @condition 0 -1 true true)
-) @_.domain
+) @condition.domain
 
 ;;!! switch (value) { }
 ;;!          ^^^^^
@@ -667,7 +697,7 @@
     "}" @branch.iteration.end.startOf @condition.iteration.end.startOf
   )
   (#child-range! @value 0 -1 true true)
-) @branch.iteration.domain @condition.iteration.domain @value.domain
+) @value.domain
 
 ;;!! case 0: break;
 ;;!  ^^^^^^^^^^^^^^
@@ -760,13 +790,6 @@
 ;;!  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (try_statement) @branch.iteration
 
-[
-  (for_statement)
-  (for_in_statement)
-  (while_statement)
-  (do_statement)
-] @branch
-
 ;;!! { value: 0 }
 ;;!    ^^^^^
 ;;!    xxxxxxx
@@ -823,18 +846,20 @@
   (#child-range! @argumentList 1 -2)
 ) @argumentList.domain @argumentOrParameter.iteration.domain
 
-operator: [
-  "<"
-  "<<"
-  "<<="
-  "<="
-  ">"
-  ">="
-  ">>"
-  ">>="
-  ">>>"
-  ">>>="
-] @disqualifyDelimiter
+(_
+  operator: [
+    "<"
+    "<<"
+    "<<="
+    "<="
+    ">"
+    ">="
+    ">>"
+    ">>="
+    ">>>"
+    ">>>="
+  ] @disqualifyDelimiter
+)
 
 (arrow_function
   "=>" @disqualifyDelimiter

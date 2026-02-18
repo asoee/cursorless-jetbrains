@@ -33,6 +33,12 @@
   ";"? @statement.end
 )
 
+;;!! throw foo;
+;;!        ^^^
+(throw_statement
+  (_) @value
+) @value.domain
+
 ;;!! namespace NS { }
 (namespace_definition
   name: (_) @name
@@ -44,11 +50,12 @@
 ) @_.domain
 
 ;;!! int aaa = 0;
+;;!      ^^^
 ;;!            ^
 (field_declaration
-  declarator: (_) @_.leading.endOf
-  default_value: (_) @value
-) @_.domain
+  declarator: (_) @name @_.leading.endOf
+  default_value: (_) @value @name.removal.end.startOf
+) @_.domain @name.removal.start.startOf
 
 ;;!! []() {}
 ;;!  ^^^^^^^

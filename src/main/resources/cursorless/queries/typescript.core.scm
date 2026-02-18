@@ -55,7 +55,7 @@
 ;;!                   ^        ^
 (enum_assignment
   name: (_) @name @value.leading.endOf
-  value: (_) @value
+  value: (_) @value @name.trailing.startOf
 ) @_.domain
 
 ;;!! function foo(aaa: number = 0) {}
@@ -190,10 +190,10 @@
   ;;!! (public | private | protected) foo = ...;
   ;;!  -----------------------------------------
   (public_field_definition
-    name: (_) @name @value.leading.endOf
+    name: (_) @name @name.removal.end.endOf @value.leading.endOf
     !type
-    value: (_)? @value @name.trailing.startOf
-  ) @_.domain.start
+    value: (_)? @value @name.trailing.startOf @name.removal.end.startOf
+  ) @_.domain.start @name.removal.start.startOf
   .
   ";"? @_.domain.end
 )
@@ -206,9 +206,9 @@
     type: (_
       ":"
       (_) @type
-    ) @value.leading.endOf
-    value: (_)? @value
-  ) @_.domain.start
+    ) @value.leading.endOf @name.removal.end.endOf
+    value: (_)? @value @name.removal.end.startOf
+  ) @_.domain.start @name.removal.start.startOf
   .
   ";"? @_.domain.end
 )
@@ -216,19 +216,19 @@
 ;;!! type Foo = Bar;
 (
   (type_alias_declaration
-    name: (_) @value.leading.endOf
-    value: (_) @value
-  ) @value.domain
-  (#not-parent-type? @value.domain export_statement)
+    name: (_) @name @value.leading.endOf
+    value: (_) @value @name.removal.end.startOf
+  ) @_.domain @name.removal.start.startOf
+  (#not-parent-type? @_.domain export_statement)
 )
 
 ;;!! export type Foo = Bar;
 (export_statement
   (type_alias_declaration
-    name: (_) @value.leading.endOf
-    value: (_) @value
+    name: (_) @name @value.leading.endOf
+    value: (_) @value @name.removal.end.startOf
   )
-) @value.domain
+) @_.domain @name.removal.start.startOf
 
 [
   (interface_declaration)
@@ -492,7 +492,7 @@
       ":"
       (_) @type @collectionKey.trailing.startOf
     )
-  ) @_.domain.start
+  ) @_.domain.start @name.removal
   .
   ";"? @_.domain.end
 )
