@@ -9,7 +9,6 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.colors.EditorFontType
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.ui.JBColor
-import groovy.json.JsonException
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -210,9 +209,9 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         } catch (e: IndexOutOfBoundsException) {
             // This might happen in some cases, if the document has been updated, and is shorter than the hat range
             thisLogger().warn("Index out of bounds exception in CursorlessContainer.paintComponent: " + e.message)
-        } catch (e: JsonException) {
-            e.printStackTrace()
-        }
+        } catch (e: RuntimeException) {
+            thisLogger().warn("Runtime exception in CursorlessContainer.paintComponent", e)
+     }
     }
 
     fun updateHats(format: HatsFormat) {
