@@ -59,7 +59,7 @@ dependencies {
 //    testImplementation("com.jetbrains.intellij.platform:test-framework")
 
     // Integration test specific dependencies (for UI tests only)
-    integrationTestImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    integrationTestImplementation("org.junit.jupiter:junit-jupiter:6.1.3")
     integrationTestImplementation("org.kodein.di:kodein-di-jvm:7.28.0")
     integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.1")
 
