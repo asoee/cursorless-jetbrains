@@ -12,7 +12,7 @@ awaitility = "4.3.0"
 
 # plugins
 changelog = "2.4.0"
-intelliJPlatform = "2.8.0"
+intelliJPlatform = "2.10.5"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
