@@ -3,7 +3,7 @@
 junit = "4.13.2"
 javet = "5.0.11"
 javenode = "0.8.0"
-kotlin = "2.2.21"
+kotlin = "2.4.10"
 kover = "0.9.3"
 qodana = "2025.3.1"
 jsvg = "2.0.0"
@@ -12,7 +12,7 @@ awaitility = "4.3.0"
 
 # plugins
 changelog = "2.4.0"
-intelliJPlatform = "2.10.5"
+intelliJPlatform = "2.18.1"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
