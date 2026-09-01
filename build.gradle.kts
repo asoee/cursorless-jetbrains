@@ -60,9 +60,9 @@ dependencies {
     // Integration test specific dependencies (for UI tests only)
     integrationTestImplementation("org.junit.jupiter:junit-jupiter:6.1.3")
     integrationTestImplementation("org.kodein.di:kodein-di-jvm:7.28.0")
-    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.1")
+    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.11.0")
 
-    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.1")
+    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.11.0")
 
     implementation(libs.kotlinSerializationJson)
     implementation(libs.bundles.javet)
