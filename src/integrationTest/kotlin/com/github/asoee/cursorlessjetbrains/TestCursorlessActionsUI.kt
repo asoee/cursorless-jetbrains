@@ -5,11 +5,12 @@ import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.NoCIServer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.runner.Starter
+import com.intellij.platform.testFramework.teamCity.TeamCityReporter
+import com.intellij.tools.ide.starter.product.idea.community.IdeaCommunityProductInit
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.kodein.di.DI
@@ -34,7 +35,9 @@ class TestCursorlessActionsUI {
                         testName: String,
                         message: String,
                         details: String,
-                        linkToLogs: String?
+                        linkToLogs: String?,
+                        kind: TeamCityReporter.SyntheticTestKind,
+                        quiet: Boolean
                     ) {
                         fail { "$testName fails: $message. Details: $details" }
                     }
@@ -52,7 +55,7 @@ class TestCursorlessActionsUI {
         Starter.newContext(
             "testTypeDefTarget",
             TestCase(
-                IdeProductProvider.IC,
+                IdeaCommunityProductInit().ideInfo,
                 LocalProjectInfo(
                     projectDir = Path(System.getProperty("user.dir") + "/src/test/testData/commands")
                 )

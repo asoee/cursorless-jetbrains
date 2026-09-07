@@ -715,7 +715,7 @@ class TestCursorlessActions : BasePlatformTestCase() {
         val editor = getEditorFromPsiFile(psiFile)
         assertNotNull(editor)
         runInEdtAndWait {
-            EditorTestUtil.setEditorVisibleSize(editor, 80, 20)
+            EditorTestUtil.setEditorVisibleSize(editor!!, 80, 20)
             appService.editorManager.reloadAllEditors()
         }
 

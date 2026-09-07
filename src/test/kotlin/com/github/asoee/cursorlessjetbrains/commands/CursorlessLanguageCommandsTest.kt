@@ -273,7 +273,7 @@ class CursorlessLanguageCommandsTest : BasePlatformTestCase() {
         assertNotNull("Editor should not be null", editor)
 
         runInEdtAndWait {
-            EditorTestUtil.setEditorVisibleSize(editor, 80, 20)
+            EditorTestUtil.setEditorVisibleSize(editor!!, 80, 20)
             projectService.editorManager.reloadAllEditors()
         }
 

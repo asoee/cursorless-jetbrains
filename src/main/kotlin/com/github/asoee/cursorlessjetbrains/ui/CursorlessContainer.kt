@@ -209,9 +209,7 @@ class CursorlessContainer(val editor: Editor) : JComponent() {
         } catch (e: IndexOutOfBoundsException) {
             // This might happen in some cases, if the document has been updated, and is shorter than the hat range
             thisLogger().warn("Index out of bounds exception in CursorlessContainer.paintComponent: " + e.message)
-        } catch (e: RuntimeException) {
-            thisLogger().warn("Runtime exception in CursorlessContainer.paintComponent", e)
-     }
+        }
     }
 
     fun updateHats(format: HatsFormat) {
