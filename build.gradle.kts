@@ -1,6 +1,7 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
 
@@ -11,7 +12,7 @@ plugins {
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
-    kotlin("plugin.serialization") version "2.1.20"
+    kotlin("plugin.serialization") version "2.3.20" // keep in sync with libs.versions.kotlin
 }
 
 group = providers.gradleProperty("pluginGroup").get()
@@ -19,7 +20,29 @@ version = providers.gradleProperty("pluginVersion").get()
 
 // Set the JVM language level used to build the project.
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
+}
+
+// Align libraries that the target IntelliJ platform also bundles to the platform's
+// version. On the unit-test classpath everything shares one classloader, so an
+// older transitive copy shadows the platform's and breaks against its newer code:
+//   - kotlin-stdlib/reflect (via kotlinx-serialization-json, awaitility-kotlin):
+//     old stdlib rejects the platform's coroutine @DebugMetadata v2 -> the whole
+//     test run aborts with "Debug metadata version mismatch".
+//   - jackson-core (via javenode -> vertx-core 4.4.6, which pins 2.15.0): the
+//     platform's jackson-databind 2.19 calls ctors absent in 2.15 -> NoSuchMethodError.
+val kotlinVersion = "2.3.20"  // keep in sync with libs.versions.kotlin
+val jacksonVersion = "2.19.0" // bundled in IU-2026.2.1 (lib/intellij.libraries.jackson.jar)
+configurations.all {
+    resolutionStrategy {
+        force(
+            "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
+            "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion",
+            "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion",
+            "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion",
+            "com.fasterxml.jackson.core:jackson-core:$jacksonVersion",
+        )
+    }
 }
 
 // Configure project's dependencies
@@ -78,7 +101,6 @@ dependencies {
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
         plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
 
-//        instrumentationTools()
         pluginVerifier()
         zipSigner()
         testFramework(TestFrameworkType.Platform)
@@ -146,7 +168,7 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            create("IC", "2025.1.6")
+            create(IntelliJPlatformType.IntellijIdea, "2026.2")
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.github.asoee.cursorlessjetbrains.settings
 
-import com.intellij.ide.IdeBundle
 import com.intellij.ui.ColorPicker
 import com.intellij.ui.JBColor
 import java.awt.Color
@@ -29,7 +28,7 @@ class ColorCellEditor(private val table: JTable) : AbstractCellEditor(), TableCe
 
             newInput = ColorPicker.showDialog(
                 table,
-                IdeBundle.message("dialog.title.color.picker"),
+                "Color Picker",
                 oldValue,
                 false,
                 null,
