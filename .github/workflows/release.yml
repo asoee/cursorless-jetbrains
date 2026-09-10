@@ -25,6 +25,13 @@ jobs:
         with:
           ref: ${{ github.event.release.tag_name }}
 
+      # Derive pluginVersion from the resolved release tag instead of a manual edit
+      - name: Set Plugin Version
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+          sed -i "s/^pluginVersion=.*/pluginVersion=$VERSION/" gradle.properties
+
       # Set up Java environment for the next steps
       - name: Setup Java
         uses: actions/setup-java@v6
@@ -93,30 +100,23 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload ${{ github.event.release.tag_name }} ./build/distributions/*
 
-      # Create a pull request
-      - name: Create Pull Request
+      # Commit the patched changelog and version bump straight to the default branch
+      - name: Commit Changelog and Version Bump
         if: ${{ steps.properties.outputs.changelog != '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ github.event.release.tag_name }}"
-          BRANCH="changelog-update-$VERSION"
-          LABEL="release changelog"
+          DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
 
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
 
-          git checkout -b $BRANCH
+          # The release was tagged from the tip of the default branch, so replay
+          # the changelog/version commit onto its current head and fast-forward push.
+          git fetch origin "$DEFAULT_BRANCH"
+          git stash push -- CHANGELOG.md gradle.properties
+          git checkout -B "$DEFAULT_BRANCH" "origin/$DEFAULT_BRANCH"
+          git stash pop
           git commit -am "Changelog update - $VERSION"
-          git push --set-upstream origin $BRANCH
-          
-          gh label create "$LABEL" \
-            --description "Pull requests with release changelog update" \
-            --force \
-            || true
-
-          gh pr create \
-            --title "Changelog update - \`$VERSION\`" \
-            --body "Current pull request contains patched \`CHANGELOG.md\` file for the \`$VERSION\` version." \
-            --label "$LABEL" \
-            --head $BRANCH
+          git push origin "$DEFAULT_BRANCH"
