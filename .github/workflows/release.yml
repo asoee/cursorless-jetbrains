@@ -25,6 +25,13 @@ jobs:
         with:
           ref: ${{ github.event.release.tag_name }}
 
+      # Derive pluginVersion from the resolved release tag instead of a manual edit
+      - name: Set Plugin Version
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+          sed -i "s/^pluginVersion=.*/pluginVersion=$VERSION/" gradle.properties
+
       # Set up Java environment for the next steps
       - name: Setup Java
         uses: actions/setup-java@v6

@@ -1,0 +1,56 @@
+name-template: '$RESOLVED_VERSION'
+tag-template: '$RESOLVED_VERSION'
+
+categories:
+  - title: '🚀 Features'
+    labels: [ 'feature', 'enhancement' ]
+  - title: '🐛 Bug Fixes'
+    labels: [ 'fix', 'bugfix', 'bug' ]
+  - title: '🧰 Maintenance'
+    labels: [ 'chore', 'refactor', 'dependencies' ]
+  - title: '📝 Documentation'
+    labels: [ 'documentation' ]
+  - title: '💥 Breaking Changes'
+    labels: [ 'major' ]
+
+change-template: '- $TITLE (#$NUMBER) @$AUTHOR'
+change-title-escapes: '\<*_&'
+
+version-resolver:
+  major:
+    labels: [ 'major' ]
+  minor:
+    labels: [ 'minor', 'feature', 'enhancement' ]
+  patch:
+    labels: [ 'patch', 'fix', 'bugfix', 'chore' ]
+  default: patch
+
+autolabeler:
+  # Breaking changes: feat!: ..., fix!: ..., or a BREAKING CHANGE footer
+  - label: 'major'
+    title: [ '/^\w+(\(.+\))?!:/' ]
+    body: [ '/BREAKING CHANGE:/' ]
+
+  # Features -> minor bump
+  - label: 'feature'
+    branch: [ '/feature\/.+/' ]
+    title: [ '/^feat(\(.+\))?:/i' ]
+
+  # Fixes / chores -> patch bump
+  - label: 'fix'
+    branch: [ '/fix\/.+/' ]
+    title: [ '/^fix(\(.+\))?:/i' ]
+  - label: 'chore'
+    branch: [ '/chore\/.+/' ]
+    title: [ '/^chore(\(.+\))?:/i' ]
+
+  - label: 'documentation'
+    files: [ '*.md' ]
+
+exclude-labels:
+  - 'skip-changelog'
+
+template: |
+  ## What's Changed
+
+  $CHANGES
