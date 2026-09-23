@@ -67,34 +67,14 @@ jobs:
         run: |
           ./gradlew patchChangelog --release-note="$CHANGELOG"
 
-      # Publish the plugin to JetBrains Marketplace (only for full releases, not pre-releases)
-      - name: Verify Secrets
-        if: ${{ github.event.action == 'released' }}
-        env:
-          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
-        run: |
-          if [ -n "$PUBLISH_TOKEN" ]; then
-            echo "PUBLISH_TOKEN is set (length: ${#PUBLISH_TOKEN})"
-          else
-            echo "ERROR: PUBLISH_TOKEN is empty or not set"
-            exit 1
-          fi
-
-      - name: Publish Plugin
-        if: ${{ github.event.action == 'released' }}
-        env:
-          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
-          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
-        run: ./gradlew publishPlugin
-
-      # Build plugin artifact
+      # Build plugin artifact. This (and the GitHub-side steps below) runs before we
+      # touch the JetBrains Marketplace, so the GitHub release is fully published with
+      # its asset even if the Marketplace publish step later fails.
       - name: Build Plugin
         run: |
           ./gradlew buildPlugin
 
-      # Upload artifact as a release asset
+      # Upload artifact as a release asset, publishing the release on GitHub
       - name: Upload Release Asset
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -120,3 +100,27 @@ jobs:
           git stash pop
           git commit -am "Changelog update - $VERSION"
           git push origin "$DEFAULT_BRANCH"
+
+      # Publish the plugin to JetBrains Marketplace (only for full releases, not pre-releases).
+      # Runs last: the GitHub release above is already published and complete by this
+      # point, so a failure here (bad token, Marketplace outage, etc.) doesn't affect it.
+      - name: Verify Secrets
+        if: ${{ github.event.action == 'released' }}
+        env:
+          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+        run: |
+          if [ -n "$PUBLISH_TOKEN" ]; then
+            echo "PUBLISH_TOKEN is set (length: ${#PUBLISH_TOKEN})"
+          else
+            echo "ERROR: PUBLISH_TOKEN is empty or not set"
+            exit 1
+          fi
+
+      - name: Publish Plugin
+        if: ${{ github.event.action == 'released' }}
+        env:
+          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
+        run: ./gradlew publishPlugin
