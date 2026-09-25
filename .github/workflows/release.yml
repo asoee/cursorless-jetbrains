@@ -80,26 +80,46 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload ${{ github.event.release.tag_name }} ./build/distributions/*
 
-      # Commit the patched changelog and version bump straight to the default branch
+      # Commit the patched changelog and version bump via a pull request, since the
+      # default branch requires all changes to go through one. This step is best-effort:
+      # the GitHub release and its asset are already published by this point, so a
+      # failure here (e.g. branch protection later starts requiring manual review) must
+      # not fail the job - it just leaves the PR open for manual merge instead.
       - name: Commit Changelog and Version Bump
         if: ${{ steps.properties.outputs.changelog != '' }}
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ github.event.release.tag_name }}"
           DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
+          RELEASE_BRANCH="release/changelog-$VERSION"
 
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
 
-          # The release was tagged from the tip of the default branch, so replay
-          # the changelog/version commit onto its current head and fast-forward push.
+          # The release was tagged from the tip of the default branch, so branch off
+          # its current head for the changelog/version commit.
           git fetch origin "$DEFAULT_BRANCH"
           git stash push -- CHANGELOG.md gradle.properties
-          git checkout -B "$DEFAULT_BRANCH" "origin/$DEFAULT_BRANCH"
+          git checkout -B "$RELEASE_BRANCH" "origin/$DEFAULT_BRANCH"
           git stash pop
           git commit -am "Changelog update - $VERSION"
-          git push origin "$DEFAULT_BRANCH"
+          git push origin "$RELEASE_BRANCH"
+
+          PR_URL="$(gh pr create \
+            --base "$DEFAULT_BRANCH" \
+            --head "$RELEASE_BRANCH" \
+            --title "Changelog update - $VERSION" \
+            --body "Automated changelog and version bump for release $VERSION.")"
+          echo "Opened $PR_URL"
+
+          # Merge immediately - succeeds as long as the branch's required review count
+          # is met (currently 0, no CODEOWNERS configured). If it can't be merged
+          # automatically, leave it open rather than failing the release.
+          if ! gh pr merge "$PR_URL" --squash --delete-branch; then
+            echo "::warning::Could not auto-merge $PR_URL - merge it manually. The release itself was not affected."
+          fi
 
       # Publish the plugin to JetBrains Marketplace (only for full releases, not pre-releases).
       # Runs last: the GitHub release above is already published and complete by this
