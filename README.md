@@ -21,7 +21,7 @@ recent version of Intellij.
 2. install the Community voice command set (https://github.com/talonhub/community)
 3. install the talon side of cursorless: https://www.cursorless.org/docs/user/installation/#installing-the-talon-side
 4. to the same .talon/user folder, clone https://github.com/asoee/cursorless-jetbrains-talon
-5. open JetBrains and install the talon-cursorless-everywhere plugin
+5. open JetBrains and install the talon-cursorless-everywhere plugin (https://plugins.jetbrains.com/plugin/28086-talon-cursorless-everywhere)
 6. maybe(?) restart JetBrains + Talon
 
 ## Usage
