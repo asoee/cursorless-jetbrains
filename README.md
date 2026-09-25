@@ -1,8 +1,8 @@
 # cursorless-jetbrains
 
 ![Build](https://github.com/asoee/cursorless-jetbrains/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
+[![Version](https://img.shields.io/jetbrains/plugin/v/28086.svg)](https://plugins.jetbrains.com/plugin/28086-talon-cursorless-everywhere)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/28086.svg)](https://plugins.jetbrains.com/plugin/28086-talon-cursorless-everywhere)
 
 ## Description
 
