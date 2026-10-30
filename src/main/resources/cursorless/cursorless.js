@@ -7429,6 +7429,15 @@ function toLineRange({ start: start2, end }) {
 function toCharacterRange({ start: start2, end }) {
   return { type: "character", start: start2, end };
 }
+function isGeneralizedRangeEqual(a, b) {
+  if (a.type === "character" && b.type === "character") {
+    return a.start.isEqual(b.start) && a.end.isEqual(b.end);
+  }
+  if (a.type === "line" && b.type === "line") {
+    return a.start === b.start && a.end === b.end;
+  }
+  return false;
+}
 
 // ../common/src/util/toPlainObject.ts
 function rangeToPlainObject(range3) {
@@ -11566,17 +11575,54 @@ var JetbrainsHats = class {
   }
 };
 
+// src/ide/JetbrainsTalonSpokenForms.ts
+var LATEST_SPOKEN_FORMS_JSON_VERSION = 0;
+var NEWER_SPOKEN_FORMS_JSON_VERSION = 1;
+var JetbrainsTalonSpokenForms = class {
+  constructor(client) {
+    this.client = client;
+    this.notifier = new Notifier();
+    this.onDidChange = this.notifier.registerListener;
+  }
+  notifyChanged() {
+    this.notifier.notifyListeners();
+  }
+  async getSpokenFormEntries() {
+    const stateJson = this.client.readTalonSpokenForms();
+    if (stateJson == null) {
+      throw new NeedsInitialTalonUpdateError(
+        "Custom spoken forms file (~/.cursorless/state.json) not found. Using default spoken forms."
+      );
+    }
+    const payload = JSON.parse(stateJson);
+    if (payload.version === NEWER_SPOKEN_FORMS_JSON_VERSION) {
+      const supported32 = SUPPORTED_ENTRY_TYPES;
+      return payload.spokenForms.filter(
+        (entry) => supported32.includes(entry.type)
+      );
+    }
+    if (payload.version !== LATEST_SPOKEN_FORMS_JSON_VERSION) {
+      throw new Error(
+        `Invalid spoken forms version. Expected ${LATEST_SPOKEN_FORMS_JSON_VERSION} but got ${payload.version}`
+      );
+    }
+    return payload.spokenForms;
+  }
+};
+
 // src/ide/JetbrainsPlugin.ts
 var JetbrainsPlugin = class {
-  constructor(client, ide2, hats) {
+  constructor(client, ide2, hats, talonSpokenForms) {
     this.client = client;
     this.ide = ide2;
     this.hats = hats;
+    this.talonSpokenForms = talonSpokenForms;
   }
 };
 function createPlugin(client, ide2) {
   const hats = new JetbrainsHats(client);
-  return new JetbrainsPlugin(client, ide2, hats);
+  const talonSpokenForms = new JetbrainsTalonSpokenForms(client);
+  return new JetbrainsPlugin(client, ide2, hats, talonSpokenForms);
 }
 
 // src/ide/JetbrainsConfiguration.ts
@@ -11610,8 +11656,8 @@ var COMMAND_CAPABILITIES = {
   quickFix: { acceptsLocation: true },
   revealDefinition: { acceptsLocation: true },
   revealTypeDefinition: { acceptsLocation: true },
-  showHover: void 0,
-  showDebugHover: void 0,
+  showHover: { acceptsLocation: true },
+  showDebugHover: { acceptsLocation: true },
   extractVariable: { acceptsLocation: true },
   fold: { acceptsLocation: true },
   highlight: { acceptsLocation: true },
@@ -11677,14 +11723,15 @@ var JetbrainsMessages = class {
 
 // src/ide/JetbrainsKeyValueStore.ts
 var JetbrainsKeyValueStore = class {
-  constructor() {
-    this.data = { ...KEY_VALUE_STORE_DEFAULTS };
+  constructor(client) {
+    this.client = client;
   }
   get(key) {
-    return this.data[key];
+    const valueJson = this.client.keyValueGet(key);
+    return valueJson == null ? KEY_VALUE_STORE_DEFAULTS[key] : JSON.parse(valueJson);
   }
   set(key, value) {
-    this.data[key] = value;
+    this.client.keyValueSet(key, JSON.stringify(value));
     return Promise.resolve();
   }
 };
@@ -12123,8 +12170,8 @@ var JetbrainsEditor = class {
   async insertLineAfter(ranges) {
     await this.client.insertLineAfter(this.id, JSON.stringify(ranges));
   }
-  focus() {
-    throw new Error("focus not implemented.");
+  async focus() {
+    await this.client.focusEditor(this.id);
   }
   revealRange(_range) {
     return Promise.resolve();
@@ -12159,8 +12206,17 @@ var JetbrainsEditor = class {
     );
     await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
-  async toggleBreakpoint(_ranges) {
-    throw new Error("toggleBreakpoint not implemented.");
+  async toggleBreakpoint(ranges) {
+    for (const range3 of ranges ?? []) {
+      const position = range3.type === "line" ? new Position(range3.start, 0) : range3.start;
+      const command = new JetbrainsEditorCommand(
+        [new Range(position, position)],
+        true,
+        false,
+        "ToggleLineBreakpoint"
+      );
+      await this.client.executeRangeCommand(this.id, JSON.stringify(command));
+    }
   }
   async toggleLineComment(ranges) {
     const command = new JetbrainsEditorCommand(
@@ -12223,11 +12279,23 @@ var JetbrainsEditor = class {
     );
     await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
-  showHover(_range) {
-    throw new Error("showHover not implemented.");
+  async showHover(range3) {
+    const command = new JetbrainsEditorCommand(
+      range3 ? [range3] : [],
+      true,
+      false,
+      "QuickJavaDoc"
+    );
+    await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
-  showDebugHover(_range) {
-    throw new Error("showDebugHover not implemented.");
+  async showDebugHover(range3) {
+    const command = new JetbrainsEditorCommand(
+      range3 ? [range3] : [],
+      true,
+      false,
+      "QuickEvaluateExpression"
+    );
+    await this.client.executeRangeCommand(this.id, JSON.stringify(command));
   }
   async extractVariable(range3) {
     const command = new JetbrainsEditorCommand(
@@ -12312,7 +12380,7 @@ var JetbrainsIDE = class {
     this.onDidChangeTextEditorSelection = dummyEvent;
     this.onDidChangeTextEditorVisibleRanges = dummyEvent;
     this.configuration = configuration;
-    this.keyValueStore = new JetbrainsKeyValueStore();
+    this.keyValueStore = new JetbrainsKeyValueStore(this.client);
     this.messages = new JetbrainsMessages();
     this.clipboard = new JetbrainsClipboard(this.client);
     this.capabilities = new JetbrainsCapabilities();
@@ -12372,11 +12440,19 @@ var JetbrainsIDE = class {
     }
     throw Error(`Unsupported text editor type: ${editor}`);
   }
-  async findInDocument(_query, _editor) {
-    throw Error("findInDocument Not implemented");
+  async findInDocument(query, editor) {
+    const editorId = (editor ?? this.activeEditor)?.id;
+    if (editorId == null) {
+      throw Error("findInDocument: no editor to search in");
+    }
+    this.client.findInDocument(editorId, query);
   }
-  async findInWorkspace(_query) {
-    throw Error("findInWorkspace Not implemented");
+  async findInWorkspace(query) {
+    const editorId = this.activeEditor?.id;
+    if (editorId == null) {
+      throw Error("findInWorkspace: no active editor");
+    }
+    this.client.findInWorkspace(editorId, query);
   }
   async openTextDocument(_path) {
     throw Error("openTextDocument Not implemented");
@@ -12384,11 +12460,16 @@ var JetbrainsIDE = class {
   async openUntitledTextDocument(_options) {
     throw Error("openUntitledTextDocument Not implemented");
   }
-  async showInputBox(_options) {
-    throw Error("showInputBox Not implemented");
+  async showInputBox(options2) {
+    return this.client.showInputBox(JSON.stringify(options2 ?? {})) ?? void 0;
   }
-  async executeCommand(_command, ..._args) {
-    throw new Error("executeCommand Method not implemented.");
+  async executeCommand(command, ...args2) {
+    const editorId = this.activeEditor?.id;
+    if (editorId == null) {
+      throw Error(`executeCommand ${command}: no active editor`);
+    }
+    this.client.executeCommand(editorId, command, JSON.stringify(args2));
+    return void 0;
   }
   onDidChangeTextDocument(listener) {
     return this.onDidChangeTextDocumentNotifier.registerListener(listener);
@@ -47366,7 +47447,99 @@ var JetbrainsCommandServer = class {
     this.client = client;
   }
   getFocusedElementType() {
-    return Promise.resolve(void 0);
+    const type2 = this.client.getFocusedElementType();
+    return Promise.resolve(
+      type2 == null ? void 0 : type2
+    );
+  }
+};
+
+// src/ide/JetbrainsSnippets.ts
+var JetbrainsSnippets = class {
+  constructor(client, ide2) {
+    this.client = client;
+    this.ide = ide2;
+  }
+  async openNewSnippetFile(snippetName, directory) {
+    const editorState = JSON.parse(
+      this.client.openSnippetFile(snippetName, directory)
+    );
+    return this.ide.updateTextEditors(editorState);
+  }
+};
+
+// src/ide/JetbrainsScopeVisualizer.ts
+var JetbrainsScopeVisualizer = class {
+  constructor(client, scopeProvider) {
+    this.client = client;
+    this.scopeProvider = scopeProvider;
+    this.highlightIds = [];
+    this.renderedEditorIds = /* @__PURE__ */ new Set();
+  }
+  start(scopeType, visualizationType) {
+    this.stop();
+    const nestedId = `scopeVisualizer.${visualizationType}`;
+    this.highlightIds = [
+      "scopeVisualizer.domain",
+      nestedId,
+      `${nestedId}.equalsDomain`
+    ];
+    this.listener = visualizationType === "iteration" ? this.scopeProvider.onDidChangeIterationScopeRanges(
+      (editor, iterationScopeRanges) => this.render(
+        editor,
+        iterationScopeRanges.map(({ domain: domain2, ranges }) => ({
+          domain: toCharacterRange(domain2),
+          nestedRanges: ranges.map(
+            ({ range: range3 }) => toCharacterRange(range3)
+          )
+        }))
+      ),
+      { scopeType, visibleOnly: true, includeNestedTargets: false }
+    ) : this.scopeProvider.onDidChangeScopeRanges(
+      (editor, scopeRanges) => this.render(
+        editor,
+        scopeRanges.map(({ domain: domain2, targets }) => ({
+          domain: toCharacterRange(domain2),
+          nestedRanges: targets.map(
+            (target) => visualizationType === "removal" ? target.removalHighlightRange : toCharacterRange(target.contentRange)
+          )
+        }))
+      ),
+      { scopeType, visibleOnly: true }
+    );
+  }
+  stop() {
+    this.listener?.dispose();
+    this.listener = void 0;
+    for (const editorId of this.renderedEditorIds) {
+      for (const highlightId of this.highlightIds) {
+        this.client.setHighlightRanges(highlightId, editorId, "[]");
+      }
+    }
+    this.renderedEditorIds.clear();
+  }
+  /** Like VS Code's renderer, a domain identical to its only nested range is drawn once, in the nested colors */
+  render(editor, scopes) {
+    const domainRanges = [];
+    const nestedRanges = [];
+    const domainEqualsNestedRanges = [];
+    for (const { domain: domain2, nestedRanges: nested } of scopes) {
+      if (nested.length === 1 && isGeneralizedRangeEqual(nested[0], domain2)) {
+        domainEqualsNestedRanges.push(domain2);
+      } else {
+        domainRanges.push(domain2);
+        nestedRanges.push(...nested);
+      }
+    }
+    const [domainId, nestedId, equalsDomainId] = this.highlightIds;
+    this.renderedEditorIds.add(editor.id);
+    this.client.setHighlightRanges(domainId, editor.id, JSON.stringify(domainRanges));
+    this.client.setHighlightRanges(nestedId, editor.id, JSON.stringify(nestedRanges));
+    this.client.setHighlightRanges(
+      equalsDomainId,
+      editor.id,
+      JSON.stringify(domainEqualsNestedRanges)
+    );
   }
 };
 
@@ -47387,8 +47560,14 @@ async function activate(plugin, wasmDirectory) {
     hats: plugin.hats,
     treeSitterQueryProvider: queryProvider,
     treeSitter: new JetbrainsTreeSitter(wasmDirectory),
-    commandServerApi
+    commandServerApi,
+    talonSpokenForms: plugin.talonSpokenForms,
+    snippets: new JetbrainsSnippets(plugin.client, plugin.ide)
   });
+  plugin.scopeVisualizer = new JetbrainsScopeVisualizer(
+    plugin.client,
+    engine.scopeProvider
+  );
   console.log("activate completed");
   return engine;
 }

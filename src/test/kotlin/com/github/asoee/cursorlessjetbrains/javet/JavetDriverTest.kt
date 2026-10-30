@@ -312,4 +312,36 @@ class CountingCallback : CursorlessCallback {
 //        println("Not yet implemented")
         return "asdf" + System.currentTimeMillis()
     }
+
+    override fun findInDocument(editorId: String, query: String) {
+    }
+
+    override fun findInWorkspace(editorId: String, query: String) {
+    }
+
+    override fun focusEditor(editorId: String) {
+    }
+
+    override fun getFocusedElementType(): String? {
+        return null
+    }
+
+    override fun keyValueGet(key: String): String? {
+        return null
+    }
+
+    override fun keyValueSet(key: String, valueJson: String) {
+    }
+
+    override fun readTalonSpokenForms(): String? {
+        return null
+    }
+
+    override fun showInputBox(optionsJson: String): String? {
+        return null
+    }
+
+    override fun openSnippetFile(snippetName: String, directory: String): String {
+        throw UnsupportedOperationException()
+    }
 }

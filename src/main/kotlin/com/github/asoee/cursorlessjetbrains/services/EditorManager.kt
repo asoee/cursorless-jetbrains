@@ -22,6 +22,23 @@ import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.ScrollType
+import com.intellij.openapi.editor.EditorKind
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.fileEditor.OpenFileDescriptor
+import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.vfs.LocalFileSystem
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import com.github.asoee.cursorlessjetbrains.util.isInTerminal
+import com.github.asoee.cursorlessjetbrains.settings.CursorlessKeyValueStore
+import java.awt.KeyboardFocusManager
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import javax.swing.SwingUtilities
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
@@ -221,30 +238,77 @@ class EditorManager(private var cursorlessEngine: CursorlessEngine, parentDispos
     }
 
     fun documentUpdated(editorId: String, edit: CursorlessEditorEdit) {
-        logger.debug("Document updated $editorId")
         val editor = editorsById[editorId]
-        if (editor != null) {
-            if (edit.changes.isNotEmpty()) {
-                ApplicationManager.getApplication().invokeAndWait {
-                    ApplicationManager.getApplication().runWriteAction {
-                        CommandProcessor.getInstance().executeCommand(
-                            editor.project,
-                            {
-                                for (change in edit.changes) {
-                                    logger.debug("Setting range to " + change.rangeOffset.toString() + " - " + change.rangeOffset.toString() + " : " + change.text)
-                                    editor.document.replaceString(
-                                        change.rangeOffset,
-                                        change.rangeOffset + change.rangeLength,
-                                        change.text
-                                    )
-                                }
-                            },
-                            "Insert",
-                            "insertGroup"
-                        )
-                    }
-                }
+        if (editor == null) {
+            logger.warn("Dropping Cursorless edit for unknown editor $editorId")
+            return
+        }
+        if (edit.changes.isEmpty()) {
+            val documentText = ReadAction.compute<String, RuntimeException> { editor.document.text }
+            if (edit.text.isNotEmpty() && edit.text != documentText) {
+                logger.warn("Cursorless edit for $editorId has no changes but different text; nothing applied")
             }
+            return
+        }
+        logger.info("Applying ${edit.changes.size} Cursorless change(s) to $editorId")
+        ApplicationManager.getApplication().invokeAndWait {
+            val document = editor.document
+            // requestWriting runs the IDE's read-only handling, e.g. a Perforce checkout, as typing would.
+            // Throwing here rejects the command in the engine, so Talon gets an error instead of a silent no-op
+            if (!FileDocumentManager.getInstance().requestWriting(document, editor.project)) {
+                val fileName = FileDocumentManager.getInstance().getFile(document)?.name ?: editorId
+                throw IllegalStateException("Cannot edit read-only file $fileName")
+            }
+            ApplicationManager.getApplication().runWriteAction {
+                CommandProcessor.getInstance().executeCommand(
+                    editor.project,
+                    {
+                        for (change in edit.changes) {
+                            logger.debug("Setting range to " + change.rangeOffset.toString() + " - " + change.rangeOffset.toString() + " : " + change.text)
+                            document.replaceString(
+                                change.rangeOffset,
+                                change.rangeOffset + change.rangeLength,
+                                change.text
+                            )
+                        }
+                        editor.project?.let { PsiDocumentManager.getInstance(it).commitDocument(document) }
+                    },
+                    "Insert",
+                    "insertGroup"
+                )
+            }
+        }
+    }
+
+    /**
+     * For the engine's fallback: "textEditor" when a file editor has focus, otherwise "terminal" or "other", which
+     * makes Cursorless hand commands on the selection back to Talon to run as keystrokes. Null when the IDE isn't
+     * focused, which leaves commands as they are.
+     */
+    fun focusedElementType(): String? {
+        val owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().focusOwner ?: return null
+        val inFileEditor = editorsById.values.any { editor ->
+            editor.editorKind == EditorKind.MAIN_EDITOR && SwingUtilities.isDescendingFrom(owner, editor.contentComponent)
+        }
+        if (inFileEditor) {
+            return "textEditor"
+        }
+        return if (isInTerminal(owner)) "terminal" else "other"
+    }
+
+    /**
+     * Registers [editor] now and returns its state, for an editor the engine must use straight away (a new snippet
+     * file). Call on the EDT.
+     */
+    fun editorStateNow(editor: Editor): EditorState {
+        ensureEditorIdSet(editor)
+        val psiFile = editor.project?.let { PsiDocumentManager.getInstance(it).getPsiFile(editor.document) }
+        return serializeEditor(editor, editorIds[editor]!!, psiFile)
+    }
+
+    fun talonSpokenFormsChanged() {
+        emitScope.launch(emitDispatcher) {
+            cursorlessEngine.talonSpokenFormsChanged()
         }
     }
 
@@ -309,17 +373,15 @@ class EditorManager(private var cursorlessEngine: CursorlessEngine, parentDispos
         }
 
         override fun executeCommand(editorId: String, command: String, args: Array<String>) {
-            val actionsArgs = listOf(command) + args.toList()
-            editorManager.editorsById[editorId]?.let { editor ->
-                editor.project?.let { project ->
-                    val request = CommandRequest(project, "action", actionsArgs)
-                    thisLogger().info("Executing command $request")
-                    service<CommandRegistryService>().getCommand(request)?.let {
-                        thisLogger().info("Found command $it")
-                        service<CommandExecutorService>().execute(it)
-                    }
-                }
+            thisLogger().info("Executing IDE action $command for $editorId")
+            val editor = editorManager.editorsById[editorId]
+                ?: throw IllegalStateException("No editor $editorId to run $command in")
+            val project = editor.project ?: throw IllegalStateException("Editor $editorId has no project")
+            // Throwing rejects the Cursorless command, so Talon reports the bad action id instead of doing nothing
+            if (ActionManager.getInstance().getAction(command) == null) {
+                throw IllegalArgumentException("Unknown IDE action: $command")
             }
+            service<CommandExecutorService>().execute(IDEActionCommand(project, command, editor))
         }
 
         override fun executeRangeCommand(editorId: String, rangeCommand: CursorlessEditorCommand) {
@@ -399,6 +461,78 @@ class EditorManager(private var cursorlessEngine: CursorlessEngine, parentDispos
             return service<FileCommandServerService>().commandServer.prePhraseVersion()
         }
 
+        override fun findInDocument(editorId: String, query: String) {
+            showFind(editorId, query, false)
+        }
+
+        override fun findInWorkspace(editorId: String, query: String) {
+            showFind(editorId, query, true)
+        }
+
+        private fun showFind(editorId: String, query: String, inProject: Boolean) {
+            editorManager.editorsById[editorId]?.let { editor ->
+                editor.project?.let { project ->
+                    service<CommandExecutorService>().execute(ShowFindCommand(project, editor, query, inProject))
+                }
+            }
+        }
+
+        override fun getFocusedElementType(): String? {
+            return editorManager.focusedElementType()
+        }
+
+        override fun keyValueGet(key: String): String? {
+            return CursorlessKeyValueStore.instance.get(key)
+        }
+
+        override fun keyValueSet(key: String, valueJson: String) {
+            CursorlessKeyValueStore.instance.set(key, valueJson)
+        }
+
+        override fun readTalonSpokenForms(): String? {
+            val path = talonSpokenFormsPath()
+            return if (Files.exists(path)) Files.readString(path) else null
+        }
+
+        override fun showInputBox(optionsJson: String): String? {
+            val options = Json.parseToJsonElement(optionsJson).jsonObject
+            fun option(name: String) = options[name]?.jsonPrimitive?.contentOrNull
+            val placeHolder = option("placeHolder")
+            val prompt = (option("prompt") ?: "") + if (placeHolder != null) " (e.g. $placeHolder)" else ""
+            var result: String? = null
+            ApplicationManager.getApplication().invokeAndWait {
+                result = Messages.showInputDialog(prompt, option("title") ?: "Cursorless", null, option("value"), null)
+            }
+            return result
+        }
+
+        override fun openSnippetFile(snippetName: String, directory: String): String {
+            val project = editorManager.editorsById.values.firstNotNullOfOrNull { it.project }
+                ?: throw IllegalStateException("No project to open the snippet in")
+            val path = Paths.get(directory, "$snippetName.snippet")
+            Files.createDirectories(path.parent)
+            if (!Files.exists(path)) {
+                Files.createFile(path)
+            }
+            var editorState: EditorState? = null
+            ApplicationManager.getApplication().invokeAndWait {
+                val file = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(path)
+                    ?: throw IllegalStateException("Cannot open snippet file $path")
+                val editor = FileEditorManager.getInstance(project).openTextEditor(OpenFileDescriptor(project, file), true)
+                    ?: throw IllegalStateException("Cannot open an editor for $path")
+                editorState = editorManager.editorStateNow(editor)
+            }
+            return Json.encodeToString(editorState)
+        }
+
+        override fun focusEditor(editorId: String) {
+            editorManager.editorsById[editorId]?.let { editor ->
+                editor.project?.let { project ->
+                    service<CommandExecutorService>().execute(FocusEditorCommand(project, editor))
+                }
+            }
+        }
+
         override fun documentUpdated(editorId: String, edit: CursorlessEditorEdit) {
             editorManager.documentUpdated(editorId, edit)
         }
@@ -475,3 +609,6 @@ class EditorManager(private var cursorlessEngine: CursorlessEngine, parentDispos
     }
 
 }
+
+/** Where Talon writes Cursorless's custom spoken forms. */
+fun talonSpokenFormsPath(): Path = Paths.get(System.getProperty("user.home"), ".cursorless", "state.json")

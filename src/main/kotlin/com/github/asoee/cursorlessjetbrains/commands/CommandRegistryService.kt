@@ -29,6 +29,9 @@ class CommandRegistryService {
         registerCommand("find", FindCommand::fromArgs)
         registerCommand("jetbrains.action.openSettings", OpenSettingsCommand::fromArgs)
         registerCommand("cursorless.command", CursorlessExecuteCommand::fromArgs)
+        registerCommand("cursorless.documentationOpened", NoOpCommand::fromArgs)
+        registerCommand("cursorless.showScopeVisualizer", ScopeVisualizerCommand::show)
+        registerCommand("cursorless.hideScopeVisualizer", ScopeVisualizerCommand::hide)
     }
 
 }

@@ -22,6 +22,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import java.io.File
 import kotlin.io.path.absolutePathString
@@ -378,8 +379,8 @@ open class JavetDriver {
             |   if (ide) {
             |     try {
             |       const response = await engine.commandApi.runCommand(${json});
-            |       if (response.returnValue) {
-            |         const respJson = JSON.stringify(response.returnValue);
+            |       if (response) {
+            |         const respJson = JSON.stringify(response);
             |         console.log("Cursorless/JS: response: " + respJson);
             |         return respJson;
             |       } else {
@@ -419,10 +420,17 @@ open class JavetDriver {
             ideClientCallback.unhandledRejections.clear()
             return ExecutionResult(false, null, joinedCause)
         }
-        logger.debug("returnValue: $returnValue")
+        logger.debug("response: $returnValue")
         gc()
         dumpMemoryInfo()
-        return ExecutionResult(success, returnValue, error)
+        // The engine responds with {returnValue} or, when focus is outside the editor, {fallback} for Talon to run
+        val response = returnValue as? JsonObject
+        return ExecutionResult(
+            success,
+            response?.get("returnValue")?.takeUnless { it is JsonNull },
+            error,
+            response?.get("fallback")?.takeUnless { it is JsonNull },
+        )
     }
 
     @Synchronized
@@ -529,6 +537,47 @@ open class JavetDriver {
 
     }
 
+    fun showScopeVisualizer(scopeTypeJson: String, visualizationType: String) {
+        val js = """
+            | (async () => {
+            |   const plugin = await globalThis.plugin;
+            |   plugin?.scopeVisualizer?.start(${scopeTypeJson}, ${Json.encodeToString(visualizationType)});
+            | })();
+            | """.trimMargin()
+
+        runtime.getExecutor(js)
+            .executeVoid()
+        eventLoop.await()
+    }
+
+    fun hideScopeVisualizer() {
+        val js = """
+            | (async () => {
+            |   const plugin = await globalThis.plugin;
+            |   plugin?.scopeVisualizer?.stop();
+            | })();
+            | """.trimMargin()
+
+        runtime.getExecutor(js)
+            .executeVoid()
+        eventLoop.await()
+    }
+
+    fun talonSpokenFormsChanged() {
+        val js = """
+            | (async () => {
+            |   const plugin = await globalThis.plugin;
+            |   if (plugin) {
+            |     plugin.talonSpokenForms.notifyChanged();
+            |   }
+            | })();
+            | """.trimMargin()
+
+        runtime.getExecutor(js)
+            .executeVoid()
+        eventLoop.await()
+    }
+
     fun setEnabledHatShapes(enabledHatShapes: List<String>) {
         val js = """
             | (async () => {
@@ -627,7 +676,8 @@ open class JavetDriver {
 data class ExecutionResult(
     val success: Boolean,
     val returnValue: JsonElement?,
-    val error: String?
+    val error: String?,
+    val fallback: JsonElement? = null,
 )
 
 @Serializable

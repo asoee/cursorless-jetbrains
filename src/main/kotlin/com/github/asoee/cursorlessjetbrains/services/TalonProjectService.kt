@@ -13,7 +13,11 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.ex.EditorEventMulticasterEx
 import com.intellij.openapi.project.Project
+import com.intellij.util.concurrency.AppExecutorUtil
 import kotlinx.coroutines.CoroutineScope
+import java.nio.file.Files
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.launch
 
 @Service(Service.Level.PROJECT)
@@ -38,6 +42,9 @@ class TalonProjectService(private val project: Project, private val cs: Coroutin
 
     private var focusChangeListener: TalonFocusChangeListener
 
+    private val spokenFormsPoller: ScheduledFuture<*>
+    private var spokenFormsModified: Long = -1
+
     @Volatile
     private var isRestarting = false
 
@@ -57,6 +64,10 @@ class TalonProjectService(private val project: Project, private val cs: Coroutin
         m.addFocusChangeListener(this.focusChangeListener, this)
 
         settingsUpdated(TalonSettings.instance.state)
+
+        // Talon rewrites ~/.cursorless/state.json when spoken forms change; the engine re-reads it when told
+        spokenFormsPoller = AppExecutorUtil.getAppScheduledExecutorService()
+            .scheduleWithFixedDelay({ checkTalonSpokenForms() }, 5, 5, TimeUnit.SECONDS)
 
         logger.info("reloading all")
         this.editorManager.reloadAllEditors()
@@ -108,8 +119,22 @@ class TalonProjectService(private val project: Project, private val cs: Coroutin
 
     override fun dispose() {
         logger.info("Disposing TalonProjectService")
+        spokenFormsPoller.cancel(false)
         jsDriver.close()
 
+    }
+
+    private fun checkTalonSpokenForms() {
+        try {
+            val path = talonSpokenFormsPath()
+            val modified = if (Files.exists(path)) Files.getLastModifiedTime(path).toMillis() else 0
+            if (spokenFormsModified != -1L && modified != spokenFormsModified) {
+                editorManager.talonSpokenFormsChanged()
+            }
+            spokenFormsModified = modified
+        } catch (e: Exception) {
+            logger.warn("Could not check Talon's spoken forms file", e)
+        }
     }
 
     fun editorReleased(editor: Editor) {
