@@ -5,6 +5,8 @@
     <vendor>asoee</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <!-- The terminal's shell, for editing keys sent to it; without the Terminal plugin the rest still loads -->
+    <depends optional="true" config-file="cursorless-terminal.xml">org.jetbrains.plugins.terminal</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
@@ -14,9 +16,14 @@
                 implementation="com.github.asoee.cursorlessjetbrains.listeners.TalonEditorFactoryListener"/>
 
         <notificationGroup id="vc-idea" displayType="BALLOON"/>
+        <!-- Engine messages and command errors, apart from vc-idea's startup notices so silencing those keeps these -->
+        <notificationGroup id="Cursorless" displayType="BALLOON"/>
 
         <applicationService
                 serviceImplementation="com.github.asoee.cursorlessjetbrains.settings.TalonSettings"/>
+
+        <applicationService
+                serviceImplementation="com.github.asoee.cursorlessjetbrains.settings.CursorlessKeyValueStore"/>
 
         <postStartupActivity
                 implementation="com.github.asoee.cursorlessjetbrains.listeners.TalonProjectActivity"/>

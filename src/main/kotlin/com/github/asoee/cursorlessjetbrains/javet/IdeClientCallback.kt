@@ -1,10 +1,13 @@
 package com.github.asoee.cursorlessjetbrains.javet
 
+import com.intellij.ide.plugins.cl.PluginAwareClassLoader
 import com.caoccao.javet.annotations.V8Function
 import com.github.asoee.cursorlessjetbrains.cursorless.*
 import com.github.asoee.cursorlessjetbrains.sync.HatRange
 import com.intellij.openapi.diagnostic.logger
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
 
 class IdeClientCallback {
 
@@ -36,8 +39,9 @@ class IdeClientCallback {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
 
-        override fun clipboardPaste(editorId: String) {
+        override fun clipboardPaste(editorId: String): String? {
             println("ASOEE/PLUGIN: CursorlessCallback not set")
+            return null
         }
 
         override fun executeCommand(editorId: String, command: String, args: Array<String>) {
@@ -71,6 +75,58 @@ class IdeClientCallback {
         override fun prePhraseVersion(): String? {
             println("ASOEE/PLUGIN: prePhraseVersion/CursorlessCallback not set")
             return null
+        }
+
+        override fun findInDocument(editorId: String, query: String) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
+        override fun findInWorkspace(editorId: String, query: String) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
+        override fun focusEditor(editorId: String) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
+        override fun getFocusedElementType(): String? {
+            return null
+        }
+
+        override fun keyValueGet(key: String): String? {
+            return null
+        }
+
+        override fun keyValueSet(key: String, valueJson: String) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
+        override fun readTalonSpokenForms(): String? {
+            return null
+        }
+
+        override fun showInputBox(optionsJson: String): String? {
+            return null
+        }
+
+        override fun openSnippetFile(snippetName: String, directory: String): String {
+            throw IllegalStateException("CursorlessCallback not set")
+        }
+
+        override fun commandHistoryAppend(fileName: String, entryJson: String) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
+        }
+
+        override fun commandHistoryEntries(): String {
+            return "[]"
+        }
+
+        override fun openUntitledTextDocument(content: String, language: String?): String {
+            throw IllegalStateException("CursorlessCallback not set")
+        }
+
+        override fun showMessage(type: String, id: String, message: String) {
+            println("ASOEE/PLUGIN: CursorlessCallback not set")
         }
 
     }
@@ -114,15 +170,18 @@ class IdeClientCallback {
     }
 
     @V8Function
-    fun clipboardPaste(editorId: String) {
-        logger.info("IdeClientCallback.clipboardCopy")
-        cursorlessCallback.clipboardPaste(editorId)
+    fun clipboardPaste(editorId: String): String? {
+        logger.info("IdeClientCallback.clipboardPaste")
+        return cursorlessCallback.clipboardPaste(editorId)
     }
 
     @V8Function
     fun executeCommand(editorId: String, command: String, argsJson: String) {
         logger.info("IdeClientCallback.executeCommand: $command, $argsJson")
-        val args = Json { ignoreUnknownKeys = true }.decodeFromString<Array<String>>(argsJson)
+        // Command args can be any JSON value; pass strings through as-is and anything else as JSON text
+        val args = jsonDecoder.decodeFromString<JsonArray>(argsJson)
+            .map { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content ?: it.toString() }
+            .toTypedArray()
         cursorlessCallback.executeCommand(editorId, command, args)
     }
 
@@ -165,6 +224,86 @@ class IdeClientCallback {
         logger.info("IdeClientCallback.setHighlightRanges: highlightId=$highlightId, editorId=$editorId, ranges=$rangesJson")
         val ranges = jsonDecoder.decodeFromString<Array<CursorlessGeneralizedRange>>(rangesJson)
         cursorlessCallback.setHighlightRanges(highlightId, editorId, ranges)
+    }
+
+    @V8Function
+    fun findInDocument(editorId: String, query: String) {
+        logger.info("IdeClientCallback.findInDocument: $editorId")
+        cursorlessCallback.findInDocument(editorId, query)
+    }
+
+    @V8Function
+    fun findInWorkspace(editorId: String, query: String) {
+        logger.info("IdeClientCallback.findInWorkspace: $editorId")
+        cursorlessCallback.findInWorkspace(editorId, query)
+    }
+
+    @V8Function
+    fun focusEditor(editorId: String) {
+        logger.info("IdeClientCallback.focusEditor: $editorId")
+        cursorlessCallback.focusEditor(editorId)
+    }
+
+    @V8Function
+    fun getFocusedElementType(): String? {
+        return cursorlessCallback.getFocusedElementType()
+    }
+
+    @V8Function
+    fun keyValueGet(key: String): String? {
+        return cursorlessCallback.keyValueGet(key)
+    }
+
+    @V8Function
+    fun keyValueSet(key: String, valueJson: String) {
+        logger.info("IdeClientCallback.keyValueSet: $key")
+        cursorlessCallback.keyValueSet(key, valueJson)
+    }
+
+    @V8Function
+    fun readTalonSpokenForms(): String? {
+        return cursorlessCallback.readTalonSpokenForms()
+    }
+
+    @V8Function
+    fun showInputBox(optionsJson: String): String? {
+        logger.info("IdeClientCallback.showInputBox: $optionsJson")
+        return cursorlessCallback.showInputBox(optionsJson)
+    }
+
+    @V8Function
+    fun openSnippetFile(snippetName: String, directory: String): String {
+        logger.info("IdeClientCallback.openSnippetFile: $snippetName in $directory")
+        return cursorlessCallback.openSnippetFile(snippetName, directory)
+    }
+
+    @V8Function
+    fun commandHistoryAppend(fileName: String, entryJson: String) {
+        cursorlessCallback.commandHistoryAppend(fileName, entryJson)
+    }
+
+    @V8Function
+    fun commandHistoryEntries(): String {
+        return cursorlessCallback.commandHistoryEntries()
+    }
+
+    @V8Function
+    fun openUntitledTextDocument(content: String, language: String?): String {
+        logger.info("IdeClientCallback.openUntitledTextDocument: $language")
+        return cursorlessCallback.openUntitledTextDocument(content, language)
+    }
+
+    @V8Function
+    fun showMessage(type: String, id: String, message: String) {
+        logger.info("IdeClientCallback.showMessage: $type $id $message")
+        cursorlessCallback.showMessage(type, id, message)
+    }
+
+    @V8Function
+    fun pluginVersion(): String {
+        // From the plugin's own class loader: looking the plugin up by id is internal API, which verification rejects
+        return (IdeClientCallback::class.java.classLoader as? PluginAwareClassLoader)?.pluginDescriptor?.version
+            ?: "unknown"
     }
 
     @V8Function

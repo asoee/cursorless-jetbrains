@@ -91,6 +91,6 @@ val DEFAULT_CONFIGURATION = CursorlessConfiguration(
         keyboardTargetFollowsSelection = false,
     ),
     decorationDebounceDelayMs = 1,
-    commandHistory = true,
+    commandHistory = false,
     debug = false,
 )

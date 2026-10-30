@@ -8,7 +8,8 @@ interface CursorlessCallback {
     fun setSelection(editorId: String, selections: Array<CursorlessRange>)
     fun documentUpdated(editorId: String, edit: CursorlessEditorEdit)
     fun clipboardCopy(editorId: String, selections: Array<CursorlessRange>)
-    fun clipboardPaste(editorId: String)
+    /** Returns the paste's edits as JSON [{rangeOffset, rangeLength, text}] */
+    fun clipboardPaste(editorId: String): String?
     fun executeCommand(editorId: String, command: String, args: Array<String>)
     fun insertLineAfter(editorId: String, ranges: Array<CursorlessRange>)
     fun insertSnippet(editorId: String, snippet: String)
@@ -17,4 +18,17 @@ interface CursorlessCallback {
     fun flashRanges(flashRanges: Array<CursorlessFlashRange>)
     fun setHighlightRanges(highlightId: String?, editorId: String, ranges: Array<CursorlessGeneralizedRange>)
     fun prePhraseVersion(): String?
+    fun findInDocument(editorId: String, query: String)
+    fun findInWorkspace(editorId: String, query: String)
+    fun focusEditor(editorId: String)
+    fun getFocusedElementType(): String?
+    fun keyValueGet(key: String): String?
+    fun keyValueSet(key: String, valueJson: String)
+    fun readTalonSpokenForms(): String?
+    fun showInputBox(optionsJson: String): String?
+    fun openSnippetFile(snippetName: String, directory: String): String
+    fun commandHistoryAppend(fileName: String, entryJson: String)
+    fun commandHistoryEntries(): String
+    fun openUntitledTextDocument(content: String, language: String?): String
+    fun showMessage(type: String, id: String, message: String)
 }

@@ -30,6 +30,8 @@ class TalonSettings
         var hatVerticalOffset: Int = 0
         var flashRangeDuration: Int = 100
         var maxFileSizeKb: Int = 1024 // Maximum file size in KB that can be sent to Cursorless (default 1MB)
+        var syncHatsFromVscode: Boolean = true // Take hat enablement and penalties from VS Code's settings.json, as Talon does
+        var commandHistory: Boolean = false // Record commands for "cursorless stats"; opt-in, as in VS Code
         var hatShapeSettings: List<ShapeSetting> = shapeFromDefaults()
         var hatColorSettings: List<ColorSetting> = colorFromDefaults()
     }

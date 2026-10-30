@@ -1,6 +1,7 @@
 package com.github.asoee.cursorlessjetbrains.settings
 
 import com.intellij.openapi.application.ApplicationBundle
+import com.intellij.openapi.components.service
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.dsl.builder.*
@@ -71,6 +72,20 @@ internal class TalonSettingsConfigurable : BoundConfigurable(DISPLAY_NAME, ID) {
                         .comment("Files larger than this will not be sent to Cursorless to prevent engine overload")
                 }
             }
+            group("Hat sync") {
+                row {
+                    checkBox("Sync hat colors and shapes from VS Code's settings.json")
+                        .bindSelected(settings.state::syncHatsFromVscode)
+                        .comment("Keeps the hats drawn here in step with the hats Talon recognizes: cursorless.hatEnablement and cursorless.hatPenalties")
+                }
+            }
+            group("Command history") {
+                row {
+                    checkBox("Record command history")
+                        .bindSelected(settings.state::commandHistory)
+                        .comment("Saves each command (without its spoken form or text) to ~/.cursorless/commandHistory, as VS Code's cursorless.commandHistory does, for \"cursorless stats\"")
+                }
+            }
             group("Colors") {
                 row {
                     label("Color settings")
@@ -89,8 +104,8 @@ internal class TalonSettingsConfigurable : BoundConfigurable(DISPLAY_NAME, ID) {
                 row {
                     label("Shape settings")
                         .comment(
-                            "While you can enable or disable shapes here, it will only affect the drawing of the shapes." +
-                                    "Until some changes are done to talon-cursorless, talon will only recognize commands with the shapes that are enabled in VS-Code."
+                            "Talon only recognizes the hats enabled in VS Code's settings.json (cursorless.hatEnablement). " +
+                                    "With syncing on, changes made here are replaced the next time that file changes or the IDE restarts."
                         )
                 }
                 row {
@@ -116,9 +131,15 @@ internal class TalonSettingsConfigurable : BoundConfigurable(DISPLAY_NAME, ID) {
     }
 
     override fun apply() {
+        val settings = TalonSettings.instance
+        val wasSyncing = settings.state.syncHatsFromVscode
         super.apply()
 
-        val settings = TalonSettings.instance
         settings.fireSettingsChanged()
+        // Sync straight away only when syncing was just turned on: otherwise every Apply would replace the hat
+        // changes made here within seconds, rather than when settings.json next changes
+        if (settings.state.syncHatsFromVscode && !wasSyncing) {
+            service<VscodeHatSync>().resync()
+        }
     }
 }
