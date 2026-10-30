@@ -31,18 +31,13 @@
 ;; Document iteration scopes
 
 (
-  (chunk) @statement.iteration @namedFunction.iteration
-  (#document-range! @statement.iteration @namedFunction.iteration)
-)
-(
-  (chunk) @name.iteration @value.iteration
-  (#document-range! @name.iteration @value.iteration)
+  (chunk) @G_statement_name_value_namedFunction.iteration
+  (#document-range! @G_statement_name_value_namedFunction.iteration)
 )
 
 ;; Block iteration scopes
 
-(block) @statement.iteration @namedFunction.iteration
-(block) @name.iteration @value.iteration
+(block) @G_statement_name_value_namedFunction.iteration
 
 ;; Conditionals
 
@@ -159,11 +154,11 @@
 ) @map
 
 (table_constructor
-  "{" @value.iteration.start.endOf @collectionKey.iteration.start.endOf
+  "{" @G_value_collectionKey.iteration.start.endOf
   (field
     name: (_)
   )
-  "}" @value.iteration.end.startOf @collectionKey.iteration.end.startOf
+  "}" @G_value_collectionKey.iteration.end.startOf
 )
 
 ;;!! a = { foo = "bar" }
@@ -248,8 +243,8 @@
 ;;!               ****
 (_
   (parameters
-    "(" @argumentList.removal.start.endOf @argumentOrParameter.iteration.start.endOf @name.iteration.start.endOf
-    ")" @argumentList.removal.end.startOf @argumentOrParameter.iteration.end.startOf @name.iteration.end.startOf
+    "(" @argumentList.removal.start.endOf @G_argumentOrParameter_name.iteration.start.endOf
+    ")" @argumentList.removal.end.startOf @G_argumentOrParameter_name.iteration.end.startOf
   ) @argumentList
   (#empty-single-multi-delimiter! @argumentList @argumentList "" ", " ",\n")
   (#child-range! @argumentList 1 -2)

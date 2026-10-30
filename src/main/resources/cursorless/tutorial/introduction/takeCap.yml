@@ -1,0 +1,236 @@
+languageId: plaintext
+command:
+  version: 7
+  spokenForm: take cap
+  action:
+    name: setSelection
+    target:
+      type: primitive
+      mark: {type: decoratedSymbol, symbolColor: default, character: c}
+  usePrePhraseSnapshot: true
+initialState:
+  documentContents: |-
+    Welcome to Cursorless!
+
+    Notice the hats above each word in this sentence.
+
+    Now, see the sidebar.
+  selections:
+    - anchor: {line: 0, character: 0}
+      active: {line: 0, character: 0}
+  marks:
+    default.c:
+      start: {line: 2, character: 22}
+      end: {line: 2, character: 26}
+  hatTokenMap:
+    - hatStyle: default
+      grapheme: c
+      hatRange:
+        start: {line: 2, character: 24}
+        end: {line: 2, character: 25}
+    - hatStyle: default
+      grapheme: l
+      hatRange:
+        start: {line: 0, character: 2}
+        end: {line: 0, character: 3}
+    - hatStyle: default
+      grapheme: o
+      hatRange:
+        start: {line: 0, character: 9}
+        end: {line: 0, character: 10}
+    - hatStyle: default
+      grapheme: u
+      hatRange:
+        start: {line: 0, character: 12}
+        end: {line: 0, character: 13}
+    - hatStyle: default
+      grapheme: "!"
+      hatRange:
+        start: {line: 0, character: 21}
+        end: {line: 0, character: 22}
+    - hatStyle: default
+      grapheme: i
+      hatRange:
+        start: {line: 2, character: 3}
+        end: {line: 2, character: 4}
+    - hatStyle: default
+      grapheme: h
+      hatRange:
+        start: {line: 2, character: 8}
+        end: {line: 2, character: 9}
+    - hatStyle: default
+      grapheme: a
+      hatRange:
+        start: {line: 2, character: 12}
+        end: {line: 2, character: 13}
+    - hatStyle: default
+      grapheme: b
+      hatRange:
+        start: {line: 2, character: 17}
+        end: {line: 2, character: 18}
+    - hatStyle: default
+      grapheme: d
+      hatRange:
+        start: {line: 2, character: 30}
+        end: {line: 2, character: 31}
+    - hatStyle: default
+      grapheme: n
+      hatRange:
+        start: {line: 2, character: 33}
+        end: {line: 2, character: 34}
+    - hatStyle: default
+      grapheme: s
+      hatRange:
+        start: {line: 2, character: 38}
+        end: {line: 2, character: 39}
+    - hatStyle: default
+      grapheme: e
+      hatRange:
+        start: {line: 2, character: 41}
+        end: {line: 2, character: 42}
+    - hatStyle: default
+      grapheme: .
+      hatRange:
+        start: {line: 2, character: 48}
+        end: {line: 2, character: 49}
+    - hatStyle: default
+      grapheme: w
+      hatRange:
+        start: {line: 4, character: 2}
+        end: {line: 4, character: 3}
+    - hatStyle: default
+      grapheme: ","
+      hatRange:
+        start: {line: 4, character: 3}
+        end: {line: 4, character: 4}
+    - hatStyle: blue
+      grapheme: e
+      hatRange:
+        start: {line: 4, character: 6}
+        end: {line: 4, character: 7}
+    - hatStyle: default
+      grapheme: t
+      hatRange:
+        start: {line: 4, character: 9}
+        end: {line: 4, character: 10}
+    - hatStyle: default
+      grapheme: r
+      hatRange:
+        start: {line: 4, character: 19}
+        end: {line: 4, character: 20}
+    - hatStyle: blue
+      grapheme: .
+      hatRange:
+        start: {line: 4, character: 20}
+        end: {line: 4, character: 21}
+finalState:
+  documentContents: |-
+    Welcome to Cursorless!
+
+    Notice the hats above each word in this sentence.
+
+    Now, see the sidebar.
+  selections:
+    - anchor: {line: 2, character: 22}
+      active: {line: 2, character: 26}
+  hatTokenMap:
+    - hatStyle: default
+      grapheme: d
+      hatRange:
+        start: {line: 2, character: 30}
+        end: {line: 2, character: 31}
+    - hatStyle: default
+      grapheme: c
+      hatRange:
+        start: {line: 2, character: 24}
+        end: {line: 2, character: 25}
+    - hatStyle: default
+      grapheme: n
+      hatRange:
+        start: {line: 2, character: 33}
+        end: {line: 2, character: 34}
+    - hatStyle: default
+      grapheme: s
+      hatRange:
+        start: {line: 2, character: 38}
+        end: {line: 2, character: 39}
+    - hatStyle: default
+      grapheme: b
+      hatRange:
+        start: {line: 2, character: 17}
+        end: {line: 2, character: 18}
+    - hatStyle: default
+      grapheme: e
+      hatRange:
+        start: {line: 2, character: 41}
+        end: {line: 2, character: 42}
+    - hatStyle: default
+      grapheme: a
+      hatRange:
+        start: {line: 2, character: 12}
+        end: {line: 2, character: 13}
+    - hatStyle: default
+      grapheme: h
+      hatRange:
+        start: {line: 2, character: 8}
+        end: {line: 2, character: 9}
+    - hatStyle: default
+      grapheme: .
+      hatRange:
+        start: {line: 2, character: 48}
+        end: {line: 2, character: 49}
+    - hatStyle: default
+      grapheme: i
+      hatRange:
+        start: {line: 2, character: 3}
+        end: {line: 2, character: 4}
+    - hatStyle: default
+      grapheme: "!"
+      hatRange:
+        start: {line: 0, character: 21}
+        end: {line: 0, character: 22}
+    - hatStyle: blue
+      grapheme: .
+      hatRange:
+        start: {line: 4, character: 20}
+        end: {line: 4, character: 21}
+    - hatStyle: default
+      grapheme: r
+      hatRange:
+        start: {line: 4, character: 19}
+        end: {line: 4, character: 20}
+    - hatStyle: default
+      grapheme: u
+      hatRange:
+        start: {line: 0, character: 12}
+        end: {line: 0, character: 13}
+    - hatStyle: default
+      grapheme: t
+      hatRange:
+        start: {line: 4, character: 9}
+        end: {line: 4, character: 10}
+    - hatStyle: default
+      grapheme: o
+      hatRange:
+        start: {line: 0, character: 9}
+        end: {line: 0, character: 10}
+    - hatStyle: blue
+      grapheme: e
+      hatRange:
+        start: {line: 4, character: 6}
+        end: {line: 4, character: 7}
+    - hatStyle: default
+      grapheme: ","
+      hatRange:
+        start: {line: 4, character: 3}
+        end: {line: 4, character: 4}
+    - hatStyle: default
+      grapheme: l
+      hatRange:
+        start: {line: 0, character: 2}
+        end: {line: 0, character: 3}
+    - hatStyle: default
+      grapheme: w
+      hatRange:
+        start: {line: 4, character: 2}
+        end: {line: 4, character: 3}

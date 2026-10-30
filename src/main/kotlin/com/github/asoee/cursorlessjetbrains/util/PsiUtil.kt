@@ -74,52 +74,82 @@ fun editorLanguage(editor: Editor): String? {
  * - WASM files: packages/cursorless-engine/src/languages/TreeSitterWasmLanguages.ts
  * - Language queries: packages/cursorless-engine/src/languages/LanguageDefinitions.ts
  */
+private val extensionLanguages = mapOf(
+    "agda" to "agda",
+    "sh" to "bash",
+    "bash" to "bash",
+    "zsh" to "bash",
+    "c" to "c",
+    "h" to "c",
+    "cs" to "csharp",
+    "clj" to "clojure",
+    "cljs" to "clojure",
+    "cljc" to "clojure",
+    "cpp" to "cpp",
+    "cc" to "cpp",
+    "cxx" to "cpp",
+    "c++" to "cpp",
+    "hpp" to "cpp",
+    "hxx" to "cpp",
+    "h++" to "cpp",
+    "css" to "css",
+    "dart" to "dart",
+    "dtd" to "dtd",
+    "ex" to "elixir",
+    "exs" to "elixir",
+    "elm" to "elm",
+    "gdscript" to "gdscript",
+    "gd" to "gdscript",
+    "gleam" to "gleam",
+    "go" to "go",
+    "hs" to "haskell",
+    "lhs" to "haskell",
+    "hcl" to "hcl",
+    "tf" to "hcl",
+    "html" to "html",
+    "htm" to "html",
+    "java" to "java",
+    "js" to "javascript",
+    "mjs" to "javascript",
+    "json" to "json",
+    "jl" to "julia",
+    "kt" to "kotlin",
+    "kts" to "kotlin",
+    "tex" to "latex",
+    "lua" to "lua",
+    "md" to "markdown",
+    "markdown" to "markdown",
+    "nix" to "nix",
+    "pl" to "perl",
+    "pm" to "perl",
+    "php" to "php",
+    "py" to "python",
+    "pyw" to "python",
+    "scm" to "query",
+    "r" to "r",
+    "rb" to "ruby",
+    "rs" to "rust",
+    "scala" to "scala",
+    "sc" to "scala",
+    "scss" to "scss",
+    "sparql" to "sparql",
+    "swift" to "swift",
+    "talon" to "talon",
+    "ts" to "typescript",
+    "tsx" to "tsx",
+    "xml" to "xml",
+    "yaml" to "yaml",
+    "yml" to "yaml",
+    "txt" to "plaintext",
+)
+
 fun languageForExtension(extension: String): String? {
-    return when (extension) {
-        "agda" -> "agda"
-        "sh", "bash", "zsh" -> "bash"
-        "c", "h" -> "c"
-        "cs" -> "csharp"
-        "clj", "cljs", "cljc" -> "clojure"
-        "cpp", "cc", "cxx", "c++", "hpp", "hxx", "h++" -> "cpp"
-        "css" -> "css"
-        "dart" -> "dart"
-        "dtd" -> "dtd"
-        "ex", "exs" -> "elixir"
-        "elm" -> "elm"
-        "gdscript", "gd" -> "gdscript"
-        "gleam" -> "gleam"
-        "go" -> "go"
-        "hs", "lhs" -> "haskell"
-        "hcl", "tf" -> "hcl"
-        "html", "htm" -> "html"
-        "java" -> "java"
-        "js", "mjs" -> "javascript"
-        "json" -> "json"
-        "jl" -> "julia"
-        "kt", "kts" -> "kotlin"
-        "tex" -> "latex"
-        "lua" -> "lua"
-        "md", "markdown" -> "markdown"
-        "nix" -> "nix"
-        "pl", "pm" -> "perl"
-        "php" -> "php"
-        "py", "pyw" -> "python"
-        "scm" -> "query"  // tree-sitter query files
-        "r" -> "r"
-        "rb" -> "ruby"
-        "rs" -> "rust"
-        "scala", "sc" -> "scala"
-        "scss" -> "scss"
-        "sparql" -> "sparql"
-        "swift" -> "swift"
-        "talon" -> "talon"
-        "ts" -> "typescript"
-        "tsx" -> "tsx"
-        "xml" -> "xml"
-        "yaml", "yml" -> "yaml"
-        else -> null
-    }
+    return extensionLanguages[extension]
+}
+
+/** A file extension Cursorless maps to [language], e.g. for a new untitled document in that language */
+fun extensionForLanguage(language: String): String? {
+    return extensionLanguages.entries.firstOrNull { it.value == language }?.key
 }
 
 fun editorLanguage(psiFile: PsiFile?): String? {
@@ -135,6 +165,7 @@ fun editorLanguage(psiFile: PsiFile?): String? {
     }
 
     // Fall back to PSI language for extensions not in the mapping
-    val psiLanguage = psiFile?.language?.id?.lowercase()
+    // The IDE's plain text language is "TEXT"; VS Code and Cursorless call it "plaintext"
+    val psiLanguage = psiFile?.language?.id?.lowercase()?.takeUnless { it == "text" }
     return psiLanguage ?: "plaintext"
 }

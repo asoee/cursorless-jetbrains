@@ -14,6 +14,7 @@ import com.caoccao.javet.values.reference.V8ValueError
 import com.caoccao.javet.values.reference.V8ValuePromise
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessCallback
 import com.github.asoee.cursorlessjetbrains.cursorless.DEFAULT_CONFIGURATION
+import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessConfiguration
 import com.github.asoee.cursorlessjetbrains.cursorless.TreesitterCallback
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
 import com.intellij.openapi.application.PathManager
@@ -22,6 +23,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import java.io.File
 import kotlin.io.path.absolutePathString
@@ -378,8 +380,8 @@ open class JavetDriver {
             |   if (ide) {
             |     try {
             |       const response = await engine.commandApi.runCommand(${json});
-            |       if (response.returnValue) {
-            |         const respJson = JSON.stringify(response.returnValue);
+            |       if (response) {
+            |         const respJson = JSON.stringify(response);
             |         console.log("Cursorless/JS: response: " + respJson);
             |         return respJson;
             |       } else {
@@ -419,10 +421,17 @@ open class JavetDriver {
             ideClientCallback.unhandledRejections.clear()
             return ExecutionResult(false, null, joinedCause)
         }
-        logger.debug("returnValue: $returnValue")
+        logger.debug("response: $returnValue")
         gc()
         dumpMemoryInfo()
-        return ExecutionResult(success, returnValue, error)
+        // The engine responds with {returnValue} or, when focus is outside the editor, {fallback} for Talon to run
+        val response = returnValue as? JsonObject
+        return ExecutionResult(
+            success,
+            response?.get("returnValue")?.takeUnless { it is JsonNull },
+            error,
+            response?.get("fallback")?.takeUnless { it is JsonNull },
+        )
     }
 
     @Synchronized
@@ -529,6 +538,149 @@ open class JavetDriver {
 
     }
 
+    /** The cheat sheet built from Talon's spoken forms, as JSON (CheatsheetInfo). */
+    @Synchronized
+    fun cheatsheetInfo(): JsonElement? {
+        val js = """
+            | (async () => {
+            |   const plugin = await globalThis.plugin;
+            |   return JSON.stringify(await plugin.getCheatsheetInfo());
+            | })();
+            | """.trimMargin()
+
+        val callback = PromiseCallback()
+        runtime.getExecutor(js)
+            .execute<V8ValuePromise>().use { promise ->
+                promise.register(callback)
+                eventLoop.await()
+            }
+        val result = callback.result
+        callback.clear()
+        return result
+    }
+
+    /** Talon's "cursorless stats": the engine opens a report of the command history, or warns that there is none */
+    @Synchronized
+    fun analyzeCommandHistory() {
+        val js = """
+            | (async () => {
+            |   const plugin = await globalThis.plugin;
+            |   await plugin.analyzeCommandHistory();
+            |   return "{}";
+            | })();
+            | """.trimMargin()
+
+        val callback = PromiseCallback()
+        runtime.getExecutor(js)
+            .execute<V8ValuePromise>().use { promise ->
+                promise.register(callback)
+                eventLoop.await()
+            }
+        callback.clear()
+    }
+
+    /**
+     * Runs one of the plugin's tutorial methods (tutorialStart, tutorialNext, ..., documentationOpened); [argJson] is
+     * the JSON of its argument, if it takes one
+     */
+    // Synchronized like the other entry points: otherwise another thread already in the engine (e.g. an editor
+    // update) can run this call's async work, and its EDT callbacks deadlock against a caller on the EDT
+    @Synchronized
+    fun tutorialCommand(method: String, argJson: String? = null) {
+        require(method in TUTORIAL_METHODS) { "Unknown tutorial method $method" }
+        val js = """
+            | (async () => {
+            |   const plugin = await globalThis.plugin;
+            |   await plugin.$method(${argJson ?: ""});
+            |   return "{}";
+            | })();
+            | """.trimMargin()
+
+        val callback = PromiseCallback()
+        runtime.getExecutor(js)
+            .execute<V8ValuePromise>().use { promise ->
+                promise.register(callback)
+                eventLoop.await()
+            }
+        val error = if (callback.success) null else callback.error ?: "Cursorless tutorial $method failed"
+        callback.clear()
+        error?.let { throw IllegalStateException(it) }
+    }
+
+    /** The tutorial's current state as JSON, for the Cursorless tool window */
+    @Synchronized
+    fun tutorialState(): String? {
+        val js = """
+            | (async () => {
+            |   const plugin = await globalThis.plugin;
+            |   return JSON.stringify(plugin.tutorialState());
+            | })();
+            | """.trimMargin()
+
+        val callback = PromiseCallback()
+        runtime.getExecutor(js)
+            .execute<V8ValuePromise>().use { promise ->
+                promise.register(callback)
+                eventLoop.await()
+            }
+        val result = callback.result
+        callback.clear()
+        return result?.toString()
+    }
+
+    @Synchronized
+    fun updateConfiguration(configuration: CursorlessConfiguration) {
+        val js = """
+            | globalThis.configuration?.updateConfiguration(${Json.encodeToString(configuration)});
+            | """.trimMargin()
+        runtime.getExecutor(js).executeVoid()
+    }
+
+    @Synchronized
+    fun showScopeVisualizer(scopeTypeJson: String, visualizationType: String) {
+        val js = """
+            | (async () => {
+            |   const plugin = await globalThis.plugin;
+            |   plugin?.scopeVisualizer?.start(${scopeTypeJson}, ${Json.encodeToString(visualizationType)});
+            | })();
+            | """.trimMargin()
+
+        runtime.getExecutor(js)
+            .executeVoid()
+        eventLoop.await()
+    }
+
+    @Synchronized
+    fun hideScopeVisualizer() {
+        val js = """
+            | (async () => {
+            |   const plugin = await globalThis.plugin;
+            |   plugin?.scopeVisualizer?.stop();
+            | })();
+            | """.trimMargin()
+
+        runtime.getExecutor(js)
+            .executeVoid()
+        eventLoop.await()
+    }
+
+    @Synchronized
+    fun talonSpokenFormsChanged() {
+        val js = """
+            | (async () => {
+            |   const plugin = await globalThis.plugin;
+            |   if (plugin) {
+            |     plugin.talonSpokenForms.notifyChanged();
+            |   }
+            | })();
+            | """.trimMargin()
+
+        runtime.getExecutor(js)
+            .executeVoid()
+        eventLoop.await()
+    }
+
+    @Synchronized
     fun setEnabledHatShapes(enabledHatShapes: List<String>) {
         val js = """
             | (async () => {
@@ -551,6 +703,7 @@ open class JavetDriver {
         eventLoop.await()
     }
 
+    @Synchronized
     fun setHatShapePenalties(penalties: Map<String, Int>) {
         val js = """
             | (async () => {
@@ -573,6 +726,7 @@ open class JavetDriver {
         eventLoop.await()
     }
 
+    @Synchronized
     fun setEnabledHatColors(enabledHatColors: List<String>) {
         val js = """
             | (async () => {
@@ -595,6 +749,7 @@ open class JavetDriver {
         eventLoop.await()
     }
 
+    @Synchronized
     fun setHatColorPenalties(penalties: Map<String, Int>) {
         val js = """
             | (async () => {
@@ -627,7 +782,8 @@ open class JavetDriver {
 data class ExecutionResult(
     val success: Boolean,
     val returnValue: JsonElement?,
-    val error: String?
+    val error: String?,
+    val fallback: JsonElement? = null,
 )
 
 @Serializable
@@ -647,6 +803,7 @@ class PromiseCallback : IV8ValuePromise.IListener {
         success = false
         if (v8Value is V8ValueError) {
             val v8ValueError = v8Value as V8ValueError
+            error = v8ValueError.toString()
             logger.warn("error in execute - $v8ValueError")
         }
     }
@@ -674,6 +831,7 @@ class PromiseCallback : IV8ValuePromise.IListener {
         success = false
         if (v8Value is V8ValueError) {
             val v8ValueError = v8Value as V8ValueError
+            error = v8ValueError.toString()
             logger.warn("error in execute - $v8ValueError")
             error = v8ValueError.message
         } else if (v8Value is V8ValueString) {
@@ -688,3 +846,13 @@ class PromiseCallback : IV8ValuePromise.IListener {
         error = null
     }
 }
+
+private val TUTORIAL_METHODS = setOf(
+    "tutorialStart",
+    "tutorialNext",
+    "tutorialPrevious",
+    "tutorialRestart",
+    "tutorialResume",
+    "tutorialList",
+    "documentationOpened",
+)

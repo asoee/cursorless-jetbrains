@@ -8,7 +8,7 @@ data class CommandServerResponse(
     val uuid: String,
     val warnings: Array<String>,
     val error: String?,
-    val returnValue: TalonCommandReponse,
+    val returnValue: JsonElement?,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -32,9 +32,3 @@ data class CommandServerResponse(
         return result
     }
 }
-
-
-@Serializable
-data class TalonCommandReponse(
-    val returnValue: JsonElement?,
-)

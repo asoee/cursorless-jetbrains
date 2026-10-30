@@ -4,6 +4,7 @@ import com.github.asoee.cursorlessjetbrains.commands.CommandRegistryService
 import com.github.asoee.cursorlessjetbrains.services.FileCommandServerService
 import com.github.asoee.cursorlessjetbrains.services.HttpCommandServerService
 import com.github.asoee.cursorlessjetbrains.services.TalonProjectService
+import com.github.asoee.cursorlessjetbrains.settings.VscodeHatSync
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -18,6 +19,7 @@ class TalonProjectActivity : ProjectActivity {
         registry.registerInternalCommands()
         service<HttpCommandServerService>()
         service<FileCommandServerService>()
+        service<VscodeHatSync>().start()
         project.service<TalonProjectService>().onProjectOpened()
     }
 
