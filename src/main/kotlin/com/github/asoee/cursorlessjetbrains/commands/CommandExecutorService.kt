@@ -4,18 +4,35 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
 
 @Service(Service.Level.PROJECT)
 class CommandExecutorService {
 
     fun execute(command: VcCommand): String {
+        return run(command) { context -> command.execute(context) } ?: ""
+    }
+
+    /**
+     * Like [execute], but keeps the command's result as JSON, for returning to Talon over the command server.
+     */
+    fun executeForResult(command: VcCommand): JsonElement? {
+        if (command.invokeOnly()) {
+            run(command) { context -> command.executeForResult(context) }
+            return JsonPrimitive("")
+        }
+        return run(command) { context -> command.executeForResult(context) }
+    }
+
+    private fun <T> run(command: VcCommand, block: (CommandContext) -> T): T? {
         thisLogger().info("Executing command: ${command.toString()}")
         return try {
             if (command.executionMode() == ExecutionMode.BACKGROUND) {
                 val context = CommandContext(command.project)
-                command.execute(context)
+                block(context)
             } else {
-                executeOnEDT(command)
+                executeOnEDT(command, block)
             }
         } catch (e: Exception) {
             thisLogger().warn("Exception thrown while executing command: ${command.toString()}", e)
@@ -23,15 +40,15 @@ class CommandExecutorService {
         }
     }
 
-    private fun executeOnEDT(command: VcCommand): String {
-        val result: ArrayList<String> = ArrayList()
+    private fun <T> executeOnEDT(command: VcCommand, block: (CommandContext) -> T): T? {
+        var result: T? = null
 
         if (command.invokeOnly()) {
             ApplicationManager.getApplication().invokeLater {
                 val context = CommandContext(command.project)
-                command.execute(context)
+                block(context)
             }
-            return ""
+            return null
         }
 
 
@@ -39,26 +56,16 @@ class CommandExecutorService {
             val context = CommandContext(command.project)
             when (command.executionMode()) {
                 ExecutionMode.EDT -> {
-                    val res = command.execute(context)
-                    if (res != null) {
-                        result.add(res)
-                    }
+                    result = block(context)
                 }
 
                 ExecutionMode.READ -> {
-                    val res = command.execute(context)
-                    if (res != null) {
-                        result.add(res)
-                    }
-
+                    result = block(context)
                 }
 
                 ExecutionMode.WRITE -> {
                     WriteCommandAction.runWriteCommandAction(command.project) {
-                        val res = command.execute(context)
-                        if (res != null) {
-                            result.add(res)
-                        }
+                        result = block(context)
                     }
                 }
 
@@ -67,7 +74,7 @@ class CommandExecutorService {
                 }
             }
         }
-        return result.joinToString("")
+        return result
 
     }
 

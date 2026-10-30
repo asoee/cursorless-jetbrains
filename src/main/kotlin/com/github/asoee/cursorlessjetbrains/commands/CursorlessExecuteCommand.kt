@@ -4,6 +4,7 @@ import com.github.asoee.cursorlessjetbrains.services.TalonProjectService
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
 class CursorlessExecuteCommand(project: Project, private val jsonObjects: List<JsonObject>) : VcCommand(project) {
@@ -32,14 +33,18 @@ class CursorlessExecuteCommand(project: Project, private val jsonObjects: List<J
     }
 
     override fun execute(context: CommandContext): String {
+        return executeForResult(context)?.toString() ?: "OK"
+    }
+
+    override fun executeForResult(context: CommandContext): JsonElement? {
         val service = project.service<TalonProjectService>()
         val result = service.cursorlessEngine.executeCommand(jsonObjects)
 
-        return if (result.success) {
-            result.returnValue?.toString() ?: "OK"
-        } else {
+        if (!result.success) {
             throw RuntimeException(result.error ?: "Cursorless command execution failed")
         }
+        // Pass the engine's value through as JSON: Talon expects e.g. ["main"], not the string "[\"main\"]"
+        return result.returnValue
     }
 
     override fun toString(): String {

@@ -12,7 +12,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonPrimitive
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -116,30 +115,14 @@ class FileCommandServer {
             fullPath?.readText().let {
                 logger.info("File content: $it")
                 val request = Json.decodeFromString<CommandServerRequest>(it!!)
-                val result = handleRequest(request, project)
-                if (result.success) {
-                    val response = CommandServerResponse(
-                        request.uuid,
-                        emptyArray(),
-                        null,
-                        TalonCommandReponse(result.returnValue),
-                    )
-                    writeResponse(response)
-                } else {
-                    val response = CommandServerResponse(
-                        request.uuid,
-                        emptyArray(),
-                        result.error,
-                        TalonCommandReponse(null),
-                    )
-
-                    writeResponse(response)
-
+                val response = buildResponse(request, project)
+                writeResponse(response)
+                if (response.error != null) {
                     Notifications.Bus.notify(
                         Notification(
                             "vc-idea",
                             "Cursorless error",
-                            result.error ?: "Unknown error",
+                            response.error,
                             NotificationType.WARNING,
                         )
                     )
@@ -154,6 +137,25 @@ class FileCommandServer {
                     e.message ?: e.toString(),
                     NotificationType.WARNING,
                 )
+            )
+        }
+    }
+
+    internal fun buildResponse(request: CommandServerRequest, project: Project): CommandServerResponse {
+        val result = handleRequest(request, project)
+        return if (result.success) {
+            CommandServerResponse(
+                request.uuid,
+                emptyArray(),
+                null,
+                TalonCommandReponse(result.returnValue),
+            )
+        } else {
+            CommandServerResponse(
+                request.uuid,
+                emptyArray(),
+                result.error ?: "Unknown error",
+                TalonCommandReponse(null),
             )
         }
     }
@@ -177,8 +179,8 @@ class FileCommandServer {
 
         return if (command != null) {
             try {
-                val result = commandExecutorService.execute(command)
-                ExecutionResult(true, JsonPrimitive(result), null)
+                val result = commandExecutorService.executeForResult(command)
+                ExecutionResult(true, result, null)
             } catch (e: Exception) {
                 val message = e.cause?.message ?: e.message ?: e.toString()
                 ExecutionResult(false, null, message)

@@ -22,6 +22,7 @@ import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.ScrollType
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
@@ -221,29 +222,44 @@ class EditorManager(private var cursorlessEngine: CursorlessEngine, parentDispos
     }
 
     fun documentUpdated(editorId: String, edit: CursorlessEditorEdit) {
-        logger.debug("Document updated $editorId")
         val editor = editorsById[editorId]
-        if (editor != null) {
-            if (edit.changes.isNotEmpty()) {
-                ApplicationManager.getApplication().invokeAndWait {
-                    ApplicationManager.getApplication().runWriteAction {
-                        CommandProcessor.getInstance().executeCommand(
-                            editor.project,
-                            {
-                                for (change in edit.changes) {
-                                    logger.debug("Setting range to " + change.rangeOffset.toString() + " - " + change.rangeOffset.toString() + " : " + change.text)
-                                    editor.document.replaceString(
-                                        change.rangeOffset,
-                                        change.rangeOffset + change.rangeLength,
-                                        change.text
-                                    )
-                                }
-                            },
-                            "Insert",
-                            "insertGroup"
-                        )
-                    }
-                }
+        if (editor == null) {
+            logger.warn("Dropping Cursorless edit for unknown editor $editorId")
+            return
+        }
+        if (edit.changes.isEmpty()) {
+            val documentText = ReadAction.compute<String, RuntimeException> { editor.document.text }
+            if (edit.text.isNotEmpty() && edit.text != documentText) {
+                logger.warn("Cursorless edit for $editorId has no changes but different text; nothing applied")
+            }
+            return
+        }
+        logger.info("Applying ${edit.changes.size} Cursorless change(s) to $editorId")
+        ApplicationManager.getApplication().invokeAndWait {
+            val document = editor.document
+            // requestWriting runs the IDE's read-only handling, e.g. a Perforce checkout, as typing would.
+            // Throwing here rejects the command in the engine, so Talon gets an error instead of a silent no-op
+            if (!FileDocumentManager.getInstance().requestWriting(document, editor.project)) {
+                val fileName = FileDocumentManager.getInstance().getFile(document)?.name ?: editorId
+                throw IllegalStateException("Cannot edit read-only file $fileName")
+            }
+            ApplicationManager.getApplication().runWriteAction {
+                CommandProcessor.getInstance().executeCommand(
+                    editor.project,
+                    {
+                        for (change in edit.changes) {
+                            logger.debug("Setting range to " + change.rangeOffset.toString() + " - " + change.rangeOffset.toString() + " : " + change.text)
+                            document.replaceString(
+                                change.rangeOffset,
+                                change.rangeOffset + change.rangeLength,
+                                change.text
+                            )
+                        }
+                        editor.project?.let { PsiDocumentManager.getInstance(it).commitDocument(document) }
+                    },
+                    "Insert",
+                    "insertGroup"
+                )
             }
         }
     }

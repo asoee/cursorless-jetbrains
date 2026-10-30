@@ -2,6 +2,8 @@ package com.github.asoee.cursorlessjetbrains.commands
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
 
 abstract class VcCommand(val project: Project) {
 
@@ -12,6 +14,14 @@ abstract class VcCommand(val project: Project) {
     }
 
     abstract fun execute(context: CommandContext): String
+
+    /**
+     * Result returned to the command server caller. Commands with structured results override this,
+     * so they reach Talon as JSON rather than as a string.
+     */
+    open fun executeForResult(context: CommandContext): JsonElement? {
+        return JsonPrimitive(execute(context))
+    }
 
     open fun executionMode(): ExecutionMode {
         return ExecutionMode.EDT

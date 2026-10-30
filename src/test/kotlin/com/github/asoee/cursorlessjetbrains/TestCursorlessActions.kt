@@ -1,6 +1,8 @@
 package com.github.asoee.cursorlessjetbrains
 
 import com.github.asoee.cursorlessjetbrains.commands.CommandExecutorService
+import com.github.asoee.cursorlessjetbrains.commandserver.file.CommandServerRequest
+import com.github.asoee.cursorlessjetbrains.commandserver.file.FileCommandServer
 import com.github.asoee.cursorlessjetbrains.commands.CommandExecutorServiceTest.MainJavaFixture
 import com.github.asoee.cursorlessjetbrains.cursorless.*
 import com.github.asoee.cursorlessjetbrains.services.TalonProjectService
@@ -33,7 +35,10 @@ import com.intellij.testFramework.runInEdtAndWait
 import junit.framework.TestCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
 import org.awaitility.kotlin.await
 import org.junit.BeforeClass
@@ -521,6 +526,41 @@ class TestCursorlessActions : BasePlatformTestCase() {
             TestCase.assertEquals(refCountBefore, refCountAfter)
 
         }
+    }
+
+    @Test
+    fun testGetTextReturnsJsonArrayThroughCommandServer() {
+        // Regression: "format camel at <hat>" needs Talon to receive ["main"], not the string "[\"main\"]"
+        val fixture = mainJavaFixture()
+        val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 3, 23, 3, 27)
+        val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
+        val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
+        assertNotNull(clTarget)
+
+        val commandJson = Json.encodeToString(CursorlessCommand.getText(clTarget!!))
+        val request = Json.decodeFromString<CommandServerRequest>(
+            """{"commandId": "cursorless.command", "args": [$commandJson, null], "waitForFinish": true, "returnCommandOutput": true, "uuid": "get-text-test"}"""
+        )
+        val response = FileCommandServer().buildResponse(request, fixture.project)
+
+        assertNull(response.error)
+        assertEquals(JsonArray(listOf(JsonPrimitive("main"))), response.returnValue.returnValue)
+        assertTrue(
+            Json.encodeToString(response).contains(""""returnValue":{"returnValue":["main"]}""")
+        )
+    }
+
+    @Test
+    fun testDocumentUpdatedIgnoresUnknownEditor() {
+        val fixture = mainJavaFixture()
+        val textBefore = fixture.editor.document.text
+        val edit = CursorlessEditorEdit().apply {
+            changes = listOf(CursorlessEditorChange().apply { text = "x"; rangeOffset = 0; rangeLength = 0 })
+        }
+
+        fixture.projectService.editorManager.documentUpdated("no-such-editor", edit)
+
+        assertEquals(textBefore, fixture.editor.document.text)
     }
 
     @Test
