@@ -1,14 +1,18 @@
 package com.github.asoee.cursorlessjetbrains
 
 import com.github.asoee.cursorlessjetbrains.commands.CommandExecutorService
+import com.github.asoee.cursorlessjetbrains.commandserver.file.CommandServerRequest
+import com.github.asoee.cursorlessjetbrains.commandserver.file.FileCommandServer
 import com.github.asoee.cursorlessjetbrains.commands.CommandExecutorServiceTest.MainJavaFixture
 import com.github.asoee.cursorlessjetbrains.cursorless.*
 import com.github.asoee.cursorlessjetbrains.services.TalonProjectService
+import com.intellij.find.EditorSearchSession
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.CaretState
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.module.Module
@@ -30,16 +34,23 @@ import com.intellij.testFramework.LightProjectDescriptor
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor
 import com.intellij.testFramework.runInEdtAndWait
+import com.intellij.xdebugger.XDebuggerManager
+import com.intellij.xdebugger.breakpoints.XLineBreakpoint
 import junit.framework.TestCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
 import org.awaitility.kotlin.await
 import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 
@@ -521,6 +532,149 @@ class TestCursorlessActions : BasePlatformTestCase() {
             TestCase.assertEquals(refCountBefore, refCountAfter)
 
         }
+    }
+
+    @Test
+    fun testGetTextReturnsJsonArrayThroughCommandServer() {
+        // Regression: "format camel at <hat>" needs Talon to receive ["main"], not the string "[\"main\"]"
+        val fixture = mainJavaFixture()
+        val targetRange = CursorlessRange.fromLogicalPositions(fixture.editor, 3, 23, 3, 27)
+        val editorHats: HatsFormat = awaitHats(fixture, fixture.editor)
+        val clTarget = findHatForRange(fixture.editor, editorHats, targetRange)
+        assertNotNull(clTarget)
+
+        val commandJson = Json.encodeToString(CursorlessCommand.getText(clTarget!!))
+        val request = Json.decodeFromString<CommandServerRequest>(
+            """{"commandId": "cursorless.command", "args": [$commandJson, null], "waitForFinish": true, "returnCommandOutput": true, "uuid": "get-text-test"}"""
+        )
+        val response = FileCommandServer().buildResponse(request, fixture.project)
+
+        assertNull(response.error)
+        assertEquals(JsonArray(listOf(JsonPrimitive("main"))), (response.returnValue as JsonObject)["returnValue"])
+        assertTrue(
+            Json.encodeToString(response).contains(""""returnValue":{"returnValue":["main"]}""")
+        )
+    }
+
+    @Test
+    fun testCustomIdeCommandRunsActionOnTarget() {
+        val fixture = mainJavaFixture()
+        val target = awaitTargetForRange(fixture, fixture.editor, CursorlessRange.fromLogicalPositions(fixture.editor, 4, 19, 4, 26))
+
+        val res = fixture.projectService.cursorlessEngine.executeCommand(
+            listOf(actionCommand("""{"name": "executeCommand", "commandId": "CommentByLineComment", "target": ${targetJson(target)}}"""))
+        )
+
+        assertNull(res.error)
+        runInEdtAndWait {
+            assertEquals("//        System.out.println(\"Hello IDEA welcome!\");", getTextFromLine(fixture.editor, 4))
+        }
+    }
+
+    @Test
+    fun testCustomIdeCommandRejectsUnknownAction() {
+        val fixture = mainJavaFixture()
+        val target = awaitTargetForRange(fixture, fixture.editor, CursorlessRange.fromLogicalPositions(fixture.editor, 4, 19, 4, 26))
+
+        val res = fixture.projectService.cursorlessEngine.executeCommand(
+            listOf(actionCommand("""{"name": "executeCommand", "commandId": "NoSuchAction", "target": ${targetJson(target)}}"""))
+        )
+
+        assertFalse(res.success)
+        assertTrue("error was ${res.error}", res.error?.contains("Unknown IDE action: NoSuchAction") == true)
+    }
+
+    @Test
+    fun testScoutOpensFindWithTargetText() {
+        val fixture = mainJavaFixture()
+        val target = awaitTargetForRange(fixture, fixture.editor, CursorlessRange.fromLogicalPositions(fixture.editor, 3, 23, 3, 27))
+
+        val res = fixture.projectService.cursorlessEngine.executeCommand(
+            listOf(actionCommand("""{"name": "findInDocument", "target": ${targetJson(target)}}"""))
+        )
+
+        assertNull(res.error)
+        runInEdtAndWait {
+            val session = EditorSearchSession.get(fixture.editor)
+            assertNotNull("find bar should be open", session)
+            assertEquals("main", session!!.textInField)
+        }
+    }
+
+    @Test
+    fun testHoverActionsAreSupported() {
+        val fixture = mainJavaFixture()
+        val target = awaitTargetForRange(fixture, fixture.editor, CursorlessRange.fromLogicalPositions(fixture.editor, 4, 19, 4, 26))
+
+        for (action in listOf("showHover", "showDebugHover")) {
+            val res = fixture.projectService.cursorlessEngine.executeCommand(
+                listOf(actionCommand("""{"name": "$action", "target": ${targetJson(target)}}"""))
+            )
+            assertTrue("$action failed: ${res.error}", res.success)
+        }
+    }
+
+    @Test
+    fun testBreakPointTogglesLineBreakpoint() {
+        val fixture = mainJavaFixture()
+        val target = awaitTargetForRange(fixture, fixture.editor, CursorlessRange.fromLogicalPositions(fixture.editor, 4, 19, 4, 26))
+        val breakpointManager = XDebuggerManager.getInstance(fixture.project).breakpointManager
+
+        val res = fixture.projectService.cursorlessEngine.executeCommand(
+            listOf(actionCommand("""{"name": "toggleLineBreakpoint", "target": ${targetJson(target)}}"""))
+        )
+
+        assertTrue("toggleLineBreakpoint failed: ${res.error}", res.success)
+        // Toggling is asynchronous in recent platform versions
+        await.atMost(3, TimeUnit.SECONDS).until {
+            breakpointManager.allBreakpoints.mapNotNull { (it as? XLineBreakpoint<*>)?.line } == listOf(4)
+        }
+    }
+
+    @Test
+    fun testSnipMakeOpensNewSnippetFile() {
+        val fixture = mainJavaFixture()
+        val target = awaitTargetForRange(fixture, fixture.editor, CursorlessRange.fromLogicalPositions(fixture.editor, 4, 19, 4, 26))
+        // The real path: on macOS the temp folder is a symlink (/var -> /private/var), and the VFS uses the target
+        val snippetsDir = Files.createTempDirectory("cursorless-snippets").toRealPath()
+        VfsRootAccess.allowRootAccess(myFixture.testRootDisposable, snippetsDir.toString())
+
+        // With snippetName given, the engine skips the name prompt
+        val res = fixture.projectService.cursorlessEngine.executeCommand(
+            listOf(actionCommand("""{"name": "generateSnippet", "target": ${targetJson(target)}, "directory": ${Json.encodeToString(snippetsDir.toString())}, "snippetName": "printSnippet"}"""))
+        )
+
+        assertNull(res.error)
+        val snippetPath = snippetsDir.resolve("printSnippet.snippet")
+        assertTrue("snippet file should exist", Files.exists(snippetPath))
+        runInEdtAndWait {
+            val editor = FileEditorManager.getInstance(fixture.project).selectedTextEditor!!
+            assertEquals(snippetPath.toFile().canonicalPath, FileDocumentManager.getInstance().getFile(editor.document)?.path?.let { java.io.File(it).canonicalPath })
+            assertTrue(editor.document.text, editor.document.text.contains("println"))
+        }
+    }
+
+    private fun targetJson(target: CursorlessTarget): String {
+        return """{"type": "primitive", "mark": {"type": "decoratedSymbol", "symbolColor": "${target.color}", "character": "${target.letter}"}}"""
+    }
+
+    private fun actionCommand(actionJson: String): JsonObject {
+        return Json.decodeFromString<JsonObject>(
+            """{"version": 7, "spokenForm": "test", "usePrePhraseSnapshot": false, "action": $actionJson}"""
+        )
+    }
+
+    @Test
+    fun testDocumentUpdatedIgnoresUnknownEditor() {
+        val fixture = mainJavaFixture()
+        val textBefore = fixture.editor.document.text
+        val edit = CursorlessEditorEdit().apply {
+            changes = listOf(CursorlessEditorChange().apply { text = "x"; rangeOffset = 0; rangeLength = 0 })
+        }
+
+        fixture.projectService.editorManager.documentUpdated("no-such-editor", edit)
+
+        assertEquals(textBefore, fixture.editor.document.text)
     }
 
     @Test

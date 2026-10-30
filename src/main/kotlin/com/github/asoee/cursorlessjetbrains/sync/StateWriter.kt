@@ -97,7 +97,10 @@ private fun isEditorVisible(
 }
 
 fun isDocumentWritable(editor: Editor): Boolean {
-    return editor.document.isWritable
+    // A read-only local file may only need a VCS checkout (e.g. Perforce), which EditorManager.documentUpdated
+    // requests before editing, so let the engine attempt the edit
+    return editor.document.isWritable ||
+            FileDocumentManager.getInstance().getFile(editor.document)?.isInLocalFileSystem == true
 }
 
 fun isEditorFocused(editor: Editor): Boolean {
