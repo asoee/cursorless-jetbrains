@@ -37,13 +37,8 @@
 )
 
 (
-  (translation_unit) @statement.iteration @class.iteration @namedFunction.iteration
-  (#document-range! @statement.iteration @class.iteration @namedFunction.iteration)
-)
-
-(
-  (translation_unit) @name.iteration @value.iteration @type.iteration
-  (#document-range! @name.iteration @value.iteration @type.iteration)
+  (translation_unit) @G_statement_name_value_type_class_namedFunction.iteration
+  (#document-range! @G_statement_name_value_type_class_namedFunction.iteration)
 )
 
 ;;!! { }
@@ -60,24 +55,14 @@
 ;;!! union Foo { };
 ;;!             ^
 (field_declaration_list
-  "{" @name.iteration.start.endOf @value.iteration.start.endOf @type.iteration.start.endOf
-  "}" @name.iteration.end.startOf @value.iteration.end.startOf @type.iteration.end.startOf
-)
-
-(field_declaration_list
-  "{" @statement.iteration.start.endOf
-  "}" @statement.iteration.end.startOf
+  "{" @G_statement_name_value_type.iteration.start.endOf
+  "}" @G_statement_name_value_type.iteration.end.startOf
 )
 
 ;; Body of statements
 (compound_statement
-  "{" @name.iteration.start.endOf @value.iteration.start.endOf @type.iteration.start.endOf
-  "}" @name.iteration.end.startOf @value.iteration.end.startOf @type.iteration.end.startOf
-)
-
-(compound_statement
-  "{" @statement.iteration.start.endOf
-  "}" @statement.iteration.end.startOf
+  "{" @G_statement_name_value_type.iteration.start.endOf
+  "}" @G_statement_name_value_type.iteration.end.startOf
 )
 
 (
@@ -118,10 +103,19 @@
   (#type? @_dummy struct_specifier union_specifier enum_specifier)
 ) @_.domain @class @type
 
+;;!! typedef int foo;
+;;!          ^^^
+;;!              ^^^
+(type_definition
+  type: (_) @value
+  declarator: (type_identifier) @name
+  (#not-type? @value struct_specifier union_specifier enum_specifier)
+) @type @_.domain
+
 ;;!! enum Foo {}
 (enumerator_list
-  "{" @name.iteration.start.endOf @value.iteration.start.endOf
-  "}" @name.iteration.end.startOf @value.iteration.end.startOf
+  "{" @G_name_value.iteration.start.endOf
+  "}" @G_name_value.iteration.end.startOf
 )
 
 ;;!! bar = 0
@@ -203,7 +197,7 @@
   declarator: (_
     !declarator
   ) @name
-) @_.domain @name.removal
+) @name.domain @name.removal
 
 ;;!! aaa = 0;
 (_
@@ -218,8 +212,8 @@
 (
   (_
     type: (_) @type
-  ) @_.domain
-  (#not-type? @_.domain type_definition type_descriptor cast_expression)
+  ) @type.domain
+  (#not-type? @type.domain type_definition type_descriptor cast_expression alias_declaration)
 )
 
 ;;!! (int)5.5;
@@ -228,23 +222,23 @@
   "(" @type.removal.start
   type: (_) @type
   ")" @type.removal.end
-) @_.domain
+) @type.domain
 
 ;;!! void foo(int aaa) {}
 ;;!               ^^^
 (parameter_declaration
   declarator: (_) @name
-) @_.domain
+) @name.domain
 
 ;;!! void foo(int aaa, int bbb) {}
 ;;!           ^^^^^^^  ^^^^^^^
 (
   (parameter_list
-    (_)? @_.leading.endOf
+    (_)? @argumentOrParameter.leading.endOf
     .
     (parameter_declaration) @argumentOrParameter
     .
-    (_)? @_.trailing.startOf
+    (_)? @argumentOrParameter.trailing.startOf
   ) @_dummy
   (#not-type? @argumentOrParameter comment)
   (#single-or-multi-line-delimiter! @argumentOrParameter @_dummy ", " ",\n")
@@ -254,11 +248,11 @@
 ;;!      ^^^  ^^^
 (
   (argument_list
-    (_)? @_.leading.endOf
+    (_)? @argumentOrParameter.leading.endOf
     .
     (_) @argumentOrParameter
     .
-    (_)? @_.trailing.startOf
+    (_)? @argumentOrParameter.trailing.startOf
   ) @_dummy
   (#not-type? @argumentOrParameter comment)
   (#single-or-multi-line-delimiter! @argumentOrParameter @_dummy ", " ",\n")
@@ -278,8 +272,8 @@
 ) @argumentList.domain @argumentOrParameter.iteration.domain
 
 (parameter_list
-  "(" @name.iteration.start.endOf @value.iteration.start.endOf @type.iteration.start.endOf
-  ")" @name.iteration.end.startOf @value.iteration.end.startOf @type.iteration.end.startOf
+  "(" @G_name_value_type.iteration.start.endOf
+  ")" @G_name_value_type.iteration.end.startOf
 )
 
 ;;!! foo(aaa, bbb);
@@ -362,10 +356,10 @@
     ")" @value.end.startOf
   )
   body: (_
-    "{" @branch.iteration.start.endOf @condition.iteration.start.endOf
-    "}" @branch.iteration.end.startOf @condition.iteration.end.startOf
+    "{" @G_branch_condition.iteration.start.endOf
+    "}" @G_branch_condition.iteration.end.startOf
   )
-) @_.domain
+) @value.domain
 
 ;;!! case 0: break;
 ;;!  ^^^^^^^^^^^^^^
@@ -402,11 +396,11 @@
 (
   (declaration
     type: (_)
-    (_)? @_.leading.endOf
+    (_)? @collectionItem.leading.endOf
     .
     (_) @collectionItem
     .
-    (_)? @_.trailing.startOf
+    (_)? @collectionItem.trailing.startOf
   ) @_dummy
   (#single-or-multi-line-delimiter! @collectionItem @_dummy ", " ",\n")
 )
@@ -424,7 +418,7 @@
 (return_statement
   "return"
   (_) @value
-) @_.domain
+) @value.domain
 
 (_
   operator: [

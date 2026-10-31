@@ -5,7 +5,7 @@ import java.awt.Color
 
 class HexColorConverter: Converter<Color>() {
     override fun fromString(value: String): Color {
-        return Color.decode(value)
+        return ColorUtil.fromHexString(value)
     }
 
     override fun toString(value: Color): String {

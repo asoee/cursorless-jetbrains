@@ -46,9 +46,16 @@ fun serializeEditor(editor: Editor, editorId: String, psiFile: PsiFile?): Editor
 
         val language = editorLanguage1(psiFile) ?: "plaintext"
 
+        // An editor that isn't laid out yet (just opened) reports a line or two as visible, so the engine would hat
+        // almost nothing in it; report its start instead until it has a size
+        val laidOut = editor.scrollingModel.visibleArea.height > 0
         val visibleRange = editor.calculateVisibleRange()
-        val startLine = editor.offsetToLogicalPosition(visibleRange.startOffset).line
-        val endLine = editor.offsetToLogicalPosition(visibleRange.endOffset).line
+        val startLine = if (laidOut) editor.offsetToLogicalPosition(visibleRange.startOffset).line else 0
+        val endLine = if (laidOut) {
+            editor.offsetToLogicalPosition(visibleRange.endOffset).line
+        } else {
+            maxOf(0, minOf(document.lineCount, 200) - 1)
+        }
 
         // Check file size limit before sending to Cursorless
         val maxFileSizeBytes = TalonSettings.instance.state.maxFileSizeKb * 1024
@@ -73,7 +80,9 @@ fun serializeEditor(editor: Editor, editorId: String, psiFile: PsiFile?): Editor
             selections,
             visible,
             editable,
-            writable
+            writable,
+            editor.settings.getTabSize(project),
+            !editor.settings.isUseTabCharacter(project),
         )
     }
     return edtState
@@ -97,7 +106,10 @@ private fun isEditorVisible(
 }
 
 fun isDocumentWritable(editor: Editor): Boolean {
-    return editor.document.isWritable
+    // A read-only local file may only need a VCS checkout (e.g. Perforce), which EditorManager.documentUpdated
+    // requests before editing, so let the engine attempt the edit
+    return editor.document.isWritable ||
+            FileDocumentManager.getInstance().getFile(editor.document)?.isInLocalFileSystem == true
 }
 
 fun isEditorFocused(editor: Editor): Boolean {
