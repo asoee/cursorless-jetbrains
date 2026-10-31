@@ -4,6 +4,7 @@ import com.github.asoee.cursorlessjetbrains.services.TalonProjectService
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
 class CursorlessExecuteCommand(project: Project, private val jsonObjects: List<JsonObject>) : VcCommand(project) {
@@ -31,14 +32,29 @@ class CursorlessExecuteCommand(project: Project, private val jsonObjects: List<J
         return ExecutionMode.EDT
     }
 
+    /** For the HTTP server, which returns text: the return value, or the whole response when it's a fallback */
     override fun execute(context: CommandContext): String {
-        val service = project.service<TalonProjectService>()
-        val result = service.cursorlessEngine.executeCommand(jsonObjects)
+        val response = executeForResult(context) as? JsonObject
+        if (response?.containsKey("fallback") == true) {
+            // Talon has to run the fallback itself, so it mustn't look like the command was done
+            return response.toString()
+        }
+        return response?.get("returnValue")?.toString() ?: "OK"
+    }
 
-        return if (result.success) {
-            result.returnValue?.toString() ?: "OK"
-        } else {
+    override fun executeForResult(context: CommandContext): JsonElement? {
+        val service = project.service<TalonProjectService>()
+        val result = service.editorManager.asOneUndoStep { service.cursorlessEngine.executeCommand(jsonObjects) }
+
+        if (!result.success) {
             throw RuntimeException(result.error ?: "Cursorless command execution failed")
+        }
+        // Pass the engine's response through as JSON: Talon expects e.g. {"returnValue": ["main"]}, not a string,
+        // and {"fallback": …} when focus is outside the editor
+        return when {
+            result.fallback != null -> JsonObject(mapOf("fallback" to result.fallback))
+            result.returnValue != null -> JsonObject(mapOf("returnValue" to result.returnValue))
+            else -> JsonObject(emptyMap())
         }
     }
 

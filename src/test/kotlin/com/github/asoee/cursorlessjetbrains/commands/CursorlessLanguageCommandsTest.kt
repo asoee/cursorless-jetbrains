@@ -169,6 +169,50 @@ class CursorlessLanguageCommandsTest : BasePlatformTestCase() {
         )
     }
 
+    // ==================== Swift Tests ====================
+
+    @Test
+    fun testTakeFunkSwiftGreet() {
+        assertTakeFunk(
+            filePath = "swift/FunctionTest.swift",
+            functionName = "greet",
+            line = 0,
+            expectedContains = listOf("func greet()", "print")
+        )
+    }
+
+    @Test
+    fun testTakeFunkSwiftCalculate() {
+        assertTakeFunk(
+            filePath = "swift/FunctionTest.swift",
+            functionName = "calculate",
+            line = 4,
+            expectedContains = listOf("func calculate", "return x + y")
+        )
+    }
+
+    // ==================== Shell script Tests ====================
+
+    @Test
+    fun testTakeFunkShellScriptGreet() {
+        assertTakeFunk(
+            filePath = "shellscript/function_test.sh",
+            functionName = "greet",
+            line = 0,
+            expectedContains = listOf("greet()", "echo \"Hello\"")
+        )
+    }
+
+    @Test
+    fun testTakeFunkShellScriptCalculate() {
+        assertTakeFunk(
+            filePath = "shellscript/function_test.sh",
+            functionName = "calculate",
+            line = 4,
+            expectedContains = listOf("calculate()", "$1 + $2")
+        )
+    }
+
     // ==================== JavaScript Tests ====================
 
     @Test

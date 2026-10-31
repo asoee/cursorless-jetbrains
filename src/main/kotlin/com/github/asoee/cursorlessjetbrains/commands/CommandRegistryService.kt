@@ -29,6 +29,18 @@ class CommandRegistryService {
         registerCommand("find", FindCommand::fromArgs)
         registerCommand("jetbrains.action.openSettings", OpenSettingsCommand::fromArgs)
         registerCommand("cursorless.command", CursorlessExecuteCommand::fromArgs)
+        registerCommand("cursorless.documentationOpened", TutorialCommand.of("documentationOpened"))
+        registerCommand("cursorless.tutorial.start", TutorialCommand::start)
+        registerCommand("cursorless.tutorial.next", TutorialCommand.of("tutorialNext"))
+        registerCommand("cursorless.tutorial.previous", TutorialCommand.of("tutorialPrevious"))
+        registerCommand("cursorless.tutorial.restart", TutorialCommand.of("tutorialRestart"))
+        registerCommand("cursorless.tutorial.resume", TutorialCommand.of("tutorialResume"))
+        registerCommand("cursorless.tutorial.list", TutorialCommand.of("tutorialList"))
+        registerCommand("cursorless.showSidebar", ShowSidebarCommand::fromArgs)
+        registerCommand("cursorless.showScopeVisualizer", ScopeVisualizerCommand::show)
+        registerCommand("cursorless.hideScopeVisualizer", ScopeVisualizerCommand::hide)
+        registerCommand("cursorless.showCheatsheet", ShowCheatsheetCommand::fromArgs)
+        registerCommand("cursorless.analyzeCommandHistory", AnalyzeCommandHistoryCommand::fromArgs)
     }
 
 }

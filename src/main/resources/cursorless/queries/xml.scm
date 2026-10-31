@@ -5,14 +5,14 @@
 ;;!  -----
 (STag
   (Name) @name
-) @_.domain
+) @name.domain
 
 ;;!! </aaa>
 ;;!    ^^^
 ;;!  ------
 (ETag
   (Name) @name
-) @_.domain
+) @name.domain
 
 ;;!! <aaa id="me">
 ;;!       ^^^^^^^
@@ -47,20 +47,12 @@
 (CharData) @textFragment
 
 ;;!! <aaa>text</aaa>
-;;!  ^^^^^^^^^^^^^^^
+;;!  ^^^^^    ^^^^^^
 ;;!       ^^^^
 (element
-  (STag) @interior.start.endOf
-  (ETag) @interior.end.startOf
-) @xmlElement
-
-;;!! <aaa>text</aaa>
-;;!  ^^^^^    ^^^^^^
-;;!  ---------------
-(element
-  (STag) @xmlStartTag
-  (ETag) @xmlEndTag
-) @_.domain
+  (STag) @xmlStartTag @interior.start.endOf
+  (ETag) @xmlEndTag @interior.end.startOf
+) @xmlStartTag.domain @xmlEndTag.domain
 
 (element
   [
@@ -68,20 +60,24 @@
     (ETag)
   ] @xmlBothTags
   (#allow-multiple! @xmlBothTags)
-) @_.domain
+) @xmlBothTags.domain
+
+;;!! <aaa>text</aaa>
+;;!! <aaa/>
+(element) @xmlElement
 
 (element
-  (STag) @xmlElement.iteration.start.endOf @xmlBothTags.iteration.start.endOf
+  (STag) @G_xmlElement_xmlBothTags.iteration.start.endOf
   (content
     (element)
   )
-  (ETag) @xmlElement.iteration.end.startOf @xmlBothTags.iteration.end.startOf
+  (ETag) @G_xmlElement_xmlBothTags.iteration.end.startOf
 )
 
 (_
-  (STag) @xmlStartTag.iteration.start.endOf @xmlEndTag.iteration.start.endOf
+  (STag) @G_xmlStartTag_xmlEndTag.iteration.start.endOf
   (content
     (element)
   )
-  (ETag) @xmlStartTag.iteration.end.startOf @xmlEndTag.iteration.end.startOf
+  (ETag) @G_xmlStartTag_xmlEndTag.iteration.end.startOf
 )

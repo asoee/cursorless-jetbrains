@@ -1,0 +1,6 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- The terminal's shell, for editing keys sent to it -->
+        <projectService serviceImplementation="com.github.asoee.cursorlessjetbrains.terminal.TerminalShell"/>
+    </extensions>
+</idea-plugin>

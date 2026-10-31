@@ -7,10 +7,12 @@
   (enum_definition)
   (trait_definition)
   (var_definition)
+  (var_declaration)
   (val_definition)
   (val_declaration)
-  (assignment_expression)
   (function_definition)
+  (function_declaration)
+  (assignment_expression)
   (instance_expression)
   (call_expression)
   (match_expression)
@@ -19,7 +21,6 @@
   (do_while_expression)
   (for_expression)
   (try_expression)
-  (var_declaration)
   (throw_expression)
   (type_definition)
   (infix_expression)
@@ -36,13 +37,8 @@
 ] @type
 
 (
-  (compilation_unit) @class.iteration @statement.iteration @namedFunction.iteration
-  (#document-range! @class.iteration @statement.iteration @namedFunction.iteration)
-)
-
-(
-  (compilation_unit) @name.iteration @value.iteration @type.iteration
-  (#document-range! @name.iteration @value.iteration @type.iteration)
+  (compilation_unit) @G_class_statement_name_value_type_namedFunction.iteration
+  (#document-range! @G_class_statement_name_value_type_namedFunction.iteration)
 )
 
 ;;!! { }
@@ -116,19 +112,15 @@
 ;;!! class Foo { }
 ;;!             ^
 (template_body
-  "{" @class.iteration.start.endOf @namedFunction.iteration.start.endOf
-  "}" @class.iteration.end.startOf @namedFunction.iteration.end.startOf
+  "{" @G_class_namedFunction.iteration.start.endOf
+  "}" @G_class_namedFunction.iteration.end.startOf
 )
 
 ;;!! { }
 ;;!   ^
 (_
-  "{" @name.iteration.start.endOf @value.iteration.start.endOf @type.iteration.start.endOf
-  "}" @name.iteration.end.startOf @value.iteration.end.startOf @type.iteration.end.startOf
-)
-(_
-  "{" @statement.iteration.start.endOf
-  "}" @statement.iteration.end.startOf
+  "{" @G_statement_name_value_type.iteration.start.endOf
+  "}" @G_statement_name_value_type.iteration.end.startOf
 )
 
 ;;!! foo()
@@ -175,8 +167,8 @@
 (match_expression
   value: (_) @value
   (case_block
-    "{" @branch.iteration.start.endOf @condition.iteration.start.endOf
-    "}" @branch.iteration.end.startOf @condition.iteration.end.startOf
+    "{" @G_branch_condition.iteration.start.endOf
+    "}" @G_branch_condition.iteration.end.startOf
   )
 ) @value.domain
 
@@ -238,9 +230,8 @@
     )
     ;;!! case Baz(x: Int)
     (full_enum_case
-      name: (_) @name @functionCallee
-      class_parameters: (_)
-    ) @functionCall @functionCallee.domain
+      name: (_) @name
+    )
   ]
 ) @name.domain
 
@@ -384,10 +375,13 @@
   (case_block
     (case_clause
       "=>" @interior.start.endOf
-      body: (_) @interior.end.endOf
+      .
+      (_) @interior.end.endOf @_dummy
+      (_)? @interior.end.endOf
+      .
     )
   )
-  (#not-type? @interior.end.endOf block)
+  (#not-type? @_dummy block)
 )
 
 ;;!! try {}
@@ -412,11 +406,11 @@
 ;;!      ^  ^  ^
 (
   (identifiers
-    (_)? @_.leading.endOf
+    (_)? @collectionItem.leading.endOf
     .
     (_) @collectionItem
     .
-    (_)? @_.trailing.startOf
+    (_)? @collectionItem.trailing.startOf
   ) @_dummy
   (#single-or-multi-line-delimiter! @collectionItem @_dummy ", " ",\n")
 )
@@ -425,11 +419,11 @@
 ;;!               ^^^  ^^^
 (
   (type_arguments
-    (_)? @_.leading.endOf
+    (_)? @type.leading.endOf
     .
     (_) @type
     .
-    (_)? @_.trailing.startOf
+    (_)? @type.trailing.startOf
   ) @_dummy
   (#single-or-multi-line-delimiter! @type @_dummy ", " ",\n")
 )
@@ -445,11 +439,11 @@
 ;;!            ^^^^^^^^  ^^^^^^^^
 (
   (class_parameters
-    (_)? @_.leading.endOf
+    (_)? @argumentOrParameter.leading.endOf
     .
     (_) @argumentOrParameter
     .
-    (_)? @_.trailing.startOf
+    (_)? @argumentOrParameter.trailing.startOf
   ) @_dummy
   (#single-or-multi-line-delimiter! @argumentOrParameter @_dummy ", " ",\n")
 )
@@ -458,11 +452,11 @@
 ;;!          ^^^^^^^^  ^^^^^^^^
 (
   (parameters
-    (_)? @_.leading.endOf
+    (_)? @argumentOrParameter.leading.endOf
     .
     (_) @argumentOrParameter
     .
-    (_)? @_.trailing.startOf
+    (_)? @argumentOrParameter.trailing.startOf
   ) @_dummy
   (#single-or-multi-line-delimiter! @argumentOrParameter @_dummy ", " ",\n")
 )
@@ -471,11 +465,11 @@
 ;;!   ^^^^^^^^  ^^^^^^^^
 (lambda_expression
   (bindings
-    (_)? @_.leading.endOf
+    (_)? @argumentOrParameter.leading.endOf
     .
     (_) @argumentOrParameter
     .
-    (_)? @_.trailing.startOf
+    (_)? @argumentOrParameter.trailing.startOf
   ) @_dummy
   (#single-or-multi-line-delimiter! @argumentOrParameter @_dummy ", " ",\n")
 )
@@ -484,11 +478,11 @@
 ;;!      ^^^  ^^^
 (
   (arguments
-    (_)? @_.leading.endOf
+    (_)? @argumentOrParameter.leading.endOf
     .
     (_) @argumentOrParameter
     .
-    (_)? @_.trailing.startOf
+    (_)? @argumentOrParameter.trailing.startOf
   ) @_dummy
   (#single-or-multi-line-delimiter! @argumentOrParameter @_dummy ", " ",\n")
 )
@@ -505,8 +499,8 @@
 ) @argumentList.domain @argumentOrParameter.iteration.domain
 
 (class_parameters
-  "(" @name.iteration.start.endOf @value.iteration.start.endOf @type.iteration.start.endOf
-  ")" @name.iteration.end.startOf @value.iteration.end.startOf @type.iteration.end.startOf
+  "(" @G_name_value_type.iteration.start.endOf
+  ")" @G_name_value_type.iteration.end.startOf
 )
 
 ;;!! def foo(aaa: Int, bbb: Int) {}
@@ -521,8 +515,8 @@
 ) @argumentList.domain @argumentOrParameter.iteration.domain
 
 (parameters
-  "(" @name.iteration.start.endOf @value.iteration.start.endOf @type.iteration.start.endOf
-  ")" @name.iteration.end.startOf @value.iteration.end.startOf @type.iteration.end.startOf
+  "(" @G_name_value_type.iteration.start.endOf
+  ")" @G_name_value_type.iteration.end.startOf
 )
 
 ;;!! (aaa: Int, bbb: Int) => {}
@@ -537,8 +531,8 @@
 ) @argumentList.domain @argumentOrParameter.iteration.domain
 
 (bindings
-  "(" @name.iteration.start.endOf @value.iteration.start.endOf @type.iteration.start.endOf
-  ")" @name.iteration.end.startOf @value.iteration.end.startOf @type.iteration.end.startOf
+  "(" @G_name_value_type.iteration.start.endOf
+  ")" @G_name_value_type.iteration.end.startOf
 )
 
 ;;!! foo(aaa, bbb)
@@ -553,8 +547,8 @@
 ) @argumentList.domain @argumentOrParameter.iteration.domain
 
 (arguments
-  "(" @name.iteration.start.endOf @value.iteration.start.endOf
-  ")" @name.iteration.end.startOf @value.iteration.end.startOf
+  "(" @G_name_value.iteration.start.endOf
+  ")" @G_name_value.iteration.end.startOf
 )
 
 (_
