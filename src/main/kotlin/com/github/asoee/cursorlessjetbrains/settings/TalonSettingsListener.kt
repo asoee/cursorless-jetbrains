@@ -10,4 +10,7 @@ interface TalonSettingsListener {
     }
 
     fun onSettingsChanged(settings: TalonSettings.State)
+
+    /** The hats were toggled for this session (cursorless.toggleDecorations); the settings are unchanged */
+    fun onHatsToggled(enabled: Boolean) {}
 }

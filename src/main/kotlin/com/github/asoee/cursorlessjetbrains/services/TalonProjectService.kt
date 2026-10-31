@@ -1,19 +1,30 @@
 package com.github.asoee.cursorlessjetbrains.services
 
+import com.intellij.openapi.fileEditor.FileEditorManagerEvent
+import com.intellij.openapi.fileEditor.FileEditorManagerListener
+import com.intellij.openapi.fileEditor.TextEditor
 import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessEngine
 import com.github.asoee.cursorlessjetbrains.javet.JavetDriver
 import com.github.asoee.cursorlessjetbrains.javet.JavetDriverRestartListener
 import com.github.asoee.cursorlessjetbrains.listeners.*
+import com.github.asoee.cursorlessjetbrains.settings.HatsToggle
 import com.github.asoee.cursorlessjetbrains.settings.TalonSettings
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
+import com.github.asoee.cursorlessjetbrains.scopes.CursorlessScopeList
+import com.github.asoee.cursorlessjetbrains.tutorial.CursorlessTutorial
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.ex.EditorEventMulticasterEx
 import com.intellij.openapi.project.Project
+import com.intellij.util.concurrency.AppExecutorUtil
 import kotlinx.coroutines.CoroutineScope
+import java.nio.file.Files
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.launch
 
 @Service(Service.Level.PROJECT)
@@ -38,6 +49,9 @@ class TalonProjectService(private val project: Project, private val cs: Coroutin
 
     private var focusChangeListener: TalonFocusChangeListener
 
+    private val spokenFormsPoller: ScheduledFuture<*>
+    private var spokenFormsModified: Long = -1
+
     @Volatile
     private var isRestarting = false
 
@@ -48,7 +62,9 @@ class TalonProjectService(private val project: Project, private val cs: Coroutin
         val (driver, engine) = createV8EngineAndCursorless()
         this.jsDriver = driver
         this.cursorlessEngine = engine
-        this.editorManager = EditorManager(cursorlessEngine, this, cs)
+        this.editorManager = EditorManager(project, cursorlessEngine, this, cs)
+        this.editorManager.tutorialStateListener = { project.service<CursorlessTutorial>().stateChanged(it) }
+        this.editorManager.scopeListListener = { project.service<CursorlessScopeList>().changed(it) }
         this.focusChangeListener = TalonFocusChangeListener(editorManager, project)
 
         // https://intellij-support.jetbrains.com/hc/en-us/community/posts/4578776718354-How-do-I-listen-for-editor-focus-events-
@@ -56,11 +72,29 @@ class TalonProjectService(private val project: Project, private val cs: Coroutin
             .eventMulticaster as EditorEventMulticasterEx
         m.addFocusChangeListener(this.focusChangeListener, this)
 
+        // Switching tabs changes which editors are visible. The tab left behind sends nothing of its own, so report
+        // both, or the engine keeps putting hats in an editor that's no longer on screen
+        project.messageBus.connect(this).subscribe(
+            FileEditorManagerListener.FILE_EDITOR_MANAGER,
+            object : FileEditorManagerListener {
+                override fun selectionChanged(event: FileEditorManagerEvent) {
+                    (event.oldEditor as? TextEditor)?.editor?.let { editorManager.editorChanged(it) }
+                    (event.newEditor as? TextEditor)?.editor?.let { editorManager.editorChanged(it) }
+                }
+            })
+
         settingsUpdated(TalonSettings.instance.state)
+        // The engine set its first tutorial state while starting, before the listener above existed
+        cursorlessEngine.tutorialState()?.let { project.service<CursorlessTutorial>().stateChanged(it) }
+
+        // Talon rewrites ~/.cursorless/state.json when spoken forms change; the engine re-reads it when told
+        spokenFormsPoller = AppExecutorUtil.getAppScheduledExecutorService()
+            .scheduleWithFixedDelay({ checkTalonSpokenForms() }, 5, 5, TimeUnit.SECONDS)
 
         logger.info("reloading all")
         this.editorManager.reloadAllEditors()
         logger.info("reloaded all")
+        project.service<CursorlessScopeList>().engineStarted()
     }
 
     private fun createV8EngineAndCursorless(): Pair<JavetDriver, CursorlessEngine> {
@@ -108,8 +142,22 @@ class TalonProjectService(private val project: Project, private val cs: Coroutin
 
     override fun dispose() {
         logger.info("Disposing TalonProjectService")
+        spokenFormsPoller.cancel(false)
         jsDriver.close()
 
+    }
+
+    private fun checkTalonSpokenForms() {
+        try {
+            val path = talonSpokenFormsPath()
+            val modified = if (Files.exists(path)) Files.getLastModifiedTime(path).toMillis() else 0
+            if (spokenFormsModified != -1L && modified != spokenFormsModified) {
+                editorManager.talonSpokenFormsChanged()
+            }
+            spokenFormsModified = modified
+        } catch (e: Exception) {
+            logger.warn("Could not check Talon's spoken forms file", e)
+        }
     }
 
     fun editorReleased(editor: Editor) {
@@ -142,7 +190,16 @@ class TalonProjectService(private val project: Project, private val cs: Coroutin
         updateCursorlessEngineSettings(settings)
     }
 
+    /** Hides or shows the hats and, as in VS Code, has the engine drop or reallocate them, so hidden hats can't be used */
+    fun hatsToggled(enabled: Boolean) {
+        editorManager.setHatsEnabled(enabled)
+        cursorlessEngine.setHatsEnabled(enabled)
+    }
+
     private fun updateCursorlessEngineSettings(settings: TalonSettings.State) {
+        cursorlessEngine.setConfiguration(commandHistory = settings.commandHistory, debug = settings.debugLogging)
+        cursorlessEngine.setHatsEnabled(HatsToggle.enabled(settings))
+
         val enabledShapes = settings.hatShapeSettings
             .filter { it.enabled }
             .map { it.shapeName }
@@ -184,9 +241,11 @@ class TalonProjectService(private val project: Project, private val cs: Coroutin
             editorManager.updateEngine(cursorlessEngine)
 
             settingsUpdated(TalonSettings.instance.state)
+            cursorlessEngine.tutorialState()?.let { project.service<CursorlessTutorial>().stateChanged(it) }
 
             logger.info("Reloading all editors after V8 restart...")
             editorManager.reloadAllEditors()
+            project.service<CursorlessScopeList>().engineStarted()
 
             logger.warn("V8 engine successfully restarted")
         } catch (e: Exception) {

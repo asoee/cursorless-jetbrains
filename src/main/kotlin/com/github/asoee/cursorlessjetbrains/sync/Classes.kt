@@ -44,6 +44,9 @@ data class EditorState(
     val visible: Boolean,
     val editable: Boolean,
     val writable: Boolean,
+    // The file's indent settings, from its code style (and .editorconfig), for actions that indent
+    val tabSize: Int,
+    val insertSpaces: Boolean,
     )
 
 

@@ -6,7 +6,6 @@
 [
   (break_statement)
   (class_declaration)
-  (compound_statement)
   (const_declaration)
   (continue_statement)
   (declare_statement)
@@ -21,7 +20,6 @@
   (function_static_declaration)
   (global_declaration)
   (goto_statement)
-  (if_statement)
   (interface_declaration)
   (named_label_statement)
   (namespace_definition)
@@ -32,7 +30,35 @@
   (try_statement)
   (unset_statement)
   (while_statement)
+  (method_declaration)
+
+  ;; Disabled on purpose. We don't consider these to be statements.
+  ;; (compound_statement)
+
+  ;; Disabled on purpose. We have a better definition of these below.
+  ;; (if_statement)
 ] @statement
+
+(
+  (program) @G_class_statement_name_value_type_namedFunction.iteration
+  (#document-range! @G_class_statement_name_value_type_namedFunction.iteration)
+)
+
+;;!! { }
+;;!   ^
+(_
+  .
+  "{" @interior.start.endOf
+  "}" @interior.end.startOf
+  .
+)
+
+;;!! { }
+;;!   ^
+(compound_statement
+  "{" @G_statement_name_value.iteration.start.endOf
+  "}" @G_statement_name_value.iteration.end.startOf
+)
 
 [
   (shell_command_expression)
@@ -63,20 +89,110 @@
 
 (comment) @comment @textFragment
 
-(if_statement) @ifStatement
+;;!! if (true) {} else {}
+(
+  (if_statement) @ifStatement @statement @branch.iteration
+  (#not-parent-type? @ifStatement else_clause)
+)
 
-[
-  (array_creation_expression)
-] @list
+;;!! if (true) {} else {}
+;;!      ^^^^
+(
+  (if_statement
+    "if" @branch.start @branch.removal.start
+    condition: (_
+      (_) @condition
+    )
+    body: (_) @branch.end @branch.removal.end
+    alternative: (else_clause
+      "else" @branch.removal.end.startOf
+      (if_statement)? @branch.removal.end.startOf
+    )?
+  ) @condition.domain
+  (#not-parent-type? @condition.domain else_clause)
+)
 
+;;!! else if (true) {}
+;;!           ^^^^
+(else_clause
+  "else" @condition.domain.start @branch.start
+  (if_statement
+    condition: (_
+      (_) @condition
+    )
+    body: (_) @condition.domain.end @branch.end
+  )
+)
+
+;;!! else {}
+(else_clause
+  body: (compound_statement)
+) @branch
+
+;;!! [aaa, bbb]
+(array_creation_expression) @list
+
+;;!! ["aaa" => 0, "bbb" => 1];
+(array_creation_expression
+  "[" @G_collectionKey_value.iteration.start.endOf
+  (array_element_initializer
+    "=>"
+  )
+  "]" @G_collectionKey_value.iteration.end.startOf
+) @map
+
+;;!! ['num' => 1];
+;;!   ^^^^^
+;;!            ^
+(array_element_initializer
+  (_) @collectionKey @value.leading.endOf
+  "=>"
+  (_) @value @collectionKey.trailing.startOf
+) @_.domain
+
+;;!! class Foo {}
 (class_declaration
   name: (_) @name
-) @class @name.domain
+  body: (_
+    "{" @namedFunction.iteration.start.endOf
+    "}" @namedFunction.iteration.end.startOf
+  )
+) @class @type @name.domain
 
+;;!! class Foo { }
+;;!! interface Foo { }
+(declaration_list
+  "{" @G_statement_name_value_type.iteration.start.endOf
+  "}" @G_statement_name_value_type.iteration.end.startOf
+)
+
+;;!! interface Foo {}
+(interface_declaration
+  name: (_) @name
+) @type @name.domain
+
+;;!! enum Foo {}
+(enum_declaration
+  name: (_) @name
+  body: (_
+    "{" @G_name_value_type.iteration.start.endOf
+    "}" @G_name_value_type.iteration.end.startOf
+  )
+) @type @name.domain
+
+;;!! function foo() {}
 [
-  (function_definition)
-  (method_declaration)
-] @namedFunction
+  (function_definition
+    name: (_) @name
+    parameters: (_)? @type.leading.endOf
+    return_type: (_)? @type
+  )
+  (method_declaration
+    name: (_) @name
+    parameters: (_)? @type.leading.endOf
+    return_type: (_)? @type
+  )
+] @namedFunction @_.domain
 
 (expression_statement
   (assignment_expression
@@ -89,28 +205,163 @@
   ";"? @namedFunction.end
 )
 
-[
-  (anonymous_function)
-  (arrow_function)
-] @anonymousFunction
+;;!! function(): int {}
+;;!  ^^^^^^^^^^^^^^^^^^
+;;!              ^^^
+(anonymous_function
+  parameters: (_) @type.leading.endOf
+  return_type: (_)? @type
+) @anonymousFunction @type.domain
 
-[
-  (function_definition
-    name: (_) @name
+;;!! fn(): int => 0;
+;;!  ^^^^^^^^^^^^^^
+;;!        ^^^
+;;!          ^
+(arrow_function
+  parameters: (_) @type.leading.endOf
+  return_type: (_)? @type
+  body: (_) @value
+) @anonymousFunction @_.domain
+
+;;!! foo()
+(function_call_expression
+  function: (_) @functionCallee
+) @functionCall @functionCallee.domain
+
+;;!! foo()->bar()
+(member_call_expression
+  object: (_) @functionCallee.start
+  name: (_) @functionCallee.end
+) @functionCall @functionCallee.domain
+
+;;!! foo()?->bar()
+(nullsafe_member_call_expression
+  object: (_) @functionCallee.start
+  name: (_) @functionCallee.end
+) @functionCall @functionCallee.domain
+
+;;!! new Foo()
+(object_creation_expression
+  "new" @functionCallee.start
+  .
+  (_) @functionCallee.end
+) @functionCall @functionCallee.domain
+
+;;!! namespace Foo\Bar;
+;;!            ^^^^^^^
+(namespace_definition
+  name: (_) @name
+) @name.domain
+
+;;!! foreach ($values as $v) {}
+;;!           ^^^^^^^
+;;!                      ^^
+(foreach_statement
+  (_) @value
+  .
+  "as"
+  .
+  (_) @name
+) @_.domain
+
+;;!! throw $foo;
+;;!        ^^^^
+(throw_expression
+  (_) @value
+) @value.domain
+
+;;!! switch ($foo) { }
+;;!         ^^^^^
+;;!                 ^
+(switch_statement
+  condition: (_
+    (_) @value
   )
-  (method_declaration
-    name: (_) @name
+  body: (_
+    "{" @G_branch_condition.iteration.start.endOf
+    "}" @G_branch_condition.iteration.end.startOf
   )
-] @name.domain
+) @value.domain
+
+;;!! case 0: break;
+;;!       ^
+(case_statement
+  value: (_) @condition
+) @condition.domain
+
+;;!! case 0: break;
+;;!         ^
+(case_statement
+  ":" @interior.start.endOf
+  (_) @interior.end.endOf @_dummy
+  (_)? @interior.end.endOf
+  .
+  (#not-type? @_dummy compound_statement)
+)
+
+;;!! default: break;
+;;!          ^
+(default_statement
+  ":" @interior.start.endOf
+  (_) @interior.end.endOf @_dummy
+  (_)? @interior.end.endOf
+  .
+  (#not-type? @_dummy compound_statement)
+)
 
 [
-  (function_call_expression)
-  (object_creation_expression)
-] @functionCall
+  (case_statement)
+  (default_statement)
+] @branch
 
-;;!! $value = 2;
-;;!  ^^^^^^
-;;!           ^
+;;!! do {} while (true);
+;;!               ^^^^
+(do_statement
+  condition: (_
+    (_) @condition
+  )
+) @condition.domain
+
+;;!! while (true) {}
+;;!         ^^^^
+(while_statement
+  condition: (_
+    (_) @condition
+  )
+) @condition.domain
+
+;;!! for ($i = 0; $i < $size; $i++) {}
+;;!               ^^^^^^^^^^
+(for_statement
+  condition: (_) @condition
+) @condition.domain
+
+;;!! true ? 0 : 1
+;;!  ^^^^
+;;!         ^   ^
+(conditional_expression
+  condition: (_) @condition
+  body: (_) @branch
+) @condition.domain @branch.iteration
+
+(conditional_expression
+  alternative: (_) @branch
+)
+
+;;!! try {} catch () {} finally {}
+(try_statement
+  "try" @branch.start
+  body: (_) @branch.end
+) @branch.iteration
+
+[
+  (catch_clause)
+  (finally_clause)
+] @branch
+
+;;!! $foo = 0;
+;;!  ^^^
+;;!         ^
 (_
   (assignment_expression
     left: (_) @name @value.leading.endOf
@@ -120,9 +371,9 @@
   ";"? @_.domain.end
 )
 
-;;!! $value += 2;
-;;!  ^^^^^^
-;;!            ^
+;;!! $foo += 0;
+;;!  ^^^
+;;!          ^
 (_
   (augmented_assignment_expression
     left: (_) @name @value.leading.endOf
@@ -134,23 +385,25 @@
 
 (class_declaration
   name: (_) @name
-) @_.domain
+) @name.domain
+
 (function_definition
   name: (_) @name
-) @_.domain
+) @name.domain
+
 (method_declaration
   name: (_) @name
-) @_.domain
+) @name.domain
 
-;;!! function foo($name) {}
-;;!               ^^^^^
+;;!! function foo($aaa, $bbb) {}
+;;!               ^^^^  ^^^^
 (
   (formal_parameters
-    (_)? @_.leading.endOf
+    (_)? @argumentOrParameter.leading.endOf
     .
     (_) @argumentOrParameter
     .
-    (_)? @_.trailing.startOf
+    (_)? @argumentOrParameter.trailing.startOf
   ) @_dummy
   (#not-type? @argumentOrParameter "comment")
   (#single-or-multi-line-delimiter! @argumentOrParameter @_dummy ", " ",\n")
@@ -160,79 +413,94 @@
 ;;!      ^^^^^
 (
   (arguments
-    (_)? @_.leading.endOf
+    (_)? @argumentOrParameter.leading.endOf
     .
     (_) @argumentOrParameter
     .
-    (_)? @_.trailing.startOf
+    (_)? @argumentOrParameter.trailing.startOf
   ) @_dummy
   (#not-type? @argumentOrParameter "comment")
   (#single-or-multi-line-delimiter! @argumentOrParameter @_dummy ", " ",\n")
 )
 
+;;!! function foo($aaa, $bbb) {}
+;;!               ^^^^^^^^^^
 (_
   (formal_parameters
-    "(" @argumentOrParameter.iteration.start.endOf
-    ")" @argumentOrParameter.iteration.end.startOf
-  )
-) @argumentOrParameter.iteration.domain
+    "(" @argumentList.removal.start.endOf @argumentOrParameter.iteration.start.endOf
+    ")" @argumentList.removal.end.startOf @argumentOrParameter.iteration.end.startOf
+  ) @argumentList
+  (#empty-single-multi-delimiter! @argumentList @argumentList "" ", " ",\n")
+  (#child-range! @argumentList 1 -2)
+) @argumentList.domain @argumentOrParameter.iteration.domain
 
-;;!! foo.bar(a, b);
-;;!          ^^^^
+;;!! foo.bar(aaa, bbb);
+;;!          ^^^^^^^^
 (binary_expression
   (function_call_expression
     (arguments
-      "(" @argumentOrParameter.iteration.start.endOf
-      ")" @argumentOrParameter.iteration.end.startOf
-    )
+      "(" @argumentList.removal.start.endOf @argumentOrParameter.iteration.start.endOf
+      ")" @argumentList.removal.end.startOf @argumentOrParameter.iteration.end.startOf
+    ) @argumentList
+    (#empty-single-multi-delimiter! @argumentList @argumentList "" ", " ",\n")
+    (#child-range! @argumentList 1 -2)
   )
-) @argumentOrParameter.iteration.domain
+) @argumentList.domain @argumentOrParameter.iteration.domain
 
-;;!! foo(a, b);
-;;!      ^^^^
+;;!! foo(aaa, bbb);
+;;!      ^^^^^^^^
 (
   (_
     (arguments
-      "(" @argumentOrParameter.iteration.start.endOf
-      ")" @argumentOrParameter.iteration.end.startOf
-    )
-  ) @argumentOrParameter.iteration.domain
-  (#not-parent-type? @argumentOrParameter.iteration.domain binary_expression)
+      "(" @argumentList.removal.start.endOf @argumentOrParameter.iteration.start.endOf
+      ")" @argumentList.removal.end.startOf @argumentOrParameter.iteration.end.startOf
+    ) @argumentList
+    (#empty-single-multi-delimiter! @argumentList @argumentList "" ", " ",\n")
+    (#child-range! @argumentList 1 -2)
+  ) @argumentList.domain @argumentOrParameter.iteration.domain
+  (#not-parent-type? @argumentList.domain binary_expression)
 )
 
-;;!! ['num' => 1];
-;;!   ^^^^^
-;;!            ^
-(array_element_initializer
-  (_) @collectionKey @value.leading.endOf
-  (_) @value @collectionKey.trailing.startOf
+(arguments
+  "(" @G_name_value.iteration.start.endOf
+  ")" @G_name_value.iteration.end.startOf
+)
+
+;;!! foo(aaa: 0, bbb: 1);
+;;!      ^^^     ^^^
+;;!           ^       ^
+(argument
+  name: (_) @name @value.leading.endOf
+  (_) @value @name.trailing.startOf
 ) @_.domain
 
-;;!! return 2;
+;;!! (int $aaa = 0)
+;;!   ^^^
+;;!       ^^^^
+;;!              ^
+(simple_parameter
+  type: (_)? @type
+  name: (_) @name @value.leading.endOf
+  default_value: (_)? @value
+) @_.domain
+
+;;!! return 0;
 ;;!         ^
 (return_statement
-  "return" @_.leading.endOf
+  "return" @value.leading.endOf
   (_) @value
-) @_.domain
+) @value.domain
 
-;;!! yield 2;
+;;!! yield 0;
 ;;!        ^
 (_
   (yield_expression
-    "yield" @_.leading.endOf
+    "yield" @value.leading.endOf
     (_) @value
-  ) @_.domain.start
+  ) @value.domain.start
   .
-  ";"? @_.domain.end
+  ";"? @value.domain.end
 )
-
-;;!! (string $str)
-;;!   ^^^^^^
-;;!          ^^^^
-(simple_parameter
-  type: (_) @type
-  name: (_) @name
-) @_.domain
 
 ;;!! (array ...$nums)
 ;;!   ^^^^^
@@ -243,27 +511,29 @@
 ) @_.domain
 
 ;;!! catch (Exception $e) {}
+;;!         ^^^^^^^^^^^^
 ;;!         ^^^^^^^^^
+;;!                   ^^
 (catch_clause
-  type: (_) @type @_.domain.start
-  name: (_) @name @_.domain.end
+  type: (_) @type @argumentOrParameter.start @_.domain.start
+  name: (_) @name @argumentOrParameter.end @_.domain.end
 )
 
 (formal_parameters
-  "(" @type.iteration.start.endOf @name.iteration.start.endOf @value.iteration.start.endOf
-  ")" @type.iteration.end.startOf @name.iteration.end.startOf @value.iteration.end.startOf
-) @_.domain
+  "(" @G_type_name_value.iteration.start.endOf
+  ")" @G_type_name_value.iteration.end.startOf
+)
 
-;;!! (string) $str;
-;;!   ^^^^^^
+;;!! (int) $str;
+;;!   ^^^
 (cast_expression
   type: (_) @type
-  value: (_) @_.removal.end.startOf
-) @_.removal.start.startOf @_.domain
+  value: (_) @type.removal.end.startOf
+) @type.removal.start.startOf @type.domain
 
-;;!! public string $value;
-;;!         ^^^^^^
-;;!                ^^^^^^
+;;!! public int $foo;
+;;!         ^^^
+;;!             ^^^^
 (property_declaration
   (_)? @name.removal.start.startOf
   type: (_)? @type @name.removal.start.startOf
@@ -271,6 +541,27 @@
     name: (_) @name @name.removal.end.endOf @value.leading.endOf
     default_value: (_)? @value @name.removal.end.startOf
   ) @name.removal.start.startOf
+) @_.domain @statement
+
+;;!! const int foo = 0;
+;;!        ^^^
+;;!            ^^^
+;;!                  ^
+(const_declaration
+  type: (_)? @type
+  (const_element
+    (name) @name @value.leading.endOf
+    (_) @value @name.removal.end.startOf
+  )
+) @name.removal.start.startOf @_.domain
+
+;;!! case foo = 0;
+;;!       ^^^
+;;!             ^
+(enum_case
+  "case" @name.removal.start.startOf
+  name: (_) @name @value.leading.endOf @name.removal.end.endOf
+  value: (_)? @value @name.removal.end.startOf
 ) @_.domain
 
 (_

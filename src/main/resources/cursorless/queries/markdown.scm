@@ -1,12 +1,12 @@
 ;; https://github.com/tree-sitter-grammars/tree-sitter-markdown/blob/main/src/grammar.json
 
-(document) @textFragment
+(document) @textFragment @section.iteration
 
 (html_block) @comment
 
 ;;!! * hello * stuff
 ;;!  ^^^^^^^^^^^^^^^
-(list) @list
+(list) @list @collectionItem.iteration
 
 ;;!! # Title
 ;;!    ^^^^^
@@ -16,28 +16,29 @@
   (atx_heading
     (_)
     heading_content: (_) @name
-  ) @_.removal
+  ) @name.removal
   (#shrink-to-match! @name "^\\s*(?<keep>.*)$")
-) @_.domain
+) @name.domain
 
-;;!! - 0
-;;!    ^
-;;!  ---
+;;!! - Hello world
+;;!    ^^^^^^^^^^^
+
 (list
   (list_item)? @collectionItem.leading.endOf
   .
   (list_item
+    .
     (_) @collectionItem.prefix
-    (paragraph) @collectionItem.start.startOf
+    .
+    (_) @collectionItem.start.startOf
   ) @collectionItem.end.endOf @collectionItem.domain
   .
   (list_item)? @collectionItem.trailing.startOf
+  (#trim-end-optional! @collectionItem.leading.endOf)
   (#trim-end! @collectionItem.end.endOf)
   (#trim-end! @collectionItem.domain)
   (#insertion-delimiter! @collectionItem.start.startOf "\n")
 )
-
-(list) @collectionItem.iteration
 
 ;;!! ```
 ;;!  ^^^
@@ -76,7 +77,7 @@
 ;;!! # H1
 ;;!! ## H2
 (
-  (section) @section @_.removal
+  (section) @section @section.removal
   (#trim-end! @section)
 )
 
@@ -86,7 +87,7 @@
     (atx_heading
       (atx_h1_marker)
     )
-  ) @sectionLevelOne @_.removal
+  ) @sectionLevelOne @sectionLevelOne.removal
   (#trim-end! @sectionLevelOne)
 )
 ;;!! ## H2
@@ -95,7 +96,7 @@
     (atx_heading
       (atx_h2_marker)
     )
-  ) @sectionLevelTwo @_.removal
+  ) @sectionLevelTwo @sectionLevelTwo.removal
   (#trim-end! @sectionLevelTwo)
 )
 (
@@ -103,7 +104,7 @@
     (atx_heading
       (atx_h3_marker)
     )
-  ) @sectionLevelThree @_.removal
+  ) @sectionLevelThree @sectionLevelThree.removal
   (#trim-end! @sectionLevelThree)
 )
 (
@@ -111,7 +112,7 @@
     (atx_heading
       (atx_h4_marker)
     )
-  ) @sectionLevelFour @_.removal
+  ) @sectionLevelFour @sectionLevelFour.removal
   (#trim-end! @sectionLevelFour)
 )
 (
@@ -119,7 +120,7 @@
     (atx_heading
       (atx_h5_marker)
     )
-  ) @sectionLevelFive @_.removal
+  ) @sectionLevelFive @sectionLevelFive.removal
   (#trim-end! @sectionLevelFive)
 )
 (
@@ -127,11 +128,9 @@
     (atx_heading
       (atx_h6_marker)
     )
-  ) @sectionLevelSix @_.removal
+  ) @sectionLevelSix @sectionLevelSix.removal
   (#trim-end! @sectionLevelSix)
 )
-
-(document) @section.iteration
 
 (
   (section

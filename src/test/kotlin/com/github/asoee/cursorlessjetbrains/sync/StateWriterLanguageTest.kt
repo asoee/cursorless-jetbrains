@@ -81,7 +81,8 @@ class StateWriterLanguageTest : BasePlatformTestCase() {
 
     @Test
     fun testBashLanguageDetection() {
-        assertLanguageDetected("test.sh", "#!/bin/bash", "bash")
+        // Cursorless's id for shell scripts, as its queries and parser are named; "bash" got no syntax scopes
+        assertLanguageDetected("test.sh", "#!/bin/bash", "shellscript")
     }
 
     @Test

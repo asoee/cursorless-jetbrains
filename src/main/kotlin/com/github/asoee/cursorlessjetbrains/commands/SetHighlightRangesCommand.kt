@@ -6,6 +6,7 @@ import com.github.asoee.cursorlessjetbrains.cursorless.CursorlessLineRange
 import com.github.asoee.cursorlessjetbrains.settings.TalonSettings
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.markup.EffectType
 import com.intellij.openapi.editor.markup.HighlighterLayer
 import com.intellij.openapi.editor.markup.HighlighterTargetArea
 import com.intellij.openapi.editor.markup.RangeHighlighter
@@ -13,6 +14,7 @@ import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import com.intellij.ui.JBColor
 import java.awt.Color
 
 class SetHighlightRangesCommand(
@@ -33,6 +35,36 @@ class SetHighlightRangesCommand(
             "highlight1" to Color(0xff, 0x00, 0x9d, 0x7e),  // Pink-purple (same as pendingModification1)
             null to Color(0x8c, 0x00, 0xff, 0x86)  // Default to purple
         )
+
+        /**
+         * The scope visualizer's colors ("visualize funk") from the settings page, background plus a solid border, in
+         * the dark or light variant to match the theme
+         */
+        private fun scopeVisualizerColors(highlightId: String?): Pair<Color, Color>? {
+            if (highlightId == null || !highlightId.startsWith("scopeVisualizer.")) return null
+            // A domain that equals its nested range is drawn in the nested range's colors
+            val rangeType = highlightId.removePrefix("scopeVisualizer.").removeSuffix(".equalsDomain")
+            val setting = TalonSettings.instance.state.scopeVisualizerColorSettings.find { it.rangeType == rangeType }
+                ?: TalonSettings.scopeVisualizerColorsFromDefaults().find { it.rangeType == rangeType }
+                ?: return null
+            return Pair(
+                JBColor(setting.lightBackground, setting.darkBackground),
+                JBColor(setting.lightBorder, setting.darkBorder),
+            )
+        }
+
+        private fun textAttributesFor(highlightId: String?): TextAttributes {
+            val textAttributes = TextAttributes()
+            val scopeColors = scopeVisualizerColors(highlightId)
+            if (scopeColors != null) {
+                textAttributes.backgroundColor = scopeColors.first
+                textAttributes.effectColor = scopeColors.second
+                textAttributes.effectType = EffectType.BOXED
+            } else {
+                textAttributes.backgroundColor = HIGHLIGHT_COLORS[highlightId] ?: HIGHLIGHT_COLORS[null]
+            }
+            return textAttributes
+        }
     }
 
     override fun executionMode(): ExecutionMode {
@@ -42,9 +74,13 @@ class SetHighlightRangesCommand(
     override fun execute(context: CommandContext): String {
         // Clear existing highlights for this highlightId and editor
         val key = Pair(highlightId, editor)
-        val existingHighlights = activeHighlights[key]
-        
-        ApplicationManager.getApplication().invokeAndWait {
+
+        // Queue rather than wait: this is called from inside the JS engine, which may be redrawing the scope
+        // visualizer on a background thread while the UI thread waits to enter the engine. invokeLater keeps
+        // updates in order, so a later clear still runs after an earlier draw.
+        ApplicationManager.getApplication().invokeLater {
+            val existingHighlights = activeHighlights[key]
+
             // Remove existing highlights
             existingHighlights?.forEach { highlighter ->
                 if (!editor.isDisposed) {
@@ -56,13 +92,12 @@ class SetHighlightRangesCommand(
             // If ranges is empty, just clear highlights (user said "highlight nothing")
             if (ranges.isEmpty()) {
                 activeHighlights.remove(key)
-                return@invokeAndWait
+                return@invokeLater
             }
             
             // Add new highlights
             val newHighlighters = mutableListOf<RangeHighlighter>()
-            val textAttributes = TextAttributes()
-            textAttributes.backgroundColor = HIGHLIGHT_COLORS[highlightId] ?: HIGHLIGHT_COLORS[null]
+            val textAttributes = textAttributesFor(highlightId)
             
             ranges.forEach { range ->
                 when (range) {

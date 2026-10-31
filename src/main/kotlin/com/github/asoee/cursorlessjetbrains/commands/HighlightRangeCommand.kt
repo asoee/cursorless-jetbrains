@@ -97,6 +97,10 @@ class HighlightRangeCommand(project: Project, private val rangesByEditor: Map<Ed
                     }
                 }
                 highlightsByEditor[editor] = rangeHighlighters
+                // Cursorless commands run on the EDT, which the pause below then blocks, so a normal repaint would
+                // only happen once the flash is gone. Paint now so the flash shows before the edit, as in VS Code
+                val component = editor.contentComponent
+                component.paintImmediately(component.visibleRect)
             }
         }
 

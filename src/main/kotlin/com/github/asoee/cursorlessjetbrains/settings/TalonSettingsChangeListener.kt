@@ -13,4 +13,8 @@ class TalonSettingsChangeListener(private val project: Project) : TalonSettingsL
 
         applicationService.settingsUpdated(settings)
     }
+
+    override fun onHatsToggled(enabled: Boolean) {
+        project.service<TalonProjectService>().hatsToggled(enabled)
+    }
 }

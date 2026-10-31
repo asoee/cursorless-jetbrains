@@ -1,0 +1,8 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- The tutorial sidebar ("bar cursorless", "cursorless tutorial") -->
+        <toolWindow id="Cursorless" anchor="right" doNotActivateOnStart="true"
+                    icon="AllIcons.Toolwindows.Documentation"
+                    factoryClass="com.github.asoee.cursorlessjetbrains.tutorial.CursorlessToolWindowFactory"/>
+    </extensions>
+</idea-plugin>

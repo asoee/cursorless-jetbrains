@@ -44,32 +44,24 @@
   (using_statement)
   (while_statement)
   (yield_statement)
+
   ;; Disabled on purpose. This is the entire body of statements.
   ;; (block)
+
   ;; Disabled on purpose. We have a better definition of this below.
   ;; (if_statement)
 ] @statement
 
 (
-  (compilation_unit) @statement.iteration @class.iteration @namedFunction.iteration
-  (#document-range! @statement.iteration @class.iteration @namedFunction.iteration)
-)
-
-(
-  (compilation_unit) @name.iteration @value.iteration @type.iteration
-  (#document-range! @name.iteration @value.iteration @type.iteration)
+  (compilation_unit) @G_statement_name_value_type_class_namedFunction.iteration
+  (#document-range! @G_statement_name_value_type_class_namedFunction.iteration)
 )
 
 ;;!! { }
 ;;!   ^
 (block
-  "{" @name.iteration.start.endOf @value.iteration.start.endOf @type.iteration.start.endOf
-  "}" @name.iteration.end.startOf @value.iteration.end.startOf @type.iteration.end.startOf
-)
-
-(block
-  "{" @statement.iteration.start.endOf
-  "}" @statement.iteration.end.startOf
+  "{" @G_statement_name_value_type.iteration.start.endOf
+  "}" @G_statement_name_value_type.iteration.end.startOf
 )
 
 ;;!! { }
@@ -162,15 +154,8 @@
 
 (class_declaration
   body: (_
-    "{" @class.iteration.start.endOf @name.iteration.start.endOf @statement.iteration.start.endOf
-    "}" @class.iteration.end.startOf @name.iteration.end.startOf @statement.iteration.end.startOf
-  )
-)
-
-(class_declaration
-  body: (_
-    "{" @name.iteration.start.endOf @value.iteration.start.endOf @type.iteration.start.endOf
-    "}" @name.iteration.end.startOf @value.iteration.end.startOf @type.iteration.end.startOf
+    "{" @G_class_statement_name_value_type_namedFunction.iteration.start.endOf
+    "}" @G_class_statement_name_value_type_namedFunction.iteration.end.startOf
   )
 )
 
@@ -180,8 +165,8 @@
 
 (interface_declaration
   body: (_
-    "{" @statement.iteration.start.endOf @name.iteration.start.endOf @type.iteration.start.endOf
-    "}" @statement.iteration.end.startOf @name.iteration.end.startOf @type.iteration.end.startOf
+    "{" @G_statement_name_type.iteration.start.endOf
+    "}" @G_statement_name_type.iteration.end.startOf
   )
 )
 
@@ -209,19 +194,19 @@
 (lambda_expression
   body: (_) @value
   (#not-type? @value block initializer_expression)
-) @_.domain
+) @value.domain
 
 ;;!! return 0;
 ;;!         ^
 (return_statement
   (_) @value
-) @_.domain
+) @value.domain
 
 ;;!! yield return 0;
 ;;!               ^
 (yield_statement
   (_) @value
-) @_.domain
+) @value.domain
 
 ;;!! throw foo;
 ;;!        ^^^
@@ -248,13 +233,6 @@
   )
 ] @namedFunction @name.domain
 
-(class_declaration
-  body: (_
-    "{" @namedFunction.iteration.start.endOf @name.iteration.start.endOf
-    "}" @namedFunction.iteration.end.startOf @name.iteration.end.startOf
-  )
-)
-
 ;;!! void foo() {}
 [
   (invocation_expression)
@@ -277,8 +255,8 @@
 (switch_statement
   value: (_) @value
   body: (switch_body
-    "{" @branch.iteration.start.endOf @condition.iteration.start.endOf
-    "}" @branch.iteration.end.startOf @condition.iteration.end.startOf
+    "{" @G_branch_condition.iteration.start.endOf
+    "}" @G_branch_condition.iteration.end.startOf
   )
 ) @value.domain
 
@@ -345,25 +323,28 @@
 )
 
 (initializer_expression
-  "{" @collectionKey.iteration.start.endOf @value.iteration.start.endOf
-  "}" @collectionKey.iteration.end.startOf @value.iteration.end.startOf
+  "{" @G_collectionKey_value.iteration.start.endOf
+  "}" @G_collectionKey_value.iteration.end.startOf
 )
 
 ;;!! String foo = 0
 ;;!  ^^^^^^
 ;;!         ^^^
 ;;!               ^
-(_
-  (variable_declaration
-    type: (_) @type
-    (variable_declarator
-      (identifier) @name @value.leading.endOf @name.removal.end.endOf
-      (equals_value_clause
-        (_) @value @name.removal.end.startOf
-      )?
+(
+  (_
+    (variable_declaration
+      type: (_) @type
+      (variable_declarator
+        (identifier) @name @value.leading.endOf @name.removal.end.endOf
+        (equals_value_clause
+          (_) @value @name.removal.end.startOf
+        )?
+      )
     )
-  )
-) @_.domain @name.removal.start.startOf
+  ) @_.domain @name.removal.start.startOf
+  (#not-type? @_.domain using_statement)
+)
 
 ;;!! aaa = "bbb";
 ;;!  ^^^
@@ -384,19 +365,19 @@
   (assignment_expression
     left: (_) @collectionKey
     right: (_) @collectionKey.trailing.startOf
-  ) @_.domain
+  ) @collectionKey.domain
 )
 
 (_
   name: (_) @name
   (#not-parent-type? @name catch_declaration enum_member_declaration)
-) @_.domain
+) @name.domain
 
 (
   (_
     type: (_) @type
-  ) @_.domain
-  (#not-type? @_.domain catch_declaration cast_expression variable_declaration)
+  ) @type.domain
+  (#not-type? @type.domain catch_declaration cast_expression variable_declaration)
 )
 
 ;;!! (int)5.5;
@@ -405,13 +386,13 @@
   "(" @type.removal.start
   type: (_) @type
   ")" @type.removal.end
-) @_.domain
+) @type.domain
 
 ;;!! enum Foo {}
 (enum_declaration
   body: (_
-    "{" @name.iteration.start.endOf @value.iteration.start.endOf
-    "}" @name.iteration.end.startOf @value.iteration.end.startOf
+    "{" @G_name_value.iteration.start.endOf
+    "}" @G_name_value.iteration.end.startOf
   )
 ) @type
 
@@ -425,11 +406,11 @@
 ;; Dictionary<string, int> values;
 ;;!           ^^^^^^  ^^^
 (type_argument_list
-  (_)? @_.leading.endOf
+  (_)? @type.leading.endOf
   .
   (_) @type
   .
-  (_)? @_.trailing.startOf
+  (_)? @type.trailing.startOf
   (#insertion-delimiter! @type ", ")
 )
 
@@ -445,17 +426,17 @@
   (equals_value_clause
     (_) @value
   )
-) @_.domain
+) @value.domain
 
 ;; !! foo(aaa, bbb)
 ;; !      ^^^  ^^^
 (
   (argument_list
-    (_)? @_.leading.endOf
+    (_)? @argumentOrParameter.leading.endOf
     .
     (_) @argumentOrParameter
     .
-    (_)? @_.trailing.startOf
+    (_)? @argumentOrParameter.trailing.startOf
   ) @_dummy
   (#not-type? @argumentOrParameter "comment")
   (#single-or-multi-line-delimiter! @argumentOrParameter @_dummy ", " ",\n")
@@ -472,15 +453,32 @@
   (#child-range! @argumentList 1 -2)
 ) @argumentList.domain @argumentOrParameter.iteration.domain
 
+;;!! foo(aaa: 0, bbb: 1);
+;;!      ^^^^^^^^^^^^^^
+(argument_list
+  "(" @G_name_value.iteration.start.endOf
+  ")" @G_name_value.iteration.end.startOf
+)
+
+;;!! foo(aaa: 0, bbb: 1);
+;;!      ^^^     ^^^
+;;!           ^       ^
+(argument
+  (name_colon
+    (_) @name @value.leading.endOf
+  )
+  (_) @value @name.trailing.startOf
+) @_.domain
+
 ;; !! void foo(int a, int b)
 ;; !           ^^^^^  ^^^^^
 (
   (parameter_list
-    (_)? @_.leading.endOf
+    (_)? @argumentOrParameter.leading.endOf
     .
     (_) @argumentOrParameter
     .
-    (_)? @_.trailing.startOf
+    (_)? @argumentOrParameter.trailing.startOf
   ) @_dummy
   (#not-type? @argumentOrParameter "comment")
   (#single-or-multi-line-delimiter! @argumentOrParameter @_dummy ", " ",\n")
@@ -498,20 +496,46 @@
 ) @argumentList.domain @argumentOrParameter.iteration.domain
 
 (parameter_list
-  "(" @name.iteration.start.endOf @value.iteration.start.endOf @type.iteration.start.endOf
-  ")" @name.iteration.end.startOf @value.iteration.end.startOf @type.iteration.end.startOf
+  "(" @G_name_value_type.iteration.start.endOf
+  ")" @G_name_value_type.iteration.end.startOf
 )
+
+;;!! using Foo = Bar;
+;;!        ^^^
+;;!              ^^^
+(using_directive
+  (name_equals
+    (_) @name @value.leading.endOf
+  )
+  (_) @value @name.removal.end.startOf
+) @type @_.domain @name.removal.start.startOf
+
+;;!! using (Foo foo = create()) {}
+;;!         ^^^
+;;!             ^^^
+;;!                   ^^^^^^^^
+(using_statement
+  (variable_declaration
+    type: (_) @type
+    (variable_declarator
+      (identifier) @name @value.leading.endOf
+      (equals_value_clause
+        (_) @value
+      )
+    )
+  )
+) @_.domain
 
 ;;!! int foo, bar;
 ;;!      ^^^  ^^^
 (
   (variable_declaration
     type: (_)
-    (variable_declarator)? @_.leading.endOf
+    (variable_declarator)? @collectionItem.leading.endOf
     .
     (variable_declarator) @collectionItem
     .
-    (variable_declarator)? @_.trailing.startOf
+    (variable_declarator)? @collectionItem.trailing.startOf
   ) @_dummy
   (#single-or-multi-line-delimiter! @collectionItem @_dummy ", " ",\n")
 )

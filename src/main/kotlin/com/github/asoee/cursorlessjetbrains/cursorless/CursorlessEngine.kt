@@ -5,6 +5,7 @@ import com.github.asoee.cursorlessjetbrains.javet.JavetDriver
 import com.github.asoee.cursorlessjetbrains.sync.EditorState
 import com.intellij.openapi.diagnostic.thisLogger
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 
@@ -42,6 +43,46 @@ class CursorlessEngine(private val driver: JavetDriver) {
     fun serialize(cmd: CommandV7): List<JsonObject> {
         val jsonElement = Json.encodeToJsonElement(cmd)
         return listOf(jsonElement as JsonObject)
+    }
+
+    fun tutorialState(): String? {
+        return driver.tutorialState()
+    }
+
+    fun setScopeListVisible(visible: Boolean) {
+        driver.setScopeListVisible(visible)
+    }
+
+    fun tutorialCommand(method: String, argJson: String? = null) {
+        driver.tutorialCommand(method, argJson)
+    }
+
+    fun analyzeCommandHistory() {
+        driver.analyzeCommandHistory()
+    }
+
+    fun setConfiguration(commandHistory: Boolean, debug: Boolean) {
+        driver.updateConfiguration(DEFAULT_CONFIGURATION.copy(commandHistory = commandHistory, debug = debug))
+    }
+
+    fun cheatsheetInfo(): JsonElement? {
+        return driver.cheatsheetInfo()
+    }
+
+    fun showScopeVisualizer(scopeTypeJson: String, visualizationType: String) {
+        driver.showScopeVisualizer(scopeTypeJson, visualizationType)
+    }
+
+    fun hideScopeVisualizer() {
+        driver.hideScopeVisualizer()
+    }
+
+    fun talonSpokenFormsChanged() {
+        driver.talonSpokenFormsChanged()
+    }
+
+    fun setHatsEnabled(enabled: Boolean) {
+        driver.setHatsEnabled(enabled)
     }
 
     fun setEnabledHatShapes(enabledHatShapes: List<String>) {

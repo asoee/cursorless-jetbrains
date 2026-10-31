@@ -36,27 +36,16 @@
 
 ;; Entire document, including leading and trailing whitespace
 (
-  (source_file) @class.iteration @statement.iteration @namedFunction.iteration
-  (#document-range! @class.iteration @statement.iteration @namedFunction.iteration)
-)
-(
-  (source_file) @name.iteration @value.iteration @type.iteration
-  (#document-range! @name.iteration @value.iteration @type.iteration)
+  (source_file) @G_class_statement_name_value_type_namedFunction.iteration
+  (#document-range! @G_class_statement_name_value_type_namedFunction.iteration)
 )
 
 ;;!! { }
 ;;!   ^
 (
   (_
-    "{" @statement.iteration.start.endOf @namedFunction.iteration.start.endOf
-    "}" @statement.iteration.end.startOf @namedFunction.iteration.end.startOf
-  ) @_dummy
-  (#not-type? @_dummy lambda_literal)
-)
-(
-  (_
-    "{" @name.iteration.start.endOf @value.iteration.start.endOf @type.iteration.start.endOf
-    "}" @name.iteration.end.startOf @value.iteration.end.startOf @type.iteration.end.startOf
+    "{" @G_statement_name_value_type_namedFunction.iteration.start.endOf
+    "}" @G_statement_name_value_type_namedFunction.iteration.end.startOf
   ) @_dummy
   (#not-type? @_dummy lambda_literal)
 )
@@ -178,20 +167,14 @@
 ) @branch.iteration
 
 ;;!! catch (e: Exception) {}
+;;!  ^^^^^^^^^^^^^^^^^^^^^^^
 ;;!         ^^^^^^^^^^^^
-(catch_block
-  (simple_identifier) @argumentOrParameter.start
-  ":"
-  (user_type) @argumentOrParameter.end
-) @branch
-
-;;!! catch (e: Exception) {}
 ;;!         ^
 (catch_block
-  (simple_identifier) @name @name.domain.start
+  (simple_identifier) @argumentOrParameter.start @name @name.domain.start
   ":"
-  (user_type) @name.domain.end
-)
+  (user_type) @argumentOrParameter.end @name.domain.end
+) @branch
 
 ;;!! catch (e: Exception) {}
 ;;!            ^^^^^^^^^
@@ -207,8 +190,8 @@
 ;;!! when (foo) { }
 ;;!              ^
 (when_expression
-  "{" @branch.iteration.start.endOf @condition.iteration.start.endOf
-  "}" @branch.iteration.end.startOf @condition.iteration.end.startOf
+  "{" @G_branch_condition.iteration.start.endOf
+  "}" @G_branch_condition.iteration.end.startOf
 )
 
 ;;!! when (foo) {}
@@ -247,15 +230,15 @@
   "->"
 ) @condition.domain
 
-;;!! 0 -> break
-;;!      ^^^^^^
+;;!! 0 -> 0
+;;!      ^^
 (when_entry
   "->" @interior.start.endOf
   (control_structure_body
     .
     (_)
   ) @interior.end.endOf
-) @interior.domain
+)
 
 ;;!! while (true) {}
 ;;!         ^^^^
@@ -277,6 +260,10 @@
 ;;!! class Foo {}
 (class_declaration
   (type_identifier) @name
+  (class_body
+    "{" @class.iteration.start.endOf
+    "}" @class.iteration.end.startOf
+  )?
 ) @class @type @name.domain
 
 ;;!! object Foo {}
@@ -409,15 +396,15 @@
 ) @argumentList.domain @argumentOrParameter.iteration.domain
 
 (function_value_parameters
-  "(" @name.iteration.start.endOf @value.iteration.start.endOf @type.iteration.start.endOf
-  ")" @name.iteration.end.startOf @value.iteration.end.startOf @type.iteration.end.startOf
+  "(" @G_name_value_type.iteration.start.endOf
+  ")" @G_name_value_type.iteration.end.startOf
 )
 
 ;;!! foo: Int
 ;;!! vararg foo: Int
 (
   (function_value_parameters
-    (_)? @_.leading.endOf
+    (_)? @argumentOrParameter.leading.endOf
     .
     [
       ","
@@ -427,7 +414,7 @@
     [
       (line_comment)
       (multiline_comment)
-    ] *
+    ]*
     .
     (parameter_modifiers)? @argumentOrParameter.start
     .
@@ -436,14 +423,14 @@
     [
       (line_comment)
       (multiline_comment)
-    ] *
+    ]*
     .
     [
       ","
       ")"
     ]
     .
-    (_)? @_.trailing.startOf
+    (_)? @argumentOrParameter.trailing.startOf
   ) @_dummy
   (#single-or-multi-line-delimiter! @argumentOrParameter.end @_dummy ", " ",\n")
 )
@@ -475,7 +462,7 @@
 ;; !! vararg foo: Int = 0
 (
   (function_value_parameters
-    (_)? @_.leading.endOf
+    (_)? @argumentOrParameter.leading.endOf
     .
     [
       ","
@@ -485,7 +472,7 @@
     [
       (line_comment)
       (multiline_comment)
-    ] *
+    ]*
     .
     (parameter_modifiers)? @argumentOrParameter.start.startOf
     .
@@ -497,14 +484,14 @@
     [
       (line_comment)
       (multiline_comment)
-    ] *
+    ]*
     .
     [
       ","
       ")"
     ]
     .
-    (_)? @_.trailing.startOf
+    (_)? @argumentOrParameter.trailing.startOf
   ) @_dummy
   (#single-or-multi-line-delimiter! @argumentOrParameter.end @_dummy ", " ",\n")
 )
@@ -573,11 +560,11 @@
 
 (
   (lambda_parameters
-    (_)? @_.leading.endOf
+    (_)? @argumentOrParameter.leading.endOf
     .
     (_) @argumentOrParameter
     .
-    (_)? @_.trailing.startOf
+    (_)? @argumentOrParameter.trailing.startOf
   ) @_dummy
   (#single-or-multi-line-delimiter! @argumentOrParameter @_dummy ", " ",\n")
 )
@@ -594,17 +581,17 @@
 ) @argumentList.domain @argumentOrParameter.iteration.domain
 
 (primary_constructor
-  "(" @name.iteration.start.endOf @value.iteration.start.endOf @type.iteration.start.endOf
-  ")" @name.iteration.end.startOf @value.iteration.end.startOf @type.iteration.end.startOf
+  "(" @G_name_value_type.iteration.start.endOf
+  ")" @G_name_value_type.iteration.end.startOf
 )
 
 (
   (primary_constructor
-    (_)? @_.leading.endOf
+    (_)? @argumentOrParameter.leading.endOf
     .
     (_) @argumentOrParameter
     .
-    (_)? @_.trailing.startOf
+    (_)? @argumentOrParameter.trailing.startOf
   ) @_dummy
   (#single-or-multi-line-delimiter! @argumentOrParameter @_dummy ", " ",\n")
 )
@@ -621,21 +608,33 @@
     ) @argumentList
     (#empty-single-multi-delimiter! @argumentList @argumentList "" ", " ",\n")
     (#child-range! @argumentList 1 -2)
-  )
+  ) @_dummy
+  (#not-type? @_dummy enum_entry)
+) @argumentList.domain @argumentOrParameter.iteration.domain
+
+;;!! foo(aaa, bbb)
+;;!      ^^^^^^^^
+(enum_entry
+  (value_arguments
+    "(" @argumentList.removal.start.endOf @argumentOrParameter.iteration.start.endOf
+    ")" @argumentList.removal.end.startOf @argumentOrParameter.iteration.end.startOf
+  ) @argumentList
+  (#empty-single-multi-delimiter! @argumentList @argumentList "" ", " ",\n")
+  (#child-range! @argumentList 1 -2)
 ) @argumentList.domain @argumentOrParameter.iteration.domain
 
 (value_arguments
-  "(" @name.iteration.start.endOf @value.iteration.start.endOf @type.iteration.start.endOf
-  ")" @name.iteration.end.startOf @value.iteration.end.startOf @type.iteration.end.startOf
+  "(" @G_name_value_type.iteration.start.endOf
+  ")" @G_name_value_type.iteration.end.startOf
 )
 
 (
   (value_arguments
-    (_)? @_.leading.endOf
+    (_)? @argumentOrParameter.leading.endOf
     .
     (_) @argumentOrParameter
     .
-    (_)? @_.trailing.startOf
+    (_)? @argumentOrParameter.trailing.startOf
   ) @_dummy
   (#single-or-multi-line-delimiter! @argumentOrParameter @_dummy ", " ",\n")
 )
@@ -660,11 +659,11 @@
 ;;!               ^^^  ^^^
 (
   (type_arguments
-    (_)? @_.leading.endOf
+    (_)? @type.leading.endOf
     .
     (_) @type
     .
-    (_)? @_.trailing.startOf
+    (_)? @type.trailing.startOf
   ) @_dummy
   (#single-or-multi-line-delimiter! @type @_dummy ", " ",\n")
 )

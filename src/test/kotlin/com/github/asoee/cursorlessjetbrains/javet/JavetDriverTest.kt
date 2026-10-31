@@ -56,6 +56,8 @@ class JavetDriverTest {
             visible = true,
             editable = true,
             writable = true,
+            tabSize = 4,
+            insertSpaces = true,
         )
 
         driver.editorChanged(state)
@@ -189,6 +191,8 @@ class JavetDriverTest {
             visible = true,
             editable = true,
             writable = true,
+            tabSize = 4,
+            insertSpaces = true,
         )
 
         // Perform operations with first driver
@@ -265,32 +269,58 @@ class CountingCallback : CursorlessCallback {
 //        println("Not yet implemented")
     }
 
-    override fun documentUpdated(editorId: String, edit: CursorlessEditorEdit) {
-//        println("Not yet implemented")
+    override fun documentUpdated(editorId: String, edit: CursorlessEditorEdit): String? {
+        return null
     }
 
     override fun clipboardCopy(editorId: String, selections: Array<CursorlessRange>) {
 //        println("Not yet implemented")
     }
 
-    override fun clipboardPaste(editorId: String) {
-//        println("Not yet implemented")
+    override fun clipboardPaste(editorId: String): String? {
+        return null
     }
 
-    override fun executeCommand(editorId: String, command: String, args: Array<String>) {
-        println("Not yet implemented")
+    override fun commandHistoryAppend(fileName: String, entryJson: String) {
     }
 
-    override fun insertLineAfter(editorId: String, ranges: Array<CursorlessRange>) {
-        println("Not yet implemented")
+    override fun commandHistoryEntries(): String {
+        return "[]"
+    }
+
+    override fun openUntitledTextDocument(content: String, language: String?): String {
+        throw UnsupportedOperationException()
+    }
+
+    override fun showMessage(type: String, id: String, message: String) {
+    }
+
+    override fun tutorialStateChanged(stateJson: String) {
+    }
+
+    override fun scopeListChanged(scopeListJson: String) {
+    }
+
+    override fun revealRange(editorId: String, range: CursorlessRange) {
+    }
+
+    override fun openUrl(url: String) {
+    }
+
+    override fun executeCommand(editorId: String, command: String, args: Array<String>): String? {
+        return null
+    }
+
+    override fun insertLineAfter(editorId: String, ranges: Array<CursorlessRange>): String? {
+        return null
     }
 
     override fun insertSnippet(editorId: String, snippet: String) {
 //        println("Not yet implemented")
     }
 
-    override fun executeRangeCommand(editorId: String, rangeCommand: CursorlessEditorCommand) {
-        println("Not yet implemented")
+    override fun executeRangeCommand(editorId: String, rangeCommand: CursorlessEditorCommand): String? {
+        return null
     }
 
     override fun revealLine(editorId: String, line: Int, revealAt: String) {
@@ -311,5 +341,37 @@ class CountingCallback : CursorlessCallback {
     override fun prePhraseVersion(): String? {
 //        println("Not yet implemented")
         return "asdf" + System.currentTimeMillis()
+    }
+
+    override fun findInDocument(editorId: String, query: String) {
+    }
+
+    override fun findInWorkspace(editorId: String, query: String) {
+    }
+
+    override fun focusEditor(editorId: String) {
+    }
+
+    override fun getFocusedElementType(): String? {
+        return null
+    }
+
+    override fun keyValueGet(key: String): String? {
+        return null
+    }
+
+    override fun keyValueSet(key: String, valueJson: String) {
+    }
+
+    override fun readTalonSpokenForms(): String? {
+        return null
+    }
+
+    override fun showInputBox(optionsJson: String): String? {
+        return null
+    }
+
+    override fun openSnippetFile(snippetName: String, directory: String): String {
+        throw UnsupportedOperationException()
     }
 }

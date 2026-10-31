@@ -11,7 +11,8 @@ import javax.swing.JButton
 import javax.swing.JTable
 import javax.swing.table.TableCellEditor
 
-class ColorCellEditor(private val table: JTable) : AbstractCellEditor(), TableCellEditor, ActionListener {
+class ColorCellEditor(private val table: JTable, private val enableOpacity: Boolean = false) : AbstractCellEditor(),
+    TableCellEditor, ActionListener {
     private var newInput: Color? = null
     private var oldValue: Color? = null
     private var button: JButton = JButton()
@@ -30,7 +31,7 @@ class ColorCellEditor(private val table: JTable) : AbstractCellEditor(), TableCe
                 table,
                 "Color Picker",
                 oldValue,
-                false,
+                enableOpacity,
                 null,
                 true
             )

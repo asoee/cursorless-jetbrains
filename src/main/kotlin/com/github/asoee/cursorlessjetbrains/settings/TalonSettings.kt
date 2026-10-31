@@ -30,8 +30,12 @@ class TalonSettings
         var hatVerticalOffset: Int = 0
         var flashRangeDuration: Int = 100
         var maxFileSizeKb: Int = 1024 // Maximum file size in KB that can be sent to Cursorless (default 1MB)
+        var syncHatsFromVscode: Boolean = true // Take hat enablement and penalties from VS Code's settings.json, as Talon does
+        var commandHistory: Boolean = false // Record commands for "cursorless stats"; opt-in, as in VS Code
+        var debugLogging: Boolean = false // The engine's debug log, e.g. why a tutorial step left the path; VS Code's cursorless.debug
         var hatShapeSettings: List<ShapeSetting> = shapeFromDefaults()
         var hatColorSettings: List<ColorSetting> = colorFromDefaults()
+        var scopeVisualizerColorSettings: List<ScopeVisualizerColorSetting> = scopeVisualizerColorsFromDefaults()
     }
 
     data class ShapeSetting(
@@ -54,6 +58,21 @@ class TalonSettings
         var dark: Color = JBColor.BLACK,
         @Attribute("light", converter = HexColorConverter::class)
         var light: Color = JBColor.BLACK,
+    )
+
+    /** The colors of one kind of range the scope visualizer draws, as VS Code's cursorless.scopeVisualizer.colors */
+    data class ScopeVisualizerColorSetting(
+        /** "domain", "content", "removal" or "iteration" */
+        @Attribute("rangeType")
+        val rangeType: String = "",
+        @Attribute("darkBackground", converter = HexColorConverter::class)
+        var darkBackground: Color = JBColor.BLACK,
+        @Attribute("darkBorder", converter = HexColorConverter::class)
+        var darkBorder: Color = JBColor.BLACK,
+        @Attribute("lightBackground", converter = HexColorConverter::class)
+        var lightBackground: Color = JBColor.BLACK,
+        @Attribute("lightBorder", converter = HexColorConverter::class)
+        var lightBorder: Color = JBColor.BLACK,
     )
 
     private var myState = State()
@@ -90,6 +109,28 @@ class TalonSettings
                     if (snapeName == "default") 0 else 1 // penalty
                 )
             }
+        }
+
+        /** The range types the scope visualizer draws, in the order the settings page lists them */
+        val SCOPE_VISUALIZER_RANGE_TYPES = listOf("domain", "content", "removal", "iteration")
+
+        /** VS Code's defaults for cursorless.scopeVisualizer.colors.dark and .light (their solid borders) */
+        fun scopeVisualizerColorsFromDefaults(): List<ScopeVisualizerColorSetting> {
+            fun color(hex: String) = ColorUtil.fromHexString(hex)
+            return listOf(
+                ScopeVisualizerColorSetting(
+                    "domain", color("#00e1ff18"), color("#ebdeec84"), color("#00e1ff18"), color("#19171984")
+                ),
+                ScopeVisualizerColorSetting(
+                    "content", color("#ad00bc5b"), color("#ee00ff78"), color("#ad00bc5b"), color("#ee00ff78")
+                ),
+                ScopeVisualizerColorSetting(
+                    "removal", color("#ff00002d"), color("#ff000078"), color("#ff00002d"), color("#ff000078")
+                ),
+                ScopeVisualizerColorSetting(
+                    "iteration", color("#00725f6c"), color("#00ffd578"), color("#00725f6c"), color("#00ffd578")
+                ),
+            )
         }
 
         fun colorFromDefaults(): List<ColorSetting> {
